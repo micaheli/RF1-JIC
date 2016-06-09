@@ -13,3 +13,8 @@ for file in ${library_files[@]}; do
 	echo ${GCC}${file}.o $F4_COMPILE librarydir/${file}.c
 done
 
+FILES_TO_BUILD=""
+for file in `ls output/` do
+	FILES_TO_BUILD+=" ${file}"
+
+
