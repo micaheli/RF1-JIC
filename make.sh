@@ -16,5 +16,5 @@ done
 FILES_TO_BUILD=""
 for file in `ls output/` do
 	FILES_TO_BUILD+=" ${file}"
-
+done
 
