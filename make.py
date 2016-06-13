@@ -35,8 +35,11 @@ commands = [
 ]
 
 
+THREAD_LIMIT = 16
+threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
+isStop = False
 		
 
 
@@ -49,22 +52,31 @@ class CommandRunnerThread(threading.Thread):
 		super(CommandRunnerThread, self).__init__(*args, **kwargs) 
 		self._stop = threading.Event()
 
+
 	def run(self):
+		threadLimiter.acquire()
 		locker.acquire()
 		threadRunning.append(self)
 		locker.release()
+		
 		try:
 			self.run_command()
 		finally:
 			locker.acquire()
 			threadRunning.remove(self)
 			locker.release()
+			threadLimiter.release()
 
 
 	def run_command(self):
 		if not self.command:
 			return
-		
+		locker.acquire()
+		if isStop:
+			locker.release()
+			return
+		locker.release()
+
 		self.proc = subprocess.Popen(self.command, shell=True)
 		stdout_value, stderr_value = self.proc.communicate()
 		if self.queue:
@@ -73,14 +85,18 @@ class CommandRunnerThread(threading.Thread):
 			print proc.returncode
 		self.proc = None
 
+
 	def stop(self):
 		if self.proc:
-			self.proc.kill()
+			try:
+				self.proc.kill()
+			except OSError:
+				pass
 		self._stop.set()
+
 
 	def stopped(self):
 		return self._stop.isSet()
-
 
 
 def FileModified(fileName):
@@ -109,7 +125,7 @@ def ProcessList(fileNames):
 	print "done"
 
 def main():
-	global link_command
+	global link_command, isStop
 
 	print "Hi kalyn"
 	try:
@@ -121,26 +137,19 @@ def main():
 	for directory in directories:
 		ProcessList(glob.glob(directory + "\\*.c"))
 
-
 	for command in commands:
 		print command
-
-
 
 	link_command = link_command.replace("{OUTPUT_NAME}","REVO")
 	link_command = link_command.replace("{OBJS}", linkerObjs)
 
-
 	commands.append(link_command);
-
-
 
 	queue = Queue.Queue()
 	threads = list()
 	for command in commands:
 		thread = CommandRunnerThread(command=command, queue=queue)
 		threads.append(thread)
-	
 	map(lambda thread: thread.start(), threads)
 	while len(threadRunning) > 0:
 		try:
@@ -148,7 +157,10 @@ def main():
 		except Queue.Empty:
 			continue
 		if returncode > 0:
-			map(lambda thread: thread.stop(), threads)
+			locker.acquire()
+			isStop = True
+			map(lambda thread: thread.stop(), threadRunning)
+			locker.release()
 			break
 
 	map(lambda thread: thread.join(), threads)
