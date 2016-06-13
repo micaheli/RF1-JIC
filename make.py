@@ -95,6 +95,7 @@ def ProcessList(fileNames):
 	global linkerObjs
 
 	for fileName in fileNames:
+		print "filename: " + fileName
 		linkerObjs = linkerObjs + " output\\" + makeObject(fileName)
 		if FileModified(fileName):
 			AddToList(compile_command.replace("{INPUT_FILE}", fileName).replace("{OUTPUT_FILE}", makeObject(fileName)))
@@ -103,11 +104,13 @@ def ProcessList(fileNames):
 def main():
 	global link_command
 
+	print "Hi kalyn"
 	try:
 		os.mkdir("output")
 	except:
 		pass
 
+	print "Looking for dirs"
 	for directory in directories:
 		ProcessList(glob.glob(directory + "\\*.c"))
 
@@ -115,7 +118,6 @@ def main():
 	for command in commands:
 		print command
 
-#	print glob.glob("/home/adam/*.txt")
 
 
 	link_command = link_command.replace("{OUTPUT_NAME}","REVO")
