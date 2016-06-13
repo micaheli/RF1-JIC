@@ -94,12 +94,14 @@ def makeObject(fileName):
 def ProcessList(fileNames):
 	global linkerObjs
 
+	print fileNames
 	for fileName in fileNames:
 		print "filename: " + fileName
 		linkerObjs = linkerObjs + " output\\" + makeObject(fileName)
 		if FileModified(fileName):
 			AddToList(compile_command.replace("{INPUT_FILE}", fileName).replace("{OUTPUT_FILE}", makeObject(fileName)))
 
+	print "done"
 
 def main():
 	global link_command
