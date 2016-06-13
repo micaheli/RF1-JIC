@@ -16,6 +16,14 @@ directories = [
 	"src\\rffw\\inc",
 ]
 
+
+directories_asm = [
+	"lib\\STM32F1xx_HAL_Driver\\Src",
+	"src\\rffw\\src",
+	"src\\rffw\\inc",
+]
+
+
 excluded_files = [
 	"fish_tacos.c"
 ]
@@ -26,10 +34,10 @@ ARCH_FLAGS	 = "-mthumb -mcpu=cortex-m3"
 #F3: ARCH_FLAGS	 = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
 #F4: ARCH_FLAGS	 = -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
 
+asm_command = "arm-none-eabi-gcc -o output\\{OUTPUT_FILE} {INPUT_FILE} -Ilib\\CMSIS\\Include -Ilib\\CMSIS\\Device\\ST\\STM32F1xx\\Include -Isrc\\rffw\\inc -Ilib\\STM32F1xx_HAL_Driver\\Inc "+ARCH_FLAGS+" -flto -fuse-linker-plugin -O2 -ggdb3 -DSTM32F103xB -DDEBUG -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -Wdouble-promotion -ffunction-sections -fdata-sections -DHSE_VALUE=8000000  -MMD -MP"
 
 compile_command = "arm-none-eabi-gcc -o output\\{OUTPUT_FILE} {INPUT_FILE} -Ilib\\CMSIS\\Include -Ilib\\CMSIS\\Device\\ST\\STM32F1xx\\Include -Isrc\\rffw\\inc -Ilib\\STM32F1xx_HAL_Driver\\Inc "+ARCH_FLAGS+" -flto -fuse-linker-plugin -O2 -ggdb3 -DSTM32F103xB -DDEBUG -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -Wdouble-promotion -ffunction-sections -fdata-sections -DHSE_VALUE=8000000  -MMD -MP"
 link_command = "arm-none-eabi-gcc -o bin\\{OUTPUT_NAME}.elf {OBJS} -lm -nostartfiles --specs=nano.specs -lc -lnosys "+ARCH_FLAGS+" -flto -fuse-linker-plugin -O2 -ggdb3 -DDEBUG -static -Wl,-gc-sections,-Map,obj\\main\\raceflight_KKNGF4_6500.map -Wl,-Lsrc\\rffw\\target -Wl,--cref -Tsrc\\rffw\\target\\STM32F103XB_FLASH.ld"
-
 
 commands = [
 ]
@@ -117,10 +125,16 @@ def ProcessList(fileNames):
 
 	print fileNames
 	for fileName in fileNames:
+		fileName = fileName.lower()
 		print "filename: " + fileName
 		linkerObjs = linkerObjs + " output\\" + makeObject(fileName)
 		if FileModified(fileName):
-			AddToList(compile_command.replace("{INPUT_FILE}", fileName).replace("{OUTPUT_FILE}", makeObject(fileName)))
+			print fileName[-2:]
+			if fileName[-2:] == ".c":
+				AddToList(compile_command.replace("{INPUT_FILE}", fileName).replace("{OUTPUT_FILE}", makeObject(fileName)))
+			else:
+				print "YAAAA HOOO"
+				AddToList(asm_command.replace("{INPUT_FILE}", fileName).replace("{OUTPUT_FILE}", makeObject(fileName)))
 
 	print "done"
 
@@ -137,11 +151,20 @@ def main():
 	for directory in directories:
 		ProcessList(glob.glob(directory + "\\*.c"))
 
+	for directory in directories:
+		ProcessList(glob.glob(directory + "\\*.s"))
+
+
 	for command in commands:
 		print command
 
 	link_command = link_command.replace("{OUTPUT_NAME}","REVO")
 	link_command = link_command.replace("{OBJS}", linkerObjs)
+
+	print "*******************************************************"
+	print link_command
+	print "*******************************************************"
+
 
 	commands.append(link_command);
 
