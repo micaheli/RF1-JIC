@@ -22,8 +22,10 @@ excluded_files = [
 
 linkerObjs = ""
 
+
+
 compile_command = "arm-none-eabi-gcc -o output\\{OUTPUT_FILE} {INPUT_FILE} -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion -flto -fuse-linker-plugin -O2 -ggdb3 -DDEBUG -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -Wdouble-promotion -ffunction-sections -fdata-sections -DHSE_VALUE=8000000  -MMD -MP"
-link_command = "arm-none-eabi-gcc -o bin\\{OUTPUT_NAME}.elf {OBJS} -lm -nostartfiles --specs=nano.specs -lc -lnosys -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion -flto -fuse-linker-plugin -O2 -ggdb3 -DDEBUG -static -Wl,-gc-sections,-Map,./obj/main/raceflight_KKNGF4_6500.map -Wl,-L./src/rffw/target -Wl,--cref -T./src/rffw/target/STM32F103XB_FLASH.ld"
+link_command = "arm-none-eabi-gcc -o bin\\{OUTPUT_NAME}.elf {OBJS} -I/lib/STM32F1xx_HAL_Driver/Inc -lm -nostartfiles --specs=nano.specs -lc -lnosys -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion -flto -fuse-linker-plugin -O2 -ggdb3 -DDEBUG -static -Wl,-gc-sections,-Map,./obj/main/raceflight_KKNGF4_6500.map -Wl,-L./src/rffw/target -Wl,--cref -T./src/rffw/target/STM32F103XB_FLASH.ld"
 
 
 commands = [
