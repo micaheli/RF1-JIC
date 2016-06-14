@@ -11,6 +11,7 @@ import ntpath
 import os
 
 directories = [
+	"src\\rffw\\startup",
 	"lib\\STM32F1xx_HAL_Driver\\Src",
 	"src\\rffw\\src",
 	"src\\rffw\\inc",
@@ -18,6 +19,7 @@ directories = [
 
 
 directories_asm = [
+	"src\\rffw\\startup",
 	"lib\\STM32F1xx_HAL_Driver\\Src",
 	"src\\rffw\\src",
 	"src\\rffw\\inc",
@@ -43,7 +45,7 @@ commands = [
 ]
 
 
-THREAD_LIMIT = 16
+THREAD_LIMIT = 1
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
@@ -130,7 +132,9 @@ def ProcessList(fileNames):
 		linkerObjs = linkerObjs + " output\\" + makeObject(fileName)
 		if FileModified(fileName):
 			print fileName[-2:]
-			if fileName[-2:] == ".c":
+			if fileName[-2:] == ".s":
+				AddToList(compile_command.replace("{INPUT_FILE}", fileName).replace("{OUTPUT_FILE}", makeObject(fileName)))
+			elif fileName[-2:] == ".c":
 				AddToList(compile_command.replace("{INPUT_FILE}", fileName).replace("{OUTPUT_FILE}", makeObject(fileName)))
 			else:
 				print "YAAAA HOOO"
