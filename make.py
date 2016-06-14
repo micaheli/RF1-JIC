@@ -11,20 +11,18 @@ import ntpath
 import os
 
 directories = [
-    "src\\rffw\\startup",
-    "lib\\STM32F1xx_HAL_Driver\\Src",
-    "src\\rffw\\src",
-    "src\\rffw\\inc",
+    os.path.join("src", "rffw", "startup"),
+    os.path.join("lib", "STM32F1xx_HAL_Driver", "Src"),
+    os.path.join("src", "rffw", "src"),
+    os.path.join("src", "rffw", "inc"),
 ]
-
 
 directories_asm = [
-    "src\\rffw\\startup",
-    "lib\\STM32F1xx_HAL_Driver\\Src",
-    "src\\rffw\\src",
-    "src\\rffw\\inc",
+    os.path.join("src", "rffw", "startup"),
+    os.path.join("lib", "STM32F1xx_HAL_Driver", "Src"),
+    os.path.join("src", "rffw", "src"),
+    os.path.join("src", "rffw", "inc"),
 ]
-
 
 excluded_files = [
     "fish_tacos.c"
@@ -32,14 +30,55 @@ excluded_files = [
 
 linkerObjs = ""
 
+INCLUDE_DIRS = [
+    os.path.join("lib", "CMSIS", "Include"),
+    os.path.join("lib", "CMSIS", "Device", "ST", "STM32F1xx", "Include"),
+    os.path.join("src", "rffw", "inc"),
+    os.path.join("lib", "STM32F1xx_HAL_Driver", "Inc"),
+]
+INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
+
+LTO_FLAGS = "-flto -fuse-linker-plugin -O2"
+DEBUG_FLAGS = "-ggdb3 -DDEBUG"
+
 ARCH_FLAGS     = "-mthumb -mcpu=cortex-m3"
 #F3: ARCH_FLAGS     = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
 #F4: ARCH_FLAGS     = -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
 
-asm_command = "arm-none-eabi-gcc -c -o output\\{OUTPUT_FILE} " + ARCH_FLAGS + " -x assembler-with-cpp -Ilib\\CMSIS\\Include -Ilib\\CMSIS\\Device\\ST\\STM32F1xx\\Include -Isrc\\rffw\\inc -Ilib\\STM32F1xx_HAL_Driver\\Inc -MMD _MP {INPUT_FILE}"
+CFLAGS = " ".join([
+    ARCH_FLAGS,
+    LTO_FLAGS,
+    DEBUG_FLAGS,
+    INCLUDES,
+    "-DSTM32F103xB -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -Wdouble-promotion -ffunction-sections -fdata-sections -DHSE_VALUE=8000000  -MMD -MP"
+])
 
-compile_command = "arm-none-eabi-gcc -c -o output\\{OUTPUT_FILE} {INPUT_FILE} -Ilib\\CMSIS\\Include -Ilib\\CMSIS\\Device\\ST\\STM32F1xx\\Include -Isrc\\rffw\\inc -Ilib\\STM32F1xx_HAL_Driver\\Inc "+ARCH_FLAGS+" -flto -fuse-linker-plugin -O2 -ggdb3 -DSTM32F103xB -DDEBUG -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -Wdouble-promotion -ffunction-sections -fdata-sections -DHSE_VALUE=8000000  -MMD -MP"
-link_command = "arm-none-eabi-gcc -o bin\\{OUTPUT_NAME}.elf {OBJS} -lm -nostartfiles --specs=nano.specs -lc -lnosys "+ARCH_FLAGS+" -flto -fuse-linker-plugin -O2 -ggdb3 -DDEBUG -static -Wl,-gc-sections,-Map,obj\\main\\raceflight_KKNGF4_6500.map -Wl,-Lsrc\\rffw\\target -Wl,--cref -Tsrc\\rffw\\target\\STM32F103XB_FLASH.ld"
+ASMFLAGS = " ".join([
+    ARCH_FLAGS,
+    "-x assembler-with-cpp",
+    INCLUDES,
+    "-MMD -MP"
+])
+
+ldScript = os.path.join("src", "rffw", "target", "stm32_flash_f103_256k.ld")
+linkerDir = os.path.join("src", "rffw", "target")
+mapFile = os.path.join("output", "{OUTPUT_NAME}.map")
+LDFLAGS = " ".join([
+    "-lm -nostartfiles --specs=nano.specs -lc -lnosys",
+    ARCH_FLAGS,
+    LTO_FLAGS,
+    DEBUG_FLAGS,
+    "-Wl,-gc-sections,-Map," + mapFile,
+    "-Wl,-L" + linkerDir,
+    "-Wl,--cref",
+    "-T" + mapFile
+])
+
+asm_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " + ASMFLAGS + " {INPUT_FILE}"
+
+compile_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " + CFLAGS + " {INPUT_FILE}"
+
+link_command = "arm-none-eabi-gcc -o bin" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
 
 commands = [
 ]
@@ -119,12 +158,12 @@ def AddToList(fileName):
 
 def makeObject(fileName):
     head, tail = ntpath.split(fileName)
-        root, ext = os.path.splitext(tail)
-        if ext.lower() in (".c", ".s"):
-            return root + ".o"
+    root, ext = os.path.splitext(tail)
+    if ext.lower() in (".c", ".s"):
+        return root + ".o"
 
-        print "Unknown file type: " + tail
-        return tail
+    print "Unknown file type: " + tail
+    return tail
 
 def ProcessList(fileNames):
     global linkerObjs
@@ -133,7 +172,7 @@ def ProcessList(fileNames):
     for fileName in fileNames:
         # fileName = fileName.lower()
         print "filename: " + fileName
-        linkerObjs = linkerObjs + " output\\" + makeObject(fileName)
+        linkerObjs = linkerObjs + " " + os.path.join("output", makeObject(fileName))
         if FileModified(fileName):
             print fileName[-2:]
             if fileName[-2:] == ".s":
@@ -157,17 +196,19 @@ def main():
 
     print "Looking for dirs"
     for directory in directories:
-        ProcessList(glob.glob(directory + "\\*.c"))
+        ProcessList(glob.glob(os.path.join(directory, "*.c")))
 
     for directory in directories:
-        ProcessList(glob.glob(directory + "\\*.s"))
+        ProcessList(glob.glob(os.path.join(directory, "*.s")))
 
 
     for command in commands:
         print command
 
-    link_command = link_command.replace("{OUTPUT_NAME}","REVO")
-    link_command = link_command.replace("{OBJS}", linkerObjs)
+    link_command = link_command.format(
+        OUTPUT_NAME="REVO",
+        OBJS=linkerObjs
+    )
 
     print "*******************************************************"
     print link_command
