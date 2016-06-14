@@ -60,25 +60,26 @@ ASMFLAGS = " ".join([
     "-MMD -MP"
 ])
 
-ldScript = os.path.join("src", "rffw", "target", "stm32_flash_f103_256k.ld")
-linkerDir = os.path.join("src", "rffw", "target")
 mapFile = os.path.join("output", "{OUTPUT_NAME}.map")
+linkerDir = os.path.join("src", "rffw", "target")
+ldScript = os.path.join("src", "rffw", "target", "stm32_flash_f103_256k.ld")
 LDFLAGS = " ".join([
     "-lm -nostartfiles --specs=nano.specs -lc -lnosys",
     ARCH_FLAGS,
     LTO_FLAGS,
     DEBUG_FLAGS,
+    "-static",
     "-Wl,-gc-sections,-Map," + mapFile,
     "-Wl,-L" + linkerDir,
     "-Wl,--cref",
-    "-T" + mapFile
+    "-T" + ldScript
 ])
 
 asm_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " + ASMFLAGS + " {INPUT_FILE}"
 
 compile_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " + CFLAGS + " {INPUT_FILE}"
 
-link_command = "arm-none-eabi-gcc -o bin" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
+link_command = "arm-none-eabi-gcc -o output" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
 
 commands = [
 ]
