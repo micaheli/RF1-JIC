@@ -207,14 +207,14 @@ def main():
         print command
 
     link_command = link_command.format(
-        OUTPUT_NAME="REVO",
+        OUTPUT_NAME="CC3D",
         OBJS=linkerObjs
     )
 
     print "*******************************************************"
     print link_command
     print "*******************************************************"
-
+#arm-none-eabi-objcopy -O binary output\OUTPUT_NAME.elf output\OUTPUT_NAME.bin
 
     commands.append(link_command);
 
