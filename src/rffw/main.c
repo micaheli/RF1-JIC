@@ -75,6 +75,10 @@ __IO uint8_t JOYInitState = 0;
   */
 int main(void)
 {
+	while (1)
+	{
+		
+	}
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
   

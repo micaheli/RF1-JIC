@@ -42,19 +42,21 @@ INCLUDE_DIRS = [
 ]
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
-LTO_FLAGS = "-flto -fuse-linker-plugin -O2"
+LTO_FLAGS = "-flto -fuse-linker-plugin -O0"
 DEBUG_FLAGS = "-ggdb3 -DDEBUG"
 
 ARCH_FLAGS     = "-mthumb -mcpu=cortex-m3"
-#F3: ARCH_FLAGS     = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
-#F4: ARCH_FLAGS     = -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
+DEF_FLAGS      = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -DSTM32F103xB"
+#F3: ARCH_FLAGS     = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
+#F4: ARCH_FLAGS     = -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
 
 CFLAGS = " ".join([
     ARCH_FLAGS,
     LTO_FLAGS,
+    DEF_FLAGS,
     DEBUG_FLAGS,
     INCLUDES,
-    "-DSTM32F103xB -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -Wdouble-promotion -ffunction-sections -fdata-sections -DHSE_VALUE=8000000  -MMD -MP"
+    "-Wdouble-promotion -save-temps=obj -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -ffunction-sections -fdata-sections -MMD -MP"
 ])
 
 ASMFLAGS = " ".join([
@@ -85,6 +87,8 @@ compile_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " +
 
 link_command = "arm-none-eabi-gcc -o output" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
 
+size_command = "arm-none-eabi-gcc output" + os.sep + "{OUTPUT_NAME}.elf"
+
 copy_obj_command = "arm-none-eabi-objcopy -O binary output\{OUTPUT_NAME}.elf output\{OUTPUT_NAME}.bin"
 
 
@@ -92,7 +96,7 @@ commands = [
 ]
 
 
-THREAD_LIMIT = 16
+THREAD_LIMIT = 1
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
@@ -189,7 +193,7 @@ def ProcessList(fileNames):
 
 
 def main():
-    global link_command, isStop, copy_obj_command
+    global size_command, link_command, isStop, copy_obj_command
 
 
     if platform.system() == 'Windows':
@@ -246,7 +250,17 @@ def main():
         print link_command
         proc = subprocess.Popen(link_command, shell=True)
         stdout_value, stderr_value = proc.communicate()
-     
+
+
+#        if proc.returncode == 0:
+#            print "Sizing!"
+#            size_command = size_command.format(
+#                OUTPUT_NAME=TARGET
+#            )
+#
+#            print size_command
+#            proc = subprocess.Popen(size_command, shell=True)
+#            stdout_value, stderr_value = proc.communicate()
 
         if proc.returncode == 0:
             print "Build succeded copying"

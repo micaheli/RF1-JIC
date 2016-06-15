@@ -51,17 +51,26 @@
 /* Private define ------------------------------------------------------------*/
 #define LEDn                             1
 
-#define LED2_PIN                         GPIO_PIN_3
-#define LED2_GPIO_PORT                   GPIOB
-#define LED2_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOB_CLK_ENABLE()  
-#define LED2_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOB_CLK_DISABLE()  
+#define LED1_PIN                         GPIO_PIN_3
+#define LED1_GPIO_PORT                   GPIOB
+
+#define SERVO1_PIN                       GPIO_PIN_9
+#define SERVO1_GPIO_PORT                 GPIOB
+
+#define SERVO2_PIN                       GPIO_PIN_4
+#define SERVO2_GPIO_PORT                 GPIOB
+
+#define SERVO3_PIN                       GPIO_PIN_2
+#define SERVO3_GPIO_PORT                 GPIOA
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static GPIO_InitTypeDef  GPIO_InitStruct;
 
 /* Private function prototypes -----------------------------------------------*/
+void BoardInit(void);
 void SystemClock_Config(void);
+void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+void InitializeSERVO(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -71,55 +80,84 @@ void SystemClock_Config(void);
   * @retval None
   */
 int main(void)
-{
-  /* This sample code shows how to use GPIO HAL API to toggle LED2 IO
-    in an infinite loop. */
+	{
 
-  /* STM32F103xB HAL library initialization:
-       - Configure the Flash prefetch
-       - Systick timer is configured by default as source of time base, but user 
-         can eventually implement his proper time base source (a general purpose 
-         timer for example or other time source), keeping in mind that Time base 
-         duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and 
-         handled in milliseconds basis.
-       - Set NVIC Group Priority to 4
-       - Low Level Initialization
-     */
-  HAL_Init();
+	BoardInit();
+	InitializeLED(LED1_GPIO_PORT, LED1_PIN);
+	InitializeSERVO(SERVO2_GPIO_PORT, SERVO2_PIN);
+	InitializeSERVO(SERVO1_GPIO_PORT, SERVO1_PIN);
+	InitializeSERVO(SERVO3_GPIO_PORT, SERVO3_PIN);
 
-  /* Configure the system clock to 64 MHz */
-  SystemClock_Config();
-  
-  /* -1- Enable GPIO Clock (to be able to program the configuration registers) */
-  LED2_GPIO_CLK_ENABLE();
+	/* -3- Toggle IO in an infinite loop */
+	while (1)
+	{
+		/* Insert delay 100 ms */
+		HAL_GPIO_TogglePin(LED1_GPIO_PORT, LED1_PIN);
+		HAL_GPIO_TogglePin(SERVO1_GPIO_PORT, SERVO1_PIN);
+		HAL_GPIO_TogglePin(SERVO2_GPIO_PORT, SERVO2_PIN);
+		HAL_GPIO_TogglePin(SERVO3_GPIO_PORT, SERVO3_PIN);
+		HAL_Delay(100);
 
-  /* -2- Configure IO in output push-pull mode to drive external LEDs */
-  GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull  = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-  GPIO_InitStruct.Pin = LED2_PIN;
-  HAL_GPIO_Init(LED2_GPIO_PORT, &GPIO_InitStruct);
-
-  /* -3- Toggle IO in an infinite loop */
-  while (1)
-  {
-    HAL_GPIO_TogglePin(LED2_GPIO_PORT, LED2_PIN);
-    /* Insert delay 100 ms */
-    HAL_Delay(100);
-  }
+	}
 }
 
+void BoardInit(void)
+{
+	HAL_Init();
+
+	/* Configure the system clock to 72 MHz */
+	SystemClock_Config();
+ 
+	/* -1- Enable GPIO Clock (to be able to program the configuration registers) */
+	__HAL_RCC_AFIO_CLK_ENABLE(); 
+	__HAL_AFIO_REMAP_SWJ_NOJTAG();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+
+}
+
+void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
+{
+
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+	GPIO_InitStructure.Pin = GPIO_Pin;
+
+	GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
+	GPIO_InitStructure.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
+
+}
+
+void InitializeSERVO(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
+{
+
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+	GPIO_InitStructure.Pin = GPIO_Pin;
+
+	GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
+	GPIO_InitStructure.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
+
+}
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follow : 
-  *            System Clock source            = PLL (HSI)
-  *            SYSCLK(Hz)                     = 64000000
-  *            HCLK(Hz)                       = 64000000
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 72000000
+  *            HCLK(Hz)                       = 72000000
   *            AHB Prescaler                  = 1
   *            APB1 Prescaler                 = 2
   *            APB2 Prescaler                 = 1
-  *            PLLMUL                         = 16
+  *            HSE Frequency(Hz)              = 8000000
+  *            HSE PREDIV1                    = 1
+  *            PLLMUL                         = 9
   *            Flash Latency(WS)              = 2
   * @param  None
   * @retval None
@@ -129,32 +167,27 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef clkinitstruct = {0};
   RCC_OscInitTypeDef oscinitstruct = {0};
   
-  /* Configure PLL ------------------------------------------------------*/
-  /* PLL configuration: PLLCLK = (HSI / 2) * PLLMUL = (8 / 2) * 16 = 64 MHz */
-  /* PREDIV1 configuration: PREDIV1CLK = PLLCLK / HSEPredivValue = 64 / 1 = 64 MHz */
-  /* Enable HSI and activate PLL with HSi_DIV2 as source */
-  oscinitstruct.OscillatorType  = RCC_OSCILLATORTYPE_HSI;
-  oscinitstruct.HSEState        = RCC_HSE_OFF;
-  oscinitstruct.LSEState        = RCC_LSE_OFF;
-  oscinitstruct.HSIState        = RCC_HSI_ON;
-  oscinitstruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  oscinitstruct.HSEPredivValue    = RCC_HSE_PREDIV_DIV1;
-  oscinitstruct.PLL.PLLState    = RCC_PLL_ON;
-  oscinitstruct.PLL.PLLSource   = RCC_PLLSOURCE_HSI_DIV2;
-  oscinitstruct.PLL.PLLMUL      = RCC_PLL_MUL16;
-  if (HAL_RCC_OscConfig(&oscinitstruct)!= HAL_OK)
-  {
-    /* Initialization Error */
-    while(1); 
-  }
+  /* Enable HSE Oscillator and activate PLL with HSE as source */
+	oscinitstruct.OscillatorType  = RCC_OSCILLATORTYPE_HSE;
+	oscinitstruct.HSEState        = RCC_HSE_ON;
+	oscinitstruct.HSEPredivValue  = RCC_HSE_PREDIV_DIV1;
+	oscinitstruct.PLL.PLLState    = RCC_PLL_ON;
+	oscinitstruct.PLL.PLLSource   = RCC_PLLSOURCE_HSE;
+	oscinitstruct.PLL.PLLMUL      = RCC_PLL_MUL9;
+	if (HAL_RCC_OscConfig(&oscinitstruct) != HAL_OK)
+	{
+	  /* Initialization Error */
+		while (1)
+			;
+	}
 
   /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
      clocks dividers */
-  clkinitstruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-  clkinitstruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  clkinitstruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  clkinitstruct.APB2CLKDivider = RCC_HCLK_DIV1;
-  clkinitstruct.APB1CLKDivider = RCC_HCLK_DIV2;  
+	clkinitstruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+	clkinitstruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	clkinitstruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	clkinitstruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	clkinitstruct.APB1CLKDivider = RCC_HCLK_DIV2;  
   if (HAL_RCC_ClockConfig(&clkinitstruct, FLASH_LATENCY_2)!= HAL_OK)
   {
     /* Initialization Error */
