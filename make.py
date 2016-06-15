@@ -9,19 +9,21 @@ import glob
 import sys
 import ntpath
 import os
+import platform
+
 
 directories = [
-    os.path.join("src", "rffw", "startup"),
-    os.path.join("lib", "STM32F1xx_HAL_Driver", "Src"),
-    os.path.join("src", "rffw", "src"),
-    os.path.join("src", "rffw", "inc"),
+    "src/rffw/startup",
+    "lib/STM32F1xx_HAL_Driver/Src",
+    "src/rffw/src",
+    "src/rffw/inc",
 ]
 
 directories_asm = [
-    os.path.join("src", "rffw", "startup"),
-    os.path.join("lib", "STM32F1xx_HAL_Driver", "Src"),
-    os.path.join("src", "rffw", "src"),
-    os.path.join("src", "rffw", "inc"),
+    "src/rffw/startup",
+    "lib/STM32F1xx_HAL_Driver/Src",
+    "src/rffw/src",
+    "src/rffw/inc",
 ]
 
 excluded_files = [
@@ -31,10 +33,10 @@ excluded_files = [
 linkerObjs = ""
 
 INCLUDE_DIRS = [
-    os.path.join("lib", "CMSIS", "Include"),
-    os.path.join("lib", "CMSIS", "Device", "ST", "STM32F1xx", "Include"),
-    os.path.join("src", "rffw", "inc"),
-    os.path.join("lib", "STM32F1xx_HAL_Driver", "Inc"),
+    "lib/CMSIS/Include",
+    "lib/CMSIS/Device/ST/STM32F1xx/Include",
+    "src/rffw/inc",
+    "lib/STM32F1xx_HAL_Driver/Inc",
 ]
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
