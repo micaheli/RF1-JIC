@@ -12,6 +12,8 @@ import os
 import platform
 
 
+TARGET = "CC3D"
+
 directories = [
     "src/rffw/startup",
     "lib/STM32F1xx_HAL_Driver/Src",
@@ -82,6 +84,9 @@ asm_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " + ASM
 compile_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " + CFLAGS + " {INPUT_FILE}"
 
 link_command = "arm-none-eabi-gcc -o output" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
+
+copy_obj_command = "arm-none-eabi-objcopy -O binary output\{OUTPUT_NAME}.elf output\{OUTPUT_NAME}.bin"
+
 
 commands = [
 ]
@@ -173,8 +178,6 @@ def ProcessList(fileNames):
 
     print fileNames
     for fileName in fileNames:
-        # fileName = fileName.lower()
-        print "filename: " + fileName
         linkerObjs = linkerObjs + " " + os.path.join("output", makeObject(fileName))
         if FileModified(fileName):
             print fileName[-2:]
@@ -183,42 +186,34 @@ def ProcessList(fileNames):
             elif fileName[-2:] == ".c":
                 AddToList(compile_command.format(INPUT_FILE=fileName, OUTPUT_FILE=makeObject(fileName)))
             else:
-                print "YAAAA HOOO"
                 AddToList(asm_command.format(INPUT_FILE=fileName, OUTPUT_FILE=makeObject(fileName)))
 
-    print "done"
 
 def main():
     global link_command, isStop
 
-    print "Hi kalyn"
+
+    if platform.system() == 'Windows':
+    	for index, object in enumerate(directories):
+	    	directories[index] = object.replace("/", "\\")
+
+    	for index, object in enumerate(directories_asm):
+	    	directories_asm[index] = object.replace("/", "\\")
+
+    	for index, object in enumerate(INCLUDE_DIRS):
+	    	INCLUDE_DIRS[index] = object.replace("/", "\\")
+
+
     try:
         os.mkdir("output")
     except:
         pass
 
-    print "Looking for dirs"
     for directory in directories:
         ProcessList(glob.glob(os.path.join(directory, "*.c")))
 
     for directory in directories:
         ProcessList(glob.glob(os.path.join(directory, "*.s")))
-
-
-    for command in commands:
-        print command
-
-    link_command = link_command.format(
-        OUTPUT_NAME="CC3D",
-        OBJS=linkerObjs
-    )
-
-    print "*******************************************************"
-    print link_command
-    print "*******************************************************"
-#arm-none-eabi-objcopy -O binary output\OUTPUT_NAME.elf output\OUTPUT_NAME.bin
-
-    commands.append(link_command);
 
     queue = Queue.Queue()
     threads = list()
@@ -239,6 +234,29 @@ def main():
             break
 
     map(lambda thread: thread.join(), threads)
+
+    if isStop is False: 
+    	print "linking..."
+	    link_command = link_command.format(
+	        OUTPUT_NAME=TARGET,
+	        OBJS=linkerObjs
+	    )
+
+	    proc = subprocess.Popen(link_command, shell=True)
+	    stdout_value, stderr_value = proc.communicate()
+	 
+
+	    if proc.returncode == 0:
+	    	print "Build succeded copying"
+		    copy_obj_command = copy_obj_command.format(
+		        OUTPUT_NAME=TARGET
+		    )
+
+		    proc = subprocess.Popen(copy_obj_command, shell=True)
+		    stdout_value, stderr_value = proc.communicate()
+	 
+
+
 
 
 
