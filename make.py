@@ -92,7 +92,7 @@ commands = [
 ]
 
 
-THREAD_LIMIT = 1
+THREAD_LIMIT = 16
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
@@ -134,6 +134,7 @@ class CommandRunnerThread(threading.Thread):
             return
         locker.release()
 
+        print self.command
         self.proc = subprocess.Popen(self.command, shell=True)
         stdout_value, stderr_value = self.proc.communicate()
         if self.queue:
@@ -176,11 +177,9 @@ def makeObject(fileName):
 def ProcessList(fileNames):
     global linkerObjs
 
-    print fileNames
     for fileName in fileNames:
         linkerObjs = linkerObjs + " " + os.path.join("output", makeObject(fileName))
         if FileModified(fileName):
-            print fileName[-2:]
             if fileName[-2:] == ".s":
                 AddToList(asm_command.format(INPUT_FILE=fileName, OUTPUT_FILE=makeObject(fileName)))
             elif fileName[-2:] == ".c":
@@ -190,18 +189,18 @@ def ProcessList(fileNames):
 
 
 def main():
-    global link_command, isStop
+    global link_command, isStop, copy_obj_command
 
 
     if platform.system() == 'Windows':
-    	for index, object in enumerate(directories):
-	    	directories[index] = object.replace("/", "\\")
+        for index, object in enumerate(directories):
+            directories[index] = object.replace("/", "\\")
 
-    	for index, object in enumerate(directories_asm):
-	    	directories_asm[index] = object.replace("/", "\\")
+        for index, object in enumerate(directories_asm):
+            directories_asm[index] = object.replace("/", "\\")
 
-    	for index, object in enumerate(INCLUDE_DIRS):
-	    	INCLUDE_DIRS[index] = object.replace("/", "\\")
+        for index, object in enumerate(INCLUDE_DIRS):
+            INCLUDE_DIRS[index] = object.replace("/", "\\")
 
 
     try:
@@ -220,7 +219,9 @@ def main():
     for command in commands:
         thread = CommandRunnerThread(command=command, queue=queue)
         threads.append(thread)
+        
     map(lambda thread: thread.start(), threads)
+
     while len(threadRunning) > 0:
         try:
             returncode = queue.get(timeout=5)
@@ -236,25 +237,27 @@ def main():
     map(lambda thread: thread.join(), threads)
 
     if isStop is False: 
-    	print "linking..."
-	    link_command = link_command.format(
-	        OUTPUT_NAME=TARGET,
-	        OBJS=linkerObjs
-	    )
+        print "linking..."
+        link_command = link_command.format(
+            OUTPUT_NAME=TARGET,
+            OBJS=linkerObjs
+        )
 
-	    proc = subprocess.Popen(link_command, shell=True)
-	    stdout_value, stderr_value = proc.communicate()
-	 
+        print link_command
+        proc = subprocess.Popen(link_command, shell=True)
+        stdout_value, stderr_value = proc.communicate()
+     
 
-	    if proc.returncode == 0:
-	    	print "Build succeded copying"
-		    copy_obj_command = copy_obj_command.format(
-		        OUTPUT_NAME=TARGET
-		    )
+        if proc.returncode == 0:
+            print "Build succeded copying"
+            copy_obj_command = copy_obj_command.format(
+                OUTPUT_NAME=TARGET
+            )
 
-		    proc = subprocess.Popen(copy_obj_command, shell=True)
-		    stdout_value, stderr_value = proc.communicate()
-	 
+            print copy_obj_command
+            proc = subprocess.Popen(copy_obj_command, shell=True)
+            stdout_value, stderr_value = proc.communicate()
+     
 
 
 
