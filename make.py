@@ -62,7 +62,7 @@ ASMFLAGS = " ".join([
 
 mapFile = os.path.join("output", "{OUTPUT_NAME}.map")
 linkerDir = os.path.join("src", "rffw", "target")
-ldScript = os.path.join("src", "rffw", "target", "stm32_flash_f103_256k.ld")
+ldScript = os.path.join("src", "rffw", "target", "stm32_flash_f103_128k.ld")
 LDFLAGS = " ".join([
     "-lm -nostartfiles --specs=nano.specs -lc -lnosys",
     ARCH_FLAGS,
