@@ -1,15 +1,15 @@
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import threading
-import Queue
-import subprocess
 import glob
-import sys
-import ntpath
 import os
 import platform
+import shlex
+import subprocess
+import sys
+import threading
+
+from multiprocessing import Queue
 
 
 TARGET = "CC3D"
@@ -31,8 +31,6 @@ directories_asm = [
 excluded_files = [
     "fish_tacos.c"
 ]
-
-linkerObjs = ""
 
 INCLUDE_DIRS = [
     "lib/CMSIS/Include",
@@ -85,19 +83,18 @@ compile_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " +
 
 link_command = "arm-none-eabi-gcc -o output" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
 
-copy_obj_command = "arm-none-eabi-objcopy -O binary output\{OUTPUT_NAME}.elf output\{OUTPUT_NAME}.bin"
+copy_obj_command = "arm-none-eabi-objcopy -O binary output" + os.sep + "{OUTPUT_NAME}.elf output" + os.sep + "{OUTPUT_NAME}.bin"
 
 
-commands = [
-]
-
+# global objects
+commands = []
+linkerObjs = ""
 
 THREAD_LIMIT = 16
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
 isStop = False
-        
 
 
 class CommandRunnerThread(threading.Thread):
@@ -106,16 +103,15 @@ class CommandRunnerThread(threading.Thread):
         self.command = kwargs.pop("command", "")
         self.queue = kwargs.pop("queue", None)
         self.proc = None
-        super(CommandRunnerThread, self).__init__(*args, **kwargs) 
-        self._stop = threading.Event()
-
+        super(CommandRunnerThread, self).__init__(*args, **kwargs)
+        self.stop = threading.Event()
 
     def run(self):
         threadLimiter.acquire()
         locker.acquire()
         threadRunning.append(self)
         locker.release()
-        
+
         try:
             self.run_command()
         finally:
@@ -123,7 +119,6 @@ class CommandRunnerThread(threading.Thread):
             threadRunning.remove(self)
             locker.release()
             threadLimiter.release()
-
 
     def run_command(self):
         if not self.command:
@@ -134,15 +129,14 @@ class CommandRunnerThread(threading.Thread):
             return
         locker.release()
 
-        print self.command
-        self.proc = subprocess.Popen(self.command, shell=True)
+        print(self.command)
+        self.proc = subprocess.Popen(shlex.split(self.command))
         stdout_value, stderr_value = self.proc.communicate()
         if self.queue:
             self.queue.put(self.proc.returncode)
         else:
-            print proc.returncode
+            print(proc.returncode)
         self.proc = None
-
 
     def stop(self):
         if self.proc:
@@ -150,8 +144,7 @@ class CommandRunnerThread(threading.Thread):
                 self.proc.kill()
             except OSError:
                 pass
-        self._stop.set()
-
+        self.stop.set()
 
     def stopped(self):
         return self._stop.isSet()
@@ -163,15 +156,15 @@ def FileModified(fileName):
 def AddToList(fileName):
     global commands
 
-    commands.append(fileName) 
+    commands.append(fileName)
 
 def makeObject(fileName):
-    head, tail = ntpath.split(fileName)
+    head, tail = os.path.split(fileName)
     root, ext = os.path.splitext(tail)
     if ext.lower() in (".c", ".s"):
         return root + ".o"
 
-    print "Unknown file type: " + tail
+    print("Unknown file type: " + tail)
     return tail
 
 def ProcessList(fileNames):
@@ -191,7 +184,6 @@ def ProcessList(fileNames):
 def main():
     global link_command, isStop, copy_obj_command
 
-
     if platform.system() == 'Windows':
         for index, object in enumerate(directories):
             directories[index] = object.replace("/", "\\")
@@ -202,11 +194,8 @@ def main():
         for index, object in enumerate(INCLUDE_DIRS):
             INCLUDE_DIRS[index] = object.replace("/", "\\")
 
-
-    try:
+    if not os.path.exists("output"):
         os.mkdir("output")
-    except:
-        pass
 
     for directory in directories:
         ProcessList(glob.glob(os.path.join(directory, "*.c")))
@@ -214,13 +203,13 @@ def main():
     for directory in directories:
         ProcessList(glob.glob(os.path.join(directory, "*.s")))
 
-    queue = Queue.Queue()
+    queue = Queue()
     threads = list()
     for command in commands:
         thread = CommandRunnerThread(command=command, queue=queue)
         threads.append(thread)
-        
-    map(lambda thread: thread.start(), threads)
+
+    list(map(lambda thread: thread.start(), threads))
 
     while len(threadRunning) > 0:
         try:
@@ -234,41 +223,29 @@ def main():
             locker.release()
             break
 
-    map(lambda thread: thread.join(), threads)
+    list(map(lambda thread: thread.join(), threads))
 
-    if isStop is False: 
-        print "linking..."
+    if isStop is False:
+        print("linking...")
         link_command = link_command.format(
             OUTPUT_NAME=TARGET,
             OBJS=linkerObjs
         )
 
-        print link_command
-        proc = subprocess.Popen(link_command, shell=True)
+        print(link_command)
+        proc = subprocess.Popen(shlex.split(link_command))
         stdout_value, stderr_value = proc.communicate()
-     
 
         if proc.returncode == 0:
-            print "Build succeded copying"
+            print("Build succeded copying")
             copy_obj_command = copy_obj_command.format(
                 OUTPUT_NAME=TARGET
             )
 
-            print copy_obj_command
-            proc = subprocess.Popen(copy_obj_command, shell=True)
+            print(copy_obj_command)
+            proc = subprocess.Popen(shlex.split(copy_obj_command))
             stdout_value, stderr_value = proc.communicate()
-     
-
-
-
 
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
