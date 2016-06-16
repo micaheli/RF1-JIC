@@ -15,10 +15,25 @@ import argparse
 
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('-T', '--target', help='target controller to build', required=True)
+parser.add_argument("-T", "--target", help="target controller to build", default="")
+parser.add_argument('-C', "--clean", help="clean up output folder", action='store_const', const=True, default=False)
 args = parser.parse_args()
 
 TARGET = args.target.lower()
+IS_CLEANUP = args.clean
+
+# TODO: replace all output path to global path 
+OUTPUT_PATH = "output"
+
+if IS_CLEANUP:
+    if os.path.exists(OUTPUT_PATH):
+        for root, dirs, files in os.walk(OUTPUT_PATH, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+    sys.exit(0)
+
 
 if TARGET == "lux":
     TARGET_DEVICE = "STM32F303xE"
@@ -36,8 +51,12 @@ elif TARGET == "revo":
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
 
+elif TARGET == "":
+    print("ERROR: NOT SET TARGET")
+    sys.exit(1)
+
 else:
-    print("NOT VALID TARGET")
+    print("ERROR: NOT VALID TARGET")
     sys.exit(1)
 
 
@@ -102,7 +121,7 @@ elif TARGET_PROCESSOR_TYPE == "f7":
     ARCH_FLAGS = STM32F7_ARCH_FLAGS
 
 else:
-    print("ERROR PROCESSOR TYPE, CHECK MAKE FILE CODE")
+    print("ERROR: NOT VALID PROCESSOR TYPE, CHECK MAKE FILE CODE")
     sys.exit(1)
 
 
