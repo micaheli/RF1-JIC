@@ -42,7 +42,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLN = 384;
   RCC_OscInitStruct.PLL.PLLP = 2;
   RCC_OscInitStruct.PLL.PLLQ = 8;
-  HAL_RCC_OscConfig (&RCC_OscInitStruct);
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct)!= HAL_OK)
+  {
+    while(1); 
+  }
   
   /* RCC Clocks: All parameters can be changed according to user’s needs */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK |RCC_CLOCKTYPE_HCLK |RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
@@ -51,4 +54,8 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;  
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;  
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
-}
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5)!= HAL_OK)
+  {
+    while(1); 
+  }
+ }
