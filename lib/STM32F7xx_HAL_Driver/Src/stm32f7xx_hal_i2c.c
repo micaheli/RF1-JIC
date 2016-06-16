@@ -2845,6 +2845,7 @@ HAL_StatusTypeDef HAL_I2C_DisableListen_IT(I2C_HandleTypeDef *hi2c)
   */
 HAL_StatusTypeDef HAL_I2C_Master_Abort_IT(I2C_HandleTypeDef *hi2c, uint16_t DevAddress)
 {
+  (void)(DevAddress);
   if(hi2c->Mode == HAL_I2C_MODE_MASTER)
   {
     /* Process Locked */
@@ -3688,7 +3689,8 @@ static void I2C_ITAddrCplt(I2C_HandleTypeDef *hi2c, uint32_t ITFlags)
   uint16_t slaveaddrcode = 0;
   uint16_t ownadd1code = 0;
   uint16_t ownadd2code = 0;
-  
+
+  (void)(ITFlags);
   /* In case of Listen state, need to inform upper layer of address match code event */
   if((hi2c->State & HAL_I2C_STATE_LISTEN) == HAL_I2C_STATE_LISTEN)
   {
@@ -4251,6 +4253,7 @@ static void I2C_DMAMasterTransmitCplt(DMA_HandleTypeDef *hdma)
   */
 static void I2C_DMASlaveTransmitCplt(DMA_HandleTypeDef *hdma)
 {
+  (void)(hdma);
   /* No specific action, Master fully manage the generation of STOP condition */
   /* Mean that this generation can arrive at any time, at the end or during DMA process */
   /* So STOP condition should be manage through Interrupt treatment */
@@ -4305,6 +4308,7 @@ static void I2C_DMAMasterReceiveCplt(DMA_HandleTypeDef *hdma)
   */
 static void I2C_DMASlaveReceiveCplt(DMA_HandleTypeDef *hdma)
 {
+  (void)(hdma);
   /* No specific action, Master fully manage the generation of STOP condition */
   /* Mean that this generation can arrive at any time, at the end or during DMA process */
   /* So STOP condition should be manage through Interrupt treatment */
