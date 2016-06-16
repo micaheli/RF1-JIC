@@ -47,6 +47,22 @@ void SystemClock_Config(void)
     /* Initialization Error */
       while(1); 
   }
-  	__HAL_RCC_AFIO_CLK_ENABLE();   //Need to start this clock before disabling jtag
+
+}
+
+ void BoardInit(void)
+{
+	HAL_Init();
+
+	SystemClock_Config();
+ 
+   	__HAL_RCC_AFIO_CLK_ENABLE();   //Need to start this clock before disabling jtag
 	__HAL_AFIO_REMAP_SWJ_NOJTAG(); //disabled JTAG
+
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+
 }

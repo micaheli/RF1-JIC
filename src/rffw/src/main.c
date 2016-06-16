@@ -32,20 +32,6 @@ int main(void)
 	}
 }
 
-void BoardInit(void)
-{
-	HAL_Init();
-
-	SystemClock_Config();
- 
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOD_CLK_ENABLE();
-	__HAL_RCC_GPIOE_CLK_ENABLE();
-
-}
-
 void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
 
