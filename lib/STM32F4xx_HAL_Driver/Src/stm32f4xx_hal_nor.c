@@ -286,6 +286,7 @@ __weak void HAL_NOR_MspWait(NOR_HandleTypeDef *hnor, uint32_t Timeout)
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hnor);
+  (void)(Timeout);
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_NOR_BspWait could be implemented in the user file
    */ 
@@ -746,7 +747,8 @@ HAL_StatusTypeDef HAL_NOR_Erase_Block(NOR_HandleTypeDef *hnor, uint32_t BlockAdd
 HAL_StatusTypeDef HAL_NOR_Erase_Chip(NOR_HandleTypeDef *hnor, uint32_t Address)
 {
   uint32_t deviceaddress = 0U;
-  
+ 
+  (void)(Address);
   /* Process Locked */
   __HAL_LOCK(hnor);
   

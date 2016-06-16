@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -12,43 +11,121 @@ import os
 import platform
 
 
-TARGET = "CC3D"
+
+
+
+TARGET     = "lux"
+TARGET_DEVICE = "STM32F303xE"
+TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
+
+TARGET     = "cc3d"
+TARGET_DEVICE = "STM32F103xB"
+TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
+
+TARGET     = "revo"
+TARGET_DEVICE = "STM32F405xx"
+TARGET_SCRIPT = "stm32_flash_f405.ld"
+
+
+STM32F1_MCU_DIR    = "src/rffw/target/stm32f1"
+STM32F1_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F1xx/Include"
+STM32F1_HAL_DIR    = "lib/STM32F1xx_HAL_Driver"
+STM32F1_HAL_SRC    = "lib/STM32F1xx_HAL_Driver"
+STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
+STM32F1_ARCH_FLAGS = "-mthumb -mcpu=cortex-m3"
+
+STM32F3_MCU_DIR    = "src/rffw/target/stm32f3"
+STM32F3_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F3xx/Include"
+STM32F3_HAL_DIR    = "lib/STM32F3xx_HAL_Driver"
+STM32F3_HAL_SRC    = "lib/STM32F3xx_HAL_Driver"
+STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
+STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
+
+STM32F4_MCU_DIR    = "src/rffw/target/stm32f4"
+STM32F4_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F4xx/Include"
+STM32F4_HAL_DIR    = "lib/STM32F4xx_HAL_Driver"
+STM32F4_HAL_SRC    = "lib/STM32F4xx_HAL_Driver"
+STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
+STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
+
+STM32F7_MCU_DIR    = "src/rffw/target/stm32f7"
+STM32F7_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F7xx/Include"
+STM32F7_HAL_DIR    = "lib/STM32F7xx_HAL_Driver"
+STM32F7_HAL_SRC    = "lib/STM32F7xx_HAL_Driver"
+STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
+STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
+
+
+
+
+#if f1
+#MCU_DIR    = STM32F1_MCU_DIR
+#CMSIS_DIR  = STM32F1_CMSIS_DIR
+#HAL_DIR    = STM32F1_HAL_DIR
+#DEF_FLAGS  = STM32F1_DEF_FLAGS
+#ARCH_FLAGS = STM32F1_ARCH_FLAGS
+
+#if f3
+# MCU_DIR    = STM32F3_MCU_DIR
+# CMSIS_DIR  = STM32F3_CMSIS_DIR
+# HAL_DIR    = STM32F3_HAL_DIR
+# DEF_FLAGS  = STM32F3_DEF_FLAGS
+# ARCH_FLAGS = STM32F3_ARCH_FLAGS
+
+#if f4
+MCU_DIR    = STM32F4_MCU_DIR
+CMSIS_DIR  = STM32F4_CMSIS_DIR
+HAL_DIR    = STM32F4_HAL_DIR
+DEF_FLAGS  = STM32F4_DEF_FLAGS
+ARCH_FLAGS = STM32F4_ARCH_FLAGS
+
+#if f7
+# MCU_DIR    = STM32F7_MCU_DIR
+# CMSIS_DIR  = STM32F7_CMSIS_DIR
+# HAL_DIR    = STM32F7_HAL_DIR
+# DEF_FLAGS  = STM32F7_DEF_FLAGS
+# ARCH_FLAGS = STM32F7_ARCH_FLAGS
+
+
+
 
 directories = [
-    "src/rffw/startup",
-    "lib/STM32F1xx_HAL_Driver/Src",
+    "src/rffw/target/" + TARGET,
+    HAL_DIR + "/Src",
     "src/rffw/src",
     "src/rffw/inc",
+    MCU_DIR,
 ]
 
 directories_asm = [
-    "src/rffw/startup",
-    "lib/STM32F1xx_HAL_Driver/Src",
+    "src/rffw/target/" + TARGET,
+    HAL_DIR + "/Src",
     "src/rffw/src",
     "src/rffw/inc",
+    MCU_DIR,
 ]
 
 excluded_files = [
-    "fish_tacos.c"
+    "stm32f4xx_hal_timebase_rtc_wakeup_template.c",
+    "stm32f4xx_hal_timebase_rtc_alarm_template.c",
 ]
 
 linkerObjs = ""
 
 INCLUDE_DIRS = [
     "lib/CMSIS/Include",
-    "lib/CMSIS/Device/ST/STM32F1xx/Include",
+    CMSIS_DIR,
     "src/rffw/inc",
-    "lib/STM32F1xx_HAL_Driver/Inc",
+    HAL_DIR + "/Inc",
+    "src/rffw/target/" + TARGET,
+	MCU_DIR,
 ]
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
 LTO_FLAGS = "-flto -fuse-linker-plugin -O0"
 DEBUG_FLAGS = "-ggdb3 -DDEBUG"
 
-ARCH_FLAGS     = "-mthumb -mcpu=cortex-m3"
-DEF_FLAGS      = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -DSTM32F103xB"
-#F3: ARCH_FLAGS     = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
-#F4: ARCH_FLAGS     = -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
+
 
 CFLAGS = " ".join([
     ARCH_FLAGS,
@@ -56,7 +133,7 @@ CFLAGS = " ".join([
     DEF_FLAGS,
     DEBUG_FLAGS,
     INCLUDES,
-    "-Wdouble-promotion -save-temps=obj -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -ffunction-sections -fdata-sections -MMD -MP"
+    "-Wunused-parameter -Wdouble-promotion -save-temps=obj -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -ffunction-sections -fdata-sections -MMD -MP"
 ])
 
 ASMFLAGS = " ".join([
@@ -68,7 +145,7 @@ ASMFLAGS = " ".join([
 
 mapFile = os.path.join("output", "{OUTPUT_NAME}.map")
 linkerDir = os.path.join("src", "rffw", "target")
-ldScript = os.path.join("src", "rffw", "target", "stm32_flash_f103_128k.ld")
+ldScript = os.path.join("src", "rffw", "target", TARGET_SCRIPT)
 LDFLAGS = " ".join([
     "-lm -nostartfiles --specs=nano.specs -lc -lnosys",
     ARCH_FLAGS,
@@ -96,13 +173,19 @@ commands = [
 ]
 
 
-THREAD_LIMIT = 1
+THREAD_LIMIT = 200
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
 isStop = False
         
-
+def find_between( s, first, last ):
+	try:
+		start = s.index( first ) + len( first )
+		end = s.index( last, start )
+		return s[start:end]
+	except ValueError:
+		return ""
 
 class CommandRunnerThread(threading.Thread):
 
@@ -128,7 +211,6 @@ class CommandRunnerThread(threading.Thread):
             locker.release()
             threadLimiter.release()
 
-
     def run_command(self):
         if not self.command:
             return
@@ -138,7 +220,10 @@ class CommandRunnerThread(threading.Thread):
             return
         locker.release()
 
-        print self.command
+        locker.acquire()
+        print find_between( self.command, "output\\", ".o" )
+        locker.release()
+
         self.proc = subprocess.Popen(self.command, shell=True)
         stdout_value, stderr_value = self.proc.communicate()
         if self.queue:
@@ -247,7 +332,7 @@ def main():
             OBJS=linkerObjs
         )
 
-        print link_command
+        #print link_command
         proc = subprocess.Popen(link_command, shell=True)
         stdout_value, stderr_value = proc.communicate()
 

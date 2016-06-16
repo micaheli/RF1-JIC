@@ -611,6 +611,7 @@ uint32_t HAL_FLASHEx_OBGetUserData(uint32_t DATAAdress)
   */
 static void FLASH_MassErase(uint32_t Banks)
 {
+  (void)(Banks);
   /* Check the parameters */
   assert_param(IS_FLASH_BANK(Banks));
 

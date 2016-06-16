@@ -272,6 +272,7 @@ void HAL_ResumeTick(void)
   */
 void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
 {
+  (void)(hrtc);
   HAL_IncTick();
 }
 
