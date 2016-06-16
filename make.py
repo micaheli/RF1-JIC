@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 import threading
 import Queue
 import subprocess
@@ -9,22 +10,36 @@ import sys
 import ntpath
 import os
 import platform
+import argparse
 
 
 
+parser = argparse.ArgumentParser(description='')
+parser.add_argument('-T', '--target', help='target controller to build', required=True)
+args = parser.parse_args()
+
+TARGET = args.target.lower()
+
+if TARGET == "lux":
+    TARGET_DEVICE = "STM32F303xE"
+    TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
+    TARGET_PROCESSOR_TYPE  = "f3"
+
+elif TARGET == "cc3d":
+    TARGET_DEVICE = "STM32F103xB"
+    TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
+    TARGET_PROCESSOR_TYPE  = "f1"
 
 
-TARGET     = "lux"
-TARGET_DEVICE = "STM32F303xE"
-TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
+elif TARGET == "revo":
+    TARGET_DEVICE = "STM32F405xx"
+    TARGET_SCRIPT = "stm32_flash_f405.ld"
+    TARGET_PROCESSOR_TYPE  = "f4"
 
-TARGET     = "cc3d"
-TARGET_DEVICE = "STM32F103xB"
-TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
+else:
+    print("NOT VALID TARGET")
+    sys.exit(1)
 
-TARGET     = "revo"
-TARGET_DEVICE = "STM32F405xx"
-TARGET_SCRIPT = "stm32_flash_f405.ld"
 
 
 STM32F1_MCU_DIR    = "src/rffw/target/stm32f1"
@@ -57,35 +72,38 @@ STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -
 
 
 
+ 
+if TARGET_PROCESSOR_TYPE == "f1":
+    MCU_DIR    = STM32F1_MCU_DIR
+    CMSIS_DIR  = STM32F1_CMSIS_DIR
+    HAL_DIR    = STM32F1_HAL_DIR
+    DEF_FLAGS  = STM32F1_DEF_FLAGS
+    ARCH_FLAGS = STM32F1_ARCH_FLAGS
 
-#if f1
-#MCU_DIR    = STM32F1_MCU_DIR
-#CMSIS_DIR  = STM32F1_CMSIS_DIR
-#HAL_DIR    = STM32F1_HAL_DIR
-#DEF_FLAGS  = STM32F1_DEF_FLAGS
-#ARCH_FLAGS = STM32F1_ARCH_FLAGS
+elif TARGET_PROCESSOR_TYPE == "f3":
+    MCU_DIR    = STM32F3_MCU_DIR
+    CMSIS_DIR  = STM32F3_CMSIS_DIR
+    HAL_DIR    = STM32F3_HAL_DIR
+    DEF_FLAGS  = STM32F3_DEF_FLAGS
+    ARCH_FLAGS = STM32F3_ARCH_FLAGS
 
-#if f3
-# MCU_DIR    = STM32F3_MCU_DIR
-# CMSIS_DIR  = STM32F3_CMSIS_DIR
-# HAL_DIR    = STM32F3_HAL_DIR
-# DEF_FLAGS  = STM32F3_DEF_FLAGS
-# ARCH_FLAGS = STM32F3_ARCH_FLAGS
+elif TARGET_PROCESSOR_TYPE == "f4":
+    MCU_DIR    = STM32F4_MCU_DIR
+    CMSIS_DIR  = STM32F4_CMSIS_DIR
+    HAL_DIR    = STM32F4_HAL_DIR
+    DEF_FLAGS  = STM32F4_DEF_FLAGS
+    ARCH_FLAGS = STM32F4_ARCH_FLAGS
 
-#if f4
-MCU_DIR    = STM32F4_MCU_DIR
-CMSIS_DIR  = STM32F4_CMSIS_DIR
-HAL_DIR    = STM32F4_HAL_DIR
-DEF_FLAGS  = STM32F4_DEF_FLAGS
-ARCH_FLAGS = STM32F4_ARCH_FLAGS
+elif TARGET_PROCESSOR_TYPE == "f7":
+    MCU_DIR    = STM32F7_MCU_DIR
+    CMSIS_DIR  = STM32F7_CMSIS_DIR
+    HAL_DIR    = STM32F7_HAL_DIR
+    DEF_FLAGS  = STM32F7_DEF_FLAGS
+    ARCH_FLAGS = STM32F7_ARCH_FLAGS
 
-#if f7
-# MCU_DIR    = STM32F7_MCU_DIR
-# CMSIS_DIR  = STM32F7_CMSIS_DIR
-# HAL_DIR    = STM32F7_HAL_DIR
-# DEF_FLAGS  = STM32F7_DEF_FLAGS
-# ARCH_FLAGS = STM32F7_ARCH_FLAGS
-
+else:
+    print("ERROR PROCESSOR TYPE, CHECK MAKE FILE CODE")
+    sys.exit(1)
 
 
 
