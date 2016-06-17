@@ -204,7 +204,7 @@ compile_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " +
 
 link_command = "arm-none-eabi-gcc -o output" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
 
-size_command = "arm-none-eabi-gcc output" + os.sep + "{OUTPUT_NAME}.elf"
+size_command = "arm-none-eabi-size output" + os.sep + "{OUTPUT_NAME}.elf"
 
 copy_obj_command = "arm-none-eabi-objcopy -O binary output\{OUTPUT_NAME}.elf output\{OUTPUT_NAME}.bin"
 
@@ -380,15 +380,15 @@ def main():
         stdout_value, stderr_value = proc.communicate()
 
 
-#        if proc.returncode == 0:
-#            print "Sizing!"
-#            size_command = size_command.format(
-#                OUTPUT_NAME=TARGET
-#            )
-#
-#            print size_command
-#            proc = subprocess.Popen(size_command, shell=True)
-#            stdout_value, stderr_value = proc.communicate()
+        if proc.returncode == 0:
+            print "Sizing!"
+            size_command = size_command.format(
+                OUTPUT_NAME=TARGET
+            )
+
+            print size_command
+            proc = subprocess.Popen(size_command, shell=True)
+            stdout_value, stderr_value = proc.communicate()
 
         if proc.returncode == 0:
             print "Build succeded copying"
