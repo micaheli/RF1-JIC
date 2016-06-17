@@ -307,6 +307,9 @@ def ProcessList(fileNames):
     global linkerObjs
 
     for fileName in fileNames:
+        if os.path.basename(fileName) in excluded_files:
+            continue
+        
         linkerObjs = linkerObjs + " " + os.path.join("output", makeObject(fileName))
         if FileModified(fileName):
             if fileName[-2:] == ".s":
