@@ -145,6 +145,9 @@ directories_asm = [
 excluded_files = [
     "stm32f4xx_hal_timebase_rtc_wakeup_template.c",
     "stm32f4xx_hal_timebase_rtc_alarm_template.c",
+	"stm32f7xx_hal_timebase_rtc_alarm_template.c",
+	"stm32f7xx_hal_timebase_rtc_wakeup_template.c",
+	"stm32f7xx_hal_timebase_tim_template.c",
 ]
 
 linkerObjs = ""
