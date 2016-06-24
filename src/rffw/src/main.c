@@ -1,5 +1,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "includes.h"
+#include "usb_device.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -21,6 +22,7 @@ int main(void)
 	{
 
 	BoardInit();
+	MX_USB_DEVICE_Init();
 	InitializeLED(LED1_GPIO_PORT, LED1_PIN);
 
 	while (1)
@@ -34,6 +36,7 @@ int main(void)
 
 void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
+	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
 
 	GPIO_InitTypeDef GPIO_InitStructure;
 

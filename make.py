@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
 import sys
 import threading
 import Queue
@@ -129,25 +130,15 @@ else:
 directories = [
     "src/rffw/target/" + TARGET,
     HAL_DIR + "/Src",
+    "lib/STM32_USB_Device_Library/Core/Src",
+    "lib/STM32_USB_Device_Library/Class/HID/Src",
     "src/rffw/src",
-    "src/rffw/inc",
-    MCU_DIR,
-]
-
-directories_asm = [
-    "src/rffw/target/" + TARGET,
-    HAL_DIR + "/Src",
-    "src/rffw/src",
-    "src/rffw/inc",
+    "src/rffw/src/usb",
     MCU_DIR,
 ]
 
 excluded_files = [
-    "stm32f4xx_hal_timebase_rtc_wakeup_template.c",
-    "stm32f4xx_hal_timebase_rtc_alarm_template.c",
-	"stm32f7xx_hal_timebase_rtc_alarm_template.c",
-	"stm32f7xx_hal_timebase_rtc_wakeup_template.c",
-	"stm32f7xx_hal_timebase_tim_template.c",
+    ".*_template.c",
 ]
 
 linkerObjs = ""
@@ -156,9 +147,12 @@ INCLUDE_DIRS = [
     "lib/CMSIS/Include",
     CMSIS_DIR,
     "src/rffw/inc",
+    "src/rffw/inc/usb",
     HAL_DIR + "/Inc",
+    "lib/STM32_USB_Device_Library/Core/Inc",
+    "lib/STM32_USB_Device_Library/Class/HID/Inc",
     "src/rffw/target/" + TARGET,
-	MCU_DIR,
+    MCU_DIR,
 ]
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
@@ -206,7 +200,7 @@ link_command = "arm-none-eabi-gcc -o output" + os.sep + "{OUTPUT_NAME}.elf {OBJS
 
 size_command = "arm-none-eabi-size output" + os.sep + "{OUTPUT_NAME}.elf"
 
-copy_obj_command = "arm-none-eabi-objcopy -O binary output\{OUTPUT_NAME}.elf output\{OUTPUT_NAME}.bin"
+copy_obj_command = "arm-none-eabi-objcopy -O binary output" + os.sep + "{OUTPUT_NAME}.elf output" + os.sep + "{OUTPUT_NAME}.bin"
 
 
 commands = [
@@ -261,7 +255,7 @@ class CommandRunnerThread(threading.Thread):
         locker.release()
 
         locker.acquire()
-        print find_between( self.command, "output\\", ".o" )
+        print find_between( self.command, "output" + os.sep, ".o" )
         locker.release()
 
         self.proc = subprocess.Popen(self.command, shell=True)
@@ -307,7 +301,7 @@ def ProcessList(fileNames):
     global linkerObjs
 
     for fileName in fileNames:
-        if os.path.basename(fileName) in excluded_files:
+        if any(re.match(ex_pattern, os.path.basename(fileName)) for ex_pattern in excluded_files):
             continue
         
         linkerObjs = linkerObjs + " " + os.path.join("output", makeObject(fileName))
