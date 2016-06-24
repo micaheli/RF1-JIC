@@ -12,6 +12,37 @@ import ntpath
 import os
 import platform
 import argparse
+import ctypes as c
+
+
+
+# Magic code
+# add new method for python string object
+# used
+# STM32F1_MCU_DIR = "src/rffw/target/stm32f1"
+# STM32F1_MCU_DIR.path
+# return for unix > src/rffw/target/stm32f1
+# return for windows > src\rffw\target\stm32f1
+class PyObject_HEAD(c.Structure):
+    _fields_ = [
+        ('HEAD', c.c_ubyte * (object.__basicsize__ - c.sizeof(c.c_void_p))),
+        ('ob_type', c.c_void_p)
+    ]
+
+_get_dict = c.pythonapi._PyObject_GetDictPtr
+_get_dict.restype = c.POINTER(c.py_object)
+_get_dict.argtypes = [c.py_object]
+
+def get_dict(object):
+    return _get_dict(object).contents.value
+
+@property
+def get_path_method(self):
+    if platform.system() == 'Windows':
+        return self.replace("/", "\\")
+    return self
+
+get_dict(str)['path'] = get_path_method
 
 
 
@@ -307,27 +338,15 @@ def ProcessList(fileNames):
         linkerObjs = linkerObjs + " " + os.path.join("output", makeObject(fileName))
         if FileModified(fileName):
             if fileName[-2:] == ".s":
-                AddToList(asm_command.format(INPUT_FILE=fileName, OUTPUT_FILE=makeObject(fileName)))
+                AddToList(asm_command.format(INPUT_FILE=fileName.path, OUTPUT_FILE=makeObject(fileName.path)))
             elif fileName[-2:] == ".c":
-                AddToList(compile_command.format(INPUT_FILE=fileName, OUTPUT_FILE=makeObject(fileName)))
+                AddToList(compile_command.format(INPUT_FILE=fileName.path, OUTPUT_FILE=makeObject(fileName.path)))
             else:
-                AddToList(asm_command.format(INPUT_FILE=fileName, OUTPUT_FILE=makeObject(fileName)))
+                AddToList(asm_command.format(INPUT_FILE=fileName.path, OUTPUT_FILE=makeObject(fileName.path)))
 
 
 def main():
     global size_command, link_command, isStop, copy_obj_command
-
-
-    if platform.system() == 'Windows':
-        for index, object in enumerate(directories):
-            directories[index] = object.replace("/", "\\")
-
-        for index, object in enumerate(directories_asm):
-            directories_asm[index] = object.replace("/", "\\")
-
-        for index, object in enumerate(INCLUDE_DIRS):
-            INCLUDE_DIRS[index] = object.replace("/", "\\")
-
 
     try:
         os.mkdir("output")
