@@ -23,6 +23,8 @@ class LogPipe(threading.Thread):
         self.daemon = False
         self.fdRead, self.fdWrite = os.pipe()
         self.pipeReader = os.fdopen(self.fdRead)
+        self.all_lines = list()
+        self.is_need_print = False
         self.start()
 
     def fileno(self):
@@ -30,9 +32,26 @@ class LogPipe(threading.Thread):
 
     def run(self):
         for line in iter(self.pipeReader.readline, ''):
-            r = re.search(r'[\w/\.\\: ]+error', line)
-            if r is not None:
-                print line
+            self.all_lines.append(line)
+            
+            if line.startswith("lib"):
+                r = re.search(r'[\w/\.\\: ]+error', line)
+                if r is not None:
+                    self.is_need_print = True
+            elif line.startswith("src"):
+                r = re.search(r'[\w/\.\\: ]+(error|warning|note)', line)
+                if r is not None:
+                    self.is_need_print = True
+            
+            if self.is_need_print:
+                self.is_need_print = False
+                for n, _line in enumerate(self.all_lines[-2:]):   
+                    if n == 0 and 'In ' not in _line:
+                        continue
+                    print _line
+                
+
+
 
         self.pipeReader.close()
 
