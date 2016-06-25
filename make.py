@@ -16,6 +16,31 @@ import ctypes as c
 
 
 
+class LogPipe(threading.Thread):
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.daemon = False
+        self.fdRead, self.fdWrite = os.pipe()
+        self.pipeReader = os.fdopen(self.fdRead)
+        self.start()
+
+    def fileno(self):
+        return self.fdWrite
+
+    def run(self):
+        for line in iter(self.pipeReader.readline, ''):
+            r = re.search(r'[\w/\.\\: ]+(warning|note|error)', line)
+            if r is not None:
+                print line
+
+        self.pipeReader.close()
+
+    def close(self):
+        os.close(self.fdWrite)
+
+
+
 # Magic code
 # add new method for python string object
 # used
@@ -258,6 +283,7 @@ class CommandRunnerThread(threading.Thread):
         self.command = kwargs.pop("command", "")
         self.queue = kwargs.pop("queue", None)
         self.proc = None
+        self.pipe = LogPipe()
         super(CommandRunnerThread, self).__init__(*args, **kwargs) 
         self._stop = threading.Event()
 
@@ -288,15 +314,19 @@ class CommandRunnerThread(threading.Thread):
         locker.acquire()
         print find_between( self.command, "output" + os.sep, ".o" )
         locker.release()
-
-        self.proc = subprocess.Popen(self.command, shell=True)
+        
+        self.proc = subprocess.Popen(self.command, stdout=self.pipe, stderr=self.pipe, shell=True)
         stdout_value, stderr_value = self.proc.communicate()
+        
+        self.pipe.close()
+        
         if self.queue:
             self.queue.put(self.proc.returncode)
         else:
             print proc.returncode
+        
         self.proc = None
-
+        self.pipe = None
 
     def stop(self):
         if self.proc:
@@ -304,6 +334,13 @@ class CommandRunnerThread(threading.Thread):
                 self.proc.kill()
             except OSError:
                 pass
+        
+        if self.pipe:
+            try:
+                self.pipe.close()
+            except Exception:
+                pass
+
         self._stop.set()
 
 
