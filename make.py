@@ -30,7 +30,7 @@ class LogPipe(threading.Thread):
 
     def run(self):
         for line in iter(self.pipeReader.readline, ''):
-            r = re.search(r'[\w/\.\\: ]+(warning|note|error)', line)
+            r = re.search(r'[\w/\.\\: ]+error', line)
             if r is not None:
                 print line
 
