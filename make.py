@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import re
 import sys
 import threading
-import Queue
 import subprocess
 import glob
 import sys
@@ -14,6 +15,12 @@ import platform
 import argparse
 import ctypes as c
 
+try:
+    # Python 3 name
+    import queue
+except ImportError:
+    # Python 2 name
+    import Queue as queue
 
 
 class LogPipe(threading.Thread):
@@ -48,7 +55,7 @@ class LogPipe(threading.Thread):
                 for n, _line in enumerate(self.all_lines[-2:]):   
                     if n == 0 and 'In ' not in _line:
                         continue
-                    print _line
+                    print(_line)
                 
 
 
@@ -304,7 +311,7 @@ class CommandRunnerThread(threading.Thread):
         self.proc = None
         self.pipe = LogPipe()
         super(CommandRunnerThread, self).__init__(*args, **kwargs) 
-        self._stop = threading.Event()
+        self.stop = threading.Event()
 
 
     def run(self):
@@ -331,19 +338,19 @@ class CommandRunnerThread(threading.Thread):
         locker.release()
 
         locker.acquire()
-        print find_between( self.command, "output" + os.sep, ".o" )
+        print(find_between( self.command, "output" + os.sep, ".o" ))
         locker.release()
-        
+
         self.proc = subprocess.Popen(self.command, stdout=self.pipe, stderr=self.pipe, shell=True)
         stdout_value, stderr_value = self.proc.communicate()
-        
+
         self.pipe.close()
-        
+
         if self.queue:
             self.queue.put(self.proc.returncode)
         else:
-            print proc.returncode
-        
+            print(proc.returncode)
+
         self.proc = None
         self.pipe = None
 
@@ -360,11 +367,11 @@ class CommandRunnerThread(threading.Thread):
             except Exception:
                 pass
 
-        self._stop.set()
+        self.stop.set()
 
 
     def stopped(self):
-        return self._stop.isSet()
+        return self.stop.isSet()
 
 
 def FileModified(fileName):
@@ -381,7 +388,7 @@ def makeObject(fileName):
     if ext.lower() in (".c", ".s"):
         return root + ".o"
 
-    print "Unknown file type: " + tail
+    print("Unknown file type: " + tail)
     return tail
 
 def ProcessList(fileNames):
@@ -415,57 +422,60 @@ def main():
     for directory in directories:
         ProcessList(glob.glob(os.path.join(directory, "*.s")))
 
-    queue = Queue.Queue()
+    thread_queue = queue.Queue()
     threads = list()
     for command in commands:
-        thread = CommandRunnerThread(command=command, queue=queue)
+        thread = CommandRunnerThread(command=command, queue=thread_queue)
         threads.append(thread)
-        
-    map(lambda thread: thread.start(), threads)
+
+    for thread in threads:
+        thread.start()
 
     while len(threadRunning) > 0:
         try:
-            returncode = queue.get(timeout=5)
-        except Queue.Empty:
+            returncode = thread_queue.get(timeout=5)
+        except queue.Empty:
             continue
         if returncode > 0:
             locker.acquire()
             isStop = True
-            map(lambda thread: thread.stop(), threadRunning)
+            for thread in threads:
+                thread.stop()
             locker.release()
             break
 
-    map(lambda thread: thread.join(), threads)
+    for thread in threads:
+        thread.join()
 
     if isStop is False: 
-        print "linking..."
+        print("linking...")
         link_command = link_command.format(
             OUTPUT_NAME=TARGET,
             OBJS=linkerObjs
         )
 
-        #print link_command
+        #print(link_command)
         proc = subprocess.Popen(link_command, shell=True)
         stdout_value, stderr_value = proc.communicate()
 
 
         if proc.returncode == 0:
-            print "Sizing!"
+            print("Sizing!")
             size_command = size_command.format(
                 OUTPUT_NAME=TARGET
             )
 
-            print size_command
+            print(size_command)
             proc = subprocess.Popen(size_command, shell=True)
             stdout_value, stderr_value = proc.communicate()
 
         if proc.returncode == 0:
-            print "Build succeded copying"
+            print("Build succeded copying")
             copy_obj_command = copy_obj_command.format(
                 OUTPUT_NAME=TARGET
             )
 
-            print copy_obj_command
+            print(copy_obj_command)
             proc = subprocess.Popen(copy_obj_command, shell=True)
             stdout_value, stderr_value = proc.communicate()
      
