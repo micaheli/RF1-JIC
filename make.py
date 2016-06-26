@@ -42,11 +42,11 @@ class LogPipe(threading.Thread):
             self.all_lines.append(line)
             
             if line.startswith("lib"):
-                r = re.search(r'[\w/\.\\: ]+error', line)
+                r = re.search(r'[\w/\.\\: ]+(fatal error|error)', line)
                 if r is not None:
                     self.is_need_print = True
             elif line.startswith("src"):
-                r = re.search(r'[\w/\.\\: ]+(error|warning|note)', line)
+                r = re.search(r'[\w/\.\\: ]+(fatal error|error|warning|note)', line)
                 if r is not None:
                     self.is_need_print = True
             
@@ -63,8 +63,10 @@ class LogPipe(threading.Thread):
         self.pipeReader.close()
 
     def close(self):
-        os.close(self.fdWrite)
-
+        try:
+            os.close(self.fdWrite)
+        except OSError:
+            pass
 
 
 # Magic code
