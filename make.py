@@ -40,7 +40,7 @@ class LogPipe(threading.Thread):
     def run(self):
         for line in iter(self.pipeReader.readline, ''):
             self.all_lines.append(line)
-            
+
             if line.startswith("lib"):
                 r = re.search(r'[\w/\.\\: ]+(fatal error|error)', line)
                 if r is not None:
@@ -49,11 +49,12 @@ class LogPipe(threading.Thread):
                 r = re.search(r'[\w/\.\\: ]+(fatal error|error|warning|note)', line)
                 if r is not None:
                     self.is_need_print = True
-            
+
             if self.is_need_print:
                 self.is_need_print = False
+                line_count = len(self.all_lines)
                 for n, _line in enumerate(self.all_lines[-2:]):   
-                    if n == 0 and 'In ' not in _line:
+                    if n == 0 and line_count > 1 and 'In ' not in _line:
                         continue
                     print(_line)
                 
@@ -356,7 +357,7 @@ class CommandRunnerThread(threading.Thread):
         self.proc = None
         self.pipe = None
 
-    def stop(self):
+    def stop_command(self):
         if self.proc:
             try:
                 self.proc.kill()
@@ -442,7 +443,7 @@ def main():
             locker.acquire()
             isStop = True
             for thread in threads:
-                thread.stop()
+                thread.stop_command()
             locker.release()
             break
 
