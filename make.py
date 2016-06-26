@@ -314,7 +314,7 @@ class CommandRunnerThread(threading.Thread):
         self.proc = None
         self.pipe = LogPipe()
         super(CommandRunnerThread, self).__init__(*args, **kwargs) 
-        self.stop = threading.Event()
+        self.stop_event = threading.Event()
 
 
     def run(self):
@@ -370,11 +370,11 @@ class CommandRunnerThread(threading.Thread):
             except Exception:
                 pass
 
-        self.stop.set()
+        self.stop_event.set()
 
 
     def stopped(self):
-        return self.stop.isSet()
+        return self.stop_event.isSet()
 
 
 def FileModified(fileName):
