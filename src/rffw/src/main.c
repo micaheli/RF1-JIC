@@ -1,5 +1,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "includes.h"
+
+#include "usbd_hid.h"
 #include "usb_device.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,7 +48,7 @@ int main(void)
         }
         i = (i + 1) % 40;
 
-        USBD_HID_SendReport(&hUsbDeviceFS, hidBuffer, 4);
+        USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t*)hidBuffer, 4);
 
 		HAL_Delay(100);
 	}

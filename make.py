@@ -122,21 +122,25 @@ if IS_CLEANUP:
 
 
 if TARGET == "cc3d":
+    TARGET_USB = "usb_fs"
     TARGET_DEVICE = "STM32F103xB"
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
 
 elif TARGET == "lux":
+    TARGET_USB = "usb_fs"
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
 
 elif TARGET == "revo":
+    TARGET_USB = "usb_otg_fs"
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
 
 elif TARGET == "f7disco":
+    TARGET_USB = "usb_otg_fs"
     TARGET_DEVICE = "STM32F746xx"
     TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
     TARGET_PROCESSOR_TYPE  = "f7"
@@ -176,8 +180,6 @@ STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=25000000 -D" + TARGET_DEVICE
 STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
 
-
- 
 if TARGET_PROCESSOR_TYPE == "f1":
     MCU_DIR    = STM32F1_MCU_DIR
     CMSIS_DIR  = STM32F1_CMSIS_DIR
@@ -213,12 +215,13 @@ else:
 
 
 directories = [
-    "src/rffw/target/" + TARGET,
     HAL_DIR + "/Src",
     "lib/STM32_USB_Device_Library/Core/Src",
     "lib/STM32_USB_Device_Library/Class/HID/Src",
     "src/rffw/src",
     "src/rffw/src/usb",
+    "src/rffw/target/" + TARGET,
+    "src/rffw/target/" + TARGET_USB,
     MCU_DIR,
 ]
 
@@ -231,20 +234,19 @@ linkerObjs = ""
 INCLUDE_DIRS = [
     "lib/CMSIS/Include",
     CMSIS_DIR,
-    "src/rffw/inc",
-    "src/rffw/inc/usb",
     HAL_DIR + "/Inc",
     "lib/STM32_USB_Device_Library/Core/Inc",
     "lib/STM32_USB_Device_Library/Class/HID/Inc",
+    "src/rffw/inc",
+    "src/rffw/inc/usb",
     "src/rffw/target/" + TARGET,
+    "src/rffw/target/" + TARGET_USB,
     MCU_DIR,
 ]
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
 LTO_FLAGS = "-flto -fuse-linker-plugin -O0"
 DEBUG_FLAGS = "-ggdb3 -DDEBUG"
-
-
 
 CFLAGS = " ".join([
     ARCH_FLAGS,
@@ -297,7 +299,7 @@ threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
 isStop = False
-        
+
 def find_between( s, first, last ):
 	try:
 		start = s.index( first ) + len( first )
@@ -313,7 +315,7 @@ class CommandRunnerThread(threading.Thread):
         self.queue = kwargs.pop("queue", None)
         self.proc = None
         self.pipe = LogPipe()
-        super(CommandRunnerThread, self).__init__(*args, **kwargs) 
+        super(CommandRunnerThread, self).__init__(*args, **kwargs)
         self.stop_event = threading.Event()
 
 
@@ -322,7 +324,7 @@ class CommandRunnerThread(threading.Thread):
         locker.acquire()
         threadRunning.append(self)
         locker.release()
-        
+
         try:
             self.run_command()
         finally:
@@ -363,7 +365,7 @@ class CommandRunnerThread(threading.Thread):
                 self.proc.kill()
             except OSError:
                 pass
-        
+
         if self.pipe:
             try:
                 self.pipe.close()
@@ -383,7 +385,7 @@ def FileModified(fileName):
 def AddToList(fileName):
     global commands
 
-    commands.append(fileName) 
+    commands.append(fileName)
 
 def makeObject(fileName):
     head, tail = ntpath.split(fileName)
@@ -400,7 +402,7 @@ def ProcessList(fileNames):
     for fileName in fileNames:
         if any(re.match(ex_pattern, os.path.basename(fileName)) for ex_pattern in excluded_files):
             continue
-        
+
         linkerObjs = linkerObjs + " " + os.path.join("output", makeObject(fileName))
         if FileModified(fileName):
             if fileName[-2:] == ".s":
@@ -450,14 +452,13 @@ def main():
     for thread in threads:
         thread.join()
 
-    if isStop is False: 
+    if isStop is False:
         print("linking...")
         link_command = link_command.format(
             OUTPUT_NAME=TARGET,
             OBJS=linkerObjs
         )
 
-        #print(link_command)
         proc = subprocess.Popen(link_command, shell=True)
         stdout_value, stderr_value = proc.communicate()
 
