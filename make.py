@@ -127,7 +127,7 @@ if TARGET == "cc3d":
     TARGET_PROCESSOR_TYPE  = "f1"
 
 elif TARGET == "lux":
-    TARGET_DEVICE = "STM32F303xE"
+    TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
 
