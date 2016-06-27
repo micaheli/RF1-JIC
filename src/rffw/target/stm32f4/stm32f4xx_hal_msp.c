@@ -34,8 +34,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
-extern void Error_Handler(void);
-
 /**
   * Initializes the Global MSP.
   */
