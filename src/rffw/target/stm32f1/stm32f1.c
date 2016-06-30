@@ -3,7 +3,7 @@
 
 /**
   * @brief  System Clock Configuration
-  *         The system Clock is configured as follow : 
+  *         The system Clock is configured as follow :
   *            System Clock source            = PLL (HSE)
   *            SYSCLK(Hz)                     = 72000000
   *            HCLK(Hz)                       = 72000000
@@ -19,50 +19,83 @@
   */
 void SystemClock_Config(void)
 {
-  RCC_ClkInitTypeDef clkinitstruct = {0};
-  RCC_OscInitTypeDef oscinitstruct = {0};
-  
-  /* Enable HSE Oscillator and activate PLL with HSE as source */
-	oscinitstruct.OscillatorType  = RCC_OSCILLATORTYPE_HSE;
-	oscinitstruct.HSEState        = RCC_HSE_ON;
-	oscinitstruct.HSEPredivValue  = RCC_HSE_PREDIV_DIV1;
-	oscinitstruct.PLL.PLLState    = RCC_PLL_ON;
-	oscinitstruct.PLL.PLLSource   = RCC_PLLSOURCE_HSE;
-	oscinitstruct.PLL.PLLMUL      = RCC_PLL_MUL9;
-	if (HAL_RCC_OscConfig(&oscinitstruct) != HAL_OK)
-	{
-	  /* Initialization Error */
-      while(1); 
-	}
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_PeriphCLKInitTypeDef PeriphClkInit;
 
-  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
-     clocks dividers */
-	clkinitstruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-	clkinitstruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	clkinitstruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	clkinitstruct.APB2CLKDivider = RCC_HCLK_DIV1;
-	clkinitstruct.APB1CLKDivider = RCC_HCLK_DIV2;  
-  if (HAL_RCC_ClockConfig(&clkinitstruct, FLASH_LATENCY_2)!= HAL_OK)
+  /* Enable HSE Oscillator and activate PLL with HSE as source */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     /* Initialization Error */
-      while(1); 
+    while(1);
   }
+
+  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
+     clocks dividers */
+  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2)!= HAL_OK)
+  {
+    /* Initialization Error */
+    while(1);
+  }
+
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;
+  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    while(1);
+  }
+
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+}
+
+void BoardInit(void)
+{
+    HAL_Init();
+
+    SystemClock_Config();
+
+    __HAL_RCC_AFIO_CLK_ENABLE();   //Need to start this clock before disabling jtag
+    __HAL_AFIO_REMAP_SWJ_NOJTAG(); //disabled JTAG
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
 
 }
 
- void BoardInit(void)
+void USBInit(void)
 {
-	HAL_Init();
+    /* Peripheral clock enable */
+    __HAL_RCC_USB_CLK_ENABLE();
 
-	SystemClock_Config();
- 
-   	__HAL_RCC_AFIO_CLK_ENABLE();   //Need to start this clock before disabling jtag
-	__HAL_AFIO_REMAP_SWJ_NOJTAG(); //disabled JTAG
+    /* Peripheral interrupt init */
+    HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
+}
 
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOD_CLK_ENABLE();
-	__HAL_RCC_GPIOE_CLK_ENABLE();
+void USBDeInit(void)
+{
+    /* Peripheral clock disable */
+    __HAL_RCC_USB_CLK_DISABLE();
 
+    /* Peripheral interrupt Deinit*/
+    HAL_NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);
 }
