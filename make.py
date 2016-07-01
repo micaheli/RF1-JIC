@@ -127,6 +127,12 @@ if TARGET == "cc3d":
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
 
+elif TARGET == "kissesc":
+    TARGET_USB = "kissesc"
+    TARGET_DEVICE = "STM32F051x8"
+    TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
+    TARGET_PROCESSOR_TYPE  = "f0"
+
 elif TARGET == "lux":
     TARGET_USB = "usb_fs"
     TARGET_DEVICE = "STM32F303xC"
@@ -150,6 +156,13 @@ else:
     sys.exit(1)
 
 
+
+STM32F0_MCU_DIR    = "src/rffw/target/stm32f0"
+STM32F0_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F0xx/Include"
+STM32F0_HAL_DIR    = "lib/STM32F0xx_HAL_Driver"
+STM32F0_HAL_SRC    = "lib/STM32F0xx_HAL_Driver"
+STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
+STM32F0_ARCH_FLAGS = "-mthumb -mcpu=cortex-m0"
 
 STM32F1_MCU_DIR    = "src/rffw/target/stm32f1"
 STM32F1_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F1xx/Include"
@@ -180,7 +193,14 @@ STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=25000000 -D" + TARGET_DEVICE
 STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
 
-if TARGET_PROCESSOR_TYPE == "f1":
+if TARGET_PROCESSOR_TYPE == "f0":
+    MCU_DIR    = STM32F0_MCU_DIR
+    CMSIS_DIR  = STM32F0_CMSIS_DIR
+    HAL_DIR    = STM32F0_HAL_DIR
+    DEF_FLAGS  = STM32F0_DEF_FLAGS
+    ARCH_FLAGS = STM32F0_ARCH_FLAGS
+
+elif TARGET_PROCESSOR_TYPE == "f1":
     MCU_DIR    = STM32F1_MCU_DIR
     CMSIS_DIR  = STM32F1_CMSIS_DIR
     HAL_DIR    = STM32F1_HAL_DIR
@@ -216,12 +236,12 @@ else:
 
 directories = [
     HAL_DIR + "/Src",
-    "lib/STM32_USB_Device_Library/Core/Src",
-    "lib/STM32_USB_Device_Library/Class/HID/Src",
+#    "lib/STM32_USB_Device_Library/Core/Src",
+#    "lib/STM32_USB_Device_Library/Class/HID/Src",
     "src/rffw/src",
-    "src/rffw/src/usb",
+#    "src/rffw/src/usb",
     "src/rffw/target/" + TARGET,
-    "src/rffw/target/" + TARGET_USB,
+#    "src/rffw/target/" + TARGET_USB,
     MCU_DIR,
 ]
 
@@ -235,12 +255,12 @@ INCLUDE_DIRS = [
     "lib/CMSIS/Include",
     CMSIS_DIR,
     HAL_DIR + "/Inc",
-    "lib/STM32_USB_Device_Library/Core/Inc",
-    "lib/STM32_USB_Device_Library/Class/HID/Inc",
+#    "lib/STM32_USB_Device_Library/Core/Inc",
+#    "lib/STM32_USB_Device_Library/Class/HID/Inc",
     "src/rffw/inc",
-    "src/rffw/inc/usb",
+#    "src/rffw/inc/usb",
     "src/rffw/target/" + TARGET,
-    "src/rffw/target/" + TARGET_USB,
+#    "src/rffw/target/" + TARGET_USB,
     MCU_DIR,
 ]
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)

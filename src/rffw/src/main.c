@@ -1,8 +1,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "includes.h"
 
-#include "usbd_hid.h"
-#include "usb_device.h"
+//#include "usbd_hid.h"
+//#include "usb_device.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -11,7 +11,7 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static int8_t hidBuffer[4];
+//static int8_t hidBuffer[4];
 
 /* Private function prototypes -----------------------------------------------*/
 void BoardInit(void);
@@ -22,16 +22,16 @@ void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 int main(void)
 {
-    uint8_t i = 0;
+//    uint8_t i = 0;
 
 	BoardInit();
-	MX_USB_DEVICE_Init();
+//	MX_USB_DEVICE_Init();
 	InitializeLED(LED1_GPIO_PORT, LED1_PIN);
 
 	while (1) {
 		HAL_GPIO_TogglePin(LED1_GPIO_PORT, LED1_PIN);
 		HAL_GPIO_TogglePin(SERVO1_GPIO_PORT, SERVO1_PIN);
-
+/*
         hidBuffer[0] = 0; // buttons
         if (i < 10) {
             hidBuffer[1] = 0x10;
@@ -49,7 +49,7 @@ int main(void)
         i = (i + 1) % 40;
 
         USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t*)hidBuffer, 4);
-
+*/
 		HAL_Delay(100);
 	}
 }
