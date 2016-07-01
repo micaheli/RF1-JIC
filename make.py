@@ -122,30 +122,35 @@ if IS_CLEANUP:
 
 
 if TARGET == "cc3d":
+    PROJECT = "rffw"
     TARGET_USB = "usb_fs"
     TARGET_DEVICE = "STM32F103xB"
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
 
 elif TARGET == "kissesc":
-    TARGET_USB = "kissesc"
+    PROJECT = "rfesc"
+    TARGET_USB = "none"
     TARGET_DEVICE = "STM32F051x8"
     TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
     TARGET_PROCESSOR_TYPE  = "f0"
 
 elif TARGET == "lux":
+    PROJECT = "rffw"
     TARGET_USB = "usb_fs"
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
 
 elif TARGET == "revo":
+    PROJECT = "rffw"
     TARGET_USB = "usb_otg_fs"
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
 
 elif TARGET == "f7disco":
+    PROJECT = "rffw"
     TARGET_USB = "usb_otg_fs"
     TARGET_DEVICE = "STM32F746xx"
     TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
@@ -157,35 +162,35 @@ else:
 
 
 
-STM32F0_MCU_DIR    = "src/rffw/target/stm32f0"
+STM32F0_MCU_DIR    = "src/target/stm32f0"
 STM32F0_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F0xx/Include"
 STM32F0_HAL_DIR    = "lib/STM32F0xx_HAL_Driver"
 STM32F0_HAL_SRC    = "lib/STM32F0xx_HAL_Driver"
 STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F0_ARCH_FLAGS = "-mthumb -mcpu=cortex-m0"
 
-STM32F1_MCU_DIR    = "src/rffw/target/stm32f1"
+STM32F1_MCU_DIR    = "src/target/stm32f1"
 STM32F1_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F1xx/Include"
 STM32F1_HAL_DIR    = "lib/STM32F1xx_HAL_Driver"
 STM32F1_HAL_SRC    = "lib/STM32F1xx_HAL_Driver"
 STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F1_ARCH_FLAGS = "-mthumb -mcpu=cortex-m3"
 
-STM32F3_MCU_DIR    = "src/rffw/target/stm32f3"
+STM32F3_MCU_DIR    = "src/target/stm32f3"
 STM32F3_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F3xx/Include"
 STM32F3_HAL_DIR    = "lib/STM32F3xx_HAL_Driver"
 STM32F3_HAL_SRC    = "lib/STM32F3xx_HAL_Driver"
 STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-STM32F4_MCU_DIR    = "src/rffw/target/stm32f4"
+STM32F4_MCU_DIR    = "src/target/stm32f4"
 STM32F4_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F4xx/Include"
 STM32F4_HAL_DIR    = "lib/STM32F4xx_HAL_Driver"
 STM32F4_HAL_SRC    = "lib/STM32F4xx_HAL_Driver"
 STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-STM32F7_MCU_DIR    = "src/rffw/target/stm32f7"
+STM32F7_MCU_DIR    = "src/target/stm32f7"
 STM32F7_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F7xx/Include"
 STM32F7_HAL_DIR    = "lib/STM32F7xx_HAL_Driver"
 STM32F7_HAL_SRC    = "lib/STM32F7xx_HAL_Driver"
@@ -232,26 +237,18 @@ else:
     print("ERROR: NOT VALID PROCESSOR TYPE, CHECK MAKE FILE CODE")
     sys.exit(1)
 
-
-
-directories = [
+rffw_directories = [
     HAL_DIR + "/Src",
     "lib/STM32_USB_Device_Library/Core/Src",
     "lib/STM32_USB_Device_Library/Class/HID/Src",
     "src/rffw/src",
     "src/rffw/src/usb",
-    "src/rffw/target/" + TARGET,
-    "src/rffw/target/" + TARGET_USB,
+    "src/target/" + TARGET,
+    "src/target/" + TARGET_USB,
     MCU_DIR,
 ]
 
-excluded_files = [
-    ".*_template.c",
-]
-
-linkerObjs = ""
-
-INCLUDE_DIRS = [
+rffw_INCLUDE_DIRS = [
     "lib/CMSIS/Include",
     CMSIS_DIR,
     HAL_DIR + "/Inc",
@@ -259,10 +256,46 @@ INCLUDE_DIRS = [
     "lib/STM32_USB_Device_Library/Class/HID/Inc",
     "src/rffw/inc",
     "src/rffw/inc/usb",
-    "src/rffw/target/" + TARGET,
-    "src/rffw/target/" + TARGET_USB,
+    "src/target/" + TARGET,
+    "src/target/" + TARGET_USB,
     MCU_DIR,
 ]
+
+
+rfesc_directories = [
+    HAL_DIR + "/Src",
+    "src/rfesc/src",
+    "src/target/" + TARGET,
+    MCU_DIR,
+]
+
+rfesc_INCLUDE_DIRS = [
+    "lib/CMSIS/Include",
+    "src/rfesc/inc",
+    CMSIS_DIR,
+    HAL_DIR + "/Inc",
+    "src/target/" + TARGET,
+    MCU_DIR,
+]
+
+if PROJECT == "rffw":
+    directories = rffw_directories
+    INCLUDE_DIRS = rffw_INCLUDE_DIRS
+elif PROJECT == "rfesc":
+    directories = rfesc_directories
+    INCLUDE_DIRS = rfesc_INCLUDE_DIRS
+else:
+    directories = rffw_directories
+    INCLUDE_DIRS = rffw_INCLUDE_DIRS
+
+
+excluded_files = [
+    ".*_template.c",
+]
+
+linkerObjs = ""
+
+
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
 LTO_FLAGS = "-flto -fuse-linker-plugin -O0"
@@ -285,8 +318,8 @@ ASMFLAGS = " ".join([
 ])
 
 mapFile = os.path.join("output", "{OUTPUT_NAME}.map")
-linkerDir = os.path.join("src", "rffw", "target")
-ldScript = os.path.join("src", "rffw", "target", TARGET_SCRIPT)
+linkerDir = os.path.join("src", "target")
+ldScript = os.path.join("src", "target", TARGET_SCRIPT)
 LDFLAGS = " ".join([
     "-lm -nostartfiles --specs=nano.specs -lc -lnosys",
     ARCH_FLAGS,
