@@ -236,12 +236,12 @@ else:
 
 directories = [
     HAL_DIR + "/Src",
-#    "lib/STM32_USB_Device_Library/Core/Src",
-#    "lib/STM32_USB_Device_Library/Class/HID/Src",
+    "lib/STM32_USB_Device_Library/Core/Src",
+    "lib/STM32_USB_Device_Library/Class/HID/Src",
     "src/rffw/src",
-#    "src/rffw/src/usb",
+    "src/rffw/src/usb",
     "src/rffw/target/" + TARGET,
-#    "src/rffw/target/" + TARGET_USB,
+    "src/rffw/target/" + TARGET_USB,
     MCU_DIR,
 ]
 
@@ -255,12 +255,12 @@ INCLUDE_DIRS = [
     "lib/CMSIS/Include",
     CMSIS_DIR,
     HAL_DIR + "/Inc",
-#    "lib/STM32_USB_Device_Library/Core/Inc",
-#    "lib/STM32_USB_Device_Library/Class/HID/Inc",
+    "lib/STM32_USB_Device_Library/Core/Inc",
+    "lib/STM32_USB_Device_Library/Class/HID/Inc",
     "src/rffw/inc",
-#    "src/rffw/inc/usb",
+    "src/rffw/inc/usb",
     "src/rffw/target/" + TARGET,
-#    "src/rffw/target/" + TARGET_USB,
+    "src/rffw/target/" + TARGET_USB,
     MCU_DIR,
 ]
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
