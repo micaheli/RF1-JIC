@@ -25,7 +25,6 @@
 #define MPU6000_REV_D10     0x5A
 
 
-// TODO: this is currently broken (even just this little bit), get working and fix it
 bool accgyroDeviceInit(void)
 {
     // reset gyro

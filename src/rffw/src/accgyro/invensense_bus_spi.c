@@ -5,7 +5,9 @@
 #include "accgyro/invensense_bus.h"
 #include "accgyro/invensense_device.h"
 
-//#include "exti.h"
+#ifdef GYRO_EXTI_GPIO_Port
+#include "exti.h"
+#endif
 
 SPI_HandleTypeDef gyro_spi;
 
@@ -20,7 +22,7 @@ static void SPI_Init(void)
     gyro_spi.Init.CLKPolarity = SPI_POLARITY_HIGH;
     gyro_spi.Init.CLKPhase = SPI_PHASE_2EDGE;
     gyro_spi.Init.NSS = SPI_NSS_SOFT;
-    gyro_spi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;  // TODO: this is slower than it should be
+    gyro_spi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;  // TODO: this is slower than it needs to be for reading sensors, re-init later to 20 MHz
     gyro_spi.Init.FirstBit = SPI_FIRSTBIT_MSB;
     gyro_spi.Init.TIMode = SPI_TIMODE_DISABLE;
     gyro_spi.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -39,10 +41,6 @@ bool accgyroInit(void)
     SPI_Init();
     HAL_Delay(10);
 
-#ifdef MPU_EXTI_GPIO_Port
-    //EXTI_Init(MPU_EXTI_GPIO_Port, MPU_EXTI_GPIO_Pin, MPU_EXTI_IRQn, 0, 0);
-#endif
-
     if (!accgyroDeviceDetect()) {
         return false;
     }
@@ -52,6 +50,11 @@ bool accgyroInit(void)
     if (!accgyroDeviceInit()) {
         return false;
     }
+
+#ifdef GYRO_EXTI_GPIO_Port
+    // after the gyro is started, start up the interrupt
+    EXTI_Init(GYRO_EXTI_GPIO_Port, GYRO_EXTI_GPIO_Pin, GYRO_EXTI_IRQn, 0, 0);
+#endif
 
     return true;
 }

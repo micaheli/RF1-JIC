@@ -2,6 +2,7 @@
 
 void EXTI_Init(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, IRQn_Type IRQn, uint32_t PreemptPriority, uint32_t SubPriority)
 {
+    HAL_GPIO_DeInit(GPIOx, GPIO_Pin);
     GPIO_InitTypeDef GPIO_InitStructure;
 
     GPIO_InitStructure.Pin = GPIO_Pin;

@@ -94,6 +94,10 @@ void SysTick_Handler(void)
 */
 void GYRO_EXTI_IRQHandler(void)
 {
+    // TODO: read out the gyro
+    // move this function to invensense_bus_spi? how much does this change between CPU families?
+    HAL_GPIO_TogglePin(LED0_GPIO_PORT, LED0_PIN);
+
     HAL_GPIO_EXTI_IRQHandler(GYRO_EXTI_GPIO_Pin);
 }
 
