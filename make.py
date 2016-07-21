@@ -242,6 +242,7 @@ rffw_directories = [
     "lib/STM32_USB_Device_Library/Core/Src",
     "lib/STM32_USB_Device_Library/Class/HID/Src",
     "src/rffw/src",
+    "src/rffw/src/accgyro",
     "src/rffw/src/usb",
     "src/target/" + TARGET,
     "src/target/" + TARGET_USB,
@@ -347,7 +348,7 @@ commands = [
 ]
 
 
-THREAD_LIMIT = 200
+THREAD_LIMIT = 5
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
@@ -399,7 +400,7 @@ class CommandRunnerThread(threading.Thread):
         print(find_between( self.command, "output" + os.sep, ".o" ))
         locker.release()
 
-        self.proc = subprocess.Popen(self.command, stdout=self.pipe, stderr=self.pipe, shell=True)
+        self.proc = subprocess.Popen(self.command, shell=True) # stdout=self.pipe, stderr=self.pipe, shell=True)
         stdout_value, stderr_value = self.proc.communicate()
 
         self.pipe.close()

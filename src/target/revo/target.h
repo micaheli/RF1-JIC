@@ -1,9 +1,17 @@
 #define	REVO
 
-#define LEDn                             1
+#define LEDn                            2
 
-#define LED1_PIN                         GPIO_PIN_5
-#define LED1_GPIO_PORT                   GPIOB
+#define LED0_PIN                        GPIO_PIN_4
+#define LED0_GPIO_PORT                  GPIOB
 
-#define SERVO1_PIN                       GPIO_PIN_4
-#define SERVO1_GPIO_PORT                 GPIOB
+#define LED1_PIN                        GPIO_PIN_5
+#define LED1_GPIO_PORT                  GPIOB
+
+#define GYRO_SPI                        SPI1
+#define GYRO_SPI_IRQHandler             SPI1_IRQHandler
+
+#define GYRO_EXTI_GPIO_Port             GPIOC
+#define GYRO_EXTI_GPIO_Pin              GPIO_PIN_4
+#define GYRO_EXTI_IRQn                  EXTI4_IRQn
+#define GYRO_EXTI_IRQHandler            EXTI4_IRQHandler

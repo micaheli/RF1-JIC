@@ -1,8 +1,12 @@
 /* Includes ------------------------------------------------------------------*/
+#include <stdbool.h>
+
 #include "includes.h"
 
 #include "usbd_hid.h"
 #include "usb_device.h"
+
+#include "accgyro/invensense_bus.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -11,27 +15,32 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static int8_t hidBuffer[4];
+//static int8_t hidBuffer[4];
 
 /* Private function prototypes -----------------------------------------------*/
-void BoardInit(void);
-void SystemClock_Config(void);
 void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 /* Private functions ---------------------------------------------------------*/
 
 int main(void)
 {
-    uint8_t i = 0;
+    //uint8_t i = 0;
 
 	BoardInit();
-	MX_USB_DEVICE_Init();
+
+	InitializeLED(LED0_GPIO_PORT, LED0_PIN);
 	InitializeLED(LED1_GPIO_PORT, LED1_PIN);
+
+	USB_DEVICE_Init();
+
+    if (!accgyroInit()) {
+        ErrorHandler();
+    }
 
 	while (1) {
 		HAL_GPIO_TogglePin(LED1_GPIO_PORT, LED1_PIN);
-		HAL_GPIO_TogglePin(SERVO1_GPIO_PORT, SERVO1_PIN);
 
+        /*
         hidBuffer[0] = 0; // buttons
         if (i < 10) {
             hidBuffer[1] = 0x10;
@@ -49,6 +58,7 @@ int main(void)
         i = (i + 1) % 40;
 
         USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t*)hidBuffer, 4);
+        */
 
 		HAL_Delay(100);
 	}
@@ -56,9 +66,9 @@ int main(void)
 
 void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
-	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
-
 	GPIO_InitTypeDef GPIO_InitStructure;
+
+    HAL_GPIO_DeInit(GPIOx, GPIO_Pin);
 
 	GPIO_InitStructure.Pin = GPIO_Pin;
 
@@ -66,4 +76,14 @@ void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 	GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
 	GPIO_InitStructure.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
+
+	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
+}
+
+void ErrorHandler(void)
+{
+    while (1) {
+        HAL_GPIO_TogglePin(LED0_GPIO_PORT, LED0_PIN);
+        HAL_Delay(40);
+    }
 }
