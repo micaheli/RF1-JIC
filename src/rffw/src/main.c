@@ -6,7 +6,7 @@
 #include "usbd_hid.h"
 #include "usb_device.h"
 
-#include "accgyro/invensense_bus.h"
+#include "drivers/invensense_bus.h"
 
 /* Private typedef -----------------------------------------------------------*/
 

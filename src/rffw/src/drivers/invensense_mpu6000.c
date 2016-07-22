@@ -2,9 +2,9 @@
 
 #include "includes.h"
 
-#include "accgyro/invensense_bus.h"
-#include "accgyro/invensense_device.h"
-#include "accgyro/invensense_register_map.h"
+#include "drivers/invensense_bus.h"
+#include "drivers/invensense_device.h"
+#include "drivers/invensense_register_map.h"
 
 #include "input/gyro.h"
 

@@ -226,9 +226,9 @@ for feature in FEATURES:
     elif feature.startswith("mpu"):
         # gyro named by "gyro/bus", e.g. "mpu6000/spi"
         gyro, bus = feature.split("/")
-        SOURCE_FILES.append("src/%s/src/accgyro/invensense_%s.c" % (PROJECT, gyro))
-        SOURCE_FILES.append("src/%s/src/accgyro/invensense_bus_%s.c" % (PROJECT, bus))
-        INCLUDE_DIRS.append("src/%s/inc/accgyro" % PROJECT)
+        SOURCE_FILES.append("src/%s/src/drivers/invensense_%s.c" % (PROJECT, gyro))
+        SOURCE_FILES.append("src/%s/src/drivers/invensense_bus_%s.c" % (PROJECT, bus))
+        INCLUDE_DIRS.append("src/%s/inc/drivers" % PROJECT)
 
 
 
