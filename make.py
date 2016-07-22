@@ -257,6 +257,7 @@ USB_INCLUDE_DIRS = [
 ]
 
 for feature in FEATURES:
+
     if feature.startswith("usb_"):
         # add common usb directories and usb descriptor for project
         SOURCE_DIRS.extend(USB_SOURCE_DIRS)
@@ -264,7 +265,9 @@ for feature in FEATURES:
         # add usb class specific files
         SOURCE_DIRS.append("src/target/" + feature)
         INCLUDE_DIRS.append("src/target/" + feature)
+
     elif feature.startswith("mpu"):
+        # gyro named by "gyro/bus", e.g. "mpu6000/spi"
         gyro, bus = feature.split("/")
         SOURCE_FILES.append("src/%s/src/accgyro/invensense_%s.c" % (PROJECT, gyro))
         SOURCE_FILES.append("src/%s/src/accgyro/invensense_bus_%s.c" % (PROJECT, bus))
@@ -311,11 +314,11 @@ LDFLAGS = " ".join([
     "-T" + ldScript
 ])
 
-asm_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " + ASMFLAGS + " {INPUT_FILE}"
+asm_command = "arm-none-eabi-gcc -c -fdiagnostics-color -o output" + os.sep + "{OUTPUT_FILE} " + ASMFLAGS + " {INPUT_FILE}"
 
-compile_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " + CFLAGS + " {INPUT_FILE}"
+compile_command = "arm-none-eabi-gcc -c -fdiagnostics-color -o output" + os.sep + "{OUTPUT_FILE} " + CFLAGS + " {INPUT_FILE}"
 
-link_command = "arm-none-eabi-gcc -o output" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
+link_command = "arm-none-eabi-gcc -fdiagnostics-color -o output" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
 
 size_command = "arm-none-eabi-size output" + os.sep + "{OUTPUT_NAME}.elf"
 
@@ -330,19 +333,19 @@ excluded_files = [
 ]
 
 
-THREAD_LIMIT = 5
+THREAD_LIMIT = 10
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
 isStop = False
 
 def find_between( s, first, last ):
-	try:
-		start = s.index( first ) + len( first )
-		end = s.index( last, start )
-		return s[start:end]
-	except ValueError:
-		return ""
+    try:
+        start = s.index( first )
+        end = s.index( last, start )
+        return s[start:end]
+    except ValueError:
+        return ""
 
 class CommandRunnerThread(threading.Thread):
 
@@ -350,7 +353,6 @@ class CommandRunnerThread(threading.Thread):
         self.command = kwargs.pop("command", "")
         self.queue = kwargs.pop("queue", None)
         self.proc = None
-        self.pipe = LogPipe()
         super(CommandRunnerThread, self).__init__(*args, **kwargs)
         self.stop_event = threading.Event()
 
@@ -376,16 +378,23 @@ class CommandRunnerThread(threading.Thread):
         if isStop:
             locker.release()
             return
+
+        # figure out the output file path
+        file_path = find_between(self.command, "output" + os.sep, ".o")
+        basedir, basename = os.path.split(file_path)
+        # if the base directory doesn't exist, make it
+        if not os.path.exists(basedir):
+            os.makedirs(basedir)
         locker.release()
 
-        locker.acquire()
-        print(find_between( self.command, "output" + os.sep, ".o" ))
-        locker.release()
-
-        self.proc = subprocess.Popen(self.command, shell=True) # stdout=self.pipe, stderr=self.pipe, shell=True)
+        self.proc = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout_value, stderr_value = self.proc.communicate()
 
-        self.pipe.close()
+        locker.acquire()
+        print("% " + basename)
+        if stderr_value:
+            print(stderr_value.decode())
+        locker.release()
 
         if self.queue:
             self.queue.put(self.proc.returncode)
@@ -393,19 +402,13 @@ class CommandRunnerThread(threading.Thread):
             print(self.proc.returncode)
 
         self.proc = None
-        self.pipe = None
 
     def stop_command(self):
         if self.proc:
             try:
                 self.proc.kill()
+                self.proc.wait()
             except OSError:
-                pass
-
-        if self.pipe:
-            try:
-                self.pipe.close()
-            except Exception:
                 pass
 
         self.stop_event.set()
@@ -424,13 +427,18 @@ def AddToList(fileName):
     commands.append(fileName)
 
 def makeObject(fileName):
-    head, tail = ntpath.split(fileName)
-    root, ext = os.path.splitext(tail)
+    root, ext = os.path.splitext(fileName)
+
+    # strip first directory from  "src/..." or "lib/..."
+    _, root = root.split(os.sep, 1)
+    # send it to "output/target/"
+    root = os.path.join(TARGET, root)
+
     if ext.lower() in (".c", ".s"):
         return root + ".o"
 
     print("Unknown file type: " + tail)
-    return tail
+    return root
 
 def ProcessList(fileNames):
     global linkerObjs
