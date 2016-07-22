@@ -3729,6 +3729,8 @@ static HAL_StatusTypeDef I2C_RequestMemoryRead(I2C_HandleTypeDef *hi2c, uint16_t
   */
 static void I2C_ITAddrCplt(I2C_HandleTypeDef *hi2c, uint32_t ITFlags)
 {
+  (void)ITFlags;
+
   uint8_t transferdirection = 0U;
   uint16_t slaveaddrcode = 0U;
   uint16_t ownadd1code = 0U;
@@ -4305,6 +4307,7 @@ static void I2C_DMAMasterTransmitCplt(DMA_HandleTypeDef *hdma)
   */
 static void I2C_DMASlaveTransmitCplt(DMA_HandleTypeDef *hdma) 
 {
+  (void)hdma;
   /* No specific action, Master fully manage the generation of STOP condition */
   /* Mean that this generation can arrive at any time, at the end or during DMA process */
   /* So STOP condition should be manage through Interrupt treatment */
@@ -4359,6 +4362,7 @@ static void I2C_DMAMasterReceiveCplt(DMA_HandleTypeDef *hdma)
   */
 static void I2C_DMASlaveReceiveCplt(DMA_HandleTypeDef *hdma) 
 {  
+  (void)hdma;
   /* No specific action, Master fully manage the generation of STOP condition */
   /* Mean that this generation can arrive at any time, at the end or during DMA process */
   /* So STOP condition should be manage through Interrupt treatment */
