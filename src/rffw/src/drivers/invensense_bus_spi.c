@@ -30,8 +30,7 @@ static void SPI_Init(uint32_t baudRatePrescaler)
     gyro_spi.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     gyro_spi.Init.CRCPolynomial = 7;
 
-    if (HAL_SPI_Init(&gyro_spi) != HAL_OK)
-    {
+    if (HAL_SPI_Init(&gyro_spi) != HAL_OK) {
         ErrorHandler();
     }
 
@@ -43,6 +42,11 @@ bool accgyroInit(void)
     // read and write settings at slow speed (48 MHz / 64)
     SPI_Init(SPI_BAUDRATEPRESCALER_64);
     HAL_Delay(5);
+
+#ifdef GYRO_EXTI
+    // ensure the interrupt is not running
+    HAL_NVIC_DisableIRQ(GYRO_EXTI_IRQn);
+#endif
 
     if (!accgyroDeviceDetect()) {
         return false;
@@ -80,10 +84,11 @@ void GYRO_DMA_TX_IRQHandler(void)
 
 void GYRO_DMA_RX_IRQHandler(void)
 {
-    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
-
     HAL_DMA_IRQHandler(&dma_gyro_rx);
 
+    // reset chip select line
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
+    // run callback for completed gyro read
     accgyroDeviceReadGyroComplete();
 }
 #endif
@@ -154,9 +159,14 @@ bool accgyroSlowReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
 
 bool accgyroDMAReadWriteRegister(uint8_t *txData, uint8_t *rxData, uint8_t length)
 {
-    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
+    // for whatever reason HAL_SPI_GetState(&gyro_spi) always returns HAL_SPI_STATE_BUSY_TX_RX
+    if (HAL_DMA_GetState(&dma_gyro_rx) == HAL_DMA_STATE_READY) {
+        HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
 
-    HAL_SPI_TransmitReceive_DMA(&gyro_spi, txData, rxData, length);
+        HAL_SPI_TransmitReceive_DMA(&gyro_spi, txData, rxData, length);
 
-    return true;
+        return true;
+    } else {
+        return false;
+    }
 }
