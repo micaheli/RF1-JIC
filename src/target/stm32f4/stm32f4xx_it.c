@@ -1,4 +1,4 @@
-#include "target.h"
+#include "includes.h"
 
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx.h"
@@ -22,6 +22,7 @@ void NMI_Handler(void)
 */
 void HardFault_Handler(void)
 {
+    LED3_ON;
     while (1);
 }
 

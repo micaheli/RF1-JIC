@@ -96,7 +96,7 @@ elif TARGET == "lux":
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
-    FEATURES = ["usb_fs"]
+    FEATURES = ["mpu6500/spi", "usb_fs"]
 
 elif TARGET == "revo":
     PROJECT = "rffw"
