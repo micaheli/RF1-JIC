@@ -289,7 +289,9 @@ CFLAGS = " ".join([
     DEF_FLAGS,
     DEBUG_FLAGS,
     INCLUDES,
-    "-Wunused-parameter -Wdouble-promotion -save-temps=obj -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -ffunction-sections -fdata-sections -MMD -MP"
+    "-Wunused-parameter -Wdouble-promotion -save-temps=obj -std=gnu99",
+    "-Wall -Wextra -Wunsafe-loop-optimizations",
+    "-ffunction-sections -fdata-sections -MMD -MP"
 ])
 
 ASMFLAGS = " ".join([
@@ -419,7 +421,43 @@ class CommandRunnerThread(threading.Thread):
 
 
 def FileModified(fileName):
-    return True
+    # get the output file `output/.../filename.o`
+    outputFile = os.path.join("output", makeObject(fileName.path))
+    # if we haven't compiled, then return true
+    if not os.path.exists(outputFile):
+        return True
+
+    # if input file is more recent than the output, return true
+    if os.path.getmtime(fileName) > os.path.getmtime(outputFile):
+        return True
+
+    # get the dependency file `output/.../filename.d`
+    outputBase, _ = os.path.splitext(outputFile)
+    depFile = outputBase + ".d"
+
+    # if we don't have a dependency file, return true
+    if not os.path.exists(depFile):
+        return True
+
+    # check the dependency file
+    with open(depFile, 'r') as f:
+        for line in f:
+            # the lines with dependencies start with a space
+            if line[0] != " ":
+                continue
+
+            for dep in line.split():
+                # we'll get the line continuation in this: "\"
+                if dep == "\\":
+                    continue
+                # all dependencies should exist
+                if not os.path.exists(dep):
+                    return True
+                # check if dependency is more recent
+                if os.path.getmtime(dep) > os.path.getmtime(outputFile):
+                    return True
+
+    return False
 
 def AddToList(fileName):
     global commands
