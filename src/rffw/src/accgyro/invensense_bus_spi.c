@@ -5,13 +5,13 @@
 #include "accgyro/invensense_bus.h"
 #include "accgyro/invensense_device.h"
 
-#ifdef GYRO_EXTI_GPIO_Port
+#ifdef GYRO_EXTI
 #include "exti.h"
 #endif
 
 SPI_HandleTypeDef gyro_spi;
 
-static void SPI_Init(void)
+static void SPI_Init(uint32_t baudRatePrescaler)
 {
     HAL_SPI_DeInit(&gyro_spi);
 
@@ -22,7 +22,7 @@ static void SPI_Init(void)
     gyro_spi.Init.CLKPolarity = SPI_POLARITY_HIGH;
     gyro_spi.Init.CLKPhase = SPI_PHASE_2EDGE;
     gyro_spi.Init.NSS = SPI_NSS_SOFT;
-    gyro_spi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;  // TODO: this is slower than it needs to be for reading sensors, re-init later to 20 MHz
+    gyro_spi.Init.BaudRatePrescaler = baudRatePrescaler;
     gyro_spi.Init.FirstBit = SPI_FIRSTBIT_MSB;
     gyro_spi.Init.TIMode = SPI_TIMODE_DISABLE;
     gyro_spi.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -38,8 +38,9 @@ static void SPI_Init(void)
 
 bool accgyroInit(void)
 {
-    SPI_Init();
-    HAL_Delay(10);
+    // read and write settings at slow speed (48 MHz / 64)
+    SPI_Init(SPI_BAUDRATEPRESCALER_64);
+    HAL_Delay(5);
 
     if (!accgyroDeviceDetect()) {
         return false;
@@ -51,13 +52,25 @@ bool accgyroInit(void)
         return false;
     }
 
-#ifdef GYRO_EXTI_GPIO_Port
+    // reinitialize at full speed (48 MHz / 2)
+    SPI_Init(SPI_BAUDRATEPRESCALER_2);
+
+#ifdef GYRO_EXTI
     // after the gyro is started, start up the interrupt
     EXTI_Init(GYRO_EXTI_GPIO_Port, GYRO_EXTI_GPIO_Pin, GYRO_EXTI_IRQn, 0, 0);
 #endif
 
     return true;
 }
+
+#ifdef GYRO_EXTI
+void GYRO_EXTI_IRQHandler(void)
+{
+    accgyroDeviceReadGyro();
+
+    HAL_GPIO_EXTI_IRQHandler(GYRO_EXTI_GPIO_Pin);
+}
+#endif
 
 // for now all of these are blocking operations, which is fine for writes
 // TODO: test DMA for non-blocking reads
@@ -121,6 +134,17 @@ bool accgyroSlowReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
 
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
     HAL_Delay(1);
+
+    return true;
+}
+
+bool accgyroFastReadWriteRegister(uint8_t *txData, uint8_t *rxData, uint8_t length)
+{
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+
+    HAL_SPI_TransmitReceive(&gyro_spi, txData, rxData, length, 50);
+
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 
     return true;
 }

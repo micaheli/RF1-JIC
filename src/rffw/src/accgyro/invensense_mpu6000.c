@@ -6,6 +6,8 @@
 #include "accgyro/invensense_device.h"
 #include "accgyro/invensense_register_map.h"
 
+#include "input/gyro.h"
+
 // value returned on WHO_AM_I register
 #define MPU6000_WHO_AM_I    0x68
 
@@ -24,6 +26,20 @@
 #define MPU6000_REV_D9      0x59
 #define MPU6000_REV_D10     0x5A
 
+typedef struct __attribute__((__packed__)) {
+    uint8_t address; // needed to start rx/tx transfer when sending address
+    uint8_t gyroX_H;
+    uint8_t gyroX_L;
+    uint8_t gyroY_H;
+    uint8_t gyroY_L;
+    uint8_t gyroZ_H;
+    uint8_t gyroZ_L;
+} gyroFrame_t;
+
+static gyroFrame_t gyroRxFrame;
+static gyroFrame_t gyroTxFrame;
+
+int16_t gyroData[3];
 
 bool accgyroDeviceInit(void)
 {
@@ -119,4 +135,19 @@ bool accgyroDeviceDetect(void)
     }
 
     return false;
+}
+
+bool accgyroDeviceReadGyro(void)
+{
+    gyroTxFrame.address = INVENS_RM_GYRO_XOUT_H | 0x80;
+
+    accgyroFastReadWriteRegister((uint8_t *)&gyroTxFrame, (uint8_t *)&gyroRxFrame, 7);
+
+    gyroData[0] = (int16_t)((gyroRxFrame.gyroX_H << 8) | gyroRxFrame.gyroX_L);
+    gyroData[1] = (int16_t)((gyroRxFrame.gyroY_H << 8) | gyroRxFrame.gyroY_L);
+    gyroData[2] = (int16_t)((gyroRxFrame.gyroZ_H << 8) | gyroRxFrame.gyroZ_L);
+
+    updateGyro(gyroData, 1.f / 16.4f);
+
+    return true;
 }

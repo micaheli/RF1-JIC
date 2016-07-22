@@ -89,26 +89,6 @@ void SysTick_Handler(void)
 /* please refer to the startup file (startup_stm32f4xx.s).                    */
 /******************************************************************************/
 
-/*
-* This function handles gyro EXTI line interrupt.
-*/
-void GYRO_EXTI_IRQHandler(void)
-{
-    // TODO: read out the gyro
-    // move this function to invensense_bus_spi? how much does this change between CPU families?
-    HAL_GPIO_TogglePin(LED0_GPIO_PORT, LED0_PIN);
-
-    HAL_GPIO_EXTI_IRQHandler(GYRO_EXTI_GPIO_Pin);
-}
-
-/*
-* This function handles gyro SPI global interrupt.
-*/
-void MPU_SPI_IRQHandler(void)
-{
-    HAL_SPI_IRQHandler(&gyro_spi);
-}
-
 /**
 * This function handles DMA2 stream0 global interrupt.
 */

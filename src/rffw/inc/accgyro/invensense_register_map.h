@@ -8,6 +8,7 @@
 #define INVENS_RM_INT_PIN_CFG   0x37
 #define INVENS_RM_INT_ENABLE    0x38
 #define INVENS_RM_INT_STATUS    0x3A
+#define INVENS_RM_GYRO_XOUT_H   0x43
 #define INVENS_RM_USER_CTRL     0x6A
 #define INVENS_RM_PWR_MGMT_1    0x6B
 #define INVENS_RM_PWR_MGMT_2    0x6C

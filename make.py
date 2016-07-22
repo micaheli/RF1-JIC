@@ -191,7 +191,8 @@ SOURCE_FILES = []
 # per project includes
 
 if PROJECT == "rffw":
-    pass
+    INCLUDE_DIRS.append("src/rffw/inc/input")
+    SOURCE_DIRS.append("src/rffw/src/input")
 elif PROJECT == "rfesc":
     pass
 else:
