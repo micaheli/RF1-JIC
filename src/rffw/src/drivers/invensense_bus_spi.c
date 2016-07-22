@@ -35,7 +35,7 @@ static void SPI_Init(uint32_t baudRatePrescaler)
         ErrorHandler();
     }
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
 }
 
 bool accgyroInit(void)
@@ -80,7 +80,7 @@ void GYRO_DMA_TX_IRQHandler(void)
 
 void GYRO_DMA_RX_IRQHandler(void)
 {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
 
     HAL_DMA_IRQHandler(&dma_gyro_rx);
 
@@ -89,19 +89,17 @@ void GYRO_DMA_RX_IRQHandler(void)
 #endif
 
 // for now all of these are blocking operations, which is fine for writes
-// TODO: test DMA for non-blocking reads
-// TODO: un-hardcode f4 CS pin
 
 bool accgyroWriteRegister(uint8_t reg, uint8_t data)
 {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
     HAL_Delay(1);
 
     // TODO: what should these timeouts be?
     HAL_SPI_Transmit(&gyro_spi, &reg, 1, 100);
     HAL_SPI_Transmit(&gyro_spi, &data, 1, 100);
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
     HAL_Delay(1);
 
     return true;
@@ -128,12 +126,12 @@ bool accgyroReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
 {
     reg |= 0x80;
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
 
     HAL_SPI_Transmit(&gyro_spi, &reg, 1, 100);
     HAL_SPI_Receive(&gyro_spi, data, length, 100);
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
 
     return true;
 }
@@ -142,13 +140,13 @@ bool accgyroSlowReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
 {
     reg |= 0x80;
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
     HAL_Delay(1);
 
     HAL_SPI_Transmit(&gyro_spi, &reg, 1, 100);
     HAL_SPI_Receive(&gyro_spi, data, length, 100);
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
     HAL_Delay(1);
 
     return true;
@@ -156,7 +154,7 @@ bool accgyroSlowReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
 
 bool accgyroDMAReadWriteRegister(uint8_t *txData, uint8_t *rxData, uint8_t length)
 {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
 
     HAL_SPI_TransmitReceive_DMA(&gyro_spi, txData, rxData, length);
 

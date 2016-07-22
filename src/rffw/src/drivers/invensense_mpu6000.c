@@ -39,7 +39,7 @@ typedef struct __attribute__((__packed__)) {
 static gyroFrame_t gyroRxFrame;
 static gyroFrame_t gyroTxFrame;
 
-int16_t gyroData[3];
+static int16_t gyroData[3];
 
 bool accgyroDeviceInit(void)
 {

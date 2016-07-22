@@ -11,6 +11,9 @@
 #define GYRO_SPI                        SPI1
 #define GYRO_SPI_IRQHandler             SPI1_IRQHandler
 
+#define GYRO_SPI_CS_GPIO_Port           GPIOA
+#define GYRO_SPI_CS_GPIO_Pin            GPIO_PIN_4
+
 #define GYRO_EXTI
 #define GYRO_EXTI_GPIO_Port             GPIOC
 #define GYRO_EXTI_GPIO_Pin              GPIO_PIN_4
