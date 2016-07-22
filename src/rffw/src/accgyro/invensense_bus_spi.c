@@ -154,18 +154,6 @@ bool accgyroSlowReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
     return true;
 }
 
-bool accgyroDMAReadRegister(uint8_t reg, uint8_t *rxData, uint8_t length)
-{
-    reg |= 0x80;
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-
-    HAL_SPI_Transmit(&gyro_spi, &reg, 1, 10);
-    HAL_SPI_Receive_DMA(&gyro_spi, rxData, length);
-
-    return true;
-}
-
 bool accgyroDMAReadWriteRegister(uint8_t *txData, uint8_t *rxData, uint8_t length)
 {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
