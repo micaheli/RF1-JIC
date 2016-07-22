@@ -23,50 +23,6 @@ except ImportError:
     import Queue as queue
 
 
-class LogPipe(threading.Thread):
-
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.daemon = False
-        self.fdRead, self.fdWrite = os.pipe()
-        self.pipeReader = os.fdopen(self.fdRead)
-        self.all_lines = list()
-        self.is_need_print = False
-        self.start()
-
-    def fileno(self):
-        return self.fdWrite
-
-    def run(self):
-        for line in iter(self.pipeReader.readline, ''):
-            self.all_lines.append(line)
-
-            if line.startswith("lib"):
-                r = re.search(r'[\w/\.\\: ]+(fatal error|error)', line)
-                if r is not None:
-                    self.is_need_print = True
-            elif line.startswith("src"):
-                r = re.search(r'[\w/\.\\: ]+(fatal error|error|warning|note)', line)
-                if r is not None:
-                    self.is_need_print = True
-
-            if self.is_need_print:
-                self.is_need_print = False
-                line_count = len(self.all_lines)
-                for n, _line in enumerate(self.all_lines[-2:]):   
-                    if n == 0 and line_count > 1 and 'In ' not in _line:
-                        continue
-                    print(_line)
-
-        self.pipeReader.close()
-
-    def close(self):
-        try:
-            os.close(self.fdWrite)
-        except OSError:
-            pass
-
-
 # Magic code
 # add new method for python string object
 # used
