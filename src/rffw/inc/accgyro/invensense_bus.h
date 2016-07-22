@@ -10,3 +10,5 @@ bool accgyroVerifyWriteRegister(uint8_t reg, uint8_t data);
 bool accgyroReadRegister(uint8_t reg, uint8_t length, uint8_t *data);
 bool accgyroSlowReadRegister(uint8_t reg, uint8_t length, uint8_t *data);
 bool accgyroFastReadWriteRegister(uint8_t *txData, uint8_t *rxData, uint8_t length);
+bool accgyroDMAReadWriteRegister(uint8_t *txData, uint8_t *rxData, uint8_t length);
+bool accgyroDMAReadRegister(uint8_t reg, uint8_t *rxData, uint8_t length);

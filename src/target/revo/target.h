@@ -16,3 +16,6 @@
 #define GYRO_EXTI_GPIO_Pin              GPIO_PIN_4
 #define GYRO_EXTI_IRQn                  EXTI4_IRQn
 #define GYRO_EXTI_IRQHandler            EXTI4_IRQHandler
+
+#define GYRO_DMA_TX_IRQHandler          DMA2_Stream3_IRQHandler
+#define GYRO_DMA_RX_IRQHandler          DMA2_Stream0_IRQHandler

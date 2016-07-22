@@ -5,4 +5,5 @@
 bool accgyroDeviceInit(void);
 bool accgyroDeviceDetect(void);
 
-bool accgyroDeviceReadGyro(void);
+void accgyroDeviceReadGyro(void);
+void accgyroDeviceReadGyroComplete(void);

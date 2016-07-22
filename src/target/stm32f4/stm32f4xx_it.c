@@ -5,9 +5,6 @@
 #include "stm32f4xx_it.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
-//extern DMA_HandleTypeDef hdma_spi1_rx;
-//extern DMA_HandleTypeDef hdma_spi1_tx;
-extern SPI_HandleTypeDef gyro_spi;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Interruption and Exception Handlers         */
@@ -88,26 +85,6 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f4xx.s).                    */
 /******************************************************************************/
-
-/**
-* This function handles DMA2 stream0 global interrupt.
-*/
-/*
-void DMA2_Stream0_IRQHandler(void)
-{
-  HAL_DMA_IRQHandler(&hdma_spi1_rx);
-}
-*/
-
-/**
-* This function handles DMA2 stream3 global interrupt.
-*/
-/*
-void DMA2_Stream3_IRQHandler(void)
-{
-  HAL_DMA_IRQHandler(&hdma_spi1_tx);
-}
-*/
 
 /**
 * @brief This function handles USB On The Go FS global interrupt.

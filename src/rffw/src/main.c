@@ -20,6 +20,8 @@
 /* Private function prototypes -----------------------------------------------*/
 void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
+void DMA_Init(void);
+
 /* Private functions ---------------------------------------------------------*/
 
 int main(void)
@@ -32,6 +34,8 @@ int main(void)
 	InitializeLED(LED1_GPIO_PORT, LED1_PIN);
 
 	USB_DEVICE_Init();
+
+    DMA_Init();
 
     if (!accgyroInit()) {
         ErrorHandler();

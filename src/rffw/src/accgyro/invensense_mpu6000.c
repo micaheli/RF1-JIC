@@ -27,7 +27,7 @@
 #define MPU6000_REV_D10     0x5A
 
 typedef struct __attribute__((__packed__)) {
-    uint8_t address; // needed to start rx/tx transfer when sending address
+    //uint8_t address; // needed to start rx/tx transfer when sending address
     uint8_t gyroX_H;
     uint8_t gyroX_L;
     uint8_t gyroY_H;
@@ -37,7 +37,7 @@ typedef struct __attribute__((__packed__)) {
 } gyroFrame_t;
 
 static gyroFrame_t gyroRxFrame;
-static gyroFrame_t gyroTxFrame;
+//static gyroFrame_t gyroTxFrame;
 
 int16_t gyroData[3];
 
@@ -129,25 +129,28 @@ bool accgyroDeviceDetect(void)
         case MPU6000_REV_D9:
         case MPU6000_REV_D10:
             return true;
-            break;
-        default:
-            break;
     }
 
     return false;
 }
 
-bool accgyroDeviceReadGyro(void)
+void accgyroDeviceReadGyro(void)
 {
-    gyroTxFrame.address = INVENS_RM_GYRO_XOUT_H | 0x80;
+    //gyroTxFrame.address = INVENS_RM_GYRO_XOUT_H | 0x80;
+    uint8_t address = INVENS_RM_GYRO_XOUT_H;
 
-    accgyroFastReadWriteRegister((uint8_t *)&gyroTxFrame, (uint8_t *)&gyroRxFrame, 7);
+    accgyroDMAReadRegister(address, (uint8_t *)&gyroRxFrame, 6);
 
+    //updateGyro(gyroData, 1.f / 16.4f);
+}
+
+
+
+void accgyroDeviceReadGyroComplete(void)
+{
     gyroData[0] = (int16_t)((gyroRxFrame.gyroX_H << 8) | gyroRxFrame.gyroX_L);
     gyroData[1] = (int16_t)((gyroRxFrame.gyroY_H << 8) | gyroRxFrame.gyroY_L);
     gyroData[2] = (int16_t)((gyroRxFrame.gyroZ_H << 8) | gyroRxFrame.gyroZ_L);
 
     updateGyro(gyroData, 1.f / 16.4f);
-
-    return true;
 }

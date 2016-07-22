@@ -10,6 +10,8 @@
 #endif
 
 SPI_HandleTypeDef gyro_spi;
+DMA_HandleTypeDef dma_gyro_rx;
+DMA_HandleTypeDef dma_gyro_tx;
 
 static void SPI_Init(uint32_t baudRatePrescaler)
 {
@@ -66,9 +68,23 @@ bool accgyroInit(void)
 #ifdef GYRO_EXTI
 void GYRO_EXTI_IRQHandler(void)
 {
-    accgyroDeviceReadGyro();
-
     HAL_GPIO_EXTI_IRQHandler(GYRO_EXTI_GPIO_Pin);
+
+    accgyroDeviceReadGyro();
+}
+
+void GYRO_DMA_TX_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(&dma_gyro_tx);
+}
+
+void GYRO_DMA_RX_IRQHandler(void)
+{
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+
+    HAL_DMA_IRQHandler(&dma_gyro_rx);
+
+    accgyroDeviceReadGyroComplete();
 }
 #endif
 
@@ -138,13 +154,23 @@ bool accgyroSlowReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
     return true;
 }
 
-bool accgyroFastReadWriteRegister(uint8_t *txData, uint8_t *rxData, uint8_t length)
+bool accgyroDMAReadRegister(uint8_t reg, uint8_t *rxData, uint8_t length)
+{
+    reg |= 0x80;
+
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+
+    HAL_SPI_Transmit(&gyro_spi, &reg, 1, 10);
+    HAL_SPI_Receive_DMA(&gyro_spi, rxData, length);
+
+    return true;
+}
+
+bool accgyroDMAReadWriteRegister(uint8_t *txData, uint8_t *rxData, uint8_t length)
 {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 
-    HAL_SPI_TransmitReceive(&gyro_spi, txData, rxData, length, 50);
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+    HAL_SPI_TransmitReceive_DMA(&gyro_spi, txData, rxData, length);
 
     return true;
 }
