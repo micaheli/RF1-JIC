@@ -57,9 +57,6 @@ class LogPipe(threading.Thread):
                     if n == 0 and line_count > 1 and 'In ' not in _line:
                         continue
                     print(_line)
-                
-
-
 
         self.pipeReader.close()
 
@@ -120,182 +117,163 @@ if IS_CLEANUP:
                 os.rmdir(os.path.join(root, name))
     sys.exit(0)
 
+FEATURES = []
+
+################################################################################
+# Determine target variables and features
 
 if TARGET == "cc3d":
     PROJECT = "rffw"
-    TARGET_USB = "usb_fs"
     TARGET_DEVICE = "STM32F103xB"
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
+    FEATURES = ["usb_fs"]
 
 elif TARGET == "kissesc":
     PROJECT = "rfesc"
-    TARGET_USB = "none"
     TARGET_DEVICE = "STM32F051x8"
     TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
     TARGET_PROCESSOR_TYPE  = "f0"
 
 elif TARGET == "lux":
     PROJECT = "rffw"
-    TARGET_USB = "usb_fs"
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
+    FEATURES = ["usb_fs"]
 
 elif TARGET == "revo":
     PROJECT = "rffw"
-    TARGET_USB = "usb_otg_fs"
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
+    FEATURES = ["mpu6000/spi", "usb_otg_fs"]
 
 elif TARGET == "f7disco":
     PROJECT = "rffw"
-    TARGET_USB = "usb_otg_fs"
     TARGET_DEVICE = "STM32F746xx"
     TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
     TARGET_PROCESSOR_TYPE  = "f7"
+    FEATURES = ["usb_otg_fs"]
 
 else:
-    print("ERROR: NOT VALID TARGET")
+    print("ERROR: NOT VALID TARGET", file=sys.stderr)
     sys.exit(1)
 
 
+################################################################################
+# Set per target compilation options
 
-STM32F0_MCU_DIR    = "src/target/stm32f0"
-STM32F0_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F0xx/Include"
-STM32F0_HAL_DIR    = "lib/STM32F0xx_HAL_Driver"
-STM32F0_HAL_SRC    = "lib/STM32F0xx_HAL_Driver"
 STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F0_ARCH_FLAGS = "-mthumb -mcpu=cortex-m0"
 
-STM32F1_MCU_DIR    = "src/target/stm32f1"
-STM32F1_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F1xx/Include"
-STM32F1_HAL_DIR    = "lib/STM32F1xx_HAL_Driver"
-STM32F1_HAL_SRC    = "lib/STM32F1xx_HAL_Driver"
 STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F1_ARCH_FLAGS = "-mthumb -mcpu=cortex-m3"
 
-STM32F3_MCU_DIR    = "src/target/stm32f3"
-STM32F3_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F3xx/Include"
-STM32F3_HAL_DIR    = "lib/STM32F3xx_HAL_Driver"
-STM32F3_HAL_SRC    = "lib/STM32F3xx_HAL_Driver"
 STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-STM32F4_MCU_DIR    = "src/target/stm32f4"
-STM32F4_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F4xx/Include"
-STM32F4_HAL_DIR    = "lib/STM32F4xx_HAL_Driver"
-STM32F4_HAL_SRC    = "lib/STM32F4xx_HAL_Driver"
 STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-STM32F7_MCU_DIR    = "src/target/stm32f7"
-STM32F7_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F7xx/Include"
-STM32F7_HAL_DIR    = "lib/STM32F7xx_HAL_Driver"
-STM32F7_HAL_SRC    = "lib/STM32F7xx_HAL_Driver"
 STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=25000000 -D" + TARGET_DEVICE
 STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
 
 if TARGET_PROCESSOR_TYPE == "f0":
-    MCU_DIR    = STM32F0_MCU_DIR
-    CMSIS_DIR  = STM32F0_CMSIS_DIR
-    HAL_DIR    = STM32F0_HAL_DIR
     DEF_FLAGS  = STM32F0_DEF_FLAGS
     ARCH_FLAGS = STM32F0_ARCH_FLAGS
 
 elif TARGET_PROCESSOR_TYPE == "f1":
-    MCU_DIR    = STM32F1_MCU_DIR
-    CMSIS_DIR  = STM32F1_CMSIS_DIR
-    HAL_DIR    = STM32F1_HAL_DIR
     DEF_FLAGS  = STM32F1_DEF_FLAGS
     ARCH_FLAGS = STM32F1_ARCH_FLAGS
 
 elif TARGET_PROCESSOR_TYPE == "f3":
-    MCU_DIR    = STM32F3_MCU_DIR
-    CMSIS_DIR  = STM32F3_CMSIS_DIR
-    HAL_DIR    = STM32F3_HAL_DIR
     DEF_FLAGS  = STM32F3_DEF_FLAGS
     ARCH_FLAGS = STM32F3_ARCH_FLAGS
 
 elif TARGET_PROCESSOR_TYPE == "f4":
-    MCU_DIR    = STM32F4_MCU_DIR
-    CMSIS_DIR  = STM32F4_CMSIS_DIR
-    HAL_DIR    = STM32F4_HAL_DIR
     DEF_FLAGS  = STM32F4_DEF_FLAGS
     ARCH_FLAGS = STM32F4_ARCH_FLAGS
 
 elif TARGET_PROCESSOR_TYPE == "f7":
-    MCU_DIR    = STM32F7_MCU_DIR
-    CMSIS_DIR  = STM32F7_CMSIS_DIR
-    HAL_DIR    = STM32F7_HAL_DIR
     DEF_FLAGS  = STM32F7_DEF_FLAGS
     ARCH_FLAGS = STM32F7_ARCH_FLAGS
 
 else:
-    print("ERROR: NOT VALID PROCESSOR TYPE, CHECK MAKE FILE CODE")
+    print("ERROR: NOT VALID PROCESSOR TYPE, CHECK MAKE FILE CODE", file=sys.stderr)
     sys.exit(1)
 
-rffw_directories = [
-    HAL_DIR + "/Src",
-    "lib/STM32_USB_Device_Library/Core/Src",
-    "lib/STM32_USB_Device_Library/Class/HID/Src",
-    "src/rffw/src",
-    "src/rffw/src/accgyro",
-    "src/rffw/src/usb",
-    "src/target/" + TARGET,
-    "src/target/" + TARGET_USB,
-    MCU_DIR,
-]
+MCU_DIR    = "src/target/stm32%s" % TARGET_PROCESSOR_TYPE
+CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32%sxx/Include" % TARGET_PROCESSOR_TYPE.upper()
+HAL_DIR    = "lib/STM32%sxx_HAL_Driver" % TARGET_PROCESSOR_TYPE.upper()
 
-rffw_INCLUDE_DIRS = [
+
+################################################################################
+# Set source and includes directories
+
+# common directories
+
+INCLUDE_DIRS = [
     "lib/CMSIS/Include",
-    CMSIS_DIR,
-    HAL_DIR + "/Inc",
-    "lib/STM32_USB_Device_Library/Core/Inc",
-    "lib/STM32_USB_Device_Library/Class/HID/Inc",
-    "src/rffw/inc",
-    "src/rffw/inc/usb",
-    "src/target/" + TARGET,
-    "src/target/" + TARGET_USB,
-    MCU_DIR,
-]
-
-
-rfesc_directories = [
-    HAL_DIR + "/Src",
-    "src/rfesc/src",
-    "src/target/" + TARGET,
-    MCU_DIR,
-]
-
-rfesc_INCLUDE_DIRS = [
-    "lib/CMSIS/Include",
-    "src/rfesc/inc",
+    "src/%s/inc" % PROJECT,
     CMSIS_DIR,
     HAL_DIR + "/Inc",
     "src/target/" + TARGET,
     MCU_DIR,
 ]
+
+SOURCE_DIRS = [
+    HAL_DIR + "/Src",
+    "src/%s/src" % PROJECT,
+    "src/target/" + TARGET,
+    MCU_DIR,
+]
+
+SOURCE_FILES = []
+
+# per project includes
 
 if PROJECT == "rffw":
-    directories = rffw_directories
-    INCLUDE_DIRS = rffw_INCLUDE_DIRS
+    pass
 elif PROJECT == "rfesc":
-    directories = rfesc_directories
-    INCLUDE_DIRS = rfesc_INCLUDE_DIRS
+    pass
 else:
-    directories = rffw_directories
-    INCLUDE_DIRS = rffw_INCLUDE_DIRS
+    print("ERROR: NOT VALID PROJECT TYPE, CHECK MAKE FILE CODE", file=sys.stderr)
+    sys.exit(1)
 
+# per-feature directories and files
 
-excluded_files = [
-    ".*_template.c",
+USB_SOURCE_DIRS = [
+    "lib/STM32_USB_Device_Library/Core/Src",
+    "lib/STM32_USB_Device_Library/Class/HID/Src",
+    "src/%s/src/usb" % PROJECT,
 ]
 
-linkerObjs = ""
+USB_INCLUDE_DIRS = [
+    "lib/STM32_USB_Device_Library/Core/Inc",
+    "lib/STM32_USB_Device_Library/Class/HID/Inc",
+    "src/%s/inc/usb" % PROJECT,
+]
 
+for feature in FEATURES:
+    if feature.startswith("usb_"):
+        # add common usb directories and usb descriptor for project
+        SOURCE_DIRS.extend(USB_SOURCE_DIRS)
+        INCLUDE_DIRS.extend(USB_INCLUDE_DIRS)
+        # add usb class specific files
+        SOURCE_DIRS.append("src/target/" + feature)
+        INCLUDE_DIRS.append("src/target/" + feature)
+    elif feature.startswith("mpu"):
+        gyro, bus = feature.split("/")
+        SOURCE_FILES.append("src/%s/src/accgyro/invensense_%s.c" % (PROJECT, gyro))
+        SOURCE_FILES.append("src/%s/src/accgyro/invensense_bus_%s.c" % (PROJECT, bus))
+        INCLUDE_DIRS.append("src/%s/inc/accgyro" % PROJECT)
+
+
+
+################################################################################
+# compiler options
 
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
@@ -344,7 +322,11 @@ size_command = "arm-none-eabi-size output" + os.sep + "{OUTPUT_NAME}.elf"
 copy_obj_command = "arm-none-eabi-objcopy -O binary output" + os.sep + "{OUTPUT_NAME}.elf output" + os.sep + "{OUTPUT_NAME}.bin"
 
 
-commands = [
+commands = []
+linkerObjs = ""
+
+excluded_files = [
+    ".*_template.c",
 ]
 
 
@@ -408,7 +390,7 @@ class CommandRunnerThread(threading.Thread):
         if self.queue:
             self.queue.put(self.proc.returncode)
         else:
-            print(proc.returncode)
+            print(self.proc.returncode)
 
         self.proc = None
         self.pipe = None
@@ -475,10 +457,12 @@ def main():
     except:
         pass
 
-    for directory in directories:
+    for directory in SOURCE_DIRS:
         ProcessList(glob.glob(os.path.join(directory, "*.c")))
 
-    for directory in directories:
+    ProcessList(SOURCE_FILES)
+
+    for directory in SOURCE_DIRS:
         ProcessList(glob.glob(os.path.join(directory, "*.s")))
 
     thread_queue = queue.Queue()
@@ -516,26 +500,34 @@ def main():
         proc = subprocess.Popen(link_command, shell=True)
         stdout_value, stderr_value = proc.communicate()
 
+        if proc.returncode:
+            sys.exit(proc.returncode)
 
-        if proc.returncode == 0:
-            print("Sizing!")
-            size_command = size_command.format(
-                OUTPUT_NAME=TARGET
-            )
 
-            print(size_command)
-            proc = subprocess.Popen(size_command, shell=True)
-            stdout_value, stderr_value = proc.communicate()
+        print("Sizing!")
+        size_command = size_command.format(
+            OUTPUT_NAME=TARGET
+        )
 
-        if proc.returncode == 0:
-            print("Build succeded copying")
-            copy_obj_command = copy_obj_command.format(
-                OUTPUT_NAME=TARGET
-            )
+        print(size_command)
+        proc = subprocess.Popen(size_command, shell=True)
+        stdout_value, stderr_value = proc.communicate()
 
-            print(copy_obj_command)
-            proc = subprocess.Popen(copy_obj_command, shell=True)
-            stdout_value, stderr_value = proc.communicate()
+        if proc.returncode:
+            sys.exit(proc.returncode)
+
+
+        print("Build succeded copying")
+        copy_obj_command = copy_obj_command.format(
+            OUTPUT_NAME=TARGET
+        )
+
+        print(copy_obj_command)
+        proc = subprocess.Popen(copy_obj_command, shell=True)
+        stdout_value, stderr_value = proc.communicate()
+
+        if proc.returncode:
+            sys.exit(proc.returncode)
      
 
 
