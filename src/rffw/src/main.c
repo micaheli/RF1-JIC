@@ -30,8 +30,15 @@ int main(void)
 
 	BoardInit();
 
-	InitializeLED(LED0_GPIO_PORT, LED0_PIN);
-	InitializeLED(LED1_GPIO_PORT, LED1_PIN);
+#if LEDn >= 1
+    InitializeLED(LED1_GPIO_Port, LED1_GPIO_Pin);
+#endif
+#if LEDn >= 2
+    InitializeLED(LED2_GPIO_Port, LED2_GPIO_Pin);
+#endif
+#if LEDn >= 3
+    InitializeLED(LED3_GPIO_Port, LED3_GPIO_Pin);
+#endif
 
 	USB_DEVICE_Init();
 
@@ -42,7 +49,7 @@ int main(void)
     }
 
 	while (1) {
-		HAL_GPIO_TogglePin(LED1_GPIO_PORT, LED1_PIN);
+        LED2_TOGGLE;
 
         /*
         hidBuffer[0] = 0; // buttons
@@ -64,7 +71,7 @@ int main(void)
         USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t*)hidBuffer, 4);
         */
 
-		HAL_Delay(100);
+        HAL_Delay(100);
 	}
 }
 
@@ -87,7 +94,7 @@ void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 void ErrorHandler(void)
 {
     while (1) {
-        HAL_GPIO_TogglePin(LED0_GPIO_PORT, LED0_PIN);
+        LED1_TOGGLE;
         HAL_Delay(40);
     }
 }
