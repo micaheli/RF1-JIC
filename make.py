@@ -388,6 +388,11 @@ def FileModified(fileName):
     if os.path.getmtime(fileName) > os.path.getmtime(outputFile):
         return True
 
+    # if the target file is more recent than the output, return true
+    target_file = "src/target/%s/target.h".path % TARGET
+    if os.path.getmtime(target_file) > os.path.getmtime(outputFile):
+        return True
+
     # get the dependency file `output/.../filename.d`
     outputBase, _ = os.path.splitext(outputFile)
     depFile = outputBase + ".d"
