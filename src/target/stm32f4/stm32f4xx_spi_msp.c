@@ -1,5 +1,4 @@
 #include "includes.h"
-#include "stm32f4xx_hal.h"
 
 extern DMA_HandleTypeDef dma_gyro_rx;
 extern DMA_HandleTypeDef dma_gyro_tx;

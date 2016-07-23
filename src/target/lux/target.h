@@ -14,10 +14,24 @@
 #define GYRO_SPI                SPI1
 #define GYRO_SPI_CS_GPIO_Port   GPIOA
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_4
-//#define GYRO_DMA_RX_IRQHandler  DMA2_Stream0_IRQHandler
+// remapped SPI ports
+#define GYRO_SPI_CLK_GPIO_Port  GPIOB
+#define GYRO_SPI_CLK_GPIO_Pin   GPIO_PIN_3
+#define GYRO_SPI_MISO_GPIO_Port GPIOB
+#define GYRO_SPI_MISO_GPIO_Pin  GPIO_PIN_4
+#define GYRO_SPI_MOSI_GPIO_Port GPIOB
+#define GYRO_SPI_MOSI_GPIO_Pin  GPIO_PIN_5
+
+#define GYRO_SPI_FAST_BAUD      SPI_BAUDRATEPRESCALER_4
+#define GYRO_SPI_SLOW_BAUD      SPI_BAUDRATEPRESCALER_128
+
+#define GYRO_DMA_TX_IRQn        DMA1_Channel3_IRQn
+#define GYRO_DMA_TX_IRQHandler  DMA1_Channel3_IRQHandler
+#define GYRO_DMA_RX_IRQn        DMA1_Channel2_IRQn
+#define GYRO_DMA_RX_IRQHandler  DMA1_Channel2_IRQHandler
 
 #define GYRO_EXTI
 #define GYRO_EXTI_GPIO_Port     GPIOA
 #define GYRO_EXTI_GPIO_Pin      GPIO_PIN_5
-#define GYRO_EXTI_IRQn          EXTI4_IRQn
-#define GYRO_EXTI_IRQHandler    EXTI4_IRQHandler
+#define GYRO_EXTI_IRQn          EXTI9_5_IRQn
+#define GYRO_EXTI_IRQHandler    EXTI9_5_IRQHandler

@@ -27,6 +27,7 @@ static gyroFrame_t gyroRxFrame;
 static gyroFrame_t gyroTxFrame;
 
 static int16_t gyroData[3];
+static int16_t gyroCal[3];
 
 bool accgyroDeviceInit(void)
 {
@@ -34,9 +35,8 @@ bool accgyroDeviceInit(void)
     accgyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
     HAL_Delay(150);
 
-    /* TODO
     // set gyro clock to Z axis gyro
-    if (!accgyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_Z)) {
+    if (!accgyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_PLL)) {
         return false;
     }
 
@@ -47,7 +47,8 @@ bool accgyroDeviceInit(void)
     accgyroWriteRegister(INVENS_RM_USER_CTRL, INVENS_CONST_I2C_IF_DIS | INVENS_CONST_FIFO_RESET | INVENS_CONST_SIG_COND_RESET);
 
     // set gyro full scale to +/- 2000 deg / sec
-    if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_FSR_2000DPS << 3)) {
+    //if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_FSR_2000DPS << 3 | FCB_32_8800)) { // 32kHz
+    if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_FSR_2000DPS << 3 | FCB_DISABLE)) { // 8kHz
         return false;
     }
 
@@ -56,11 +57,16 @@ bool accgyroDeviceInit(void)
         return false;
     }
 
+    // gyro DLPF config
+    if (!accgyroVerifyWriteRegister(INVENS_RM_CONFIG, 0)) { // 8kHz
+        return false;
+    }
+
     // set gyro sample divider rate
     accgyroWriteRegister(INVENS_RM_SMPLRT_DIV, 0); // currently denom of 1
 
-    // set interrupt pin PP, 50uS pulse, status cleared on INT_STATUS read
-    if (!accgyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR)) {
+    // set interrupt pin PP, 50uS pulse, status cleared on read, i2c bypass
+    if (!accgyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR | INVENS_CONST_BYPASS_EN)) {
         return false;
     }
 
@@ -70,12 +76,6 @@ bool accgyroDeviceInit(void)
         return false;
     }
 #endif
-
-    // gyro DLPF config
-    if (!accgyroVerifyWriteRegister(INVENS_RM_CONFIG, 0)) { // 8kHz
-        return false;
-    }
-    */
 
     return true;
 }
@@ -117,4 +117,21 @@ void accgyroDeviceReadGyroComplete(void)
     gyroData[2] = (int16_t)((gyroRxFrame.gyroZ_H << 8) | gyroRxFrame.gyroZ_L);
 
     updateGyro(gyroData, 1.f / 16.4f);
+}
+
+void accgyroDeviceCalibrate(int16_t *gyroData)
+{
+    // TODO - load this into the gyro offset register
+    uint8_t idx;
+    for (idx = 0; idx < 3; idx++) {
+        gyroCal[idx] = gyroData[idx];
+    }
+}
+
+void accgyroDeviceApplyCalibration(int16_t *gyroData)
+{
+    uint8_t idx;
+    for (idx = 0; idx < 3; idx++) {
+        gyroData[idx] += gyroCal[idx];
+    }
 }

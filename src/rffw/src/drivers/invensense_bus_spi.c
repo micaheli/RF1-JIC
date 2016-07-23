@@ -15,9 +15,9 @@ DMA_HandleTypeDef dma_gyro_tx;
 
 static void SPI_Init(uint32_t baudRatePrescaler)
 {
+    gyro_spi.Instance = GYRO_SPI;
     HAL_SPI_DeInit(&gyro_spi);
 
-    gyro_spi.Instance = GYRO_SPI;
     gyro_spi.Init.Mode = SPI_MODE_MASTER;
     gyro_spi.Init.Direction = SPI_DIRECTION_2LINES;
     gyro_spi.Init.DataSize = SPI_DATASIZE_8BIT;
@@ -56,7 +56,7 @@ bool accgyroInit(void)
     DMA_Init();
 
     // read and write settings at slow speed (48 MHz / 64)
-    SPI_Init(SPI_BAUDRATEPRESCALER_64);
+    SPI_Init(GYRO_SPI_SLOW_BAUD);
     HAL_Delay(5);
 
     if (!accgyroDeviceDetect()) {
@@ -70,7 +70,7 @@ bool accgyroInit(void)
     }
 
     // reinitialize at full speed (48 MHz / 2)
-    SPI_Init(SPI_BAUDRATEPRESCALER_2);
+    SPI_Init(GYRO_SPI_FAST_BAUD);
 
 #ifdef GYRO_EXTI
     // after the gyro is started, start up the interrupt
