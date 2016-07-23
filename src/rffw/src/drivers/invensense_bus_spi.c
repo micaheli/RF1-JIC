@@ -37,16 +37,27 @@ static void SPI_Init(uint32_t baudRatePrescaler)
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
 }
 
+void DMA_Init(void)
+{
+    /* DMA interrupt init */
+    HAL_NVIC_SetPriority(GYRO_DMA_TX_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(GYRO_DMA_TX_IRQn);
+    HAL_NVIC_SetPriority(GYRO_DMA_RX_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(GYRO_DMA_RX_IRQn);
+}
+
 bool accgyroInit(void)
 {
-    // read and write settings at slow speed (48 MHz / 64)
-    SPI_Init(SPI_BAUDRATEPRESCALER_64);
-    HAL_Delay(5);
-
 #ifdef GYRO_EXTI
     // ensure the interrupt is not running
     HAL_NVIC_DisableIRQ(GYRO_EXTI_IRQn);
 #endif
+
+    DMA_Init();
+
+    // read and write settings at slow speed (48 MHz / 64)
+    SPI_Init(SPI_BAUDRATEPRESCALER_64);
+    HAL_Delay(5);
 
     if (!accgyroDeviceDetect()) {
         return false;
