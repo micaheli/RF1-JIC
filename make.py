@@ -55,13 +55,15 @@ get_dict(str)['path'] = get_path_method
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument("-T", "--target", help="target controller to build", default="")
-parser.add_argument('-C', "--clean", help="clean up output folder", action='store_const', const=True, default=False)
+parser.add_argument('-C', "--clean", help="clean up output folder", action='store_true')
+parser.add_argument('-D', "--debug", help="build debug target", action='store_true')
+parser.add_argument('-j', "--threads", help="number of threads to run", default=10, type=int)
 args = parser.parse_args()
 
 TARGET = args.target.lower()
 IS_CLEANUP = args.clean
 
-# TODO: replace all output path to global path 
+# TODO: replace all output path to global path
 OUTPUT_PATH = "output"
 
 if IS_CLEANUP:
@@ -237,14 +239,15 @@ for feature in FEATURES:
 
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
-LTO_FLAGS = "-flto -fuse-linker-plugin -O0"
-DEBUG_FLAGS = "-ggdb3 -DDEBUG"
+LTO_FLAGS = "-flto -fuse-linker-plugin"
+DEBUG_FLAGS = "-ggdb3 -DDEBUG -Og"
+OPTIMIZE_FLAGS = "-O2"
 
 CFLAGS = " ".join([
     ARCH_FLAGS,
     LTO_FLAGS,
     DEF_FLAGS,
-    DEBUG_FLAGS,
+    DEBUG_FLAGS if args.debug else OPTIMIZE_FLAGS,
     INCLUDES,
     "-Wunused-parameter -Wdouble-promotion -save-temps=obj -std=gnu99",
     "-Wall -Wextra -Wunsafe-loop-optimizations",
@@ -265,7 +268,7 @@ LDFLAGS = " ".join([
     "-lm -nostartfiles --specs=nano.specs -lc -lnosys",
     ARCH_FLAGS,
     LTO_FLAGS,
-    DEBUG_FLAGS,
+    DEBUG_FLAGS if args.debug else OPTIMIZE_FLAGS,
     "-static",
     "-Wl,-gc-sections,-Map," + mapFile,
     "-Wl,-L" + linkerDir,
@@ -292,7 +295,7 @@ excluded_files = [
 ]
 
 
-THREAD_LIMIT = 10
+THREAD_LIMIT = args.threads
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
@@ -317,43 +320,38 @@ class CommandRunnerThread(threading.Thread):
 
 
     def run(self):
-        threadLimiter.acquire()
-        locker.acquire()
-        threadRunning.append(self)
-        locker.release()
+        with threadLimiter:
+            with locker:
+                threadRunning.append(self)
 
-        try:
-            self.run_command()
-        finally:
-            locker.acquire()
-            threadRunning.remove(self)
-            locker.release()
-            threadLimiter.release()
+            try:
+                self.run_command()
+            finally:
+                with locker:
+                    threadRunning.remove(self)
 
     def run_command(self):
         if not self.command:
             return
-        locker.acquire()
-        if isStop:
-            locker.release()
-            return
 
-        # figure out the output file path
-        file_path = find_between(self.command, "output" + os.sep, ".o")
-        basedir, basename = os.path.split(file_path)
-        # if the base directory doesn't exist, make it
-        if not os.path.exists(basedir):
-            os.makedirs(basedir)
-        locker.release()
+        with locker:
+            if isStop:
+                return
+
+            # figure out the output file path
+            file_path = find_between(self.command, "output" + os.sep, ".o")
+            basedir, basename = os.path.split(file_path)
+            # if the base directory doesn't exist, make it
+            if not os.path.exists(basedir):
+                os.makedirs(basedir)
 
         self.proc = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout_value, stderr_value = self.proc.communicate()
 
-        locker.acquire()
-        print("% " + basename)
-        if stderr_value:
-            print(stderr_value.decode())
-        locker.release()
+        with locker:
+            print("% " + basename)
+            if stderr_value:
+                print(stderr_value.decode())
 
         if self.queue:
             self.queue.put(self.proc.returncode)
@@ -488,11 +486,10 @@ def main():
         except queue.Empty:
             continue
         if returncode > 0:
-            locker.acquire()
-            isStop = True
-            for thread in threads:
-                thread.stop_command()
-            locker.release()
+            with locker:
+                isStop = True
+                for thread in threads:
+                    thread.stop_command()
             break
 
     for thread in threads:
