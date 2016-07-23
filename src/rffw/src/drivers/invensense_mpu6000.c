@@ -40,6 +40,7 @@ static gyroFrame_t gyroRxFrame;
 static gyroFrame_t gyroTxFrame;
 
 static int16_t gyroData[3];
+static int16_t gyroCal[3];
 
 bool accgyroDeviceInit(void)
 {
@@ -148,4 +149,20 @@ void accgyroDeviceReadGyroComplete(void)
     gyroData[2] = (int16_t)((gyroRxFrame.gyroZ_H << 8) | gyroRxFrame.gyroZ_L);
 
     updateGyro(gyroData, 1.f / 16.4f);
+}
+
+void accgyroDeviceCalibrate(int16_t *gyroData)
+{
+    uint8_t idx;
+    for (idx = 0; idx < 3; idx++) {
+        gyroCal[idx] = gyroData[idx];
+    }
+}
+
+void accgyroDeviceApplyCalibration(int16_t *gyroData)
+{
+    uint8_t idx;
+    for (idx = 0; idx < 3; idx++) {
+        gyroData[idx] += gyroCal[idx];
+    }
 }
