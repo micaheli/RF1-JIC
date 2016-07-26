@@ -91,7 +91,7 @@ bool accgyroDeviceDetect(void)
     for (attempt = 0; attempt < 20; attempt++) {
         HAL_Delay(100);
 
-        accgyroReadRegister(INVENS_RM_WHO_AM_I, 1, &data);
+        accgyroReadData(INVENS_RM_WHO_AM_I, &data, 1);
         if (data == MPU6500_WHO_AM_I || data == MPU6555_WHO_AM_I || data == MPU9250_WHO_AM_I) {
             break;
         }
@@ -107,7 +107,7 @@ void accgyroDeviceReadGyro(void)
 {
     gyroTxFrame.address = INVENS_RM_GYRO_XOUT_H | 0x80;
 
-    accgyroDMAReadWriteRegister((uint8_t *)&gyroTxFrame, (uint8_t *)&gyroRxFrame, 7);
+    accgyroDMAReadWriteData((uint8_t *)&gyroTxFrame, (uint8_t *)&gyroRxFrame, 7);
 }
 
 void accgyroDeviceReadGyroComplete(void)

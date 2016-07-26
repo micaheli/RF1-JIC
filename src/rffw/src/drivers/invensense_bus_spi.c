@@ -37,7 +37,7 @@ static void SPI_Init(uint32_t baudRatePrescaler)
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
 }
 
-void DMA_Init(void)
+static void DMA_Init(void)
 {
     /* DMA interrupt init */
     HAL_NVIC_SetPriority(GYRO_DMA_TX_IRQn, 0, 0);
@@ -104,7 +104,14 @@ void GYRO_DMA_RX_IRQHandler(void)
 }
 #endif
 
-// for now all of these are blocking operations, which is fine for writes
+bool accgyroWriteData(uint8_t *data, uint8_t length)
+{
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&gyro_spi, data, length, 10);
+    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
+
+    return true;
+}
 
 bool accgyroWriteRegister(uint8_t reg, uint8_t data)
 {
@@ -129,7 +136,7 @@ bool accgyroVerifyWriteRegister(uint8_t reg, uint8_t data)
         accgyroWriteRegister(reg, data);
         HAL_Delay(1);
 
-        accgyroSlowReadRegister(reg, 1, &data_verify);
+        accgyroSlowReadData(reg, &data_verify, 1);
         if (data_verify == data) {
             return true;
         }
@@ -138,7 +145,7 @@ bool accgyroVerifyWriteRegister(uint8_t reg, uint8_t data)
     return false;
 }
 
-bool accgyroReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
+bool accgyroReadData(uint8_t reg, uint8_t *data, uint8_t length)
 {
     reg |= 0x80;
 
@@ -152,7 +159,7 @@ bool accgyroReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
     return true;
 }
 
-bool accgyroSlowReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
+bool accgyroSlowReadData(uint8_t reg, uint8_t *data, uint8_t length)
 {
     reg |= 0x80;
 
@@ -168,7 +175,7 @@ bool accgyroSlowReadRegister(uint8_t reg, uint8_t length, uint8_t *data)
     return true;
 }
 
-bool accgyroDMAReadWriteRegister(uint8_t *txData, uint8_t *rxData, uint8_t length)
+bool accgyroDMAReadWriteData(uint8_t *txData, uint8_t *rxData, uint8_t length)
 {
     // for whatever reason HAL_SPI_GetState(&gyro_spi) always returns HAL_SPI_STATE_BUSY_TX_RX
     if (HAL_DMA_GetState(&dma_gyro_rx) == HAL_DMA_STATE_READY) {
