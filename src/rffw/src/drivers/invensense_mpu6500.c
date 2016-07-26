@@ -52,7 +52,7 @@ bool accgyroDeviceInit(void)
     }
 
     // set accel full scale to +/- 8g
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_FSR_8G << 3)) {
+    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_FSR_16G << 3)) {
         return false;
     }
 

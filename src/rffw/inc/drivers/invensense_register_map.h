@@ -21,7 +21,7 @@
 #define FCB_32_3600             0x02
 
 // accel conifg
-#define INVENS_CONST_FSR_8G     0x03
+#define INVENS_CONST_FSR_16G    0x03
 
 // int pin config
 #define INVENS_CONST_BYPASS_EN  0x02
