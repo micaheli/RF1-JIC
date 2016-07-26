@@ -99,10 +99,12 @@ void GYRO_DMA_RX_IRQHandler(void)
 {
     HAL_DMA_IRQHandler(&dma_gyro_rx);
 
-    // reset chip select line
-    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
-    // run callback for completed gyro read
-    accgyroDeviceReadGyroComplete();
+    if (HAL_DMA_GetState(&dma_gyro_rx) == HAL_DMA_STATE_READY) {
+        // reset chip select line
+        HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
+        // run callback for completed gyro read
+        accgyroDeviceReadGyroComplete();
+    }
 }
 
 bool accgyroWriteData(uint8_t *data, uint8_t length)

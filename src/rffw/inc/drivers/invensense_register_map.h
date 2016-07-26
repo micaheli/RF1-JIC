@@ -1,8 +1,9 @@
 #pragma once
 
 #define INVENS_RM_PRODUCT_ID    0x0C
-#define INVENS_RM_CONFIG        0x1A
+#define INVENS_RM_XG_OFFSET_H   0x13
 #define INVENS_RM_SMPLRT_DIV    0x19
+#define INVENS_RM_CONFIG        0x1A
 #define INVENS_RM_GYRO_CONFIG   0x1B
 #define INVENS_RM_ACCEL_CONFIG  0x1C
 #define INVENS_RM_INT_PIN_CFG   0x37
