@@ -27,7 +27,6 @@ static gyroFrame_t gyroRxFrame;
 static gyroFrame_t gyroTxFrame;
 
 static int16_t gyroData[3];
-static int16_t gyroCal[3];
 
 bool accgyroDeviceInit(void)
 {
@@ -118,19 +117,21 @@ void accgyroDeviceReadGyroComplete(void)
     updateGyro(gyroData, 1.f / 16.4f);
 }
 
+// TODO: this is broken - fix it
 void accgyroDeviceCalibrate(int16_t *gyroData)
 {
-    // TODO - load this into the gyro offset register
-    uint8_t idx;
-    for (idx = 0; idx < 3; idx++) {
-        gyroCal[idx] = gyroData[idx];
-    }
+    gyroTxFrame.address = INVENS_RM_XG_OFFSET_H;
+    gyroTxFrame.gyroX_H = (uint8_t)(gyroData[0] >> 8);
+    gyroTxFrame.gyroX_L = (uint8_t)(gyroData[0] & 0xFF);
+    gyroTxFrame.gyroY_H = (uint8_t)(gyroData[1] >> 8);
+    gyroTxFrame.gyroY_L = (uint8_t)(gyroData[1] & 0xFF);
+    gyroTxFrame.gyroZ_H = (uint8_t)(gyroData[2] >> 8);
+    gyroTxFrame.gyroZ_L = (uint8_t)(gyroData[2] & 0xFF);
+
+    accgyroWriteData((uint8_t*)&gyroTxFrame, 7);
 }
 
 void accgyroDeviceApplyCalibration(int16_t *gyroData)
 {
-    uint8_t idx;
-    for (idx = 0; idx < 3; idx++) {
-        gyroData[idx] += gyroCal[idx];
-    }
+    (void)gyroData;
 }

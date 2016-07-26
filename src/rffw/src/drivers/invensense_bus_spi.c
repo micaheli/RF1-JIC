@@ -102,6 +102,7 @@ void GYRO_DMA_RX_IRQHandler(void)
     if (HAL_DMA_GetState(&dma_gyro_rx) == HAL_DMA_STATE_READY) {
         // reset chip select line
         HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
+
         // run callback for completed gyro read
         accgyroDeviceReadGyroComplete();
     }
@@ -109,15 +110,21 @@ void GYRO_DMA_RX_IRQHandler(void)
 
 bool accgyroWriteData(uint8_t *data, uint8_t length)
 {
+    while (HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
+
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&gyro_spi, data, length, 10);
+    HAL_Delay(1);
+    HAL_SPI_Transmit(&gyro_spi, data, length, 100);
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
+    HAL_Delay(1);
 
     return true;
 }
 
 bool accgyroWriteRegister(uint8_t reg, uint8_t data)
 {
+    while (HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
+
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
     HAL_Delay(1);
 
@@ -152,6 +159,8 @@ bool accgyroReadData(uint8_t reg, uint8_t *data, uint8_t length)
 {
     reg |= 0x80;
 
+    while (HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
+
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
 
     HAL_SPI_Transmit(&gyro_spi, &reg, 1, 100);
@@ -165,6 +174,8 @@ bool accgyroReadData(uint8_t reg, uint8_t *data, uint8_t length)
 bool accgyroSlowReadData(uint8_t reg, uint8_t *data, uint8_t length)
 {
     reg |= 0x80;
+
+    while (HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
 
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
     HAL_Delay(1);

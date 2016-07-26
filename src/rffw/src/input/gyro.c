@@ -18,18 +18,12 @@ static uint16_t calibrationCycles = CALIBRATION_CYCLES;
 
 static void updateCalibration(int16_t *rawGyro)
 {
-    static int32_t gyroSum[3];
+    static int32_t gyroSum[3] = {0, 0, 0};
     int16_t gyroCalibration[3];
     uint8_t axis;
 
-    if (calibrationCycles == CALIBRATION_CYCLES) {
-        for (axis = 0; axis < 3; axis++) {
-            gyroSum[axis] = rawGyro[axis];
-        }
-    } else {
-        for (axis = 0; axis < 3; axis++) {
-            gyroSum[axis] += rawGyro[axis];
-        }
+    for (axis = 0; axis < 3; axis++) {
+        gyroSum[axis] += rawGyro[axis];
     }
 
     if (--calibrationCycles == 0) {
