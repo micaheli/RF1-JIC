@@ -70,7 +70,7 @@ bool accgyroInit(void)
     }
 
     // reinitialize at full speed (48 MHz / 2)
-    SPI_Init(GYRO_SPI_FAST_BAUD);
+    //SPI_Init(GYRO_SPI_FAST_BAUD);
     DMA_Init();
 
 #ifdef GYRO_EXTI
@@ -88,6 +88,7 @@ void GYRO_EXTI_IRQHandler(void)
 
     accgyroDeviceReadGyro();
 }
+#endif
 
 void GYRO_DMA_TX_IRQHandler(void)
 {
@@ -103,7 +104,6 @@ void GYRO_DMA_RX_IRQHandler(void)
     // run callback for completed gyro read
     accgyroDeviceReadGyroComplete();
 }
-#endif
 
 bool accgyroWriteData(uint8_t *data, uint8_t length)
 {
@@ -178,8 +178,7 @@ bool accgyroSlowReadData(uint8_t reg, uint8_t *data, uint8_t length)
 
 bool accgyroDMAReadWriteData(uint8_t *txData, uint8_t *rxData, uint8_t length)
 {
-    // for whatever reason HAL_SPI_GetState(&gyro_spi) always returns HAL_SPI_STATE_BUSY_TX_RX
-    if (HAL_DMA_GetState(&dma_gyro_rx) == HAL_DMA_STATE_READY) {
+    if (HAL_DMA_GetState(&dma_gyro_rx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&gyro_spi) == HAL_SPI_STATE_READY) {
         HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
 
         HAL_SPI_TransmitReceive_DMA(&gyro_spi, txData, rxData, length);

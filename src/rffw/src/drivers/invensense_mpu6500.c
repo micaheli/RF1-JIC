@@ -47,7 +47,6 @@ bool accgyroDeviceInit(void)
     accgyroWriteRegister(INVENS_RM_USER_CTRL, INVENS_CONST_I2C_IF_DIS | INVENS_CONST_FIFO_RESET | INVENS_CONST_SIG_COND_RESET);
 
     // set gyro full scale to +/- 2000 deg / sec
-    //if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_FSR_2000DPS << 3 | FCB_32_8800)) { // 32kHz
     if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_FSR_2000DPS << 3 | FCB_DISABLE)) { // 8kHz
         return false;
     }
