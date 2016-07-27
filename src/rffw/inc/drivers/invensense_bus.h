@@ -1,5 +1,7 @@
 #pragma once
 
+extern bool skipGyro;
+
 // all gyroscopes should define this function which initializes all requesite
 // hardware resources
 bool accgyroInit(void);

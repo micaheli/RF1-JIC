@@ -9,6 +9,8 @@
 #include "exti.h"
 #endif
 
+bool skipGyro = true;
+
 SPI_HandleTypeDef gyro_spi;
 DMA_HandleTypeDef dma_gyro_rx;
 DMA_HandleTypeDef dma_gyro_tx;
@@ -78,6 +80,8 @@ bool accgyroInit(void)
     EXTI_Init(GYRO_EXTI_GPIO_Port, GYRO_EXTI_GPIO_Pin, GYRO_EXTI_IRQn, 2, 0);
 #endif
 
+    skipGyro = false;
+
     return true;
 }
 
@@ -86,7 +90,9 @@ void GYRO_EXTI_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(GYRO_EXTI_GPIO_Pin);
 
-    accgyroDeviceReadGyro();
+    if (!skipGyro) {
+        accgyroDeviceReadGyro();
+    }
 }
 #endif
 
