@@ -14,7 +14,7 @@
 
 static int8_t hidBuffer[4];
 
-static uint16_t calibrationCycles = CALIBRATION_CYCLES;
+static uint32_t calibrationCycles = CALIBRATION_CYCLES * 100;
 
 static void updateCalibration(int16_t *rawGyro)
 {
@@ -22,8 +22,10 @@ static void updateCalibration(int16_t *rawGyro)
     int16_t gyroCalibration[3];
     uint8_t axis;
 
-    for (axis = 0; axis < 3; axis++) {
-        gyroSum[axis] += rawGyro[axis];
+    if (calibrationCycles <= CALIBRATION_CYCLES) {
+        for (axis = 0; axis < 3; axis++) {
+            gyroSum[axis] += rawGyro[axis];
+        }
     }
 
     if (--calibrationCycles == 0) {

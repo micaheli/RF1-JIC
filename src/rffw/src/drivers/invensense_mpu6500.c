@@ -120,15 +120,28 @@ void accgyroDeviceReadGyroComplete(void)
 // TODO: this is broken - fix it
 void accgyroDeviceCalibrate(int16_t *gyroData)
 {
-    gyroTxFrame.address = INVENS_RM_XG_OFFSET_H;
-    gyroTxFrame.gyroX_H = (uint8_t)(gyroData[0] >> 8);
-    gyroTxFrame.gyroX_L = (uint8_t)(gyroData[0] & 0xFF);
-    gyroTxFrame.gyroY_H = (uint8_t)(gyroData[1] >> 8);
-    gyroTxFrame.gyroY_L = (uint8_t)(gyroData[1] & 0xFF);
-    gyroTxFrame.gyroZ_H = (uint8_t)(gyroData[2] >> 8);
-    gyroTxFrame.gyroZ_L = (uint8_t)(gyroData[2] & 0xFF);
+    skipGyro = true;
 
-    accgyroWriteData((uint8_t*)&gyroTxFrame, 7);
+    if (!accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_H, (uint8_t)(gyroData[0] >> 8))) {
+        while(1);
+    }
+    if (!accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_L, (uint8_t)(gyroData[0] & 0xFF))) {
+        while(1);
+    }
+    if (!accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_H, (uint8_t)(gyroData[1] >> 8))) {
+        while(1);
+    }
+    if (!accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_L, (uint8_t)(gyroData[1] & 0xFF))) {
+        while(1);
+    }
+    if (!accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_H, (uint8_t)(gyroData[2] >> 8))) {
+        while(1);
+    }
+    if (!accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_L, (uint8_t)(gyroData[2] & 0xFF))) {
+        while(1);
+    }
+
+    skipGyro = false;
 }
 
 void accgyroDeviceApplyCalibration(int16_t *gyroData)
