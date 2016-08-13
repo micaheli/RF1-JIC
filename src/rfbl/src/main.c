@@ -13,7 +13,7 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-//static int8_t hidBuffer[4];
+static int8_t hidBuffer[4];
 
 /* Private function prototypes -----------------------------------------------*/
 void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
@@ -26,6 +26,7 @@ int main(void)
 
     BoardInit();
 
+//todo: Do we want to init LEDs like this?
 #if LEDn >= 1
     InitializeLED(LED1_GPIO_Port, LED1_GPIO_Pin);
 #endif
