@@ -23,53 +23,6 @@ except ImportError:
     import Queue as queue
 
 
-class LogPipe(threading.Thread):
-
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.daemon = False
-        self.fdRead, self.fdWrite = os.pipe()
-        self.pipeReader = os.fdopen(self.fdRead)
-        self.all_lines = list()
-        self.is_need_print = False
-        self.start()
-
-    def fileno(self):
-        return self.fdWrite
-
-    def run(self):
-        for line in iter(self.pipeReader.readline, ''):
-            self.all_lines.append(line)
-
-            if line.startswith("lib"):
-                r = re.search(r'[\w/\.\\: ]+(fatal error|error)', line)
-                if r is not None:
-                    self.is_need_print = True
-            elif line.startswith("src"):
-                r = re.search(r'[\w/\.\\: ]+(fatal error|error|warning|note)', line)
-                if r is not None:
-                    self.is_need_print = True
-
-            if self.is_need_print:
-                self.is_need_print = False
-                line_count = len(self.all_lines)
-                for n, _line in enumerate(self.all_lines[-2:]):   
-                    if n == 0 and line_count > 1 and 'In ' not in _line:
-                        continue
-                    print(_line)
-                
-
-
-
-        self.pipeReader.close()
-
-    def close(self):
-        try:
-            os.close(self.fdWrite)
-        except OSError:
-            pass
-
-
 # Magic code
 # add new method for python string object
 # used
@@ -102,13 +55,15 @@ get_dict(str)['path'] = get_path_method
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument("-T", "--target", help="target controller to build", default="")
-parser.add_argument('-C', "--clean", help="clean up output folder", action='store_const', const=True, default=False)
+parser.add_argument('-C', "--clean", help="clean up output folder", action='store_true')
+parser.add_argument('-D', "--debug", help="build debug target", action='store_true')
+parser.add_argument('-j', "--threads", help="number of threads to run", default=10, type=int)
 args = parser.parse_args()
 
 TARGET = args.target.lower()
 IS_CLEANUP = args.clean
 
-# TODO: replace all output path to global path 
+# TODO: replace all output path to global path
 OUTPUT_PATH = "output"
 
 if IS_CLEANUP:
@@ -120,194 +75,183 @@ if IS_CLEANUP:
                 os.rmdir(os.path.join(root, name))
     sys.exit(0)
 
+FEATURES = []
+
+################################################################################
+# Determine target variables and features
 
 if TARGET == "cc3d":
     PROJECT = "rffw"
-    TARGET_USB = "usb_fs"
     TARGET_DEVICE = "STM32F103xB"
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
+    FEATURES = ["usb_fs"]
 
 elif TARGET == "kissesc":
     PROJECT = "rfesc"
-    TARGET_USB = "none"
     TARGET_DEVICE = "STM32F051x8"
     TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
     TARGET_PROCESSOR_TYPE  = "f0"
 
 elif TARGET == "lux":
     PROJECT = "rffw"
-    TARGET_USB = "usb_fs"
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
+    FEATURES = ["mpu6500/spi", "usb_fs"]
 
 elif TARGET == "revo":
     PROJECT = "rffw"
-    TARGET_USB = "usb_otg_fs"
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
+    FEATURES = ["mpu6000/spi", "usb_otg_fs"]
 
 elif TARGET == "f7disco":
     PROJECT = "rffw"
-    TARGET_USB = "usb_otg_fs"
     TARGET_DEVICE = "STM32F746xx"
     TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
     TARGET_PROCESSOR_TYPE  = "f7"
+    FEATURES = ["usb_otg_fs"]
 
 else:
-    print("ERROR: NOT VALID TARGET")
+    print("ERROR: NOT VALID TARGET", file=sys.stderr)
     sys.exit(1)
 
 
+################################################################################
+# Set per target compilation options
 
-STM32F0_MCU_DIR    = "src/target/stm32f0"
-STM32F0_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F0xx/Include"
-STM32F0_HAL_DIR    = "lib/STM32F0xx_HAL_Driver"
-STM32F0_HAL_SRC    = "lib/STM32F0xx_HAL_Driver"
 STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F0_ARCH_FLAGS = "-mthumb -mcpu=cortex-m0"
 
-STM32F1_MCU_DIR    = "src/target/stm32f1"
-STM32F1_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F1xx/Include"
-STM32F1_HAL_DIR    = "lib/STM32F1xx_HAL_Driver"
-STM32F1_HAL_SRC    = "lib/STM32F1xx_HAL_Driver"
 STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F1_ARCH_FLAGS = "-mthumb -mcpu=cortex-m3"
 
-STM32F3_MCU_DIR    = "src/target/stm32f3"
-STM32F3_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F3xx/Include"
-STM32F3_HAL_DIR    = "lib/STM32F3xx_HAL_Driver"
-STM32F3_HAL_SRC    = "lib/STM32F3xx_HAL_Driver"
 STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-STM32F4_MCU_DIR    = "src/target/stm32f4"
-STM32F4_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F4xx/Include"
-STM32F4_HAL_DIR    = "lib/STM32F4xx_HAL_Driver"
-STM32F4_HAL_SRC    = "lib/STM32F4xx_HAL_Driver"
 STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
 STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-STM32F7_MCU_DIR    = "src/target/stm32f7"
-STM32F7_CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32F7xx/Include"
-STM32F7_HAL_DIR    = "lib/STM32F7xx_HAL_Driver"
-STM32F7_HAL_SRC    = "lib/STM32F7xx_HAL_Driver"
 STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=25000000 -D" + TARGET_DEVICE
 STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
 
 if TARGET_PROCESSOR_TYPE == "f0":
-    MCU_DIR    = STM32F0_MCU_DIR
-    CMSIS_DIR  = STM32F0_CMSIS_DIR
-    HAL_DIR    = STM32F0_HAL_DIR
     DEF_FLAGS  = STM32F0_DEF_FLAGS
     ARCH_FLAGS = STM32F0_ARCH_FLAGS
 
 elif TARGET_PROCESSOR_TYPE == "f1":
-    MCU_DIR    = STM32F1_MCU_DIR
-    CMSIS_DIR  = STM32F1_CMSIS_DIR
-    HAL_DIR    = STM32F1_HAL_DIR
     DEF_FLAGS  = STM32F1_DEF_FLAGS
     ARCH_FLAGS = STM32F1_ARCH_FLAGS
 
 elif TARGET_PROCESSOR_TYPE == "f3":
-    MCU_DIR    = STM32F3_MCU_DIR
-    CMSIS_DIR  = STM32F3_CMSIS_DIR
-    HAL_DIR    = STM32F3_HAL_DIR
     DEF_FLAGS  = STM32F3_DEF_FLAGS
     ARCH_FLAGS = STM32F3_ARCH_FLAGS
 
 elif TARGET_PROCESSOR_TYPE == "f4":
-    MCU_DIR    = STM32F4_MCU_DIR
-    CMSIS_DIR  = STM32F4_CMSIS_DIR
-    HAL_DIR    = STM32F4_HAL_DIR
     DEF_FLAGS  = STM32F4_DEF_FLAGS
     ARCH_FLAGS = STM32F4_ARCH_FLAGS
 
 elif TARGET_PROCESSOR_TYPE == "f7":
-    MCU_DIR    = STM32F7_MCU_DIR
-    CMSIS_DIR  = STM32F7_CMSIS_DIR
-    HAL_DIR    = STM32F7_HAL_DIR
     DEF_FLAGS  = STM32F7_DEF_FLAGS
     ARCH_FLAGS = STM32F7_ARCH_FLAGS
 
 else:
-    print("ERROR: NOT VALID PROCESSOR TYPE, CHECK MAKE FILE CODE")
+    print("ERROR: NOT VALID PROCESSOR TYPE, CHECK MAKE FILE CODE", file=sys.stderr)
     sys.exit(1)
 
-rffw_directories = [
-    HAL_DIR + "/Src",
-    "lib/STM32_USB_Device_Library/Core/Src",
-    "lib/STM32_USB_Device_Library/Class/HID/Src",
-    "src/rffw/src",
-    "src/rffw/src/usb",
-    "src/target/" + TARGET,
-    "src/target/" + TARGET_USB,
-    MCU_DIR,
-]
+MCU_DIR    = "src/target/stm32%s" % TARGET_PROCESSOR_TYPE
+CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32%sxx/Include" % TARGET_PROCESSOR_TYPE.upper()
+HAL_DIR    = "lib/STM32%sxx_HAL_Driver" % TARGET_PROCESSOR_TYPE.upper()
 
-rffw_INCLUDE_DIRS = [
+
+################################################################################
+# Set source and includes directories
+
+# common directories
+
+INCLUDE_DIRS = [
     "lib/CMSIS/Include",
-    CMSIS_DIR,
-    HAL_DIR + "/Inc",
-    "lib/STM32_USB_Device_Library/Core/Inc",
-    "lib/STM32_USB_Device_Library/Class/HID/Inc",
-    "src/rffw/inc",
-    "src/rffw/inc/usb",
-    "src/target/" + TARGET,
-    "src/target/" + TARGET_USB,
-    MCU_DIR,
-]
-
-
-rfesc_directories = [
-    HAL_DIR + "/Src",
-    "src/rfesc/src",
-    "src/target/" + TARGET,
-    MCU_DIR,
-]
-
-rfesc_INCLUDE_DIRS = [
-    "lib/CMSIS/Include",
-    "src/rfesc/inc",
+    "src/%s/inc" % PROJECT,
     CMSIS_DIR,
     HAL_DIR + "/Inc",
     "src/target/" + TARGET,
     MCU_DIR,
 ]
+
+SOURCE_DIRS = [
+    HAL_DIR + "/Src",
+    "src/%s/src" % PROJECT,
+    "src/target/" + TARGET,
+    MCU_DIR,
+]
+
+SOURCE_FILES = []
+
+# per project includes
 
 if PROJECT == "rffw":
-    directories = rffw_directories
-    INCLUDE_DIRS = rffw_INCLUDE_DIRS
+    INCLUDE_DIRS.append("src/rffw/inc/input")
+    SOURCE_DIRS.append("src/rffw/src/input")
 elif PROJECT == "rfesc":
-    directories = rfesc_directories
-    INCLUDE_DIRS = rfesc_INCLUDE_DIRS
+    pass
 else:
-    directories = rffw_directories
-    INCLUDE_DIRS = rffw_INCLUDE_DIRS
+    print("ERROR: NOT VALID PROJECT TYPE, CHECK MAKE FILE CODE", file=sys.stderr)
+    sys.exit(1)
 
+# per-feature directories and files
 
-excluded_files = [
-    ".*_template.c",
+USB_SOURCE_DIRS = [
+    "lib/STM32_USB_Device_Library/Core/Src",
+    "lib/STM32_USB_Device_Library/Class/HID/Src",
+    "src/%s/src/usb" % PROJECT,
 ]
 
-linkerObjs = ""
+USB_INCLUDE_DIRS = [
+    "lib/STM32_USB_Device_Library/Core/Inc",
+    "lib/STM32_USB_Device_Library/Class/HID/Inc",
+    "src/%s/inc/usb" % PROJECT,
+]
 
+for feature in FEATURES:
+
+    if feature.startswith("usb_"):
+        # add common usb directories and usb descriptor for project
+        SOURCE_DIRS.extend(USB_SOURCE_DIRS)
+        INCLUDE_DIRS.extend(USB_INCLUDE_DIRS)
+        # add usb class specific files
+        SOURCE_DIRS.append("src/target/" + feature)
+        INCLUDE_DIRS.append("src/target/" + feature)
+
+    elif feature.startswith("mpu"):
+        # gyro named by "gyro/bus", e.g. "mpu6000/spi"
+        gyro, bus = feature.split("/")
+        SOURCE_FILES.append("src/%s/src/drivers/invensense_%s.c" % (PROJECT, gyro))
+        SOURCE_FILES.append("src/%s/src/drivers/invensense_bus_%s.c" % (PROJECT, bus))
+        INCLUDE_DIRS.append("src/%s/inc/drivers" % PROJECT)
+
+
+
+################################################################################
+# compiler options
 
 INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
-LTO_FLAGS = "-flto -fuse-linker-plugin -O0"
-DEBUG_FLAGS = "-ggdb3 -DDEBUG"
+LTO_FLAGS = "-flto -fuse-linker-plugin"
+DEBUG_FLAGS = "-ggdb3 -DDEBUG -Og"
+OPTIMIZE_FLAGS = "-O2"
 
 CFLAGS = " ".join([
     ARCH_FLAGS,
     LTO_FLAGS,
     DEF_FLAGS,
-    DEBUG_FLAGS,
+    DEBUG_FLAGS if args.debug else OPTIMIZE_FLAGS,
     INCLUDES,
-    "-Wunused-parameter -Wdouble-promotion -save-temps=obj -std=gnu99 -Wall -Wextra -Wunsafe-loop-optimizations -ffunction-sections -fdata-sections -MMD -MP"
+    "-Wunused-parameter -Wdouble-promotion -save-temps=obj -std=gnu99",
+    "-Wall -Wextra -Wunsafe-loop-optimizations",
+    "-ffunction-sections -fdata-sections -MMD -MP"
 ])
 
 ASMFLAGS = " ".join([
@@ -324,7 +268,7 @@ LDFLAGS = " ".join([
     "-lm -nostartfiles --specs=nano.specs -lc -lnosys",
     ARCH_FLAGS,
     LTO_FLAGS,
-    DEBUG_FLAGS,
+    DEBUG_FLAGS if args.debug else OPTIMIZE_FLAGS,
     "-static",
     "-Wl,-gc-sections,-Map," + mapFile,
     "-Wl,-L" + linkerDir,
@@ -332,34 +276,38 @@ LDFLAGS = " ".join([
     "-T" + ldScript
 ])
 
-asm_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " + ASMFLAGS + " {INPUT_FILE}"
+asm_command = "arm-none-eabi-gcc -c -fdiagnostics-color -o output" + os.sep + "{OUTPUT_FILE} " + ASMFLAGS + " {INPUT_FILE}"
 
-compile_command = "arm-none-eabi-gcc -c -o output" + os.sep + "{OUTPUT_FILE} " + CFLAGS + " {INPUT_FILE}"
+compile_command = "arm-none-eabi-gcc -c -fdiagnostics-color -o output" + os.sep + "{OUTPUT_FILE} " + CFLAGS + " {INPUT_FILE}"
 
-link_command = "arm-none-eabi-gcc -o output" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
+link_command = "arm-none-eabi-gcc -fdiagnostics-color -o output" + os.sep + "{OUTPUT_NAME}.elf {OBJS} " + LDFLAGS
 
 size_command = "arm-none-eabi-size output" + os.sep + "{OUTPUT_NAME}.elf"
 
 copy_obj_command = "arm-none-eabi-objcopy -O binary output" + os.sep + "{OUTPUT_NAME}.elf output" + os.sep + "{OUTPUT_NAME}.bin"
 
 
-commands = [
+commands = []
+linkerObjs = ""
+
+excluded_files = [
+    ".*_template.c",
 ]
 
 
-THREAD_LIMIT = 200
+THREAD_LIMIT = args.threads
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
 locker = threading.Lock()
 threadRunning = list()
 isStop = False
 
 def find_between( s, first, last ):
-	try:
-		start = s.index( first ) + len( first )
-		end = s.index( last, start )
-		return s[start:end]
-	except ValueError:
-		return ""
+    try:
+        start = s.index( first )
+        end = s.index( last, start )
+        return s[start:end]
+    except ValueError:
+        return ""
 
 class CommandRunnerThread(threading.Thread):
 
@@ -367,62 +315,57 @@ class CommandRunnerThread(threading.Thread):
         self.command = kwargs.pop("command", "")
         self.queue = kwargs.pop("queue", None)
         self.proc = None
-        self.pipe = LogPipe()
         super(CommandRunnerThread, self).__init__(*args, **kwargs)
         self.stop_event = threading.Event()
 
 
     def run(self):
-        threadLimiter.acquire()
-        locker.acquire()
-        threadRunning.append(self)
-        locker.release()
+        with threadLimiter:
+            with locker:
+                threadRunning.append(self)
 
-        try:
-            self.run_command()
-        finally:
-            locker.acquire()
-            threadRunning.remove(self)
-            locker.release()
-            threadLimiter.release()
+            try:
+                self.run_command()
+            finally:
+                with locker:
+                    threadRunning.remove(self)
 
     def run_command(self):
         if not self.command:
             return
-        locker.acquire()
-        if isStop:
-            locker.release()
-            return
-        locker.release()
 
-        locker.acquire()
-        print(find_between( self.command, "output" + os.sep, ".o" ))
-        locker.release()
+        with locker:
+            if isStop:
+                return
 
-        self.proc = subprocess.Popen(self.command, stdout=self.pipe, stderr=self.pipe, shell=True)
+            # figure out the output file path
+            file_path = find_between(self.command, "output" + os.sep, ".o")
+            basedir, basename = os.path.split(file_path)
+            # if the base directory doesn't exist, make it
+            if not os.path.exists(basedir):
+                os.makedirs(basedir)
+
+        self.proc = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout_value, stderr_value = self.proc.communicate()
 
-        self.pipe.close()
+        with locker:
+            print("% " + basename)
+            if stderr_value:
+                print(stderr_value.decode())
 
         if self.queue:
             self.queue.put(self.proc.returncode)
         else:
-            print(proc.returncode)
+            print(self.proc.returncode)
 
         self.proc = None
-        self.pipe = None
 
     def stop_command(self):
         if self.proc:
             try:
                 self.proc.kill()
+                self.proc.wait()
             except OSError:
-                pass
-
-        if self.pipe:
-            try:
-                self.pipe.close()
-            except Exception:
                 pass
 
         self.stop_event.set()
@@ -433,7 +376,48 @@ class CommandRunnerThread(threading.Thread):
 
 
 def FileModified(fileName):
-    return True
+    # get the output file `output/.../filename.o`
+    outputFile = os.path.join("output", makeObject(fileName.path))
+    # if we haven't compiled, then return true
+    if not os.path.exists(outputFile):
+        return True
+
+    # if input file is more recent than the output, return true
+    if os.path.getmtime(fileName) > os.path.getmtime(outputFile):
+        return True
+
+    # if the target file is more recent than the output, return true
+    target_file = "src/target/%s/target.h".path % TARGET
+    if os.path.getmtime(target_file) > os.path.getmtime(outputFile):
+        return True
+
+    # get the dependency file `output/.../filename.d`
+    outputBase, _ = os.path.splitext(outputFile)
+    depFile = outputBase + ".d"
+
+    # if we don't have a dependency file, return true
+    if not os.path.exists(depFile):
+        return True
+
+    # check the dependency file
+    with open(depFile, 'r') as f:
+        for line in f:
+            # the lines with dependencies start with a space
+            if line[0] != " ":
+                continue
+
+            for dep in line.split():
+                # we'll get the line continuation in this: "\"
+                if dep == "\\":
+                    continue
+                # all dependencies should exist
+                if not os.path.exists(dep):
+                    return True
+                # check if dependency is more recent
+                if os.path.getmtime(dep) > os.path.getmtime(outputFile):
+                    return True
+
+    return False
 
 def AddToList(fileName):
     global commands
@@ -441,13 +425,18 @@ def AddToList(fileName):
     commands.append(fileName)
 
 def makeObject(fileName):
-    head, tail = ntpath.split(fileName)
-    root, ext = os.path.splitext(tail)
+    root, ext = os.path.splitext(fileName)
+
+    # strip first directory from  "src/..." or "lib/..."
+    _, root = root.split(os.sep, 1)
+    # send it to "output/target/"
+    root = os.path.join(TARGET, root)
+
     if ext.lower() in (".c", ".s"):
         return root + ".o"
 
     print("Unknown file type: " + tail)
-    return tail
+    return root
 
 def ProcessList(fileNames):
     global linkerObjs
@@ -474,10 +463,12 @@ def main():
     except:
         pass
 
-    for directory in directories:
+    for directory in SOURCE_DIRS:
         ProcessList(glob.glob(os.path.join(directory, "*.c")))
 
-    for directory in directories:
+    ProcessList(SOURCE_FILES)
+
+    for directory in SOURCE_DIRS:
         ProcessList(glob.glob(os.path.join(directory, "*.s")))
 
     thread_queue = queue.Queue()
@@ -495,11 +486,10 @@ def main():
         except queue.Empty:
             continue
         if returncode > 0:
-            locker.acquire()
-            isStop = True
-            for thread in threads:
-                thread.stop_command()
-            locker.release()
+            with locker:
+                isStop = True
+                for thread in threads:
+                    thread.stop_command()
             break
 
     for thread in threads:
@@ -515,26 +505,34 @@ def main():
         proc = subprocess.Popen(link_command, shell=True)
         stdout_value, stderr_value = proc.communicate()
 
+        if proc.returncode:
+            sys.exit(proc.returncode)
 
-        if proc.returncode == 0:
-            print("Sizing!")
-            size_command = size_command.format(
-                OUTPUT_NAME=TARGET
-            )
 
-            print(size_command)
-            proc = subprocess.Popen(size_command, shell=True)
-            stdout_value, stderr_value = proc.communicate()
+        print("Sizing!")
+        size_command = size_command.format(
+            OUTPUT_NAME=TARGET
+        )
 
-        if proc.returncode == 0:
-            print("Build succeded copying")
-            copy_obj_command = copy_obj_command.format(
-                OUTPUT_NAME=TARGET
-            )
+        print(size_command)
+        proc = subprocess.Popen(size_command, shell=True)
+        stdout_value, stderr_value = proc.communicate()
 
-            print(copy_obj_command)
-            proc = subprocess.Popen(copy_obj_command, shell=True)
-            stdout_value, stderr_value = proc.communicate()
+        if proc.returncode:
+            sys.exit(proc.returncode)
+
+
+        print("Build succeded copying")
+        copy_obj_command = copy_obj_command.format(
+            OUTPUT_NAME=TARGET
+        )
+
+        print(copy_obj_command)
+        proc = subprocess.Popen(copy_obj_command, shell=True)
+        stdout_value, stderr_value = proc.communicate()
+
+        if proc.returncode:
+            sys.exit(proc.returncode)
      
 
 
