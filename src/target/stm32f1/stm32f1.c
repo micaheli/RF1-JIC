@@ -83,6 +83,7 @@ void BoardInit(void)
 
 void USBInit(void)
 {
+
     /* Peripheral clock enable */
     __HAL_RCC_USB_CLK_ENABLE();
 

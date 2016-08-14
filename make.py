@@ -89,6 +89,15 @@ if TARGET == "cc3d":
     FEATURES = ["usb_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
+elif TARGET == "cc3d_rfbl":
+    PROJECT = "rfbl"
+    TARGET_BOARD = "cc3d"
+    TARGET_DEVICE = "STM32F103xB"
+    TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
+    TARGET_PROCESSOR_TYPE  = "f1"
+    FEATURES = ["leds", "usb_fs"]
+    OPTIMIZE_FLAGS = "-Os"
+
 elif TARGET == "kissesc":
     PROJECT = "rfesc"
     TARGET_BOARD = "kissesc"

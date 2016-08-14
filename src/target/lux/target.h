@@ -41,7 +41,7 @@
 #define RFBL_HID_PRODUCT_STRING "Lux RFBL"
 
 //STM32F4 UID address
-#define DEVICE_ID1                  0x1FFF7A10
-#define DEVICE_ID2                  0x1FFF7A14
-#define DEVICE_ID3                  0x1FFF7A18
+#define DEVICE_ID1                  0x1FFFF7AC
+#define DEVICE_ID2                  0x1FFFF7B0
+#define DEVICE_ID3                  0x1FFFF7B4
 
