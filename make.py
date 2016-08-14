@@ -86,7 +86,7 @@ if TARGET == "cc3d":
     TARGET_DEVICE = "STM32F103xB"
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
-    FEATURES = ["usb_fs"]
+    FEATURES = ["leds", "usb_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "cc3d_rfbl":
@@ -112,7 +112,7 @@ elif TARGET == "lux":
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
-    FEATURES = ["mpu6500/spi", "usb_fs"]
+    FEATURES = ["leds", "mpu6500/spi", "usb_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "lux_rfbl":
@@ -130,7 +130,7 @@ elif TARGET == "revo":
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
-    FEATURES = ["mpu6000/spi", "usb_otg_fs"]
+    FEATURES = ["leds", "mpu6000/spi", "usb_otg_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "revo_rfbl":
@@ -148,7 +148,7 @@ elif TARGET == "f7disco":
     TARGET_DEVICE = "STM32F746xx"
     TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
     TARGET_PROCESSOR_TYPE  = "f7"
-    FEATURES = ["usb_otg_fs"]
+    FEATURES = ["leds", "usb_otg_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
 else:
