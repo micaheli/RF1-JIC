@@ -106,6 +106,15 @@ elif TARGET == "lux":
     FEATURES = ["mpu6500/spi", "usb_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
+elif TARGET == "lux_rfbl":
+    PROJECT = "rfbl"
+    TARGET_BOARD = "lux"
+    TARGET_DEVICE = "STM32F303xC"
+    TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
+    TARGET_PROCESSOR_TYPE  = "f3"
+    FEATURES = ["leds", "usb_fs"]
+    OPTIMIZE_FLAGS = "-O2"
+
 elif TARGET == "revo":
     PROJECT = "rffw"
     TARGET_BOARD = "revo"

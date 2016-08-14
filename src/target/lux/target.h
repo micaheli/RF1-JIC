@@ -35,3 +35,13 @@
 #define GYRO_EXTI_GPIO_Pin      GPIO_PIN_5
 #define GYRO_EXTI_IRQn          EXTI9_5_IRQn
 #define GYRO_EXTI_IRQHandler    EXTI9_5_IRQHandler
+
+//USB config
+#define RFFW_HID_PRODUCT_STRING "Lux"
+#define RFBL_HID_PRODUCT_STRING "Lux RFBL"
+
+//STM32F4 UID address
+#define DEVICE_ID1                  0x1FFF7A10
+#define DEVICE_ID2                  0x1FFF7A14
+#define DEVICE_ID3                  0x1FFF7A18
+

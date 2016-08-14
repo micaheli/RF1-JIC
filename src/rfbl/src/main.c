@@ -30,6 +30,7 @@ int main(void)
         LED2_TOGGLE;
 
         HAL_Delay(200);
+
         if (tOutBuffer[0]==2) {
         	LED1_TOGGLE;
         	tOutBuffer[0] = 0; //clear buffer id, only need to clear first byte.
@@ -52,6 +53,7 @@ int main(void)
     		tInBuffer[16]=0x21;
             USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
         }
+
     }
 }
 
