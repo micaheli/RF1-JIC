@@ -3,6 +3,9 @@
 #include "target.h"
 #include "mcu_include.h"
 
+#include "usbd_hid.h"
+#include "usb_device.h"
+
 #if LEDn >= 1
 #define LED1_ON     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_GPIO_Pin, GPIO_PIN_RESET)
 #define LED1_OFF    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_GPIO_Pin, GPIO_PIN_SET)
