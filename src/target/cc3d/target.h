@@ -2,14 +2,14 @@
 
 #define LEDn                             1
 
-#define LED1_PIN                         GPIO_PIN_3
-#define LED1_GPIO_PORT                   GPIOB
+#define LED1_GPIO_Port          GPIOC
+#define LED1_GPIO_Pin           GPIO_PIN_15
 
-#define SERVO1_PIN                       GPIO_PIN_9
-#define SERVO1_GPIO_PORT                 GPIOB
+//USB config
+#define RFFW_HID_PRODUCT_STRING "CC3D"
+#define RFBL_HID_PRODUCT_STRING "CC3D RFBL"
 
-#define SERVO2_PIN                       GPIO_PIN_4
-#define SERVO2_GPIO_PORT                 GPIOB
-
-#define SERVO3_PIN                       GPIO_PIN_2
-#define SERVO3_GPIO_PORT                 GPIOA
+//STM32F4 UID address
+#define DEVICE_ID1                  0x1FFFF7E8
+#define DEVICE_ID2                  0x1FFFF7EC
+#define DEVICE_ID3                  0x1FFFF7F0

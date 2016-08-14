@@ -25,3 +25,13 @@
 #define GYRO_EXTI_GPIO_Pin      GPIO_PIN_4
 #define GYRO_EXTI_IRQn          EXTI4_IRQn
 #define GYRO_EXTI_IRQHandler    EXTI4_IRQHandler
+
+
+//USB config
+#define RFFW_HID_PRODUCT_STRING "Revolution"
+#define RFBL_HID_PRODUCT_STRING "Revolution RFBL"
+
+//STM32F4 UID address
+#define DEVICE_ID1                  0x1FFF7A10
+#define DEVICE_ID2                  0x1FFF7A14
+#define DEVICE_ID3                  0x1FFF7A18

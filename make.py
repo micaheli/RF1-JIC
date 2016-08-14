@@ -82,37 +82,74 @@ FEATURES = []
 
 if TARGET == "cc3d":
     PROJECT = "rffw"
+    TARGET_BOARD = "cc3d"
     TARGET_DEVICE = "STM32F103xB"
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
     FEATURES = ["usb_fs"]
+    OPTIMIZE_FLAGS = "-O2"
+
+elif TARGET == "cc3d_rfbl":
+    PROJECT = "rfbl"
+    TARGET_BOARD = "cc3d"
+    TARGET_DEVICE = "STM32F103xB"
+    TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
+    TARGET_PROCESSOR_TYPE  = "f1"
+    FEATURES = ["leds", "usb_fs"]
+    OPTIMIZE_FLAGS = "-Os"
 
 elif TARGET == "kissesc":
     PROJECT = "rfesc"
+    TARGET_BOARD = "kissesc"
     TARGET_DEVICE = "STM32F051x8"
     TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
     TARGET_PROCESSOR_TYPE  = "f0"
+    OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "lux":
     PROJECT = "rffw"
+    TARGET_BOARD = "lux"
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
     FEATURES = ["mpu6500/spi", "usb_fs"]
+    OPTIMIZE_FLAGS = "-O2"
+
+elif TARGET == "lux_rfbl":
+    PROJECT = "rfbl"
+    TARGET_BOARD = "lux"
+    TARGET_DEVICE = "STM32F303xC"
+    TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
+    TARGET_PROCESSOR_TYPE  = "f3"
+    FEATURES = ["leds", "usb_fs"]
+    OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "revo":
     PROJECT = "rffw"
+    TARGET_BOARD = "revo"
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
     FEATURES = ["mpu6000/spi", "usb_otg_fs"]
+    OPTIMIZE_FLAGS = "-O2"
+
+elif TARGET == "revo_rfbl":
+    PROJECT = "rfbl"
+    TARGET_BOARD = "revo"
+    TARGET_DEVICE = "STM32F405xx"
+    TARGET_SCRIPT = "stm32_flash_f405.ld"
+    TARGET_PROCESSOR_TYPE  = "f4"
+    FEATURES = ["leds", "usb_otg_fs"]
+    OPTIMIZE_FLAGS = "-Os"
 
 elif TARGET == "f7disco":
     PROJECT = "rffw"
+    TARGET_BOARD = "f7disco"
     TARGET_DEVICE = "STM32F746xx"
     TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
     TARGET_PROCESSOR_TYPE  = "f7"
     FEATURES = ["usb_otg_fs"]
+    OPTIMIZE_FLAGS = "-O2"
 
 else:
     print("ERROR: NOT VALID TARGET", file=sys.stderr)
@@ -177,14 +214,14 @@ INCLUDE_DIRS = [
     "src/%s/inc" % PROJECT,
     CMSIS_DIR,
     HAL_DIR + "/Inc",
-    "src/target/" + TARGET,
+    "src/target/" + TARGET_BOARD,
     MCU_DIR,
 ]
 
 SOURCE_DIRS = [
     HAL_DIR + "/Src",
     "src/%s/src" % PROJECT,
-    "src/target/" + TARGET,
+    "src/target/" + TARGET_BOARD,
     MCU_DIR,
 ]
 
@@ -196,6 +233,8 @@ if PROJECT == "rffw":
     INCLUDE_DIRS.append("src/rffw/inc/input")
     SOURCE_DIRS.append("src/rffw/src/input")
 elif PROJECT == "rfesc":
+    pass
+elif PROJECT == "rfbl":
     pass
 else:
     print("ERROR: NOT VALID PROJECT TYPE, CHECK MAKE FILE CODE", file=sys.stderr)
@@ -232,6 +271,9 @@ for feature in FEATURES:
         SOURCE_FILES.append("src/%s/src/drivers/invensense_bus_%s.c" % (PROJECT, bus))
         INCLUDE_DIRS.append("src/%s/inc/drivers" % PROJECT)
 
+    else:
+        SOURCE_FILES.append("src/%s/src/drivers/" % (PROJECT) + feature + ".c")
+        INCLUDE_DIRS.append("src/%s/inc/drivers/" % (PROJECT))
 
 
 ################################################################################
@@ -241,7 +283,6 @@ INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
 LTO_FLAGS = "-flto -fuse-linker-plugin"
 DEBUG_FLAGS = "-ggdb3 -DDEBUG -Og"
-OPTIMIZE_FLAGS = "-O2"
 
 CFLAGS = " ".join([
     ARCH_FLAGS,
@@ -387,7 +428,7 @@ def FileModified(fileName):
         return True
 
     # if the target file is more recent than the output, return true
-    target_file = "src/target/%s/target.h".path % TARGET
+    target_file = "src/target/%s/target.h".path % TARGET_BOARD
     if os.path.getmtime(target_file) > os.path.getmtime(outputFile):
         return True
 
@@ -425,18 +466,28 @@ def AddToList(fileName):
     commands.append(fileName)
 
 def makeObject(fileName):
-    root, ext = os.path.splitext(fileName)
-
-    # strip first directory from  "src/..." or "lib/..."
-    _, root = root.split(os.sep, 1)
-    # send it to "output/target/"
-    root = os.path.join(TARGET, root)
-
+    head, tail = ntpath.split(fileName)
+    root, ext = os.path.splitext(tail)
     if ext.lower() in (".c", ".s"):
+        root = os.path.join(TARGET, root)
         return root + ".o"
 
     print("Unknown file type: " + tail)
-    return root
+    return tail
+
+#This works, but the linker doesn't know how to find the files
+#    root, ext = os.path.splitext(fileName)
+#
+#    # strip first directory from  "src/..." or "lib/..."
+#    _, root = root.split(os.sep, 1)
+#    # send it to "output/target/"
+#    root = os.path.join(TARGET_BOARD, root)
+#
+#    if ext.lower() in (".c", ".s"):
+#        return root + ".o"
+#
+#    print("Unknown file type: " + tail)
+#    return root
 
 def ProcessList(fileNames):
     global linkerObjs
