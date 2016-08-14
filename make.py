@@ -87,6 +87,7 @@ if TARGET == "cc3d":
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
     FEATURES = ["usb_fs"]
+    OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "kissesc":
     PROJECT = "rfesc"
@@ -94,6 +95,7 @@ elif TARGET == "kissesc":
     TARGET_DEVICE = "STM32F051x8"
     TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
     TARGET_PROCESSOR_TYPE  = "f0"
+    OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "lux":
     PROJECT = "rffw"
@@ -102,6 +104,7 @@ elif TARGET == "lux":
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
     FEATURES = ["mpu6500/spi", "usb_fs"]
+    OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "revo":
     PROJECT = "rffw"
@@ -110,6 +113,7 @@ elif TARGET == "revo":
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
     FEATURES = ["mpu6000/spi", "usb_otg_fs"]
+    OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "revo_rfbl":
     PROJECT = "rfbl"
@@ -117,7 +121,8 @@ elif TARGET == "revo_rfbl":
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
-    FEATURES = ["usb_otg_fs"]
+    FEATURES = ["leds", "usb_otg_fs"]
+    OPTIMIZE_FLAGS = "-Os"
 
 elif TARGET == "f7disco":
     PROJECT = "rffw"
@@ -126,6 +131,7 @@ elif TARGET == "f7disco":
     TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
     TARGET_PROCESSOR_TYPE  = "f7"
     FEATURES = ["usb_otg_fs"]
+    OPTIMIZE_FLAGS = "-O2"
 
 else:
     print("ERROR: NOT VALID TARGET", file=sys.stderr)
@@ -247,6 +253,9 @@ for feature in FEATURES:
         SOURCE_FILES.append("src/%s/src/drivers/invensense_bus_%s.c" % (PROJECT, bus))
         INCLUDE_DIRS.append("src/%s/inc/drivers" % PROJECT)
 
+    else:
+        SOURCE_FILES.append("src/%s/src/drivers/" % (PROJECT) + feature + ".c")
+        INCLUDE_DIRS.append("src/%s/inc/drivers/" % (PROJECT))
 
 
 ################################################################################
@@ -256,7 +265,6 @@ INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
 LTO_FLAGS = "-flto -fuse-linker-plugin"
 DEBUG_FLAGS = "-ggdb3 -DDEBUG -Og"
-OPTIMIZE_FLAGS = "-O2"
 
 CFLAGS = " ".join([
     ARCH_FLAGS,
