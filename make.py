@@ -76,7 +76,8 @@ if IS_CLEANUP:
                 os.rmdir(os.path.join(root, name))
     sys.exit(0)
 
-FEATURES = []
+#required features
+FEATURES = ["math", "leds", "filter", "mixer", "rx"]
 
 ################################################################################
 # Determine target variables and features
@@ -87,7 +88,7 @@ if TARGET == "cc3d":
     TARGET_DEVICE = "STM32F103xB"
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
-    FEATURES = ["usb_fs"]
+    FEATURES.extend(["usb_fs"])
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "cc3d_rfbl":
@@ -96,7 +97,7 @@ elif TARGET == "cc3d_rfbl":
     TARGET_DEVICE = "STM32F103xB"
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
-    FEATURES = ["usb_fs"]
+    FEATURES.extend(["usb_fs"])
     OPTIMIZE_FLAGS = "-Os"
 
 elif TARGET == "kissesc":
@@ -113,7 +114,7 @@ elif TARGET == "lux":
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
-    FEATURES = ["mpu6500/spi", "usb_fs"]
+    FEATURES.extend(["mpu6500/spi", "usb_fs"])
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "lux_rfbl":
@@ -122,7 +123,7 @@ elif TARGET == "lux_rfbl":
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
-    FEATURES = ["usb_fs"]
+    FEATURES.extend(["usb_fs"])
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "revo":
@@ -131,7 +132,7 @@ elif TARGET == "revo":
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
-    FEATURES = ["mpu6000/spi", "usb_otg_fs"]
+    FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "revo_rfbl":
@@ -140,7 +141,7 @@ elif TARGET == "revo_rfbl":
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
-    FEATURES = ["usb_otg_fs"]
+    FEATURES.extend(["usb_otg_fs"])
     OPTIMIZE_FLAGS = "-Os"
 
 elif TARGET == "f7disco":
@@ -149,7 +150,7 @@ elif TARGET == "f7disco":
     TARGET_DEVICE = "STM32F746xx"
     TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
     TARGET_PROCESSOR_TYPE  = "f7"
-    FEATURES = ["usb_otg_fs"]
+    FEATURES.extend(["usb_otg_fs"])
     OPTIMIZE_FLAGS = "-O2"
 
 else:
@@ -157,12 +158,6 @@ else:
     sys.exit(1)
 
 
-#required features
-FEATURES.append("math")
-FEATURES.append("leds")
-FEATURES.append("filter")
-FEATURES.append("mixer")
-FEATURES.append("rx")
 
 ################################################################################
 # Set per target compilation options
@@ -401,6 +396,7 @@ class CommandRunnerThread(threading.Thread):
             print("% " + basename)
             if stderr_value:
                 print(stderr_value.decode())
+            sys.stdout.flush()
 
         if self.queue:
             self.queue.put(self.proc.returncode)

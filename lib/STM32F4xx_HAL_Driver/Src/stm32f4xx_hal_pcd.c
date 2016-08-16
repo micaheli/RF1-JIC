@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_pcd.c
   * @author  MCD Application Team
-  * @version V1.5.0
-  * @date    06-May-2016
+  * @version V1.5.1
+  * @date    01-July-2016
   * @brief   PCD HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the USB Peripheral Controller:
@@ -578,6 +578,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
         time to IN tokens, the USB turnaround time, so to compensate for the longer AHB read access 
         latency to the Data FIFO */
         
+        /* Get hclk frequency value */
+        hclk = HAL_RCC_GetHCLKFreq();
+		
         if((hclk >= 14200000)&&(hclk < 15000000))
         {
           /* hclk Clock Range between 14.2-15 MHz */
@@ -1267,7 +1270,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 {
   USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;  
   USB_OTG_EPTypeDef *ep;
-  uint32_t len = 0U;
+  int32_t len = 0U;
   uint32_t len32b;
   uint32_t fifoemptymsk = 0U;
 

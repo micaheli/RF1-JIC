@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_flash_ex.c
   * @author  MCD Application Team
-  * @version V1.5.0
-  * @date    06-May-2016
+  * @version V1.5.1
+  * @date    01-July-2016
   * @brief   Extended FLASH HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the FLASH extension peripheral:
@@ -963,7 +963,7 @@ static HAL_StatusTypeDef FLASH_OB_DisablePCROP(uint32_t SectorBank1, uint32_t Se
   */
 static void FLASH_MassErase(uint8_t VoltageRange, uint32_t Banks)
 {
-  (void)(Banks);
+  UNUSED(Banks);
   /* Check the parameters */
   assert_param(IS_VOLTAGERANGE(VoltageRange));
   assert_param(IS_FLASH_BANK(Banks));
@@ -1043,7 +1043,7 @@ void FLASH_Erase_Sector(uint32_t Sector, uint8_t VoltageRange)
   */
 static HAL_StatusTypeDef FLASH_OB_EnableWRP(uint32_t WRPSector, uint32_t Banks)
 {
-  (void)(Banks);
+  UNUSED(Banks);
   HAL_StatusTypeDef status = HAL_OK;
   
   /* Check the parameters */
@@ -1080,7 +1080,7 @@ static HAL_StatusTypeDef FLASH_OB_EnableWRP(uint32_t WRPSector, uint32_t Banks)
   */
 static HAL_StatusTypeDef FLASH_OB_DisableWRP(uint32_t WRPSector, uint32_t Banks)
 {
-  (void)(Banks);
+  UNUSED(Banks);
   HAL_StatusTypeDef status = HAL_OK;
   
   /* Check the parameters */

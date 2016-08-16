@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_tim.c
   * @author  MCD Application Team
-  * @version V1.5.0
-  * @date    06-May-2016
+  * @version V1.5.1
+  * @date    01-July-2016
   * @brief   TIM HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the Timer (TIM) peripheral:
@@ -2114,8 +2114,8 @@ HAL_StatusTypeDef HAL_TIM_OnePulse_Start(TIM_HandleTypeDef *htim, uint32_t Outpu
     
     No need to enable the counter, it's enabled automatically by hardware 
     (the counter starts in response to a stimulus and generate a pulse */
-
-  (void)(OutputChannel);
+  UNUSED(OutputChannel);
+  
   TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_1, TIM_CCx_ENABLE); 
   TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_2, TIM_CCx_ENABLE); 
   
@@ -2146,8 +2146,8 @@ HAL_StatusTypeDef HAL_TIM_OnePulse_Stop(TIM_HandleTypeDef *htim, uint32_t Output
   if TIM_CHANNEL_1 is used as output, the TIM_CHANNEL_2 will be used as input and
   if TIM_CHANNEL_1 is used as input, the TIM_CHANNEL_2 will be used as output 
   in all combinations, the TIM_CHANNEL_1 and TIM_CHANNEL_2 should be disabled together */
-
-  (void)(OutputChannel);
+  UNUSED(OutputChannel);
+  
   TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_1, TIM_CCx_DISABLE); 
   TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_2, TIM_CCx_DISABLE); 
     
@@ -2184,9 +2184,8 @@ HAL_StatusTypeDef HAL_TIM_OnePulse_Start_IT(TIM_HandleTypeDef *htim, uint32_t Ou
     
     No need to enable the counter, it's enabled automatically by hardware 
     (the counter starts in response to a stimulus and generate a pulse */
-
-  (void)(OutputChannel);
-
+  UNUSED(OutputChannel);
+ 
   /* Enable the TIM Capture/Compare 1 interrupt */
   __HAL_TIM_ENABLE_IT(htim, TIM_IT_CC1);
   
@@ -2218,8 +2217,7 @@ HAL_StatusTypeDef HAL_TIM_OnePulse_Start_IT(TIM_HandleTypeDef *htim, uint32_t Ou
   */
 HAL_StatusTypeDef HAL_TIM_OnePulse_Stop_IT(TIM_HandleTypeDef *htim, uint32_t OutputChannel)
 {
-
-  (void)(OutputChannel);
+  UNUSED(OutputChannel);
   /* Disable the TIM Capture/Compare 1 interrupt */
   __HAL_TIM_DISABLE_IT(htim, TIM_IT_CC1);  
   
