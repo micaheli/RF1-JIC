@@ -23,6 +23,15 @@ except ImportError:
     # Python 2 name
     import Queue as queue
 
+class ColorFallback(object):
+    def __getattr__(self, attr):
+        return ""
+
+try:
+    from colorama import Fore, Style
+except ImportError:
+    Fore = Style = ColorFallback()
+
 
 # Magic code
 # add new method for python string object
@@ -59,6 +68,7 @@ parser.add_argument("-T", "--target", help="target controller to build", default
 parser.add_argument('-C', "--clean", help="clean up output folder", action='store_true')
 parser.add_argument('-D', "--debug", help="build debug target", action='store_true')
 parser.add_argument('-j', "--threads", help="number of threads to run", default=10, type=int)
+parser.add_argument('-v', "--verbose", help="print compiler calls", action='store_true')
 args = parser.parse_args()
 
 TARGET = args.target.lower()
@@ -77,7 +87,7 @@ if IS_CLEANUP:
     sys.exit(0)
 
 #required features
-FEATURES = ["math", "leds", "filter", "mixer", "rx"]
+FEATURES = ["leds"]
 
 ################################################################################
 # Determine target variables and features
@@ -235,6 +245,7 @@ SOURCE_FILES = []
 if PROJECT == "rffw":
     INCLUDE_DIRS.append("src/rffw/inc/input")
     SOURCE_DIRS.append("src/rffw/src/input")
+    FEATURES.extend(["math", "filter", "mixer", "rx"])
 elif PROJECT == "rfesc":
     pass
 elif PROJECT == "rfbl":
@@ -393,7 +404,9 @@ class CommandRunnerThread(threading.Thread):
         stdout_value, stderr_value = self.proc.communicate()
 
         with locker:
-            print("% " + basename)
+            print(Fore.GREEN + "% "  + Style.RESET_ALL + basename)
+            if (args.verbose):
+                print(self.command)
             if stderr_value:
                 print(stderr_value.decode())
             sys.stdout.flush()
