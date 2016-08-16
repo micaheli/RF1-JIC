@@ -86,7 +86,7 @@ if TARGET == "cc3d":
     TARGET_DEVICE = "STM32F103xB"
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
-    FEATURES = ["leds", "usb_fs"]
+    FEATURES = ["usb_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "cc3d_rfbl":
@@ -95,7 +95,7 @@ elif TARGET == "cc3d_rfbl":
     TARGET_DEVICE = "STM32F103xB"
     TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f1"
-    FEATURES = ["leds", "usb_fs"]
+    FEATURES = ["usb_fs"]
     OPTIMIZE_FLAGS = "-Os"
 
 elif TARGET == "kissesc":
@@ -112,7 +112,7 @@ elif TARGET == "lux":
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
-    FEATURES = ["leds", "mpu6500/spi", "usb_fs"]
+    FEATURES = ["mpu6500/spi", "usb_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "lux_rfbl":
@@ -121,7 +121,7 @@ elif TARGET == "lux_rfbl":
     TARGET_DEVICE = "STM32F303xC"
     TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
     TARGET_PROCESSOR_TYPE  = "f3"
-    FEATURES = ["leds", "usb_fs"]
+    FEATURES = ["usb_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "revo":
@@ -130,7 +130,7 @@ elif TARGET == "revo":
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
-    FEATURES = ["leds", "mpu6000/spi", "usb_otg_fs"]
+    FEATURES = ["mpu6000/spi", "usb_otg_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
 elif TARGET == "revo_rfbl":
@@ -139,7 +139,7 @@ elif TARGET == "revo_rfbl":
     TARGET_DEVICE = "STM32F405xx"
     TARGET_SCRIPT = "stm32_flash_f405.ld"
     TARGET_PROCESSOR_TYPE  = "f4"
-    FEATURES = ["leds", "usb_otg_fs"]
+    FEATURES = ["usb_otg_fs"]
     OPTIMIZE_FLAGS = "-Os"
 
 elif TARGET == "f7disco":
@@ -148,13 +148,20 @@ elif TARGET == "f7disco":
     TARGET_DEVICE = "STM32F746xx"
     TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
     TARGET_PROCESSOR_TYPE  = "f7"
-    FEATURES = ["leds", "usb_otg_fs"]
+    FEATURES = ["usb_otg_fs"]
     OPTIMIZE_FLAGS = "-O2"
 
 else:
     print("ERROR: NOT VALID TARGET", file=sys.stderr)
     sys.exit(1)
 
+
+#required features
+FEATURES.append("math")
+FEATURES.append("leds")
+FEATURES.append("filter")
+FEATURES.append("mixer")
+FEATURES.append("rx")
 
 ################################################################################
 # Set per target compilation options
