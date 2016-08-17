@@ -48,20 +48,20 @@ static gyroFrame_t gyroRxFrame;
 static gyroFrame_t gyroTxFrame;
 
 typedef struct {
-    uint8_t dlpf;
-    uint8_t denom;
+    uint8_t rateDiv;
+    uint8_t gyroDlpf;
 } gyro6000Config_t;
 
 gyro6000Config_t mpu6000GyroConfig[] = {
-    [LOOP_L1] = {DLPF_188, 1},
-    [LOOP_M1] = {DLPF_256, 8},
-    [LOOP_M2] = {DLPF_256, 4},
-    [LOOP_M4] = {DLPF_256, 2},
-    [LOOP_M8] = {DLPF_256, 1},
-    [LOOP_H1] = {DLPF_3600, 8},
-    [LOOP_H2] = {DLPF_3600, 4},
-    [LOOP_H4] = {DLPF_3600, 2},
-    [LOOP_H8] = {DLPF_3600, 1},
+    [LOOP_L1] = {1, INVENS_CONST_GYRO_DLPF_188},
+    [LOOP_M1] = {8, INVENS_CONST_GYRO_DLPF_256},
+    [LOOP_M2] = {4, INVENS_CONST_GYRO_DLPF_256},
+    [LOOP_M4] = {2, INVENS_CONST_GYRO_DLPF_256},
+    [LOOP_M8] = {1, INVENS_CONST_GYRO_DLPF_256},
+    [LOOP_H1] = {8, INVENS_CONST_GYRO_DLPF_3600},
+    [LOOP_H2] = {4, INVENS_CONST_GYRO_DLPF_3600},
+    [LOOP_H4] = {2, INVENS_CONST_GYRO_DLPF_3600},
+    [LOOP_H8] = {1, INVENS_CONST_GYRO_DLPF_3600},
 };
 
 static bool accelUpdate = false;
@@ -97,20 +97,20 @@ bool accgyroDeviceInit(loopCtrl_e gyroLoop)
     accgyroWriteRegister(INVENS_RM_USER_CTRL, INVENS_CONST_I2C_IF_DIS | INVENS_CONST_FIFO_RESET | INVENS_CONST_SIG_COND_RESET);
 
     // set gyro sample divider rate
-    accgyroWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.denom);
+    accgyroWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.rateDiv - 1);
 
     // gyro DLPF config
-    if (!accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.dlpf)) {
+    if (!accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.gyroDlpf)) {
         return false;
     }
 
     // set gyro full scale to +/- 2000 deg / sec
-    if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_FSR_2000DPS << 3)) {
+    if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_GYRO_FSR_2000DPS << 3)) {
         return false;
     }
 
     // set accel full scale to +/- 16g
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_FSR_16G << 3)) {
+    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_ACC_FSR_16G << 3)) {
         return false;
     }
 
@@ -186,13 +186,13 @@ void accgyroDeviceReadGyro(void)
     // start read from gyro, set high bit to read
     gyroTxFrame.gyroAddress = INVENS_RM_GYRO_XOUT_H | 0x80;
 
+    accelUpdate = false;
     accgyroDMAReadWriteData(&gyroTxFrame.gyroAddress, &gyroRxFrame.gyroAddress, 7);
 }
 
 void accgyroDeviceReadComplete(void)
 {
     if (accelUpdate) {
-        accelUpdate = false;
         accelData[0] = (int16_t)((gyroRxFrame.accelX_H << 8) | gyroRxFrame.accelX_L);
         accelData[1] = (int16_t)((gyroRxFrame.accelY_H << 8) | gyroRxFrame.accelY_L);
         accelData[2] = (int16_t)((gyroRxFrame.accelZ_H << 8) | gyroRxFrame.accelZ_L);

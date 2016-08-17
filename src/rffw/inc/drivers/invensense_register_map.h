@@ -11,6 +11,7 @@
 #define INVENS_RM_CONFIG        0x1A
 #define INVENS_RM_GYRO_CONFIG   0x1B
 #define INVENS_RM_ACCEL_CONFIG  0x1C
+#define INVENS_RM_ACCEL_CONFIG2 0x1D
 #define INVENS_RM_INT_PIN_CFG   0x37
 #define INVENS_RM_INT_ENABLE    0x38
 #define INVENS_RM_INT_STATUS    0x3A
@@ -21,19 +22,20 @@
 #define INVENS_RM_PWR_MGMT_2    0x6C
 #define INVENS_RM_WHO_AM_I      0x75
 
-// dlpf config
-#define DLPF_256                0x00
-#define DLPF_188                0x01
-#define DLPF_3600               0x07
-
 // gyro config
-#define INVENS_CONST_FSR_2000DPS 0x03
-#define FCB_DISABLE             0x00
-#define FCB_32_8800             0x01
-#define FCB_32_3600             0x02
+#define INVENS_CONST_GYRO_FSR_2000DPS   0x03
+#define INVENS_CONST_GYRO_FCB_DISABLE   0x00
+#define INVENS_CONST_GYRO_FCB_32_8800   0x01
+#define INVENS_CONST_GYRO_FCB_32_3600   0x02
+#define INVENS_CONST_GYRO_DLPF_256      0x00
+#define INVENS_CONST_GYRO_DLPF_188      0x01
+#define INVENS_CONST_GYRO_DLPF_3600     0x07
 
 // accel conifg
-#define INVENS_CONST_FSR_16G    0x03
+#define INVENS_CONST_ACC_FSR_16G        0x03
+#define INVENS_CONST_ACC_FCB_DISABLE    0x00
+#define INVENS_CONST_ACC_FCB_ENABLE     0x01
+#define INVENS_CONST_ACC_DLPF_460       0x00
 
 // int pin config
 #define INVENS_CONST_BYPASS_EN  0x02

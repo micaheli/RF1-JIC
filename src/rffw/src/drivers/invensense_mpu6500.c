@@ -36,29 +36,38 @@ static gyroFrame_t gyroTxFrame;
 
 
 typedef struct {
-    uint8_t dlpf;
-    uint8_t denom;
-    uint8_t dlpfBypass;
+    uint8_t rateDiv;
+    uint8_t gyroDlpf;
+    uint8_t gyroDlpfBypass;
+    uint8_t accDlpf;
+    uint8_t accDlpfBypass;
+    uint8_t accDenom;
 } gyro6500Config_t;
 
+// TODO: check what the acc actually updates at when sample rate divider != 0
+// we have assumed that sample divider rate effects the accelerometer update rate
+// currently: L1 uses 1khz base rate for gyro and acc, gyro updates same as
+//            acc update
+//            everything else uses 8khz or 32khz gyro rate, so set acc to 4khz
+//            acc update, get acc update every 2nd or 8th gyro update
 static gyro6500Config_t mpu6500GyroConfig[] = {
-    [LOOP_L1] = {DLPF_188, 1, FCB_DISABLE},
-    [LOOP_M1] = {DLPF_256, 8, FCB_DISABLE},
-    [LOOP_M2] = {DLPF_256, 4, FCB_DISABLE},
-    [LOOP_M4] = {DLPF_256, 2, FCB_DISABLE},
-    [LOOP_M8] = {DLPF_256, 1, FCB_DISABLE},
-    [LOOP_H1] = {DLPF_3600, 8, FCB_DISABLE},
-    [LOOP_H2] = {DLPF_3600, 4, FCB_DISABLE},
-    [LOOP_H4] = {DLPF_3600, 2, FCB_DISABLE},
-    [LOOP_H8] = {DLPF_3600, 1, FCB_DISABLE},
-    [LOOP_H16] = {0, 2, FCB_32_3600},
-    [LOOP_H32] = {0, 1, FCB_32_3600},
-    [LOOP_UH1] = {0, 32, FCB_32_8800},
-    [LOOP_UH2] = {0, 16, FCB_32_8800},
-    [LOOP_UH4] = {0, 8, FCB_32_8800},
-    [LOOP_UH8] = {0, 4, FCB_32_8800},
-    [LOOP_UH16] = {0, 2, FCB_32_8800},
-    [LOOP_UH32] = {0, 1, FCB_32_8800},
+    [LOOP_L1] = {1, INVENS_CONST_GYRO_DLPF_188, INVENS_CONST_GYRO_FCB_DISABLE, INVENS_CONST_ACC_DLPF_460, INVENS_CONST_ACC_FCB_DISABLE, 1},
+    [LOOP_M1] = {8, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_M2] = {4, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_M4] = {2, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_M8] = {1, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_H1] = {8, INVENS_CONST_GYRO_DLPF_3600, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_H2] = {4, INVENS_CONST_GYRO_DLPF_3600, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_H4] = {2, INVENS_CONST_GYRO_DLPF_3600, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_H8] = {1, INVENS_CONST_GYRO_DLPF_3600, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_H16] = {2, 0, INVENS_CONST_GYRO_FCB_32_3600, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_H32] = {1, 0, INVENS_CONST_GYRO_FCB_32_3600, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH1] = {32, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH2] = {16, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH4] = {8, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH8] = {4, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH16] = {2, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH32] = {1, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
 };
 
 static bool accelUpdate = false;
@@ -93,20 +102,25 @@ bool accgyroDeviceInit(loopCtrl_e gyroLoop)
     accgyroWriteRegister(INVENS_RM_USER_CTRL, INVENS_CONST_I2C_IF_DIS | INVENS_CONST_FIFO_RESET | INVENS_CONST_SIG_COND_RESET);
 
     // set gyro sample divider rate
-    accgyroWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.denom);
+    accgyroWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.rateDiv - 1);
 
     // gyro DLPF config
-    if (!accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.dlpf)) {
+    if (!accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.gyroDlpf)) {
         return false;
     }
 
     // set gyro full scale to +/- 2000 deg / sec and DLPF bypass
-    if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_FSR_2000DPS << 3 | gyroConfig.dlpfBypass)) {
+    if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_GYRO_FSR_2000DPS << 3 | gyroConfig.gyroDlpfBypass)) {
         return false;
     }
 
     // set accel full scale to +/- 16g
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_FSR_16G << 3)) {
+    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_ACC_FSR_16G << 3)) {
+        return false;
+    }
+
+    // set the accelerometer dlpf
+    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG2, gyroConfig.accDlpfBypass << 3 | gyroConfig.accDlpf)) {
         return false;
     }
 
@@ -163,13 +177,13 @@ void accgyroDeviceReadGyro(void)
     // start read from gyro, set high bit to read
     gyroTxFrame.gyroAddress = INVENS_RM_GYRO_XOUT_H | 0x80;
 
+    accelUpdate = false;
     accgyroDMAReadWriteData(&gyroTxFrame.gyroAddress, &gyroRxFrame.gyroAddress, 7);
 }
 
 void accgyroDeviceReadComplete(void)
 {
     if (accelUpdate) {
-        accelUpdate = false;
         accelData[0] = (int16_t)((gyroRxFrame.accelX_H << 8) | gyroRxFrame.accelX_L);
         accelData[1] = (int16_t)((gyroRxFrame.accelY_H << 8) | gyroRxFrame.accelY_L);
         accelData[2] = (int16_t)((gyroRxFrame.accelZ_H << 8) | gyroRxFrame.accelZ_L);
@@ -216,6 +230,7 @@ void accgyroDeviceCalibrate(int16_t *gyroData)
     skipGyro = false;
 }
 
+// because of offset registers, the gyro reading will already have calibration applied
 void accgyroDeviceApplyCalibration(int16_t *gyroData)
 {
     (void)gyroData;
