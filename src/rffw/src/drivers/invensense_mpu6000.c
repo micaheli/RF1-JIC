@@ -85,9 +85,7 @@ bool accgyroDeviceInit(loopCtrl_e gyroLoop)
     HAL_Delay(150);
 
     // set gyro clock to Z axis gyro
-    if (!accgyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_Z)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_Z);
 
     // clear low power states
     accgyroWriteRegister(INVENS_RM_PWR_MGMT_2, 0);
@@ -97,33 +95,23 @@ bool accgyroDeviceInit(loopCtrl_e gyroLoop)
     accgyroWriteRegister(INVENS_RM_USER_CTRL, INVENS_CONST_I2C_IF_DIS | INVENS_CONST_FIFO_RESET | INVENS_CONST_SIG_COND_RESET);
 
     // set gyro sample divider rate
-    accgyroWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.rateDiv - 1);
+    accgyroVerifyWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.rateDiv - 1);
 
     // gyro DLPF config
-    if (!accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.gyroDlpf)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.gyroDlpf);
 
     // set gyro full scale to +/- 2000 deg / sec
-    if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_GYRO_FSR_2000DPS << 3)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_GYRO_FSR_2000DPS << 3);
 
     // set accel full scale to +/- 16g
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_ACC_FSR_16G << 3)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_ACC_FSR_16G << 3);
 
     // set interrupt pin PP, 50uS pulse, status cleared on INT_STATUS read
-    if (!accgyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR);
 
 #ifdef GYRO_EXTI_GPIO_Port
     // enable data ready interrupt
-    if (!accgyroVerifyWriteRegister(INVENS_RM_INT_ENABLE, INVENS_CONST_DATA_RDY_EN)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_INT_ENABLE, INVENS_CONST_DATA_RDY_EN);
 #endif
 
     return true;

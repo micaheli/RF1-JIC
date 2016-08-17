@@ -59,7 +59,7 @@ bool accgyroInit(loopCtrl_e loopCtrl)
     HAL_NVIC_DisableIRQ(GYRO_DMA_TX_IRQn);
     HAL_NVIC_DisableIRQ(GYRO_DMA_RX_IRQn);
 
-    // read and write settings at slow speed (48 MHz / 64)
+    // read and write settings at slow speed
     SPI_Init(GYRO_SPI_SLOW_BAUD);
     HAL_Delay(5);
 
@@ -73,8 +73,8 @@ bool accgyroInit(loopCtrl_e loopCtrl)
         return false;
     }
 
-    // reinitialize at full speed (48 MHz / 2)
-    //SPI_Init(GYRO_SPI_FAST_BAUD);
+    // reinitialize at full speed
+    SPI_Init(GYRO_SPI_FAST_BAUD);
     DMA_Init();
 
 #ifdef GYRO_EXTI
@@ -116,8 +116,10 @@ void GYRO_DMA_RX_IRQHandler(void)
     }
 }
 
+// TODO: get rid of this? only need read/write register and read/write data w/DMA or interrupt
 bool accgyroWriteData(uint8_t *data, uint8_t length)
 {
+    // poll until SPI is ready in case of ongoing DMA
     while (HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
 
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
@@ -131,6 +133,7 @@ bool accgyroWriteData(uint8_t *data, uint8_t length)
 
 bool accgyroWriteRegister(uint8_t reg, uint8_t data)
 {
+    // poll until SPI is ready in case of ongoing DMA
     while (HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
 
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
@@ -160,13 +163,16 @@ bool accgyroVerifyWriteRegister(uint8_t reg, uint8_t data)
         }
     }
 
-    return false;
+    ErrorHandler();
+
+    return false;  // this is never reached
 }
 
 bool accgyroReadData(uint8_t reg, uint8_t *data, uint8_t length)
 {
     reg |= 0x80;
 
+    // poll until SPI is ready in case of ongoing DMA
     while (HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
 
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
@@ -183,6 +189,7 @@ bool accgyroSlowReadData(uint8_t reg, uint8_t *data, uint8_t length)
 {
     reg |= 0x80;
 
+    // poll until SPI is ready in case of ongoing DMA
     while (HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
 
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
@@ -199,6 +206,7 @@ bool accgyroSlowReadData(uint8_t reg, uint8_t *data, uint8_t length)
 
 bool accgyroDMAReadWriteData(uint8_t *txData, uint8_t *rxData, uint8_t length)
 {
+    // ensure that both SPI and DMA resources are available, but don't block if they are not
     if (HAL_DMA_GetState(&dma_gyro_rx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&gyro_spi) == HAL_SPI_STATE_READY) {
         HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
 

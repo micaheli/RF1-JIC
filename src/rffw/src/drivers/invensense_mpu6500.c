@@ -90,9 +90,7 @@ bool accgyroDeviceInit(loopCtrl_e gyroLoop)
     HAL_Delay(150);
 
     // set gyro clock to Z axis gyro
-    if (!accgyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_PLL)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_PLL);
 
     // clear low power states
     accgyroWriteRegister(INVENS_RM_PWR_MGMT_2, 0);
@@ -105,35 +103,23 @@ bool accgyroDeviceInit(loopCtrl_e gyroLoop)
     accgyroWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.rateDiv - 1);
 
     // gyro DLPF config
-    if (!accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.gyroDlpf)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.gyroDlpf);
 
     // set gyro full scale to +/- 2000 deg / sec and DLPF bypass
-    if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_GYRO_FSR_2000DPS << 3 | gyroConfig.gyroDlpfBypass)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_GYRO_FSR_2000DPS << 3 | gyroConfig.gyroDlpfBypass);
 
     // set accel full scale to +/- 16g
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_ACC_FSR_16G << 3)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_ACC_FSR_16G << 3);
 
     // set the accelerometer dlpf
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG2, gyroConfig.accDlpfBypass << 3 | gyroConfig.accDlpf)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG2, gyroConfig.accDlpfBypass << 3 | gyroConfig.accDlpf);
 
     // set interrupt pin PP, 50uS pulse, status cleared on read, i2c bypass
-    if (!accgyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR | INVENS_CONST_BYPASS_EN)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR | INVENS_CONST_BYPASS_EN);
 
 #ifdef GYRO_EXTI
     // enable data ready interrupt
-    if (!accgyroVerifyWriteRegister(INVENS_RM_INT_ENABLE, INVENS_CONST_DATA_RDY_EN)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_INT_ENABLE, INVENS_CONST_DATA_RDY_EN);
 #endif
 
     return true;
@@ -203,29 +189,12 @@ void accgyroDeviceCalibrate(int16_t *gyroData)
 {
     skipGyro = true;
 
-    if (!accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_H, (uint8_t)(gyroData[0] >> 8))) {
-        ErrorHandler();
-    }
-
-    if (!accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_L, (uint8_t)(gyroData[0] & 0xFF))) {
-        ErrorHandler();
-    }
-
-    if (!accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_H, (uint8_t)(gyroData[1] >> 8))) {
-        ErrorHandler();
-    }
-
-    if (!accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_L, (uint8_t)(gyroData[1] & 0xFF))) {
-        ErrorHandler();
-    }
-
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_H, (uint8_t)(gyroData[2] >> 8))) {
-        ErrorHandler();
-    }
-
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_L, (uint8_t)(gyroData[2] & 0xFF))) {
-        ErrorHandler();
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_H, (uint8_t)(gyroData[0] >> 8));
+    accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_L, (uint8_t)(gyroData[0] & 0xFF));
+    accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_H, (uint8_t)(gyroData[1] >> 8));
+    accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_L, (uint8_t)(gyroData[1] & 0xFF));
+    accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_H, (uint8_t)(gyroData[2] >> 8));
+    accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_L, (uint8_t)(gyroData[2] & 0xFF));
 
     skipGyro = false;
 }
