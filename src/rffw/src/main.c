@@ -6,6 +6,8 @@
 #include "usbd_hid.h"
 #include "usb_device.h"
 
+#include "input/gyro.h"
+
 #include "drivers/invensense_bus.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -30,7 +32,7 @@ int main(void)
 
     USB_DEVICE_Init();
 
-    if (!accgyroInit()) {
+    if (!accgyroInit(LOOP_H8)) {
         ErrorHandler();
     }
 

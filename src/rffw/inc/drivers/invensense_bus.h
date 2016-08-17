@@ -4,7 +4,7 @@ extern bool skipGyro;
 
 // all gyroscopes should define this function which initializes all requesite
 // hardware resources
-bool accgyroInit(void);
+bool accgyroInit(loopCtrl_e gyroLoop);
 
 // functions used to read and write to hardware
 

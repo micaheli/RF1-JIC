@@ -14,11 +14,17 @@
 #define INVENS_RM_INT_PIN_CFG   0x37
 #define INVENS_RM_INT_ENABLE    0x38
 #define INVENS_RM_INT_STATUS    0x3A
+#define INVENS_RM_ACCEL_XOUT_H  0x3B
 #define INVENS_RM_GYRO_XOUT_H   0x43
 #define INVENS_RM_USER_CTRL     0x6A
 #define INVENS_RM_PWR_MGMT_1    0x6B
 #define INVENS_RM_PWR_MGMT_2    0x6C
 #define INVENS_RM_WHO_AM_I      0x75
+
+// dlpf config
+#define DLPF_256                0x00
+#define DLPF_188                0x01
+#define DLPF_3600               0x07
 
 // gyro config
 #define INVENS_CONST_FSR_2000DPS 0x03

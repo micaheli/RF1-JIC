@@ -8,9 +8,9 @@
 #include "usbd_hid.h"
 #include "usb_device.h"
 
-#include "drivers/invensense_device.h"
-
 #include "input/gyro.h"
+
+#include "drivers/invensense_device.h"
 
 #define CALIBRATION_CYCLES 1000
 

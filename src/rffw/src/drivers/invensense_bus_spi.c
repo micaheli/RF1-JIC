@@ -2,6 +2,8 @@
 
 #include "includes.h"
 
+#include "input/gyro.h"
+
 #include "drivers/invensense_bus.h"
 #include "drivers/invensense_device.h"
 
@@ -48,7 +50,7 @@ static void DMA_Init(void)
     HAL_NVIC_EnableIRQ(GYRO_DMA_RX_IRQn);
 }
 
-bool accgyroInit(void)
+bool accgyroInit(loopCtrl_e loopCtrl)
 {
 #ifdef GYRO_EXTI
     // ensure the interrupt is not running
@@ -67,7 +69,7 @@ bool accgyroInit(void)
 
     HAL_Delay(5);
 
-    if (!accgyroDeviceInit()) {
+    if (!accgyroDeviceInit(loopCtrl)) {
         return false;
     }
 
@@ -110,7 +112,7 @@ void GYRO_DMA_RX_IRQHandler(void)
         HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
 
         // run callback for completed gyro read
-        accgyroDeviceReadGyroComplete();
+        accgyroDeviceReadComplete();
     }
 }
 
