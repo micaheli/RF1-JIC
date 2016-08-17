@@ -1,9 +1,9 @@
 #include "includes.h"
 
-inline void collectRcCommand (uint16_t rcData[4], float *trueRcCommandF, float *curvedRcCommandF) {
+inline void inlineCollectRcCommand (uint16_t rcData[4], float *trueRcCommandF, float *curvedRcCommandF, rcControlsConfig_t rcControlsConfig) {
 
 	uint8_t axis;
-	float OldRange, OldValue, NewRange, NewValue, OldMax, OldMin, NewMax, NewMin;
+	float rangedRx, oldValue, oldMax, oldMin, newMax, newMin;
 
 	//scale
     //////masterConfig.rxConfig.midrc = 1500;
@@ -14,44 +14,59 @@ inline void collectRcCommand (uint16_t rcData[4], float *trueRcCommandF, float *
 	//this method won't require a __disable_irq
 	//////rcData is 1000 to 2000. It can never be negative.
 
-	//todo these need to be configurable
-	uint16_t midRc    = 1500; // middle of rc input
-	uint16_t minCheck = 1005; // rcData should be adjusted to 1000 to 2000, which makes this range work well
-	uint16_t maxCheck = 1995; // rcData should be adjusted to 1000 to 2000, which makes this range work well
 
-	for (axis = 0; axis < 3; axis++) {
+	//calculate main controls.
+	//rc data is taken from RX and using the map is put into the correct "axis"
+	for (axis = 0; axis < MAXCHANNELS; axis++) {
 
-		if (rcData[axis] < midRc) { //negative  range
+		if (rcData[axis] < rcControlsConfig.midRc[axis]) { //negative  range
 			//-1 to 0
-			OldMax = midRc;
-			OldMin = minCheck;
-			NewMax = 0;
-			NewMin = -1;
+			oldMax = rcControlsConfig.midRc[axis];
+			oldMin = rcControlsConfig.minRc[axis];
+			newMax = 0;
+			newMin = -1;
 		} else { //positive range
 			//0 to +1
-			OldMax = maxCheck;
-			OldMin = midRc;
-			NewMax = 1;
-			NewMin = 0;
+			oldMax = rcControlsConfig.maxRc[axis];
+			oldMin = rcControlsConfig.midRc[axis];
+			newMax = 1;
+			newMin = 0;
 		}
 
-		OldValue = rcData[axis];
-		OldRange = (OldMax - OldMin);
-		NewRange = (NewMax - NewMin);
-		NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
+		oldValue = rcData[axis];
 
-		trueRcCommandF[axis] = constrainf ( NewValue, -1, 1);
+		rangedRx = inlineChangeRangef(oldValue, oldMax, oldMin, newMax, newMin);
 
-		curvedRcCommandF[axis] = applyRcCommandCurve (trueRcCommandF[axis]);
+		//do we want to apply deadband to trueRcCommandF? right now I think yes
+		if (ABS(rangedRx) > rcControlsConfig.deadBand[axis]) {
+			trueRcCommandF[axis]   = inlineConstrainf ( rangedRx, -1, 1);
+			curvedRcCommandF[axis] = inlineApplyRcCommandCurve (trueRcCommandF[axis], rcControlsConfig.useCurve[axis], rcControlsConfig.curveExpo[axis]);
+		} else {
+			// no need to calculate if movement is below deadband
+			trueRcCommandF[axis]   = 0;
+			curvedRcCommandF[axis] = 0;
+		}
 
 	}
 
 }
 
-inline float applyRcCommandCurve (float rcCommand) {
 
-	float expo = 60; //todo: Replace with config variable
+inline float inlineApplyRcCommandCurve (float rcCommand, uint8_t curveToUse, float expo) {
 
-	return (1 + 0.01 * expo * (rcCommand * rcCommand - 1)) * rcCommand;
+	switch (curveToUse) {
 
+		case CLEANFLIGHT_EXPO:
+			return (1 + 0.01 * expo * (rcCommand * rcCommand - 1)) * rcCommand;
+
+		case TARANIS_EXPO:
+			return ( expo*(rcCommand*rcCommand*rcCommand) + rcCommand*(1-expo) );
+
+		case NO_EXPO:
+			return rcCommand; //same as default for now.
+
+		default:
+			return rcCommand;
+
+	}
 }

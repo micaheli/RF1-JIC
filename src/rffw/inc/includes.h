@@ -12,6 +12,7 @@
 #include "drivers/rx.h"
 #include "drivers/filter.h"
 #include "drivers/math.h"
+#include "drivers/config.h"
 
 void BoardInit(void);
 void ErrorHandler(void);
