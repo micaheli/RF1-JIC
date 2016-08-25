@@ -12,6 +12,7 @@
 #define MPU6500_WHO_AM_I    0x70
 #define MPU6555_WHO_AM_I    0x7C
 #define MPU9250_WHO_AM_I    0x71
+#define ICM20608G_WHO_AM_I  0xAF
 
 typedef struct __attribute__((__packed__)) {
     uint8_t accelAddress; // needed to start read/write transfer to send address
@@ -71,6 +72,7 @@ static gyro6500Config_t mpu6500GyroConfig[] = {
 };
 
 static bool accelUpdate = false;
+
 static int16_t gyroData[3];
 static int16_t accelData[3];
 
@@ -137,16 +139,18 @@ bool accgyroDeviceDetect(void)
         HAL_Delay(100);
 
         accgyroReadData(INVENS_RM_WHO_AM_I, &data, 1);
-        if (data == MPU6500_WHO_AM_I || data == MPU6555_WHO_AM_I || data == MPU9250_WHO_AM_I) {
-            break;
+
+        switch (data) {
+            case MPU6500_WHO_AM_I:
+            case MPU6555_WHO_AM_I:
+            case MPU9250_WHO_AM_I:
+            case ICM20608G_WHO_AM_I:
+                return true;
+                break
         }
     }
 
-    if (attempt == 100) {
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
 void accgyroDeviceReadAccGyro(void)
