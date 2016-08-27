@@ -12,6 +12,7 @@
 #define MPU6500_WHO_AM_I    0x70
 #define MPU6555_WHO_AM_I    0x7C
 #define MPU9250_WHO_AM_I    0x71
+#define ICM20608G_WHO_AM_I  0xAF
 
 typedef struct __attribute__((__packed__)) {
     uint8_t accelAddress; // needed to start read/write transfer to send address
@@ -36,32 +37,42 @@ static gyroFrame_t gyroTxFrame;
 
 
 typedef struct {
-    uint8_t dlpf;
-    uint8_t denom;
-    uint8_t dlpfBypass;
+    uint8_t rateDiv;
+    uint8_t gyroDlpf;
+    uint8_t gyroDlpfBypass;
+    uint8_t accDlpf;
+    uint8_t accDlpfBypass;
+    uint8_t accDenom;
 } gyro6500Config_t;
 
+// TODO: check what the acc actually updates at when sample rate divider != 0
+// we have assumed that sample divider rate effects the accelerometer update rate
+// currently: L1 uses 1khz base rate for gyro and acc, gyro updates same as
+//            acc update
+//            everything else uses 8khz or 32khz gyro rate, so set acc to 4khz
+//            acc update, get acc update every 2nd or 8th gyro update
 static gyro6500Config_t mpu6500GyroConfig[] = {
-    [LOOP_L1] = {DLPF_188, 1, FCB_DISABLE},
-    [LOOP_M1] = {DLPF_256, 8, FCB_DISABLE},
-    [LOOP_M2] = {DLPF_256, 4, FCB_DISABLE},
-    [LOOP_M4] = {DLPF_256, 2, FCB_DISABLE},
-    [LOOP_M8] = {DLPF_256, 1, FCB_DISABLE},
-    [LOOP_H1] = {DLPF_3600, 8, FCB_DISABLE},
-    [LOOP_H2] = {DLPF_3600, 4, FCB_DISABLE},
-    [LOOP_H4] = {DLPF_3600, 2, FCB_DISABLE},
-    [LOOP_H8] = {DLPF_3600, 1, FCB_DISABLE},
-    [LOOP_H16] = {0, 2, FCB_32_3600},
-    [LOOP_H32] = {0, 1, FCB_32_3600},
-    [LOOP_UH1] = {0, 32, FCB_32_8800},
-    [LOOP_UH2] = {0, 16, FCB_32_8800},
-    [LOOP_UH4] = {0, 8, FCB_32_8800},
-    [LOOP_UH8] = {0, 4, FCB_32_8800},
-    [LOOP_UH16] = {0, 2, FCB_32_8800},
-    [LOOP_UH32] = {0, 1, FCB_32_8800},
+    [LOOP_L1] = {1, INVENS_CONST_GYRO_DLPF_188, INVENS_CONST_GYRO_FCB_DISABLE, INVENS_CONST_ACC_DLPF_460, INVENS_CONST_ACC_FCB_DISABLE, 1},
+    [LOOP_M1] = {8, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_M2] = {4, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_M4] = {2, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_M8] = {1, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_H1] = {8, INVENS_CONST_GYRO_DLPF_3600, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_H2] = {4, INVENS_CONST_GYRO_DLPF_3600, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_H4] = {2, INVENS_CONST_GYRO_DLPF_3600, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_H8] = {1, INVENS_CONST_GYRO_DLPF_3600, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
+    [LOOP_H16] = {2, 0, INVENS_CONST_GYRO_FCB_32_3600, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_H32] = {1, 0, INVENS_CONST_GYRO_FCB_32_3600, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH1] = {32, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH2] = {16, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH4] = {8, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH8] = {4, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH16] = {2, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
+    [LOOP_UH32] = {1, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
 };
 
 static bool accelUpdate = false;
+
 static int16_t gyroData[3];
 static int16_t accelData[3];
 
@@ -81,9 +92,7 @@ bool accgyroDeviceInit(loopCtrl_e gyroLoop)
     HAL_Delay(150);
 
     // set gyro clock to Z axis gyro
-    if (!accgyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_PLL)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_PLL);
 
     // clear low power states
     accgyroWriteRegister(INVENS_RM_PWR_MGMT_2, 0);
@@ -93,33 +102,26 @@ bool accgyroDeviceInit(loopCtrl_e gyroLoop)
     accgyroWriteRegister(INVENS_RM_USER_CTRL, INVENS_CONST_I2C_IF_DIS | INVENS_CONST_FIFO_RESET | INVENS_CONST_SIG_COND_RESET);
 
     // set gyro sample divider rate
-    accgyroWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.denom);
+    accgyroWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.rateDiv - 1);
 
     // gyro DLPF config
-    if (!accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.dlpf)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.gyroDlpf);
 
     // set gyro full scale to +/- 2000 deg / sec and DLPF bypass
-    if (!accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_FSR_2000DPS << 3 | gyroConfig.dlpfBypass)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_GYRO_FSR_2000DPS << 3 | gyroConfig.gyroDlpfBypass);
 
     // set accel full scale to +/- 16g
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_FSR_16G << 3)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_ACC_FSR_16G << 3);
+
+    // set the accelerometer dlpf
+    accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG2, gyroConfig.accDlpfBypass << 3 | gyroConfig.accDlpf);
 
     // set interrupt pin PP, 50uS pulse, status cleared on read, i2c bypass
-    if (!accgyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR | INVENS_CONST_BYPASS_EN)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR | INVENS_CONST_BYPASS_EN);
 
 #ifdef GYRO_EXTI
     // enable data ready interrupt
-    if (!accgyroVerifyWriteRegister(INVENS_RM_INT_ENABLE, INVENS_CONST_DATA_RDY_EN)) {
-        return false;
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_INT_ENABLE, INVENS_CONST_DATA_RDY_EN);
 #endif
 
     return true;
@@ -137,16 +139,18 @@ bool accgyroDeviceDetect(void)
         HAL_Delay(100);
 
         accgyroReadData(INVENS_RM_WHO_AM_I, &data, 1);
-        if (data == MPU6500_WHO_AM_I || data == MPU6555_WHO_AM_I || data == MPU9250_WHO_AM_I) {
-            break;
+
+        switch (data) {
+            case MPU6500_WHO_AM_I:
+            case MPU6555_WHO_AM_I:
+            case MPU9250_WHO_AM_I:
+            case ICM20608G_WHO_AM_I:
+                return true;
+                break
         }
     }
 
-    if (attempt == 100) {
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
 void accgyroDeviceReadAccGyro(void)
@@ -163,13 +167,13 @@ void accgyroDeviceReadGyro(void)
     // start read from gyro, set high bit to read
     gyroTxFrame.gyroAddress = INVENS_RM_GYRO_XOUT_H | 0x80;
 
+    accelUpdate = false;
     accgyroDMAReadWriteData(&gyroTxFrame.gyroAddress, &gyroRxFrame.gyroAddress, 7);
 }
 
 void accgyroDeviceReadComplete(void)
 {
     if (accelUpdate) {
-        accelUpdate = false;
         accelData[0] = (int16_t)((gyroRxFrame.accelX_H << 8) | gyroRxFrame.accelX_L);
         accelData[1] = (int16_t)((gyroRxFrame.accelY_H << 8) | gyroRxFrame.accelY_L);
         accelData[2] = (int16_t)((gyroRxFrame.accelZ_H << 8) | gyroRxFrame.accelZ_L);
@@ -189,33 +193,17 @@ void accgyroDeviceCalibrate(int16_t *gyroData)
 {
     skipGyro = true;
 
-    if (!accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_H, (uint8_t)(gyroData[0] >> 8))) {
-        ErrorHandler();
-    }
-
-    if (!accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_L, (uint8_t)(gyroData[0] & 0xFF))) {
-        ErrorHandler();
-    }
-
-    if (!accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_H, (uint8_t)(gyroData[1] >> 8))) {
-        ErrorHandler();
-    }
-
-    if (!accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_L, (uint8_t)(gyroData[1] & 0xFF))) {
-        ErrorHandler();
-    }
-
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_H, (uint8_t)(gyroData[2] >> 8))) {
-        ErrorHandler();
-    }
-
-    if (!accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_L, (uint8_t)(gyroData[2] & 0xFF))) {
-        ErrorHandler();
-    }
+    accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_H, (uint8_t)(gyroData[0] >> 8));
+    accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_L, (uint8_t)(gyroData[0] & 0xFF));
+    accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_H, (uint8_t)(gyroData[1] >> 8));
+    accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_L, (uint8_t)(gyroData[1] & 0xFF));
+    accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_H, (uint8_t)(gyroData[2] >> 8));
+    accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_L, (uint8_t)(gyroData[2] & 0xFF));
 
     skipGyro = false;
 }
 
+// because of offset registers, the gyro reading will already have calibration applied
 void accgyroDeviceApplyCalibration(int16_t *gyroData)
 {
     (void)gyroData;
