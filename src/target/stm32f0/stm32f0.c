@@ -51,13 +51,31 @@ void SystemClock_Config(void)
 	HAL_Init();
 
 	SystemClock_Config();
+
+	gpioClockInit();
+
+}
  
-   	//__HAL_RCC_AFIO_CLK_ENABLE();   //Need to start this clock before disabling jtag
-	//__HAL_AFIO_REMAP_SWJ_NOJTAG(); //disabled JTAG
+ void gpioClockInit(void) {
 
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 	__HAL_RCC_GPIOC_CLK_ENABLE();
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 
-}
+ }
+
+ inline void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
+ 	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
+ }
+
+ inline void inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
+ 	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
+ }
+
+ inline bool inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
+ 	if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) != (uint32_t)GPIO_PIN_RESET) {
+ 		return false; //pin is set, so it is not reset, which means it is off, so the statement is false
+ 	}
+ 	return true; //pin is reset, so it is not set, which means it is on, so the statement is true
+ }

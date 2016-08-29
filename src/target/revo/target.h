@@ -35,3 +35,13 @@
 #define DEVICE_ID1                  0x1FFF7A10
 #define DEVICE_ID2                  0x1FFF7A14
 #define DEVICE_ID3                  0x1FFF7A18
+
+
+
+#define HARDWARE_RFBL_PLUG
+#define RFBL_GPIO1   GPIOA //Servo5
+#define RFBL_PIN1    GPIO_PIN_1
+#define RFBL_GPIO2   GPIOA //Servo6
+#define RFBL_PIN2    GPIO_PIN_0
+#define SPEK_GPIO    GPIOB
+#define SPEK_PIN     GPIO_PIN_11

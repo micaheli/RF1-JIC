@@ -41,5 +41,6 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USB_Device init function */
 void USB_DEVICE_Init(void);
+void USB_DEVICE_DeInit(void);
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

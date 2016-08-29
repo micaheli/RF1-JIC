@@ -54,4 +54,14 @@ void USB_DEVICE_Init(void)
 
 }
 
+void USB_DEVICE_DeInit(void)
+{
+  /* Init Device Library,Add Supported Class and Start the library*/
+  USBD_Stop(&hUsbDeviceFS);
+
+  USBD_DeInit(&hUsbDeviceFS);
+
+}
+
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

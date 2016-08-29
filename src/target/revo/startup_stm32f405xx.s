@@ -77,7 +77,12 @@ defined in linker script */
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:  
-  ldr   sp, =_estack     /* set stack pointer */
+  ldr r0, =0x2001FFFC
+  ldr r1, =0xDEADBEEF
+  ldr r2, [r0, #0]
+  str r0, [r0, #0]
+  cmp r2, r1
+  beq Reboot_Loader
 
 /* Copy the data segment initializers from flash to SRAM */  
   movs  r1, #0
@@ -113,7 +118,19 @@ LoopFillZerobss:
 /*    bl __libc_init_array */
 /* Call the application's entry point.*/
   bl  main
-  bx  lr    
+  bx  lr
+
+LoopForever:
+  b LoopForever
+
+Reboot_Loader:
+
+  // Reboot to ROM
+  ldr     r0, =0x1FFF0000
+  ldr     sp,[r0, #0]
+  ldr     r0,[r0, #4]
+  bx      r0
+
 .size  Reset_Handler, .-Reset_Handler
 
 /**

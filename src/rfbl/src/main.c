@@ -9,24 +9,15 @@
 /* Private define ------------------------------------------------------------*/
 
 /* Private macro -------------------------------------------------------------*/
-#define simpleDelay_ASM(us) do {\
-	asm volatile (	"MOV R0,%[loops]\n\t"\
-			"1: \n\t"\
-			"SUB R0, #1\n\t"\
-			"CMP R0, #0\n\t"\
-			"BNE 1b \n\t" : : [loops] "r" (16*us) : "memory"\
-		      );\
-} while(0)
 
 /* Private variables ---------------------------------------------------------*/
 uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 
 uint32_t StartSector = 0, EndSector = 0, Address = 0, i = 0 ;
 __IO uint32_t data32 = 0 , MemoryProgramStatus = 0 ;
-bool toggle_25 = true;
-bool toggle_252 = true;
-bool skip_boot_to_app = false;
-uint32_t ApplicationAddress = 0x08020000;
+uint32_t toggle_led = 0;
+bool bootToRfbl = false;
+uint32_t ApplicationAddress = APP_ADDRESS;
 uint8_t bindSpektrum = 0;
 
 FwInfo_t FwInfo;
@@ -40,29 +31,141 @@ cfg1_t cfg1;
 int main(void)
 {
 
-	//bool rfbl_plug_attatched = false;
-	uint8_t a;
+	bool rfbl_plug_attatched = false;
+	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress;
 
-
+	HAL_RCC_DeInit();
+    HAL_DeInit();
     BoardInit();
     LedInit();
-
-	//read_cfg1();
-
-	//check_boot_to_app (); //do we boot to the app or enter RFBL? For now we just enter RFBL
-
     USB_DEVICE_Init(); //start USB
 
-	//Startup Blink
-	LED1_ON;
-	LED2_OFF;
-	for( a = 0; a < 50; a = a + 1 ){ //fast blink
-		LED1_TOGGLE;
-		LED2_TOGGLE;
-		HAL_Delay(25);
+
+    rfblVersion = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
+    cfg1Version = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
+    if ((rfblVersion != RFBL_VERSION) || (cfg1Version != CFG1_VERSION)) { //no data or wrong version, let's put defaults
+		rtc_write_backup_reg(RFBL_BKR_RFBL_VERSION_REG,   RFBL_VERSION);
+		rtc_write_backup_reg(RFBL_BKR_CFG1_VERSION_REG,   CFG1_VERSION);
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+		rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG,    (uint32_t)0x00000000);
+		rtc_write_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG,  APP_ADDRESS);
+    }
+
+    //get config data from backup registers
+	rfblVersion   = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
+	cfg1Version   = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
+	bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
+	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
+	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
+
+	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
+
+#if defined(HARDWARE_BIND_PLUG) || defined(HARDWARE_DFU_PLUG) || defined(HARDWARE_RFBL_PLUG) || defined(VBUS_SENSE)
+    GPIO_InitTypeDef GPIO_InitStructure;
+#else
+	simpleDelay_ASM(1000);
+#endif
+
+#ifdef HARDWARE_RFBL_PLUG
+    simpleDelay_ASM(10); //let pin status stabilize
+
+	rfbl_plug_attatched = true;
+
+	//RX
+    HAL_GPIO_DeInit(RFBL_GPIO1, RFBL_PIN1);
+
+    GPIO_InitStructure.Pin   = RFBL_PIN1;
+    GPIO_InitStructure.Mode  = GPIO_MODE_INPUT;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+    HAL_GPIO_Init(RFBL_GPIO1, &GPIO_InitStructure);
+
+    //TX
+    HAL_GPIO_DeInit(RFBL_GPIO2, RFBL_PIN2);
+
+    GPIO_InitStructure.Pin   = RFBL_PIN2;
+    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_NOPULL;
+    HAL_GPIO_Init(RFBL_GPIO2, &GPIO_InitStructure);
+
+    inlineDigitalHi(RFBL_GPIO2, RFBL_PIN2);
+	simpleDelay_ASM(1); //let pin status stabilize
+    if ((inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX hi
+    	rfbl_plug_attatched = false;
+    }
+
+	inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
+	simpleDelay_ASM(1); //let pin status stabilize
+    if (!(inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX low
+    	rfbl_plug_attatched = false;
+    }
+
+    inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
+
+
+	if (rfbl_plug_attatched) {
+
+		startupBlink (150, 25);
+		//pins attached, let's wait 4 seconds and see if they're still attached
+
+		rfbl_plug_attatched = true;
+
+	    inlineDigitalHi(RFBL_GPIO2, RFBL_PIN2);
+		simpleDelay_ASM(1); //let pin status stabilize
+	    if ((inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX hi
+	    	rfbl_plug_attatched = false;
+	    }
+
+		inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
+		simpleDelay_ASM(1); //let pin status stabilize
+	    if (!(inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX low
+	    	rfbl_plug_attatched = false;
+	    }
+
+	    if (rfbl_plug_attatched) {
+	    	//pin still attached, let's go to DFU mode
+	    	systemResetToDfuBootloader();
+	    } else {
+	    	//pin not attached, let's go into RFBL proper
+	    	bootToRfbl = true;
+	    }
+
 	}
-	LED1_OFF;
-	LED2_OFF;
+
+#endif
+
+	startupBlink(50, 25);
+
+	if (!bootToRfbl) {
+		//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
+		//the inside of these brackets means the RFBL pins are not shorted
+		switch (bootDirection) {
+			case BOOT_TO_APP_COMMAND:
+				boot_to_app();  //jump to application
+				break;
+			case BOOT_TO_ADDRESS:
+				ApplicationAddress = rebootAddress;
+				boot_to_app();  //jump to application
+				break;
+			case BOOT_TO_SPEKTRUM5:
+				bindSpektrum = 5; //set spektrum bind number and head to RFBL
+				break;
+			case BOOT_TO_SPEKTRUM9:
+				bindSpektrum = 9; //set spektrum bind number and head to RFBL
+				break;
+			case BOOT_TO_DFU_COMMAND:
+				systemResetToDfuBootloader(); //reset to DFU
+				break;
+			case BOOT_TO_RFBL_COMMAND:
+			default:
+				//default is to do nothing, continue to RFBL
+				break;
+		}
+	}
+
+
+
 
 	//initialize RFBL State and Command
 	RfblCommand_e RfblCommand = RFBLC_NONE;
@@ -80,22 +183,16 @@ int main(void)
 			case RFBLS_REBOOT_TO_CUSTOM:
 				rfbl_report_state(&RfblState);
 				RfblState = RFBLS_IDLE;
-				rfbl_reboot_to_custom();
+				ApplicationAddress = ApplicationAddress; //todo: make this work
+				boot_to_app();  //jump to application
 				break;
 
 			case RFBLS_ERROR:
 				//blink a bunch of times and restart
 				//TODO: Add reason blinks
-				LED1_ON;
-				LED2_OFF;
-				for( a = 0; a < 50; a = a + 1 ){
-					LED1_TOGGLE;
-					LED2_TOGGLE;
-					HAL_Delay(100);
-				}
-				LED1_OFF;
-				LED2_OFF;
-				rfbl_reboot_to_rfbl();
+				errorBlink();
+				__disable_irq();
+				NVIC_SystemReset();
 				break;
 
 			case RFBLS_TOGGLE_LEDS:
@@ -117,17 +214,15 @@ int main(void)
 			case RFBLS_REBOOT_TO_RFBL:
 				rfbl_report_state(&RfblState);
 				RfblState = RFBLS_IDLE;
-				rfbl_reboot_to_rfbl();
+				__disable_irq();
+				NVIC_SystemReset();
 				break;
 
-			case RFBLS_REBOOT_TO_APP:
+			case RFBLS_REBOOT_TO_APP: //todo: allow rebooting
+			case RFBLS_BOOT_TO_APP:
 				rfbl_report_state(&RfblState);
 				RfblState = RFBLS_IDLE;
-				rfbl_reboot_to_app();
-				break;
-
-			case RFBLS_BOOT_TO_APP:
-				boot_to_app();
+				boot_to_app();  //jump to application
 				break;
 
 			case RFBLS_PREPARING_FOR_UPDATE:
@@ -140,19 +235,12 @@ int main(void)
 				rfbl_finish_flash();
 				RfblState = RFBLS_IDLE;
 				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
-				LED1_OFF;
-				LED2_OFF;
-				for( a = 0; a < 50; a = a + 1 ){
-					LED1_TOGGLE;
-					HAL_Delay(20);
-				}
-				for( a = 0; a < 50; a = a + 1 ){
-					LED2_TOGGLE;
-					HAL_Delay(20);
-				}
-				LED1_ON;
-				LED2_ON;
-				HAL_Delay(1000);
+				startupBlink(10, 40);
+				startupBlink(10, 35);
+				startupBlink(10, 30);
+				startupBlink(10, 25);
+				startupBlink(10, 20);
+				startupBlink(10, 15);
 				break;
 
 			case RFBLS_AWAITING_FW_DATA:
@@ -172,8 +260,7 @@ int main(void)
 				rfbl_execute_load_command(); //Sanity check command packets //TODO: Reply with error if bad packets //prepare flash
 				RfblState = RFBLS_AWAITING_FW_DATA; //awaiting fw data state
 				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
-				LED1_OFF;
-				LED2_OFF;
+
 				break;
 
 			case RFBLS_LOAD_FROM_BL:
@@ -184,7 +271,7 @@ int main(void)
 				break;
 
 			case RFBLS_ERASE_ALL_FLASH:
-				erase_all_flash();
+				//erase_all_flash();
 				RfblState = RFBLS_IDLE;
 				rfbl_report_state(&RfblState);
 				break;
@@ -196,21 +283,39 @@ int main(void)
 
 			case RFBLS_IDLE:
 			default:
-				if (toggle_25) {
-					if (toggle_252) {
+				if (toggle_led < 1000000) {
+					LED2_OFF;
+					if (toggle_led % 8 == 0) {
 						LED1_ON;
-						toggle_252 = false;
 					} else {
 						LED1_OFF;
-						toggle_252 = true;
 					}
+				} else if (toggle_led < 2000000) {
 					LED1_OFF;
-					toggle_25 = false;
+					if (toggle_led % 6 == 0) {
+						LED1_ON;
+					} else {
+						LED1_OFF;
+					}
+				} else if (toggle_led < 3000000) {
+					LED1_OFF;
+					if (toggle_led % 4 == 0) {
+						LED1_ON;
+					} else {
+						LED1_OFF;
+					}
+				} else if (toggle_led < 4000000) {
+					LED1_OFF;
+					if (toggle_led % 2 == 0) {
+						LED2_ON;
+					} else {
+						LED2_OFF;
+					}
 				} else {
-					LED1_OFF;
-					toggle_25 = true;
+					toggle_led = 0;
 				}
-				LED2_OFF;
+				toggle_led++;
+
 				check_rfbl_command(&RfblCommand, &RfblState);
 				break;
 
@@ -220,48 +325,52 @@ int main(void)
 
 }
 
-void check_boot_to_app (void) {
-
-	if ( (cfg1.boot_direction == BOOT_TO_APP_COMMAND) && (cfg1.boot_cycles < 3) ) {
-		simpleDelay_ASM(1000000);
-		write_cfg1();
-		boot_to_app();
-	} else if ( cfg1.boot_direction == BOOT_TO_ADDRESS ) {
-		cfg1.boot_direction = BOOT_TO_APP_COMMAND;
-		cfg1.boot_cycles = 0; //We are booting into custom location.
-		simpleDelay_ASM(1000000);
-		write_cfg1();
-		ApplicationAddress = cfg1.reboot_address;
-		boot_to_app();
-	} else if ( cfg1.boot_direction == BOOT_TO_DFU_COMMAND ) {
-		cfg1.boot_direction = BOOT_TO_APP_COMMAND;
-		cfg1.boot_cycles = 0; //We are booting into RFBL because the firmware failed to startup. Reset this counter in case it was a problem and people are at the field.
-		simpleDelay_ASM(1000000);
-		write_cfg1();
-		systemResetToDfuBootloader();
-	} else if ( cfg1.boot_direction == BOOT_TO_SPEKTRUM5 ) {
-		bindSpektrum = 5;
-	} else if ( cfg1.boot_direction == BOOT_TO_SPEKTRUM9 ) {
-		bindSpektrum = 9;
-	} else {
-		cfg1.boot_direction = BOOT_TO_APP_COMMAND;
-		cfg1.boot_cycles = 0; //We are booting into RFBL because the firmware failed to startup. Reset this counter in case it was a problem and people are at the field.
-		simpleDelay_ASM(1000000);
-		write_cfg1();
-	}
-
+uint32_t rtc_read_backup_reg(uint32_t BackupRegister) {
+    RTC_HandleTypeDef RtcHandle;
+    RtcHandle.Instance = RTC;
+    return HAL_RTCEx_BKUPRead(&RtcHandle, BackupRegister);
 }
 
+void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data) {
+    RTC_HandleTypeDef RtcHandle;
+    RtcHandle.Instance = RTC;
+    HAL_PWR_EnableBkUpAccess();
+    HAL_RTCEx_BKUPWrite(&RtcHandle, BackupRegister, data);
+    HAL_PWR_DisableBkUpAccess();
+}
+
+void startupBlink (uint16_t blinks, uint32_t delay) {
+
+	uint8_t a;
+
+	//Startup Blink
+	LED1_ON;
+	LED2_OFF;
+	for( a = 0; a < blinks; a = a + 1 ){ //fast blink
+		LED1_TOGGLE;
+		LED2_TOGGLE;
+		HAL_Delay(delay);
+	}
+	LED1_OFF;
+	LED2_OFF;
+}
+
+
+/*
 void read_cfg1(void) {
 
 	if (validate_cfg1() ) {
+
 		memcpy(&cfg1, (char *) FLASH_CFG1_ADDR_START, sizeof(cfg1_t));
-		cfg1.boot_cycles++;
 		if (cfg1.boot_direction == FAST_BOOT) {
 			boot_to_app();
 		}
+
 	} else {
+
 		reset_cfg1();
+		write_cfg1();
+
 	}
 
 }
@@ -293,7 +402,6 @@ void erase_all_flash (void) {
 	HAL_FLASH_Unlock();
 
 	//todo made this configurable, will 11 work on all f4/f7s?
-	/* Fill EraseInit structure*/
 	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
 	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
 	EraseInitStruct.Sector = GetSector(ADDR_FLASH_SECTOR_1);
@@ -301,15 +409,8 @@ void erase_all_flash (void) {
 
 	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
 	{
-		/*
-		  Error occurred while sector erase.
-		  User can add here some code to deal with this error.
-		  SectorError will contain the faulty sector and then to know the code error on this sector,
-		  user can call function 'HAL_FLASH_GetError()'
-		*/
-		/*
-		  FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-		*/
+
+		//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
 		ErrorHandler();
 	}
 
@@ -337,7 +438,6 @@ void write_cfg1(void) {
 	HAL_FLASH_Unlock();
 
 	//todo made this configurable, will 11 work on all f4/f7s?
-	/* Fill EraseInit structure*/
 	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
 	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
 	EraseInitStruct.Sector = GetSector(FLASH_CFG1_ADDR_START);
@@ -345,35 +445,20 @@ void write_cfg1(void) {
 
 	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
 	{
-		/*
-		  Error occurred while sector erase.
-		  User can add here some code to deal with this error.
-		  SectorError will contain the faulty sector and then to know the code error on this sector,
-		  user can call function 'HAL_FLASH_GetError()'
-		*/
-		/*
-		  FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-		*/
+		//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
 		ErrorHandler();
 	}
 
 	//todo made this configurable
-	address = ADDR_FLASH_SECTOR_5;
+	address = FLASH_CFG1_ADDR_START;
 
-	//todo is +4 needed?
-	while (Address < FLASH_CFG1_ADDR_START + cfg1.size + 4) {
+	for (wordOffset = 0; wordOffset < sizeof(cfg1_t); wordOffset += 4) {
 
 		data32 = *(uint32_t *) ((char *) &cfg1 + wordOffset );
 
-		if (HAL_FLASH_Program(TYPEPROGRAM_WORD, address, data32) == HAL_OK) { //this causes a hard fault
-			address = address + 4;
-			wordOffset = wordOffset + 4;
+		if (HAL_FLASH_Program(TYPEPROGRAM_WORD, address + wordOffset, data32) == HAL_OK) {
 		} else {
-			/* Error occurred while writing data in Flash memory.
-			 User can add here some code to deal with this error */
-			/*
-			FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-			*/
+			//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
 			ErrorHandler();
 		}
 
@@ -404,48 +489,17 @@ bool validate_cfg1(void) {
     return true;
 }
 
-void rfbl_reboot_to_app(void) {
-
-	if (cfg1.boot_direction == BOOT_TO_APP_COMMAND) {
-		systemReset();
-	} else {
-		cfg1.boot_direction = BOOT_TO_APP_COMMAND;
-		write_cfg1();
-		systemReset();
-	}
-
-}
-
-void rfbl_reboot_to_custom(void) {
-
-	if (cfg1.boot_direction == BOOT_TO_ADDRESS) {
-		systemReset();
-	} else {
-		cfg1.boot_direction = BOOT_TO_ADDRESS;
-		write_cfg1();
-		systemReset();
-	}
-
-}
-
-void rfbl_reboot_to_rfbl(void) {
-
-	if (cfg1.boot_direction == BOOT_TO_RFBL_COMMAND) {
-		systemReset();
-	} else {
-		cfg1.boot_direction = BOOT_TO_RFBL_COMMAND;
-		write_cfg1();
-		systemReset();
-	}
-
-}
+*/
 
 void boot_to_app (void) {
 
-	if (skip_boot_to_app)
-	{
-		return;
-	}
+	startupBlink(40, 25);
+
+	HAL_Delay(500); //half second delay before booting into app to allow PDB power to stabilize
+
+	USB_DEVICE_DeInit();
+	HAL_RCC_DeInit();
+    HAL_DeInit();
 
 	pFunction Jump_To_Application;
 	uint32_t JumpAddress;
@@ -462,7 +516,7 @@ void boot_to_app (void) {
 
 }
 
-void led_error_check(void) {
+void errorBlink(void) {
 	LED1_OFF;
 	LED2_OFF;
 	HAL_Delay(2000);
@@ -576,8 +630,7 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 
 			case RFBLC_REBOOT_TO_CUSTOM:
 				*RfblState = RFBLS_REBOOT_TO_CUSTOM;
-				ApplicationAddress = (int32_t)((tOutBuffer[10] << 24) | (tOutBuffer[9] << 16) | (tOutBuffer[8] << 8) |
-tOutBuffer[7]);
+				ApplicationAddress = (int32_t)((tOutBuffer[10] << 24) | (tOutBuffer[9] << 16) | (tOutBuffer[8] << 8) | tOutBuffer[7]); //todo:make this work
 				break;
 
 			case RFBLC_LAST:
@@ -593,13 +646,15 @@ tOutBuffer[7]);
 
 void rfbl_execute_load_command(void) {
 
-	LED1_TOGGLE;
+	LED1_OFF;
+	LED2_OFF;
+	LED3_OFF;
 	//TODO: Add some sanity checks
 	if ( (FwInfo.type == RFFW) && (FwInfo.mode == AUTO) ) { //Auto load RFFW, RaceFlight FW
-		FwInfo.address = APPLICATION_ADDRESS;
+		FwInfo.address = APP_ADDRESS;
 	} else
 	if ( (FwInfo.type == RFBU) && (FwInfo.mode == AUTO) ) { //Auto load RFBU, RaceFlight Bootloader Uploader
-		FwInfo.address = APPLICATION_ADDRESS;
+		FwInfo.address = APP_ADDRESS;
 	} else
 	if (FwInfo.mode == MANU) {
 		//nothing special needed for manual mode other than sanity checks
@@ -611,16 +666,18 @@ void rfbl_execute_load_command(void) {
 	}
 
 	if ( (FwInfo.type == RFFW) && (FwInfo.size) ) { //Does the firmware have size? //TODO: Verify size is sane
-		FwInfo.expected_packets = ceil(FwInfo.size / FwInfo.packet_size) + 1;
+		FwInfo.expected_packets = ceil(FwInfo.size / FwInfo.packet_size);
 		rfbl_prepare_flash(); //unlock and erase flash. Then wait for data packets
 	}
-	LED1_TOGGLE;
 
 }
 
 //todo: only works for F4 and F7. F1 anf F3 require different flash handling.
 void rfbl_prepare_flash(void) {
 
+	LED1_ON;
+	LED2_ON;
+	LED3_ON;
     static FLASH_EraseInitTypeDef EraseInitStruct;
     uint32_t SectorError = 0;
 
@@ -631,48 +688,32 @@ void rfbl_prepare_flash(void) {
 	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
 	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
 	EraseInitStruct.Sector = GetSector(ADDR_FLASH_SECTOR_5);
-	EraseInitStruct.NbSectors = 2;
+	EraseInitStruct.NbSectors = 6;
 
 	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
 	{
-		/*
-		  Error occurred while sector erase.
-		  User can add here some code to deal with this error.
-		  SectorError will contain the faulty sector and then to know the code error on this sector,
-		  user can call function 'HAL_FLASH_GetError()'
-		*/
-		/*
-		  FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-		*/
+		//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
 		ErrorHandler();
 	}
 
+	LED1_OFF;
+	LED2_OFF;
+	LED3_OFF;
 }
 
 
 void rfbl_write_packet(void) {
 
 	uint32_t data32;
-	uint32_t address;
-	uint32_t wordOffset = 0;
 
-	//todo made this configurable
-	address = ADDR_FLASH_SECTOR_5;
+	for (uint32_t wordoffsetter = 0; wordoffsetter < (floor((HID_EPOUT_SIZE-1) / 4) * 4); wordoffsetter += 4) {
 
-	//todo: is + 4 needed?
-	while (Address < (ADDR_FLASH_SECTOR_5 + sizeof(FwInfo.data) + 4)) {
+		data32 = (uint32_t) ( (FwInfo.data[wordoffsetter+1] << 0) | (FwInfo.data[wordoffsetter+2] << 8) | (FwInfo.data[wordoffsetter+3] << 16) | (FwInfo.data[wordoffsetter+4] << 24));
 
-		data32 = (uint32_t) ( (FwInfo.data[wordOffset+1] << 0) | (FwInfo.data[wordOffset+2] << 8) | (FwInfo.data[wordOffset+3] << 16) | (FwInfo.data[wordOffset+4] << 24));
-
-		if (HAL_FLASH_Program(TYPEPROGRAM_WORD, address, data32) == HAL_OK) {
-			address = address + 4;
-			wordOffset = wordOffset + 4;
+		if (HAL_FLASH_Program(TYPEPROGRAM_WORD, FwInfo.address + FwInfo.wordOffset, data32) == HAL_OK) {
+			FwInfo.wordOffset = FwInfo.wordOffset + 4;
 		} else {
-			/* Error occurred while writing data in Flash memory.
-			 User can add here some code to deal with this error */
-			/*
-			FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-			*/
+			//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
 			ErrorHandler();
 		}
 
@@ -710,9 +751,7 @@ void rfbl_parse_load_command(void) {
 
 	memcpy( &command_packet[0], tOutBuffer, HID_EPOUT_SIZE-1 ); //capture outbuffer
 
-	uint8_t i;
-
-	while (i<(HID_EPIN_SIZE-1)) { //TODO: Move this to its own function
+	for (uint8_t i=0;i<(HID_EPIN_SIZE-1);i++) {
 
 		name32 = (int32_t)( (command_packet[i] << 24) | (command_packet[i+1] << 16) | (command_packet[i+2] << 8) | (command_packet[i+3]) );
 
@@ -737,8 +776,6 @@ void rfbl_parse_load_command(void) {
 			i = i+6; //name/value found, skip to the next possible location
 		}
 
-		i++;
-
 	}
 
 }
@@ -761,19 +798,11 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 	tInBuffer[5]=0x53;
 	tInBuffer[6]=*RfblState;
 
-	//send what we got in the tOutBuffer back with command
-//	i = 1;
-//	while (i<(HID_EPIN_SIZE - 6)) {
-//		tInBuffer[i+6]=tOutBuffer[i];
-//		i++;
-//	}
-
 	if (*RfblState == RFBLS_VERSION) {
 		tInBuffer[7]=RFBL_VERSION;
 		tInBuffer[8]=CFG1_VERSION;
 	}
 
-	//This takes about 72�s to do
 	USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
 
 }
@@ -785,51 +814,51 @@ uint32_t GetSector(uint32_t Address)
 
   if((Address < ADDR_FLASH_SECTOR_1) && (Address >= ADDR_FLASH_SECTOR_0))
   {
-    sector = FLASH_Sector_0;
+    sector = FLASH_SECTOR_0;
   }
   else if((Address < ADDR_FLASH_SECTOR_2) && (Address >= ADDR_FLASH_SECTOR_1))
   {
-    sector = FLASH_Sector_1;
+    sector = FLASH_SECTOR_1;
   }
   else if((Address < ADDR_FLASH_SECTOR_3) && (Address >= ADDR_FLASH_SECTOR_2))
   {
-    sector = FLASH_Sector_2;
+    sector = FLASH_SECTOR_2;
   }
   else if((Address < ADDR_FLASH_SECTOR_4) && (Address >= ADDR_FLASH_SECTOR_3))
   {
-    sector = FLASH_Sector_3;
+    sector = FLASH_SECTOR_3;
   }
   else if((Address < ADDR_FLASH_SECTOR_5) && (Address >= ADDR_FLASH_SECTOR_4))
   {
-    sector = FLASH_Sector_4;
+    sector = FLASH_SECTOR_4;
   }
   else if((Address < ADDR_FLASH_SECTOR_6) && (Address >= ADDR_FLASH_SECTOR_5))
   {
-    sector = FLASH_Sector_5;
+    sector = FLASH_SECTOR_5;
   }
   else if((Address < ADDR_FLASH_SECTOR_7) && (Address >= ADDR_FLASH_SECTOR_6))
   {
-    sector = FLASH_Sector_6;
+    sector = FLASH_SECTOR_6;
   }
   else if((Address < ADDR_FLASH_SECTOR_8) && (Address >= ADDR_FLASH_SECTOR_7))
   {
-    sector = FLASH_Sector_7;
+    sector = FLASH_SECTOR_7;
   }
   else if((Address < ADDR_FLASH_SECTOR_9) && (Address >= ADDR_FLASH_SECTOR_8))
   {
-    sector = FLASH_Sector_8;
+    sector = FLASH_SECTOR_8;
   }
   else if((Address < ADDR_FLASH_SECTOR_10) && (Address >= ADDR_FLASH_SECTOR_9))
   {
-    sector = FLASH_Sector_9;
+    sector = FLASH_SECTOR_9;
   }
   else if((Address < ADDR_FLASH_SECTOR_11) && (Address >= ADDR_FLASH_SECTOR_10))
   {
-    sector = FLASH_Sector_10;
+    sector = FLASH_SECTOR_10;
   }
   else
   {
-    sector = FLASH_Sector_11;
+    sector = FLASH_SECTOR_11;
   }
 
   return sector;
@@ -899,16 +928,15 @@ void systemReset(void)
 }
 
 void systemResetToBootloader(void) {
-
+//todo make this work on all MCUs
 	*((uint32_t *)0x2001FFFC) = 0xDEADBEEF; // 128KB SRAM STM32F4XX
 	__disable_irq();
 	NVIC_SystemReset();
 }
 
 void systemResetToDfuBootloader(void) {
-
+	//todo make this work on all MCUs
 	*((uint32_t *)0x2001FFFC) = 0xDEADBEEF; // 128KB SRAM STM32F4XX
-	__disable_irq();
 	NVIC_SystemReset();
 }
 

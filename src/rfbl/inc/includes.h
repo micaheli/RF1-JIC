@@ -17,4 +17,8 @@
 #include "drivers/leds.h"
 
 void BoardInit(void);
+void gpioClockInit(void);
+void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+void inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+bool inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 void ErrorHandler(void);
