@@ -19,6 +19,7 @@ uint32_t toggle_led = 0;
 bool bootToRfbl = false;
 uint32_t ApplicationAddress = APP_ADDRESS;
 uint8_t bindSpektrum = 0;
+char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
 
 FwInfo_t FwInfo;
 cfg1_t cfg1;
@@ -57,6 +58,8 @@ int main(void)
 	bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
 	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
+
+	bootDirection = checkOldConfigDirection (bootDirection); //sets proper boot direction is RFP is used
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
@@ -135,7 +138,7 @@ int main(void)
 
 #endif
 
-	startupBlink(50, 25);
+	startupBlink(40, 25);
 
 	if (!bootToRfbl) {
 		//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
@@ -164,7 +167,35 @@ int main(void)
 		}
 	}
 
+	if (bindSpektrum != 0) {
 
+	    HAL_GPIO_DeInit(SPEK_GPIO, SPEK_PIN);
+
+	    GPIO_InitStructure.Pin   = SPEK_PIN;
+	    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
+	    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+	    GPIO_InitStructure.Pull  = GPIO_NOPULL;
+	    HAL_GPIO_Init(SPEK_GPIO, &GPIO_InitStructure);
+
+		inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
+
+		HAL_Delay(50);
+
+		for (uint8_t ii = 0; ii < bindSpektrum; ii++) {
+	        // RX line, drive low for 120us
+			inlineDigitalLo(SPEK_GPIO, SPEK_PIN);
+
+			delayUs(120);
+
+	        // RX line, drive high for 120us
+			inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
+
+			delayUs(120);
+		}
+
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+		boot_to_app();
+	}
 
 
 	//initialize RFBL State and Command
@@ -235,12 +266,9 @@ int main(void)
 				rfbl_finish_flash();
 				RfblState = RFBLS_IDLE;
 				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
-				startupBlink(10, 40);
-				startupBlink(10, 35);
-				startupBlink(10, 30);
-				startupBlink(10, 25);
-				startupBlink(10, 20);
-				startupBlink(10, 15);
+				for (int8_t iii = 100; iii >= 0; iii -= 10) {
+					startupBlink(10, iii);
+				}
 				break;
 
 			case RFBLS_AWAITING_FW_DATA:
@@ -315,7 +343,6 @@ int main(void)
 					toggle_led = 0;
 				}
 				toggle_led++;
-
 				check_rfbl_command(&RfblCommand, &RfblState);
 				break;
 
@@ -325,18 +352,23 @@ int main(void)
 
 }
 
-uint32_t rtc_read_backup_reg(uint32_t BackupRegister) {
-    RTC_HandleTypeDef RtcHandle;
-    RtcHandle.Instance = RTC;
-    return HAL_RTCEx_BKUPRead(&RtcHandle, BackupRegister);
-}
+uint32_t checkOldConfigDirection (uint32_t bootDirection) {
 
-void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data) {
-    RTC_HandleTypeDef RtcHandle;
-    RtcHandle.Instance = RTC;
-    HAL_PWR_EnableBkUpAccess();
-    HAL_RTCEx_BKUPWrite(&RtcHandle, BackupRegister, data);
-    HAL_PWR_DisableBkUpAccess();
+	uint32_t firmwareFinderData[5];
+
+	uint32_t addressStart = 0x08004000;
+	uint32_t addressEnd = 0x080FFFFF;
+
+	for (volatile uint32_t byteOffset = addressStart; byteOffset < addressEnd; byteOffset += 1) {
+
+		memcpy( &firmwareFinderData, (char *) byteOffset, sizeof(firmwareFinderData) );
+
+		if ( (firmwareFinderData[0] == RFBL1) && (firmwareFinderData[1] == RFBL2) && (firmwareFinderData[2] == RFBL3) && (firmwareFinderData[3] == RFBL4) ) {
+			bootDirection = firmwareFinderData[4];
+			break;
+		}
+	}
+	return bootDirection;
 }
 
 void startupBlink (uint16_t blinks, uint32_t delay) {
@@ -355,142 +387,6 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 	LED2_OFF;
 }
 
-
-/*
-void read_cfg1(void) {
-
-	if (validate_cfg1() ) {
-
-		memcpy(&cfg1, (char *) FLASH_CFG1_ADDR_START, sizeof(cfg1_t));
-		if (cfg1.boot_direction == FAST_BOOT) {
-			boot_to_app();
-		}
-
-	} else {
-
-		reset_cfg1();
-		write_cfg1();
-
-	}
-
-}
-
-void reset_cfg1(void) {
-
-	memset(&cfg1, 0, sizeof(cfg1_t));
-	cfg1.boot_direction = BOOT_TO_APP_COMMAND;
-	cfg1.boot_cycles 	= 0x00000001;
-	cfg1.reboot_address = APPLICATION_ADDRESS;
-
-}
-
-static uint8_t calculateChecksum(const uint8_t *data, uint32_t length) {
-
-	uint8_t checksum = 0;
-    const uint8_t *byteOffset;
-
-    for (byteOffset = data; byteOffset < (data + length); byteOffset++)
-        checksum ^= *byteOffset;
-    return checksum;
-}
-
-void erase_all_flash (void) {
-
-    static FLASH_EraseInitTypeDef EraseInitStruct;
-    uint32_t SectorError = 0;
-
-	HAL_FLASH_Unlock();
-
-	//todo made this configurable, will 11 work on all f4/f7s?
-	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
-	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
-	EraseInitStruct.Sector = GetSector(ADDR_FLASH_SECTOR_1);
-	EraseInitStruct.NbSectors = 11;
-
-	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
-	{
-
-		//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-		ErrorHandler();
-	}
-
-	HAL_FLASH_Lock();
-}
-
-void write_cfg1(void) {
-
-	uint32_t data32;
-	uint32_t address;
-	uint32_t wordOffset = 0;
-
-    static FLASH_EraseInitTypeDef EraseInitStruct;
-    uint32_t SectorError = 0;
-
-	//save consntants and checksums
-	cfg1.rfbl_version 	= RFBL_VERSION;
-	cfg1.cfg1_version 	= CFG1_VERSION;
-	cfg1.magic_f1eaf00d	= MAGIC_F1EAF00D;
-	cfg1.magic_a0ddba11	= MAGIC_A0DDBA11;
-	cfg1.size			= sizeof(cfg1_t);
-	cfg1.czechsum		= 0;
-	cfg1.czechsum		= calculateChecksum((const uint8_t *) &cfg1, sizeof(cfg1_t));
-
-	HAL_FLASH_Unlock();
-
-	//todo made this configurable, will 11 work on all f4/f7s?
-	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
-	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
-	EraseInitStruct.Sector = GetSector(FLASH_CFG1_ADDR_START);
-	EraseInitStruct.NbSectors = 1;
-
-	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
-	{
-		//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-		ErrorHandler();
-	}
-
-	//todo made this configurable
-	address = FLASH_CFG1_ADDR_START;
-
-	for (wordOffset = 0; wordOffset < sizeof(cfg1_t); wordOffset += 4) {
-
-		data32 = *(uint32_t *) ((char *) &cfg1 + wordOffset );
-
-		if (HAL_FLASH_Program(TYPEPROGRAM_WORD, address + wordOffset, data32) == HAL_OK) {
-		} else {
-			//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-			ErrorHandler();
-		}
-
-	}
-
-	HAL_FLASH_Lock();
-
-}
-
-bool validate_cfg1(void) {
-
-	const cfg1_t *temp = (const cfg1_t *) FLASH_CFG1_ADDR_START;
-	uint8_t czechsum = 0;
-
-	// check version number
-    if (CFG1_VERSION != temp->cfg1_version)
-        return false;
-
-    // check size and magic numbers
-    if (temp->size != sizeof(cfg1_t) || temp->magic_f1eaf00d != MAGIC_F1EAF00D || temp->magic_a0ddba11 != MAGIC_A0DDBA11)
-        return false;
-
-    // verify integrity of temporary copy
-    czechsum = calculateChecksum((const uint8_t *) temp, sizeof(cfg1_t));
-    if (czechsum != 0)
-        return false;
-
-    return true;
-}
-
-*/
-
 void boot_to_app (void) {
 
 	startupBlink(40, 25);
@@ -498,8 +394,8 @@ void boot_to_app (void) {
 	HAL_Delay(500); //half second delay before booting into app to allow PDB power to stabilize
 
 	USB_DEVICE_DeInit();
-	HAL_RCC_DeInit();
-    HAL_DeInit();
+	//HAL_RCC_DeInit();
+    //HAL_DeInit();
 
 	pFunction Jump_To_Application;
 	uint32_t JumpAddress;
@@ -517,24 +413,9 @@ void boot_to_app (void) {
 }
 
 void errorBlink(void) {
-	LED1_OFF;
-	LED2_OFF;
-	HAL_Delay(2000);
-
-	LED2_ON;
-	HAL_Delay(1000);
-	LED2_OFF;
-	HAL_Delay(1000);
-
-	LED2_ON;
-	HAL_Delay(1000);
-	LED2_OFF;
-	HAL_Delay(1000);
-
-	LED2_ON;
-	HAL_Delay(1000);
-	LED2_OFF;
-	HAL_Delay(1000);
+	for (int8_t iii = 0; iii < 100; iii += 10) {
+		startupBlink(10, iii);
+	}
 }
 
 //todo: add micros command
@@ -564,6 +445,7 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 			}
 			memcpy( &FwInfo.data[0], tOutBuffer, HID_EPOUT_SIZE-1 ); //capture outbuffer
 			memset(tOutBuffer, 0, HID_EPOUT_SIZE-1); //clear outbuffer
+
 			//command is still RFBLC_UPGRADE_FW
 			return;
 		} else
@@ -635,6 +517,8 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 
 			case RFBLC_LAST:
 				*RfblState = RFBLS_ERROR;
+				memcpy( &tOutBuffer[0], rfblTagString, sizeof(rfblTagString) ); //save a string into code :)
+
 				break;
 
 		}
@@ -687,7 +571,7 @@ void rfbl_prepare_flash(void) {
 	/* Fill EraseInit structure*/
 	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
 	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
-	EraseInitStruct.Sector = GetSector(ADDR_FLASH_SECTOR_5);
+	EraseInitStruct.Sector = FLASH_SECTOR_5;
 	EraseInitStruct.NbSectors = 6;
 
 	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
@@ -807,129 +691,8 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 
 }
 
-
-uint32_t GetSector(uint32_t Address)
-{
-  uint32_t sector = 0;
-
-  if((Address < ADDR_FLASH_SECTOR_1) && (Address >= ADDR_FLASH_SECTOR_0))
-  {
-    sector = FLASH_SECTOR_0;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_2) && (Address >= ADDR_FLASH_SECTOR_1))
-  {
-    sector = FLASH_SECTOR_1;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_3) && (Address >= ADDR_FLASH_SECTOR_2))
-  {
-    sector = FLASH_SECTOR_2;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_4) && (Address >= ADDR_FLASH_SECTOR_3))
-  {
-    sector = FLASH_SECTOR_3;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_5) && (Address >= ADDR_FLASH_SECTOR_4))
-  {
-    sector = FLASH_SECTOR_4;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_6) && (Address >= ADDR_FLASH_SECTOR_5))
-  {
-    sector = FLASH_SECTOR_5;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_7) && (Address >= ADDR_FLASH_SECTOR_6))
-  {
-    sector = FLASH_SECTOR_6;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_8) && (Address >= ADDR_FLASH_SECTOR_7))
-  {
-    sector = FLASH_SECTOR_7;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_9) && (Address >= ADDR_FLASH_SECTOR_8))
-  {
-    sector = FLASH_SECTOR_8;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_10) && (Address >= ADDR_FLASH_SECTOR_9))
-  {
-    sector = FLASH_SECTOR_9;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_11) && (Address >= ADDR_FLASH_SECTOR_10))
-  {
-    sector = FLASH_SECTOR_10;
-  }
-  else
-  {
-    sector = FLASH_SECTOR_11;
-  }
-
-  return sector;
-}
-
-
-uint32_t GetPageSize(uint32_t Address)
-{
-  uint32_t page_size = 0;
-
-  if((Address < ADDR_FLASH_SECTOR_1) && (Address >= ADDR_FLASH_SECTOR_0))
-  {
-	  page_size = 0x4000;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_2) && (Address >= ADDR_FLASH_SECTOR_1))
-  {
-	  page_size = 0x4000;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_3) && (Address >= ADDR_FLASH_SECTOR_2))
-  {
-	  page_size = 0x4000;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_4) && (Address >= ADDR_FLASH_SECTOR_3))
-  {
-	  page_size = 0x4000;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_5) && (Address >= ADDR_FLASH_SECTOR_4))
-  {
-	  page_size = 0x10000;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_6) && (Address >= ADDR_FLASH_SECTOR_5))
-  {
-	  page_size = 0x20000;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_7) && (Address >= ADDR_FLASH_SECTOR_6))
-  {
-	  page_size = 0x20000;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_8) && (Address >= ADDR_FLASH_SECTOR_7))
-  {
-	  page_size = 0x20000;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_9) && (Address >= ADDR_FLASH_SECTOR_8))
-  {
-	  page_size = 0x20000;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_10) && (Address >= ADDR_FLASH_SECTOR_9))
-  {
-	  page_size = 0x20000;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_11) && (Address >= ADDR_FLASH_SECTOR_10))
-  {
-	  page_size = 0x20000;
-  }
-  else
-  {
-	  page_size = 0x20000;
-  }
-
-  return page_size;
-}
-
 void systemReset(void)
 {
-	__disable_irq();
-	NVIC_SystemReset();
-}
-
-void systemResetToBootloader(void) {
-//todo make this work on all MCUs
-	*((uint32_t *)0x2001FFFC) = 0xDEADBEEF; // 128KB SRAM STM32F4XX
 	__disable_irq();
 	NVIC_SystemReset();
 }

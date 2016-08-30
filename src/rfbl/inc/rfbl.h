@@ -43,8 +43,10 @@
 #define ADDR_FLASH_SECTOR_9     ((uint32_t)0x080A0000) /* Base @ of Sector 9, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_10    ((uint32_t)0x080C0000) /* Base @ of Sector 10, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_11    ((uint32_t)0x080E0000) /* Base @ of Sector 11, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_12    ((uint32_t)0x08100000) /* Base @ of Sector 11, 128 Kbytes */
 
-#define APPLICATION_ADDRESS		ADDR_FLASH_SECTOR_5
+#define APPLICATION_ADDRESS			ADDR_FLASH_SECTOR_5
+#define FLASH_END_AFTER_ADDRESS		ADDR_FLASH_SECTOR_12
 
 #define RFBL_ADDR_START			ADDR_FLASH_SECTOR_0
 #define RFBL_ADDR_END			ADDR_FLASH_SECTOR_1
@@ -60,6 +62,13 @@
 #define RFBL_BKR_BOOT_DIRECTION_REG		RTC_BKP_DR3
 #define RFBL_BKR_BOOT_CYCLES_REG		RTC_BKP_DR4
 #define RFBL_BKR_BOOT_ADDRESSS_REG		RTC_BKP_DR5
+
+#define RFBL1	0x631e47d9
+#define RFBL2	0x8ef26ec3
+#define RFBL3	0x3516864e
+#define RFBL4	0x461085c1
+
+#define RFBL_TAG	"RFBLVERSION#00050005" //must be 20 bytes max
 
 typedef enum {
 	RFBLS_IDLE,
@@ -132,11 +141,10 @@ typedef struct FwInfo_t {
 
 
 void startupBlink (uint16_t blinks, uint32_t delay);
-uint32_t rtc_read_backup_reg(uint32_t BackupRegister);
-void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data);
 void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState);
 void rfbl_report_state (RfblState_e *RfblState);
 void boot_to_app (void);
+uint32_t checkOldConfigDirection (uint32_t bootDirection);
 
 void rfbl_parse_load_command(void);
 void rfbl_execute_load_command(void);

@@ -199,22 +199,27 @@ def configure_target(TARGET):
     if TARGET_PROCESSOR_TYPE == "f0":
         DEF_FLAGS  = STM32F0_DEF_FLAGS
         ARCH_FLAGS = STM32F0_ARCH_FLAGS
+        MCU_FAMILY = "STM32"
 
     elif TARGET_PROCESSOR_TYPE == "f1":
         DEF_FLAGS  = STM32F1_DEF_FLAGS
         ARCH_FLAGS = STM32F1_ARCH_FLAGS
+        MCU_FAMILY = "STM32"
 
     elif TARGET_PROCESSOR_TYPE == "f3":
         DEF_FLAGS  = STM32F3_DEF_FLAGS
         ARCH_FLAGS = STM32F3_ARCH_FLAGS
+        MCU_FAMILY = "STM32"
 
     elif TARGET_PROCESSOR_TYPE == "f4":
         DEF_FLAGS  = STM32F4_DEF_FLAGS
         ARCH_FLAGS = STM32F4_ARCH_FLAGS
+        MCU_FAMILY = "STM32"
 
     elif TARGET_PROCESSOR_TYPE == "f7":
         DEF_FLAGS  = STM32F7_DEF_FLAGS
         ARCH_FLAGS = STM32F7_ARCH_FLAGS
+        MCU_FAMILY = "STM32"
 
     else:
         print("ERROR: NOT VALID PROCESSOR TYPE FOR TARGET %s, CHECK MAKE FILE CODE" % TARGET, file=sys.stderr)
@@ -237,6 +242,7 @@ def configure_target(TARGET):
         HAL_DIR + "/Inc",
         "src/target/" + TARGET_BOARD,
         MCU_DIR,
+        "src/target/" + MCU_FAMILY,
     ]
 
     SOURCE_DIRS = [
@@ -244,6 +250,7 @@ def configure_target(TARGET):
         "src/%s/src" % PROJECT,
         "src/target/" + TARGET_BOARD,
         MCU_DIR,
+        "src/target/" + MCU_FAMILY,
     ]
 
     SOURCE_FILES = []
