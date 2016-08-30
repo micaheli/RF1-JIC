@@ -154,6 +154,24 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Os"
 
+    elif TARGET == "vick":
+        PROJECT = "rffw"
+        TARGET_BOARD = "vick"
+        TARGET_DEVICE = "STM32F446xx"
+        TARGET_SCRIPT = "stm32_flash_f446.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-O2"
+
+    elif TARGET == "vick_rfbl":
+        PROJECT = "rfbl"
+        TARGET_BOARD = "vick"
+        TARGET_DEVICE = "STM32F446xx"
+        TARGET_SCRIPT = "stm32_flash_f446.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Os"
+
     elif TARGET == "f7disco":
         PROJECT = "rffw"
         TARGET_BOARD = "f7disco"

@@ -59,7 +59,7 @@ int main(void)
 	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
 
-	bootDirection = checkOldConfigDirection (bootDirection); //sets proper boot direction is RFP is used
+	bootDirection = checkOldConfigDirection (bootDirection, bootCycles); //sets proper boot direction is RFP is used
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
@@ -138,7 +138,7 @@ int main(void)
 
 #endif
 
-	startupBlink(40, 25);
+	startupBlink(20, 20);
 
 	if (!bootToRfbl) {
 		//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
@@ -352,19 +352,29 @@ int main(void)
 
 }
 
-uint32_t checkOldConfigDirection (uint32_t bootDirection) {
+uint32_t checkOldConfigDirection (uint32_t bootDirection, uint32_t bootCycles) {
 
 	uint32_t firmwareFinderData[5];
 
-	uint32_t addressStart = 0x08004000;
-	uint32_t addressEnd = 0x080FFFFF;
+	uint32_t addressStart = 0x08008000;
+	uint32_t addressEnd = 0x08020000;
+
+	if (bootCycles < 2) {
+		return bootDirection;
+	}
 
 	for (volatile uint32_t byteOffset = addressStart; byteOffset < addressEnd; byteOffset += 1) {
 
 		memcpy( &firmwareFinderData, (char *) byteOffset, sizeof(firmwareFinderData) );
 
 		if ( (firmwareFinderData[0] == RFBL1) && (firmwareFinderData[1] == RFBL2) && (firmwareFinderData[2] == RFBL3) && (firmwareFinderData[3] == RFBL4) ) {
-			bootDirection = firmwareFinderData[4];
+			if (bootCycles > 1) {
+				bootDirection = firmwareFinderData[4];
+			} else {
+				rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, 0x00000000);
+				rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+				bootDirection = BOOT_TO_APP_COMMAND;
+			}
 			break;
 		}
 	}
@@ -389,13 +399,11 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 
 void boot_to_app (void) {
 
-	startupBlink(40, 25);
-
 	HAL_Delay(500); //half second delay before booting into app to allow PDB power to stabilize
 
 	USB_DEVICE_DeInit();
-	//HAL_RCC_DeInit();
-    //HAL_DeInit();
+	HAL_RCC_DeInit();
+    HAL_DeInit();
 
 	pFunction Jump_To_Application;
 	uint32_t JumpAddress;
