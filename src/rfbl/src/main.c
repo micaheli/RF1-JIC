@@ -41,7 +41,6 @@ int main(void)
     LedInit();
     USB_DEVICE_Init(); //start USB
 
-
     rfblVersion = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
     cfg1Version = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
     if ((rfblVersion != RFBL_VERSION) || (cfg1Version != CFG1_VERSION)) { //no data or wrong version, let's put defaults
@@ -450,6 +449,10 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 				*RfblState = RFBLS_DONE_UPGRADING; //yes
 				LED1_OFF;
 				LED2_OFF;
+			} else if ((FwInfo.wordOffset + (FwInfo.skipTo - ADDRESS_RFBL_START)) == FwInfo.size)  {
+				*RfblState = RFBLS_DONE_UPGRADING; //yes
+				LED1_OFF;
+				LED2_OFF;
 			}
 			memcpy( &FwInfo.data[0], tOutBuffer, HID_EPOUT_SIZE-1 ); //capture outbuffer
 			memset(tOutBuffer, 0, HID_EPOUT_SIZE-1); //clear outbuffer
@@ -543,10 +546,10 @@ void rfbl_execute_load_command(void) {
 	LED3_OFF;
 	//TODO: Add some sanity checks
 	if ( (FwInfo.type == RFFW) && (FwInfo.mode == AUTO) ) { //Auto load RFFW, RaceFlight FW
-		FwInfo.address = APP_ADDRESS;
+		FwInfo.address = ADDRESS_FLASH_START;
 	} else
 	if ( (FwInfo.type == RFBU) && (FwInfo.mode == AUTO) ) { //Auto load RFBU, RaceFlight Bootloader Uploader
-		FwInfo.address = APP_ADDRESS;
+		FwInfo.address = ADDRESS_FLASH_START;
 	} else
 	if (FwInfo.mode == MANU) {
 		//nothing special needed for manual mode other than sanity checks
@@ -560,6 +563,13 @@ void rfbl_execute_load_command(void) {
 	if ( (FwInfo.type == RFFW) && (FwInfo.size) ) { //Does the firmware have size? //TODO: Verify size is sane
 		FwInfo.expected_packets = ceil(FwInfo.size / FwInfo.packet_size);
 		rfbl_prepare_flash(); //unlock and erase flash. Then wait for data packets
+	}
+
+	if (FwInfo.size >= (uint32_t)( (float)(ADDRESS_FLASH_END - ADDRESS_FLASH_START) * 0.94f ) ) {
+		FwInfo.skipTo = ADDRESS_FLASH_START;
+		FwInfo.address = ADDRESS_RFBL_START;
+	} else {
+		FwInfo.skipTo = ADDRESS_RFBL_START;
 	}
 
 }
@@ -580,7 +590,11 @@ void rfbl_prepare_flash(void) {
 	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
 	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
 	EraseInitStruct.Sector = FLASH_SECTOR_5;
-	EraseInitStruct.NbSectors = 6;
+	if (ADDRESS_FLASH_END == 0x080FFFF0) { //todo: Base off of MCU
+		EraseInitStruct.NbSectors = 7;
+	} else {
+		EraseInitStruct.NbSectors = 3;
+	}
 
 	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
 	{
@@ -598,16 +612,21 @@ void rfbl_write_packet(void) {
 
 	uint32_t data32;
 
-	for (uint32_t wordoffsetter = 0; wordoffsetter < (floor((HID_EPOUT_SIZE-1) / 4) * 4); wordoffsetter += 4) {
+	for (uint32_t wordoffsetter = 0; wordoffsetter < (floor((HID_EPOUT_SIZE-1) / 4) * 4); wordoffsetter += 4) { //for each packet
 
-		data32 = (uint32_t) ( (FwInfo.data[wordoffsetter+1] << 0) | (FwInfo.data[wordoffsetter+2] << 8) | (FwInfo.data[wordoffsetter+3] << 16) | (FwInfo.data[wordoffsetter+4] << 24));
+		if ( (FwInfo.address + FwInfo.wordOffset) >= FwInfo.skipTo  ) { //only write to FW at this point
 
-		if (HAL_FLASH_Program(TYPEPROGRAM_WORD, FwInfo.address + FwInfo.wordOffset, data32) == HAL_OK) {
-			FwInfo.wordOffset = FwInfo.wordOffset + 4;
-		} else {
-			//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-			ErrorHandler();
+			data32 = (uint32_t) ( (FwInfo.data[wordoffsetter+1] << 0) | (FwInfo.data[wordoffsetter+2] << 8) | (FwInfo.data[wordoffsetter+3] << 16) | (FwInfo.data[wordoffsetter+4] << 24));
+
+			if (HAL_FLASH_Program(TYPEPROGRAM_WORD, FwInfo.address + FwInfo.wordOffset, data32) == HAL_OK) {
+			} else {
+				//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
+				ErrorHandler();
+			}
+
 		}
+
+		FwInfo.wordOffset = FwInfo.wordOffset + 4;
 
 	}
 

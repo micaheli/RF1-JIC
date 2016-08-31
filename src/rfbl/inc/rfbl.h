@@ -17,8 +17,10 @@
 #define RFPM					0x5246504D
 #define PL						0x504C
 
-#define RFBL_VERSION			0x05
-#define CFG1_VERSION			0x05
+#define RFBL_VERSION			0x06
+#define CFG1_VERSION			0x06
+#define RFBL_TAG	"RFBLVERSION#00060006" //must be 20 bytes max
+
 #define APP_ADDRESS				0x08020000
 #define BOOT_TO_RFBL_COMMAND	0xDEADFEAD
 #define BOOT_TO_APP_COMMAND		0xB01DFEED
@@ -67,8 +69,6 @@
 #define RFBL2	0x8ef26ec3
 #define RFBL3	0x3516864e
 #define RFBL4	0x461085c1
-
-#define RFBL_TAG	"RFBLVERSION#00050005" //must be 20 bytes max
 
 typedef enum {
 	RFBLS_IDLE,
@@ -133,6 +133,7 @@ typedef struct FwInfo_t {
 	uint32_t expected_packets;
 	uint32_t packet_size;
 	uint32_t time_last_packet;
+	uint32_t skipTo;
 	uint8_t data[HID_EPIN_SIZE-1];
 } FwInfo_t;
 
