@@ -265,8 +265,8 @@ int main(void)
 				rfbl_finish_flash();
 				RfblState = RFBLS_IDLE;
 				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
-				for (int8_t iii = 100; iii >= 0; iii -= 10) {
-					startupBlink(10, iii);
+				for (int8_t iii = 100; iii >= 0; iii -= 2) {
+					startupBlink(2, iii);
 				}
 				break;
 
