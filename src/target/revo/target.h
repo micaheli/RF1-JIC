@@ -31,13 +31,45 @@
 #define RFFW_HID_PRODUCT_STRING "Revolution"
 #define RFBL_HID_PRODUCT_STRING "Revolution RFBL"
 
+
 //STM32F4 UID address
-#define DEVICE_ID1                  0x1FFF7A10
-#define DEVICE_ID2                  0x1FFF7A14
-#define DEVICE_ID3                  0x1FFF7A18
+#define DEVICE_ID1					0x1FFF7A10
+#define DEVICE_ID2					0x1FFF7A14
+#define DEVICE_ID3					0x1FFF7A18
 
 
+//Sbus inverter config
+#define USE_SBUS_HARDWARE_INVERTER
+#define SBUS_HARDWARE_GPIO			GPIOC
+#define SBUS_HARDWARE_PIN			GPIO_PIN_0
+#define SBUS_INVERTER_USART			USART1
 
+
+//Serial Config
+#define USE_VCP
+#define VBUS_SENSING_GPIO			GPIOC
+#define VBUS_SENSING_PIN			GPIO_PIN_5
+
+#define USE_USART1
+#define USART1_RX_GPIO				GPIOA
+#define USART1_RX_PIN				GPIO_PIN_10
+#define USART1_TX_GPIO				GPIOA
+#define USART1_TX_PIN				GPIO_PIN_9
+
+#define USE_USART3
+#define USART3_RX_GPIO				GPIOB
+#define USART3_RX_PIN				GPIO_PIN_11
+#define USART3_TX_GPIO				GPIOB
+#define USART3_TX_PIN				GPIO_PIN_10
+
+#define USE_USART6
+#define USART6_RX_GPIO				GPIOC
+#define USART6_RX_PIN				GPIO_PIN_7
+#define USART6_TX_GPIO				GPIOC
+#define USART6_TX_PIN				GPIO_PIN_6
+
+
+//RFBL config
 #define HARDWARE_RFBL_PLUG
 #define RFBL_GPIO1   GPIOA //Servo5
 #define RFBL_PIN1    GPIO_PIN_1
