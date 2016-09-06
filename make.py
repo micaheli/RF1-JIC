@@ -154,6 +154,24 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Os"
 
+    elif TARGET == "revonano":
+        PROJECT = "rffw"
+        TARGET_BOARD = "revonano"
+        TARGET_DEVICE = "STM32F411xE"
+        TARGET_SCRIPT = "stm32_flash_f411.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-O2"
+
+    elif TARGET == "revonano_rfbl":
+        PROJECT = "rfbl"
+        TARGET_BOARD = "revonano"
+        TARGET_DEVICE = "STM32F411xE"
+        TARGET_SCRIPT = "stm32_flash_f411.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Os"
+
     elif TARGET == "vick":
         PROJECT = "rffw"
         TARGET_BOARD = "vick"

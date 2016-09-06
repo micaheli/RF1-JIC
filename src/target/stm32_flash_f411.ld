@@ -3,7 +3,7 @@
 **
 **  File        : stm32_flash.ld
 **
-**  Abstract    : Linker script for STM32F11 Device with
+**  Abstract    : Linker script for STM32F411 Device with
 **                512KByte FLASH, 128KByte RAM
 **
 **                Set heap size, stack size and stack location according
@@ -33,27 +33,20 @@
 ENTRY(Reset_Handler)
 
 /* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x2000;      /* required amount of heap  */
-_Min_Stack_Size = 0x4000; /* required amount of stack */
+_Min_Heap_Size = 0;      /* required amount of heap  */
+_Min_Stack_Size = 0x400; /* required amount of stack */
 
 /* Specify the memory areas */
-
-/*
-0x08000000 to 0x08080000 512kb full flash,
-0x08000000 to 0x08060000 384kb firmware,
-0x08060000 to 0x08080000 128kb config,
-*/
-
 MEMORY
 {
-	FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x00080000 
-	RAM (rwx)       : ORIGIN = 0x20000000, LENGTH = 0x00020000
+	FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x070000 - 0x64
+	INFOX (rx)      : ORIGIN = 0x08000000 + 0x0e0000 - 0x64, LENGTH = 0x64
+	RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 128K
 	MEMORY_B1 (rx)  : ORIGIN = 0x60000000, LENGTH = 0K
 }
 
-REGION_ALIAS("CCSRAM", RAM);
-REGION_ALIAS("SRAM", RAM);
-
+/* Highest address of the user mode stack */
+_estack = ORIGIN(RAM) + LENGTH(RAM);    /* end of RAM */
 
 /* Section Definitions */
 SECTIONS
