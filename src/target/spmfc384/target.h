@@ -1,5 +1,14 @@
-#define	VICK
+#define	SPMFC384
 
+
+//MCU config
+#define PLLM	8
+#define PLLN	384
+#define PLLP	2
+#define PLLQ	8
+
+
+//LED config
 #define LEDn                    2
 
 #define LED1_GPIO_Port          GPIOC
@@ -8,6 +17,8 @@
 #define LED2_GPIO_Port          GPIOC
 #define LED2_GPIO_Pin           GPIO_PIN_7
 
+
+//Gyro config
 #define GYRO_SPI                SPI2
 #define GYRO_SPI_CS_GPIO_Port   GPIOB
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_12
@@ -28,8 +39,9 @@
 
 
 //USB config
-#define RFFW_HID_PRODUCT_STRING "Victor"
-#define RFBL_HID_PRODUCT_STRING "Victor RFBL"
+#define RFFW_HID_PRODUCT_STRING "SPMFC383"
+#define RFBL_HID_PRODUCT_STRING "SPMFC383 RFBL"
+
 
 //STM32F4 UID address
 #define DEVICE_ID1                  0x1FFF7A10
@@ -37,7 +49,7 @@
 #define DEVICE_ID3                  0x1FFF7A18
 
 
-
+//RFBL config
 #define HARDWARE_RFBL_PLUG
 #define RFBL_GPIO1   GPIOB //Servo7
 #define RFBL_PIN1    GPIO_PIN_10

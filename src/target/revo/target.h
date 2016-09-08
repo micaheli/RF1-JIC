@@ -1,5 +1,14 @@
 #define	REVO
 
+
+//MCU config
+#define PLLM	8
+#define PLLN	384
+#define PLLP	2
+#define PLLQ	8
+
+
+//LED config
 #define LEDn                    2
 
 #define LED1_GPIO_Port          GPIOB
@@ -8,6 +17,8 @@
 #define LED2_GPIO_Port          GPIOB
 #define LED2_GPIO_Pin           GPIO_PIN_5
 
+
+//Gyro config
 #define GYRO_SPI                SPI1
 #define GYRO_SPI_CS_GPIO_Port   GPIOA
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_4

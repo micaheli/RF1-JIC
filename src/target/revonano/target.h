@@ -1,6 +1,13 @@
 #define	REVONANO
 
 
+//MCU config
+#define PLLM	8
+#define PLLN	384
+#define PLLP	4
+#define PLLQ	8
+
+
 //LED config
 #define LEDn                    2
 

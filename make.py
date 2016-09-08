@@ -190,18 +190,36 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Os"
 
-    elif TARGET == "vick":
+    elif TARGET == "spmfc384":
         PROJECT = "rffw"
-        TARGET_BOARD = "vick"
+        TARGET_BOARD = "spmfc384"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
-    elif TARGET == "vick_rfbl":
+    elif TARGET == "spmfc384_rfbl":
         PROJECT = "rfbl"
-        TARGET_BOARD = "vick"
+        TARGET_BOARD = "spmfc384"
+        TARGET_DEVICE = "STM32F446xx"
+        TARGET_SCRIPT = "stm32_flash_f446.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Os"
+
+    elif TARGET == "spmfc400":
+        PROJECT = "rffw"
+        TARGET_BOARD = "spmfc400"
+        TARGET_DEVICE = "STM32F446xx"
+        TARGET_SCRIPT = "stm32_flash_f446.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-O2"
+
+    elif TARGET == "spmfc400_rfbl":
+        PROJECT = "rfbl"
+        TARGET_BOARD = "spmfc400"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446.ld"
         TARGET_PROCESSOR_TYPE  = "f4"

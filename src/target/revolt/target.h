@@ -1,6 +1,13 @@
 #define	REVOLT
 
 
+//MCU config
+#define PLLM	8
+#define PLLN	384
+#define PLLP	2
+#define PLLQ	8
+
+
 //LED config
 #define LEDn                    2
 

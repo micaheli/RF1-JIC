@@ -146,7 +146,7 @@ bool accgyroDeviceDetect(void)
             case MPU9250_WHO_AM_I:
             case ICM20608G_WHO_AM_I:
                 return true;
-                break
+                break;
         }
     }
 
