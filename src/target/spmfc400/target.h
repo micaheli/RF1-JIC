@@ -2,10 +2,10 @@
 
 
 //MCU config
-#define PLLM	8
-#define PLLN	384
-#define PLLP	2
-#define PLLQ	8
+#define FC_PLLM	8
+#define FC_PLLN	384
+#define FC_PLLP	2
+#define FC_PLLQ	8
 
 
 //LED config
