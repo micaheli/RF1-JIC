@@ -32,6 +32,8 @@ cfg1_t cfg1;
 int main(void)
 {
 
+	simpleDelay_ASM(5000);
+
 	bool rfbl_plug_attatched = false;
 	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress;
 
@@ -144,9 +146,11 @@ int main(void)
 		//the inside of these brackets means the RFBL pins are not shorted
 		switch (bootDirection) {
 			case BOOT_TO_APP_COMMAND:
+				//simpleDelay_ASM(100000);
 				boot_to_app();  //jump to application
 				break;
 			case BOOT_TO_ADDRESS:
+				//simpleDelay_ASM(100000);
 				ApplicationAddress = rebootAddress;
 				boot_to_app();  //jump to application
 				break;
@@ -161,6 +165,7 @@ int main(void)
 				break;
 			case BOOT_TO_RFBL_COMMAND:
 			default:
+				//simpleDelay_ASM(100000);
 				//default is to do nothing, continue to RFBL
 				break;
 		}
@@ -398,7 +403,8 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 
 void boot_to_app (void) {
 
-	HAL_Delay(1000); //half second delay before booting into app to allow PDB power to stabilize
+	//simpleDelay_ASM(100000);
+	HAL_Delay(250); //quarter second delay before booting into app to allow PDB power to stabilize
 
 	USB_DEVICE_DeInit();
 	HAL_RCC_DeInit();
