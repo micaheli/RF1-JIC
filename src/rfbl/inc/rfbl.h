@@ -17,9 +17,9 @@
 #define RFPM					0x5246504D
 #define PL						0x504C
 
-#define RFBL_VERSION			0x06
-#define CFG1_VERSION			0x06
-#define RFBL_TAG	"RFBLVERSION#00060006" //must be 20 bytes max
+#define RFBL_VERSION			0x07
+#define CFG1_VERSION			0x07
+#define RFBL_TAG	"RFBLVERSION#00070007" //must be 20 bytes max
 
 #define APP_ADDRESS				0x08020000
 #define BOOT_TO_RFBL_COMMAND	0xDEADFEAD
