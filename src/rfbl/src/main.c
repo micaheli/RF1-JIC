@@ -60,7 +60,9 @@ int main(void)
 	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
 
-	bootDirection = checkOldConfigDirection (bootDirection, bootCycles); //sets proper boot direction is RFP is used
+	if (bootDirection != BOOT_TO_APP_AFTER_SPEK_COMMAND) {
+		bootDirection = checkOldConfigDirection (bootDirection, bootCycles); //sets proper boot direction is RFP is used
+	}
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
@@ -183,21 +185,21 @@ int main(void)
 
 		inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
 
-		HAL_Delay(50);
+		simpleDelay_ASM(50000);
 
 		for (uint8_t ii = 0; ii < bindSpektrum; ii++) {
 	        // RX line, drive low for 120us
 			inlineDigitalLo(SPEK_GPIO, SPEK_PIN);
 
-			delayUs(120);
+			simpleDelay_ASM(120);
 
 	        // RX line, drive high for 120us
 			inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
 
-			delayUs(120);
+			simpleDelay_ASM(120);
 		}
 
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_SPEK_COMMAND);
 		boot_to_app();
 	}
 
