@@ -32,7 +32,7 @@ cfg1_t cfg1;
 int main(void)
 {
 
-	simpleDelay_ASM(10000);
+	simpleDelay_ASM(5000);
 
 	bool rfbl_plug_attatched = false;
 	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress;
