@@ -13,6 +13,7 @@
 #define MPU6555_WHO_AM_I    0x7C
 #define MPU9250_WHO_AM_I    0x71
 #define ICM20608G_WHO_AM_I  0xAF
+#define ICM20602_WHO_AM_I   0x12
 
 typedef struct __attribute__((__packed__)) {
     uint8_t accelAddress; // needed to start read/write transfer to send address

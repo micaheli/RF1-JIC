@@ -32,7 +32,7 @@ cfg1_t cfg1;
 int main(void)
 {
 
-	simpleDelay_ASM(5000);
+	simpleDelay_ASM(100);
 
 	bool rfbl_plug_attatched = false;
 	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress;
@@ -62,6 +62,9 @@ int main(void)
 
 	if (bootDirection != BOOT_TO_APP_AFTER_SPEK_COMMAND) {
 		bootDirection = checkOldConfigDirection (bootDirection, bootCycles); //sets proper boot direction is RFP is used
+	} else {
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+		boot_to_app();
 	}
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
@@ -141,7 +144,6 @@ int main(void)
 
 #endif
 
-	startupBlink(20, 20);
 
 	if (!bootToRfbl) {
 		//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
@@ -149,24 +151,27 @@ int main(void)
 		switch (bootDirection) {
 			case BOOT_TO_APP_COMMAND:
 				//simpleDelay_ASM(100000);
+				startupBlink(20, 20);
 				boot_to_app();  //jump to application
 				break;
 			case BOOT_TO_ADDRESS:
 				//simpleDelay_ASM(100000);
 				ApplicationAddress = rebootAddress;
+				startupBlink(20, 20);
 				boot_to_app();  //jump to application
 				break;
 			case BOOT_TO_SPEKTRUM5:
-				bindSpektrum = 5; //set spektrum bind number and head to RFBL
+				bindSpektrum = 4; //set spektrum bind number and head to RFBL
 				break;
 			case BOOT_TO_SPEKTRUM9:
-				bindSpektrum = 9; //set spektrum bind number and head to RFBL
+				bindSpektrum = 8; //set spektrum bind number and head to RFBL
 				break;
 			case BOOT_TO_DFU_COMMAND:
 				systemResetToDfuBootloader(); //reset to DFU
 				break;
 			case BOOT_TO_RFBL_COMMAND:
 			default:
+				startupBlink(20, 20);
 				//simpleDelay_ASM(100000);
 				//default is to do nothing, continue to RFBL
 				break;
@@ -185,21 +190,23 @@ int main(void)
 
 		inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
 
-		simpleDelay_ASM(50000);
+		HAL_Delay(50);
 
 		for (uint8_t ii = 0; ii < bindSpektrum; ii++) {
 	        // RX line, drive low for 120us
 			inlineDigitalLo(SPEK_GPIO, SPEK_PIN);
 
-			simpleDelay_ASM(120);
+			simpleDelay_ASM(288); //300 is 125 us once booted
 
 	        // RX line, drive high for 120us
 			inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
 
-			simpleDelay_ASM(120);
+			simpleDelay_ASM(288);
 		}
 
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_SPEK_COMMAND);
+		startupBlink(20, 20);
+		HAL_Delay(2000);
 		boot_to_app();
 	}
 

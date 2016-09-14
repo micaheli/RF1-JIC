@@ -42,6 +42,9 @@ static void updateCalibration(int16_t *rawGyro)
 
 void updateGyro(int16_t *rawGyro, float scale)
 {
+    LED1_TOGGLE;
+    return;
+
     if (calibrationCycles != 0) {
         updateCalibration(rawGyro);
         return;

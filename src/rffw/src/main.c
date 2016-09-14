@@ -37,7 +37,7 @@ int main(void)
     }
 
     while (1) {
-        LED2_TOGGLE;
+        LED1_TOGGLE;
 
         HAL_Delay(100);
     }

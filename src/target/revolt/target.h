@@ -82,10 +82,10 @@
 
 //RFBL config
 #define HARDWARE_RFBL_PLUG
-#define RFBL_GPIO1					GPIOB //USART 3 RX
-#define RFBL_PIN1					GPIO_PIN_11
-#define RFBL_GPIO2					GPIOB //USART 3 TX
-#define RFBL_PIN2					GPIO_PIN_10
+#define RFBL_GPIO1					GPIOC //USART 6 RX
+#define RFBL_PIN1					GPIO_PIN_7
+#define RFBL_GPIO2					GPIOC //USART 6 TX
+#define RFBL_PIN2					GPIO_PIN_6
 #define SPEK_GPIO					GPIOB //USART 3 RX
 #define SPEK_PIN					GPIO_PIN_11
 
