@@ -118,6 +118,24 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-Os"
 
+    elif TARGET == "sp3evo":
+        PROJECT = "rffw"
+        TARGET_BOARD = "sp3evo"
+        TARGET_DEVICE = "STM32F303xC"
+        TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
+        TARGET_PROCESSOR_TYPE  = "f3"
+        FEATURES.extend(["mpu6500/spi", "usb_fs"])
+        OPTIMIZE_FLAGS = "-O2"
+
+    elif TARGET == "sp3evo_rfbl":
+        PROJECT = "rfbl"
+        TARGET_BOARD = "sp3evo"
+        TARGET_DEVICE = "STM32F303xC"
+        TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
+        TARGET_PROCESSOR_TYPE  = "f3"
+        FEATURES.extend(["usb_fs"])
+        OPTIMIZE_FLAGS = "-O2"
+
     elif TARGET == "lux":
         PROJECT = "rffw"
         TARGET_BOARD = "lux"

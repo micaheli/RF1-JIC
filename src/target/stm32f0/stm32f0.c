@@ -52,18 +52,12 @@ void SystemClock_Config(void)
 
 	SystemClock_Config();
 
-	gpioClockInit();
-
-}
- 
- void gpioClockInit(void) {
-
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 	__HAL_RCC_GPIOC_CLK_ENABLE();
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 
- }
+}
 
  inline void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
  	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);

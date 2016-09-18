@@ -73,17 +73,11 @@ void BoardInit(void)
     __HAL_RCC_AFIO_CLK_ENABLE();   //Need to start this clock before disabling jtag
     __HAL_AFIO_REMAP_SWJ_NOJTAG(); //disabled JTAG
 
-    gpioClockInit();
-}
-
-void gpioClockInit(void) {
-
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOE_CLK_ENABLE();
-
 }
 
 inline void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
