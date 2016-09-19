@@ -190,7 +190,7 @@ int main(void)
 
 		inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
 
-		HAL_Delay(50);
+		HAL_Delay(70);
 
 		for (uint8_t ii = 0; ii < bindSpektrum; ii++) {
 	        // RX line, drive low for 120us
@@ -205,8 +205,8 @@ int main(void)
 		}
 
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_SPEK_COMMAND);
+		HAL_Delay(100);
 		startupBlink(20, 20);
-		HAL_Delay(2000);
 		boot_to_app();
 	}
 
@@ -372,21 +372,18 @@ uint32_t checkOldConfigDirection (uint32_t bootDirection, uint32_t bootCycles) {
 	uint32_t addressStart = 0x08008000;
 	uint32_t addressEnd = 0x08020000;
 
-	if (bootCycles < 2) {
-		return bootDirection;
-	}
-
 	for (volatile uint32_t byteOffset = addressStart; byteOffset < addressEnd; byteOffset += 1) {
 
 		memcpy( &firmwareFinderData, (char *) byteOffset, sizeof(firmwareFinderData) );
 
 		if ( (firmwareFinderData[0] == RFBL1) && (firmwareFinderData[1] == RFBL2) && (firmwareFinderData[2] == RFBL3) && (firmwareFinderData[3] == RFBL4) ) {
-			if (bootCycles > 1) {
+			if (bootCycles < 3) {
 				bootDirection = firmwareFinderData[4];
 			} else {
-				rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, 0x00000000);
-				rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
-				bootDirection = BOOT_TO_APP_COMMAND;
+				bootDirection = firmwareFinderData[4];
+				//rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, 0x00000000);
+				//rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+				//bootDirection = BOOT_TO_APP_COMMAND;
 			}
 			break;
 		}
