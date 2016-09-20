@@ -181,6 +181,15 @@ def configure_target(TARGET):
         FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
+    elif TARGET == "revo_rfbl":
+        PROJECT = "rfbl"
+        TARGET_BOARD = "revo"
+        TARGET_DEVICE = "STM32F405xx"
+        TARGET_SCRIPT = "stm32_flash_f405.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Os"
+        
     elif TARGET == "kkng":
         PROJECT = "rffw"
         TARGET_BOARD = "kkng"
@@ -190,15 +199,15 @@ def configure_target(TARGET):
         FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
-    elif TARGET == "revo_rfbl":
+    elif TARGET == "kkng_rfbl":
         PROJECT = "rfbl"
-        TARGET_BOARD = "revo"
+        TARGET_BOARD = "kkng"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Os"
-
+        
     elif TARGET == "revonano":
         PROJECT = "rffw"
         TARGET_BOARD = "revonano"
