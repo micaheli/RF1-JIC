@@ -26,20 +26,23 @@ int main(void)
 {
     //uint8_t i = 0;
 
+	SCB->VTOR = 0x08020000;
+	__enable_irq(); // disable interrupts
+
     BoardInit();
     LedInit();
 
     USB_DEVICE_Init();
 
     if (!accgyroInit(LOOP_H8)) {
-        //ErrorHandler();
+        ErrorHandler();
     }
 
     while (1) {
         LED1_TOGGLE;
-
         HAL_Delay(100);
     }
+
 }
 
 void ErrorHandler(void)

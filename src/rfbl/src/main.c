@@ -426,7 +426,6 @@ void boot_to_app (void) {
     Jump_To_Application = (pFunction) JumpAddress;
     /* Initialize user application's Stack Pointer */
     __set_MSP(*(__IO uint32_t*) ApplicationAddress);
-	__enable_irq(); // disable interrupts
     Jump_To_Application();
 
 }
