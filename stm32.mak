@@ -6,7 +6,7 @@
 #VisualGDB provides BSP_ROOT and TOOLCHAIN_ROOT via environment when running Make. The line below will only be active if GNU Make is started manually.
 BSP_ROOT ?= $(LOCALAPPDATA)/VisualGDB/EmbeddedBSPs/arm-eabi/com.sysprogs.arm.stm32
 EFP_BASE ?= $(LOCALAPPDATA)/VisualGDB/EmbeddedEFPs
-TOOLCHAIN_ROOT ?= C:/dev/5.3.2016q1
+TOOLCHAIN_ROOT ?= C:/dev/5.4.2016q2
 
 #Embedded toolchain
 CC := $(TOOLCHAIN_ROOT)/bin/arm-none-eabi-gcc.exe
@@ -16,8 +16,8 @@ AR := $(TOOLCHAIN_ROOT)/bin/arm-none-eabi-ar.exe
 OBJCOPY := $(TOOLCHAIN_ROOT)/bin/arm-none-eabi-objcopy.exe
 
 #Additional flags
-PREPROCESSOR_MACROS += ARM_MATH_CM3 STM32F103CB stm32_flash_layout STM32F103xB $$com.sysprogs.bspoptions.stm32.hal_legacy$$
-INCLUDE_DIRS += . $(BSP_ROOT)/STM32F1xxxx/STM32F1xx_HAL_Driver/Inc $(BSP_ROOT)/STM32F1xxxx/STM32F1xx_HAL_Driver/Inc/Legacy $(BSP_ROOT)/STM32F1xxxx/CMSIS_HAL/Device/ST/STM32F1xx/Include $(BSP_ROOT)/STM32F1xxxx/CMSIS_HAL/Include $(BSP_ROOT)/STM32F1xxxx/CMSIS_HAL/RTOS/Template
+PREPROCESSOR_MACROS += ARM_MATH_CM4 STM32F405VG stm32_flash_layout STM32F405xx
+INCLUDE_DIRS += . $(BSP_ROOT)/STM32F4xxxx/STM32F4xx_HAL_Driver/Inc $(BSP_ROOT)/STM32F4xxxx/STM32F4xx_HAL_Driver/Inc/Legacy $(BSP_ROOT)/STM32F4xxxx/CMSIS_HAL/Device/ST/STM32F4xx/Include $(BSP_ROOT)/STM32F4xxxx/CMSIS_HAL/Include $(BSP_ROOT)/STM32F4xxxx/CMSIS_HAL/RTOS/Template
 LIBRARY_DIRS += 
 LIBRARY_NAMES += 
 ADDITIONAL_LINKER_INPUTS += 
@@ -26,8 +26,8 @@ LINUX_PACKAGES +=
 
 CFLAGS += 
 CXXFLAGS += 
-ASFLAGS += 
+ASFLAGS += -mfpu=fpv4-sp-d16
 LDFLAGS += 
-COMMONFLAGS += -mcpu=cortex-m3 -mthumb
-LINKER_SCRIPT := $(BSP_ROOT)/STM32F1xxxx/LinkerScripts/STM32F103CB_flash.lds
+COMMONFLAGS += -mcpu=cortex-m4 -mthumb -mfloat-abi=soft
+LINKER_SCRIPT := $(BSP_ROOT)/STM32F4xxxx/LinkerScripts/STM32F405VG_flash.lds
 
