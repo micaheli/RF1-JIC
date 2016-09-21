@@ -9,13 +9,17 @@
 
 
 //LED config
-#define LEDn                    2
+#define LEDn                    1
 
-#define LED1_GPIO_Port          GPIOB
-#define LED1_GPIO_Pin           GPIO_PIN_4
+//#define LED1_GPIO_Port          GPIOB
+//#define LED1_GPIO_Pin           GPIO_PIN_4
 
 #define LED2_GPIO_Port          GPIOB
 #define LED2_GPIO_Pin           GPIO_PIN_5
+
+//BUZZER config
+#define BUZZER_GPIO_Port        GPIOB
+#define BUZZER_GPIO_Pin         GPIO_PIN_4
 
 
 //Gyro Config

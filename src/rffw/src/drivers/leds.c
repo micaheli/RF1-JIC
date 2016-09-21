@@ -31,7 +31,7 @@ void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
     HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
 }
 
-void updateLeds(void) {
+void UpdateLeds(void) {
 	uint32_t timeNow = millis();
 
 	if (ledStatus.status != ledStatus.lastStatus) {
@@ -67,7 +67,7 @@ void updateLeds(void) {
 	}
 }
 
-void blinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2) {
+void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2) {
 	if (((timeNow - ledStatus.timeStart) < time1) && (ledStatus.on) ) {
 		LED1_OFF;
 		LED2_OFF;

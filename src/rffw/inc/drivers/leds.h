@@ -31,26 +31,28 @@
 #endif
 
 
-enum {
-	LEDS_OFF,
-	LEDS_ON,
-	LEDS_SLOW_BLINK,
-	LEDS_MED_BLINK,
-	LEDS_FAST_BLINK,
-	LEDS_ERROR,
+enum
+{
+    LEDS_OFF,
+    LEDS_ON,
+    LEDS_SLOW_BLINK,
+    LEDS_MED_BLINK,
+    LEDS_FAST_BLINK,
+    LEDS_ERROR,
 };
 
-typedef struct ledStatus_t {
-	uint8_t status;
-	uint8_t lastStatus;
-	bool on;
-	uint32_t timeStart;
-	uint32_t timeStop;
+typedef struct ledStatus_t
+{
+    uint8_t status;
+    uint8_t lastStatus;
+    bool on;
+    uint32_t timeStart;
+    uint32_t timeStop;
 } ledStatus_t;
 
 extern ledStatus_t ledStatus;
 
 void LedInit (void);
 void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-void updateLeds(void);
-void blinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2);
+void UpdateLeds(void);
+void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2);
