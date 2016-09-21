@@ -275,7 +275,7 @@ def configure_target(TARGET):
         PROJECT = "rffw"
         TARGET_BOARD = "vrracef7"
         TARGET_DEVICE = "STM32F746xx"
-        TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
+        TARGET_SCRIPT = "STM32F746NGHx_FLASH_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
         FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
@@ -284,7 +284,7 @@ def configure_target(TARGET):
         PROJECT = "rfbl"
         TARGET_BOARD = "revolt"
         TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405.ld"
+        TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Os"
