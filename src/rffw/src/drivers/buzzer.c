@@ -20,13 +20,13 @@ void InitializeBuzzer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
 void UpdateBuzzer(void) {
     uint32_t timeNow = millis();
-    buzzerStatus.on = True;
+    buzzerStatus.on = true;
 
 }
 
 void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2) {
-    buzzerStatus.on = True;
-    if (buzzerStatus.on == True)
+    buzzerStatus.on = true;
+    if (buzzerStatus.on == true)
         {
 	      BUZZER_TOGGLE;
         }

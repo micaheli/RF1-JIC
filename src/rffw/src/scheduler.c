@@ -74,9 +74,9 @@ void taskHandlePcComm(void) {
 }
 
 void taskLed(void) {
-	updateLeds();
+	UpdateLeds();
 }
 
 void taskBuzzer(void) {
-	updateBuzzer();
+	UpdateBuzzer();
 }

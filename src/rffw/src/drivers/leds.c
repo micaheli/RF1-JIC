@@ -51,13 +51,13 @@ void UpdateLeds(void) {
 			LED3_ON;
 			break;
 		case LEDS_SLOW_BLINK:
-			blinkAllLeds(timeNow, 999, 1998);
+			BlinkAllLeds(timeNow, 999, 1998);
 			break;
 		case LEDS_MED_BLINK:
-			blinkAllLeds(timeNow, 333, 666);
+			BlinkAllLeds(timeNow, 333, 666);
 			break;
 		case LEDS_FAST_BLINK:
-			blinkAllLeds(timeNow, 100, 200);
+			BlinkAllLeds(timeNow, 100, 200);
 			break;
 		default:
 			LED1_OFF;
