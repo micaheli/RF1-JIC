@@ -11,6 +11,7 @@
 
 #include "usbd_hid.h"
 #include "usb_device.h"
+#include "includes.h"
 
 //all drivers
 #include "drivers/leds.h"
