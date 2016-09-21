@@ -18,7 +18,7 @@
 #define LED2_GPIO_Pin           GPIO_PIN_5
 
 
-//Gyro config
+//Gyro Config
 
 #define GYRO_SPI                SPI1
 #define GYRO_SPI_CS_GPIO_Port   GPIOA
