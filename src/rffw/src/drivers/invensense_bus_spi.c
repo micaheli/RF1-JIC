@@ -120,10 +120,10 @@ bool accgyroWriteData(uint8_t *data, uint8_t length)
     while (HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
 
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
-    HAL_Delay(1);
+    HAL_Delay(2);
     HAL_SPI_Transmit(&gyro_spi, data, length, 100);
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
-    HAL_Delay(1);
+    HAL_Delay(2);
 
     return true;
 }
@@ -134,14 +134,14 @@ bool accgyroWriteRegister(uint8_t reg, uint8_t data)
     while (HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
 
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
-    HAL_Delay(1);
+    HAL_Delay(2);
 
     // TODO: what should these timeouts be?
     HAL_SPI_Transmit(&gyro_spi, &reg, 1, 100);
     HAL_SPI_Transmit(&gyro_spi, &data, 1, 100);
 
     HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
-    HAL_Delay(1);
+    HAL_Delay(2);
 
     return true;
 }
@@ -152,7 +152,7 @@ bool accgyroVerifyWriteRegister(uint8_t reg, uint8_t data)
 
     for (attempt = 0; attempt < 20; attempt++) {
         accgyroWriteRegister(reg, data);
-        HAL_Delay(1);
+        HAL_Delay(2);
 
         accgyroSlowReadData(reg, &data_verify, 1);
         if (data_verify == data) {

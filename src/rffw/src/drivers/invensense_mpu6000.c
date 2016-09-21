@@ -123,10 +123,12 @@ bool accgyroDeviceDetect(void)
 
     // reset gyro
     accgyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
+    HAL_Delay(151);
+    accgyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
 
     // poll for the who am i register while device resets
     for (attempt = 0; attempt < 100; attempt++) {
-        HAL_Delay(100);
+        HAL_Delay(151);
 
         accgyroReadData(INVENS_RM_WHO_AM_I, &data, 1);
         if (data == MPU6000_WHO_AM_I) {

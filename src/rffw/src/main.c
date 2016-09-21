@@ -24,10 +24,10 @@ uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 
 int main(void)
 {
-    //uint8_t i = 0;
+    uint8_t count = 0;
 
-	SCB->VTOR = 0x08020000;
-	__enable_irq(); // disable interrupts
+	SCB->VTOR = ADDRESS_FLASH_START; //set vector register to firmware start
+	__enable_irq(); // enable interrupts
 
     BoardInit();
     LedInit();
@@ -38,9 +38,13 @@ int main(void)
         ErrorHandler();
     }
 
+    ledStatus.status = LEDS_SLOW_BLINK;
+
     while (1) {
-        LED1_TOGGLE;
-        HAL_Delay(100);
+    	scheduler(count++);
+    	if (count == 16) {
+    		count = 0;
+    	}
     }
 
 }

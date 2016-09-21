@@ -1,5 +1,6 @@
 #pragma once
 
+uint32_t millis(void);
 void delayUs(uint32_t uSec);
 uint32_t rtc_read_backup_reg(uint32_t BackupRegister);
 void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data);

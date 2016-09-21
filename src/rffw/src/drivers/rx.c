@@ -56,17 +56,18 @@ inline float inlineApplyRcCommandCurve (float rcCommand, uint8_t curveToUse, flo
 
 	switch (curveToUse) {
 
-		case CLEANFLIGHT_EXPO:
+		case SKITZO_EXPO:
 			return (1 + 0.01 * expo * (rcCommand * rcCommand - 1)) * rcCommand;
+			break;
 
 		case TARANIS_EXPO:
-			return ( expo*(rcCommand*rcCommand*rcCommand) + rcCommand*(1-expo) );
+			return ( expo * (rcCommand * rcCommand * rcCommand) + rcCommand * (1-expo) );
+			break;
 
 		case NO_EXPO:
-			return rcCommand; //same as default for now.
-
 		default:
-			return rcCommand;
+			return rcCommand; //same as default for now.
+			break;
 
 	}
 }

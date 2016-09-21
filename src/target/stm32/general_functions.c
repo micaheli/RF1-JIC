@@ -1,5 +1,9 @@
 #include "includes.h"
 
+uint32_t millis(void) {
+	return HAL_GetTick();
+}
+
 void delayUs(uint32_t uSec)
 {
     volatile uint32_t DWT_START = DWT->CYCCNT;

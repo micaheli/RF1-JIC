@@ -1,5 +1,6 @@
 #include "includes.h"
 
+ledStatus_t ledStatus;
 
 //todo: Do we want to init LEDs like this? Maybe an array is a better method
 void LedInit (void) {
@@ -28,4 +29,56 @@ void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
     HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
 
     HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
+}
+
+void updateLeds(void) {
+	uint32_t timeNow = millis();
+
+	if (ledStatus.status != ledStatus.lastStatus) {
+		ledStatus.timeStart = timeNow;
+	}
+	ledStatus.lastStatus = ledStatus.status;
+
+	switch (ledStatus.status) {
+		case LEDS_OFF:
+			LED1_OFF;
+			LED2_OFF;
+			LED3_OFF;
+			break;
+		case LEDS_ON:
+			LED1_ON;
+			LED2_ON;
+			LED3_ON;
+			break;
+		case LEDS_SLOW_BLINK:
+			blinkAllLeds(timeNow, 999, 1998);
+			break;
+		case LEDS_MED_BLINK:
+			blinkAllLeds(timeNow, 333, 666);
+			break;
+		case LEDS_FAST_BLINK:
+			blinkAllLeds(timeNow, 100, 200);
+			break;
+		default:
+			LED1_OFF;
+			LED2_OFF;
+			LED3_OFF;
+			break;
+	}
+}
+
+void blinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2) {
+	if (((timeNow - ledStatus.timeStart) < time1) && (ledStatus.on) ) {
+		LED1_OFF;
+		LED2_OFF;
+		LED3_OFF;
+		ledStatus.on = false;
+	} else if (((timeNow - ledStatus.timeStart) > time1) && ((timeNow - ledStatus.timeStart) < time2) && (!ledStatus.on) ) {
+		LED1_ON;
+		LED2_ON;
+		LED3_ON;
+		ledStatus.on = true;
+	} else if ((timeNow - ledStatus.timeStart) > time2 ) {
+		ledStatus.timeStart = timeNow;
+	}
 }

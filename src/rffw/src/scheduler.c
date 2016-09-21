@@ -11,8 +11,10 @@ void scheduler(uint8_t count) {
 			taskHandlePcComm();
 			break;
 		case 1:
+			taskLed();
 			break;
 		case 2:
+			taskBuzzer();
 			break;
 		case 3:
 			break;
@@ -45,6 +47,7 @@ void taskHandlePcComm(void) {
 
 	if (tOutBuffer[0]==2) { //we have a usb report
 
+		ledStatus.status = tOutBuffer[1];
 		tInBuffer[0] = 1;
 		tInBuffer[1]=(int8_t)dpsGyroArray[0];
 		tInBuffer[2]=(int8_t)dpsGyroArray[1];
@@ -68,4 +71,12 @@ void taskHandlePcComm(void) {
 
 	}
 
+}
+
+void taskLed(void) {
+	updateLeds();
+}
+
+void taskBuzzer(void) {
+	updateBuzzer();
 }

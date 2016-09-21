@@ -30,7 +30,7 @@ enum {
 //We can use different styles of curves
 enum {
 	NO_EXPO = 0,
-	CLEANFLIGHT_EXPO = 1,
+	SKITZO_EXPO = 1,
 	TARANIS_EXPO = 2,
 };
 
