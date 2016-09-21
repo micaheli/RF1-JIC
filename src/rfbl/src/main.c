@@ -409,7 +409,6 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 
 void boot_to_app (void) {
 
-	//simpleDelay_ASM(100000);
 	HAL_Delay(250); //quarter second delay before booting into app to allow PDB power to stabilize
 
 	USB_DEVICE_DeInit();

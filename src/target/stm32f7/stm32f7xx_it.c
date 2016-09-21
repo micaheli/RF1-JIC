@@ -40,6 +40,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "includes.h"
 
+#include "stm32f7xx_hal.h"
+#include "stm32f7xx.h"
+#include "stm32f7xx_it.h"
+
+extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -67,10 +73,14 @@ void NMI_Handler(void)
   */
 void HardFault_Handler(void)
 {
-  /* Go to infinite loop when Hard Fault exception occurs */
-  while (1)
-  {
-  }
+    while (1) {
+        LED1_ON;
+        LED2_ON;
+        LED3_ON;
+        LED1_OFF;
+        LED2_OFF;
+        LED3_OFF;
+    }
 }
 
 /**
@@ -212,3 +222,11 @@ void EXTI15_10_IRQHandler(void)
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+/**
+* @brief This function handles USB On The Go FS global interrupt.
+*/
+void OTG_FS_IRQHandler(void)
+{
+    HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+}

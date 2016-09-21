@@ -34,9 +34,9 @@ int main(void)
 
     USB_DEVICE_Init();
 
-    if (!accgyroInit(LOOP_H8)) {
-        ErrorHandler();
-    }
+//    if (!accgyroInit(LOOP_H8)) {
+//        ErrorHandler();
+//    }
 
     ledStatus.status = LEDS_SLOW_BLINK;
 
