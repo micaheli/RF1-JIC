@@ -277,7 +277,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F746xx"
         TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
-        FEATURES.extend(["mpu9250/spi", "usb_otg_fs"])
+        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "vrracef7_rfbl":

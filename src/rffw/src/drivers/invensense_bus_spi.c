@@ -4,9 +4,6 @@
 
 #include "input/gyro.h"
 
-#include "drivers/invensense_bus.h"
-#include "drivers/invensense_device.h"
-
 #ifdef GYRO_EXTI
 #include "exti.h"
 #endif

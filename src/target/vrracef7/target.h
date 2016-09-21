@@ -51,10 +51,10 @@
 #define USART1_TX_PIN				GPIO_PIN_6
 
 #define USE_USART2
-#define USART1_RX_GPIO				GPIOD
-#define USART1_RX_PIN				GPIO_PIN_6
-#define USART1_TX_GPIO				GPIOD
-#define USART1_TX_PIN				GPIO_PIN_5
+#define USART2_RX_GPIO				GPIOD
+#define USART2_RX_PIN				GPIO_PIN_6
+#define USART2_TX_GPIO				GPIOD
+#define USART2_TX_PIN				GPIO_PIN_5
 
 #define USE_USART3
 #define USART3_RX_GPIO				GPIOD
@@ -67,6 +67,11 @@
 #define USART6_RX_PIN				GPIO_PIN_7
 #define USART6_TX_GPIO				GPIOC
 #define USART6_TX_PIN				GPIO_PIN_6
+
+//STM32F7 UID address
+#define DEVICE_ID1					0x1FF0F420
+#define DEVICE_ID2					0x1FF0F424
+#define DEVICE_ID3					0x1FF0F428
 
 //RFBL config //TODO:
 #define HARDWARE_RFBL_PLUG

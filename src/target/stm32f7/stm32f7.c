@@ -64,11 +64,6 @@ void BoardInit(void)
 
 	SystemClock_Config();
 
-	gpioClockInit();
-}
-
-void gpioClockInit(void) {
-
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 	__HAL_RCC_GPIOC_CLK_ENABLE();
@@ -79,21 +74,6 @@ void gpioClockInit(void) {
 	__HAL_RCC_GPIOH_CLK_ENABLE();
 	__HAL_RCC_GPIOI_CLK_ENABLE();
 
-}
-
-inline void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
-	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
-}
-
-inline void inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
-	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
-}
-
-inline bool inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
-	if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) != (uint32_t)GPIO_PIN_RESET) {
-		return false; //pin is set, so it is not reset, which means it is off, so the statement is false
-	}
-	return true; //pin is reset, so it is not set, which means it is on, so the statement is true
 }
 
 void USBInit(void)
@@ -142,77 +122,4 @@ void USBDeInit(void)
 
     /* Peripheral interrupt Deinit*/
     HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
-}
-
-int testWriteRTC(void)
-{
-	unsigned int dataValue;
-
-	RTC_HandleTypeDef g_RtcHandle;
-
-
-	RCC_OscInitTypeDef        RCC_OscInitStruct;
-	RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
-
-
-	/*##-1- Configue LSE as RTC clock soucre ###################################*/
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-	RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-	RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
-	if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	{
-		return(false);
-	}
-
-	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-	PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-	if(HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-	{
-		return(false);
-	}
-
-	/*##-2- Enable RTC peripheral Clocks #######################################*/
-	/* Enable RTC Clock */
-	__HAL_RCC_RTC_ENABLE();
-
-#define RTC_ASYNCH_PREDIV		0x1f
-#define RTC_SYNCH_PREDIV		0x3ff
-
-	/*##-1- Configure the RTC peripheral #######################################*/
-	g_RtcHandle.Instance = RTC;
-
-	/* Configure RTC prescaler and RTC data registers */
-	/* RTC configured as follow:
-	- Hour Format    = Format 24
-	- Asynch Prediv  = Value according to source clock
-	- Synch Prediv   = Value according to source clock
-	- OutPut         = Output Disable
-	- OutPutPolarity = High Polarity
-	- OutPutType     = Open Drain */
-	g_RtcHandle.Init.HourFormat = RTC_HOURFORMAT_24;
-	g_RtcHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV;
-	g_RtcHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV;
-	g_RtcHandle.Init.OutPut = RTC_OUTPUT_DISABLE;
-	g_RtcHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-	g_RtcHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-
-	if(HAL_RTC_Init(&g_RtcHandle) != HAL_OK)
-	{
-		return(false);
-	}
-
-	/* Clear Reset Flag */
-	__HAL_RCC_CLEAR_RESET_FLAGS();
-
-	/* This fails to update the memory location */
-	HAL_RTCEx_BKUPWrite(&g_RtcHandle, 0x00, 0x123456);
-
-	// Read data value back (and notice unchanged)
-	DataValue = HAL_RTCEx_BKUPRead(&g_RtcHandle, 0x00);
-
-	// ASSERT fails as DataValue is always 0
-	ASSERT(DataValue == 0x123456);
-
-	return(DataValue == 0x123456);
 }
