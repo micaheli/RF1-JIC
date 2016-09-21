@@ -21,6 +21,7 @@ void InitializeBuzzer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 void UpdateBuzzer(void) {
     uint32_t timeNow = millis();
     buzzerStatus.on = true;
+    Buzz(timeNow, 1, 1);
 
 }
 
