@@ -14,7 +14,7 @@
 
 #define CALIBRATION_CYCLES 1000
 
-extern uint8_t tInBuffer[];
+int16_t dpsGyroArray[3] = {0, 0, 0);
 
 static uint32_t calibrationCycles = CALIBRATION_CYCLES * 100;
 
@@ -50,6 +50,9 @@ void updateGyro(int16_t *rawGyro, float scale)
 
     accgyroDeviceApplyCalibration(rawGyro);
 
+    dpsGyroArray[0] = (rawGyro[0] * scale);
+    dpsGyroArray[1] = (rawGyro[1] * scale);
+    dpsGyroArray[2] = (rawGyro[2] * scale);
     return;
     // HID stuff
     LED1_TOGGLE;

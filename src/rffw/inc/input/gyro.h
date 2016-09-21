@@ -1,5 +1,7 @@
 #pragma once
 
+extern int16_t dpsGyroArray[3];
+
 typedef enum {
     LOOP_L1,
     LOOP_M1,
