@@ -140,7 +140,7 @@ def configure_target(TARGET):
         PROJECT = "rffw"
         TARGET_BOARD = "lux"
         TARGET_DEVICE = "STM32F303xC"
-        TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
+        TARGET_SCRIPT = "stm32_flash_f303_128k_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f3"
         FEATURES.extend(["buzzer", "mpu6500/spi", "usb_fs"])
         OPTIMIZE_FLAGS = "-O2"

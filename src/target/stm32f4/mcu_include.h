@@ -4,6 +4,7 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_hal_conf.h"
+#include "flash.h"
 
 //asm delay used for not so accurate delays needed before the board is initialized
 #define simpleDelay_ASM(us) do {\

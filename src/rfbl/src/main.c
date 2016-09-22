@@ -17,7 +17,7 @@ uint32_t StartSector = 0, EndSector = 0, Address = 0, i = 0 ;
 __IO uint32_t data32 = 0 , MemoryProgramStatus = 0 ;
 uint32_t toggle_led = 0;
 bool bootToRfbl = false;
-uint32_t ApplicationAddress = APP_ADDRESS;
+uint32_t ApplicationAddress = ADDRESS_FLASH_START;
 uint8_t bindSpektrum = 0;
 char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
 
@@ -32,10 +32,11 @@ cfg1_t cfg1;
 int main(void)
 {
 
-	simpleDelay_ASM(5000);
-
 	bool rfbl_plug_attatched = false;
 	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress;
+
+	simpleDelay_ASM(5000);
+	__enable_irq();
 
 	HAL_RCC_DeInit();
     HAL_DeInit();
@@ -209,7 +210,11 @@ int main(void)
 		startupBlink(20, 20);
 		boot_to_app();
 	}
+	uint32_t cat = HAL_RCC_GetHCLKFreq();
 
+	if (cat == 1) {
+		LED1_TOGGLE;
+	}
 
 	//initialize RFBL State and Command
 	RfblCommand_e RfblCommand = RFBLC_NONE;
@@ -369,8 +374,8 @@ uint32_t checkOldConfigDirection (uint32_t bootDirection, uint32_t bootCycles) {
 
 	uint32_t firmwareFinderData[5];
 
-	uint32_t addressStart = 0x08008000;
-	uint32_t addressEnd = 0x08020000;
+	uint32_t addressStart = ADDRESS_CONFIG_START;
+	uint32_t addressEnd   = ADDRESS_FLASH_START;
 
 	for (volatile uint32_t byteOffset = addressStart; byteOffset < addressEnd; byteOffset += 1) {
 
@@ -417,7 +422,6 @@ void boot_to_app (void) {
 
 	pFunction Jump_To_Application;
 	uint32_t JumpAddress;
-
 
 	__disable_irq(); // disable interrupts
 
@@ -584,33 +588,16 @@ void rfbl_execute_load_command(void) {
 
 }
 
-//todo: only works for F4 and F7. F1 anf F3 require different flash handling.
+//todo: only works for F4 and F7. F1 and F3 require different flash handling.
 void rfbl_prepare_flash(void) {
 
 	LED1_ON;
 	LED2_ON;
 	LED3_ON;
-    static FLASH_EraseInitTypeDef EraseInitStruct;
-    uint32_t SectorError = 0;
 
-	HAL_FLASH_Unlock();
-
-	//todo made this configurable
-	/* Fill EraseInit structure*/
-	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
-	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
-	EraseInitStruct.Sector = FLASH_SECTOR_5;
-	if (ADDRESS_FLASH_END == 0x080FFFF0) { //todo: Base off of MCU
-		EraseInitStruct.NbSectors = 7;
-	} else {
-		EraseInitStruct.NbSectors = 3;
-	}
-
-	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
-	{
-		//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-		ErrorHandler();
-	}
+    if (!EraseFlash(ADDRESS_FLASH_START, ADDRESS_FLASH_END) ) {
+    	ErrorHandler();
+    }
 
 	LED1_OFF;
 	LED2_OFF;
