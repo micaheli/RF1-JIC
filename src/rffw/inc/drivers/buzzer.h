@@ -11,6 +11,7 @@ enum
     STATE_BUZZER_OFF,
     STATE_BUZZER_ON,
     STATE_BUZZER_ERROR,
+	STATE_BUZZER_LOST,
 };
 
 typedef struct buzzerStatus_t

@@ -18,22 +18,39 @@ void InitializeBuzzer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
     HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
 }
 
-void UpdateBuzzer(void) {
+void UpdateBuzzer(void)
+{
     uint32_t timeNow = millis();
-    buzzerStatus.on = true;
-    Buzz(timeNow, 1, 1);
+    buzzerStatus.on = False;
+
+    switch(buzzerStatus.status)
+    {
+
+    case STATE_BUZZER_ON:
+    	BUZZER_ON;
+    case STATE_BUZZER_OFF:
+        BUZZER_OFF;
+    case STATE_BUZZER_LOST:
+    	Buzz(timeNow,33, 66);
+     }
+
+    //Buzz(timeNow, 1, 1);
 
 }
 
 void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2) {
-    buzzerStatus.on = true;
-    if (buzzerStatus.on == true)
-        {
-	      BUZZER_TOGGLE;
-        }
-
-    else
-       {
-	     BUZZER_TOGGLE;
-       }
+	if (((timeNow - buzzerStatus.timeStart) < time1) && (!buzzerStatus.on) )
+	{
+		BUZZER_ON;
+		buzzerStatus.on = True;
+	}
+	else if (((timeNow - buzzerStatus.timeStart) > time1) && ((timeNow - buzzerStatus.timeStart) < time2) && (buzzerStatus.on) )
+	{
+		BUZZER_OFF;
+		buzzerStatus.on = False;
+	}
+	else if ((timeNow - buzzerStatus.timeStart) > time2 )
+	{
+		buzzerStatus.timeStart = timeNow;
+	}
 }
