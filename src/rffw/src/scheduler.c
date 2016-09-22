@@ -3,7 +3,8 @@
 extern uint8_t tOutBuffer[];
 extern uint8_t tInBuffer[];
 
-void scheduler(uint8_t count) {
+void scheduler(uint8_t count)
+{
 
 	switch (count) {
 
@@ -43,7 +44,8 @@ void scheduler(uint8_t count) {
 
 }
 
-void taskHandlePcComm(void) {
+void taskHandlePcComm(void)
+{
 
 	if (tOutBuffer[0]==2) { //we have a usb report
 
@@ -73,10 +75,12 @@ void taskHandlePcComm(void) {
 
 }
 
-void taskLed(void) {
+void taskLed(void)
+{
 	UpdateLeds();
 }
 
-void taskBuzzer(void) {
+void taskBuzzer(void)
+{
 	UpdateBuzzer();
 }

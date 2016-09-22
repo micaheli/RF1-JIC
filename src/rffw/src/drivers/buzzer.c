@@ -21,7 +21,7 @@ void InitializeBuzzer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 void UpdateBuzzer(void)
 {
     uint32_t timeNow = millis();
-    buzzerStatus.on = False;
+    buzzerStatus.on = false;
 
     switch(buzzerStatus.status)
     {
@@ -42,12 +42,12 @@ void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2) {
 	if (((timeNow - buzzerStatus.timeStart) < time1) && (!buzzerStatus.on) )
 	{
 		BUZZER_ON;
-		buzzerStatus.on = True;
+		buzzerStatus.on = true;
 	}
 	else if (((timeNow - buzzerStatus.timeStart) > time1) && ((timeNow - buzzerStatus.timeStart) < time2) && (buzzerStatus.on) )
 	{
 		BUZZER_OFF;
-		buzzerStatus.on = False;
+		buzzerStatus.on = false;
 	}
 	else if ((timeNow - buzzerStatus.timeStart) > time2 )
 	{

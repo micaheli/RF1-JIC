@@ -3,7 +3,8 @@
 ledStatus_t ledStatus;
 
 //todo: Do we want to init LEDs like this? Maybe an array is a better method
-void LedInit (void) {
+void LedInit (void)
+{
 #if LEDn >= 1
     InitializeLED(LED1_GPIO_Port, LED1_GPIO_Pin);
 #endif
@@ -31,15 +32,18 @@ void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
     HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
 }
 
-void UpdateLeds(void) {
+void UpdateLeds(void)
+{
 	uint32_t timeNow = millis();
 
-	if (ledStatus.status != ledStatus.lastStatus) {
+	if (ledStatus.status != ledStatus.lastStatus)
+	{
 		ledStatus.timeStart = timeNow;
 	}
 	ledStatus.lastStatus = ledStatus.status;
 
-	switch (ledStatus.status) {
+	switch (ledStatus.status)
+	{
 		case LEDS_OFF:
 			LED1_OFF;
 			LED2_OFF;
@@ -67,18 +71,22 @@ void UpdateLeds(void) {
 	}
 }
 
-void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2) {
-	if (((timeNow - ledStatus.timeStart) < time1) && (ledStatus.on) ) {
+void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2)
+{
+	if (((timeNow - ledStatus.timeStart) < time1) && (ledStatus.on) )
+	{
 		LED1_OFF;
 		LED2_OFF;
 		LED3_OFF;
 		ledStatus.on = false;
-	} else if (((timeNow - ledStatus.timeStart) > time1) && ((timeNow - ledStatus.timeStart) < time2) && (!ledStatus.on) ) {
+	} else if (((timeNow - ledStatus.timeStart) > time1) && ((timeNow - ledStatus.timeStart) < time2) && (!ledStatus.on) )
+	{
 		LED1_ON;
 		LED2_ON;
 		LED3_ON;
 		ledStatus.on = true;
-	} else if ((timeNow - ledStatus.timeStart) > time2 ) {
+	} else if ((timeNow - ledStatus.timeStart) > time2 )
+	{
 		ledStatus.timeStart = timeNow;
 	}
 }

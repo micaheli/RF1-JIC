@@ -2,7 +2,8 @@
 
 rcControlsConfig_t rcControlsConfig;
 
-void loadConfig (void) {
+void loadConfig (void)
+{
 
 	//todo: Read this from storage. These are defaults for now.
 	float deadBand = 0.025; //2.5% deadband
