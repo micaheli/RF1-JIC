@@ -17,6 +17,9 @@
 #define LED2_GPIO_Port          GPIOB
 #define LED2_GPIO_Pin           GPIO_PIN_5
 
+//buzzer setup
+#define BUZZER_GPIO_Port        GPIOA
+#define BUZZER_GPIO_Pin         GPIO_PIN_0
 
 //Gyro Config
 

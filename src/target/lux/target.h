@@ -1,5 +1,6 @@
 #define	LUX
 
+
 #define LEDn                    2
 
 #define LED1_GPIO_Port          GPIOC
@@ -13,9 +14,11 @@
 #define BUZZER_GPIO_Pin         GPIO_PIN_13
 
 
+//gyro config
 #define GYRO_SPI                SPI1
 #define GYRO_SPI_CS_GPIO_Port   GPIOA
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_4
+
 // remapped SPI ports
 #define GYRO_SPI_CLK_GPIO_Port  GPIOB
 #define GYRO_SPI_CLK_GPIO_Pin   GPIO_PIN_3
@@ -24,7 +27,7 @@
 #define GYRO_SPI_MOSI_GPIO_Port GPIOB
 #define GYRO_SPI_MOSI_GPIO_Pin  GPIO_PIN_5
 
-#define GYRO_SPI_FAST_BAUD      SPI_BAUDRATEPRESCALER_4
+#define GYRO_SPI_FAST_BAUD      SPI_BAUDRATEPRESCALER_2
 #define GYRO_SPI_SLOW_BAUD      SPI_BAUDRATEPRESCALER_128
 
 #define GYRO_DMA_TX_IRQn        DMA1_Channel3_IRQn
@@ -37,6 +40,34 @@
 #define GYRO_EXTI_GPIO_Pin      GPIO_PIN_5
 #define GYRO_EXTI_IRQn          EXTI9_5_IRQn
 #define GYRO_EXTI_IRQHandler    EXTI9_5_IRQHandler
+
+//Serial Config
+#define USE_VCP
+#define VBUS_SENSING_GPIO			GPIOC
+#define VBUS_SENSING_PIN			GPIO_PIN_5
+
+#define USE_USART1
+#define USART1_RX_GPIO				GPIOC
+#define USART1_RX_PIN				GPIO_PIN_5
+#define USART1_TX_GPIO				GPIOC
+#define USART1_TX_PIN				GPIO_PIN_4
+
+#define USE_USART2
+#define USART2_RX_GPIO				GPIOA
+#define USART2_RX_PIN				GPIO_PIN_15
+#define USART2_TX_GPIO				GPIOA
+#define USART2_TX_PIN				GPIO_PIN_14
+
+#define USE_USART3
+#define USART3_RX_GPIO				GPIOB
+#define USART3_RX_PIN				GPIO_PIN_11
+#define USART3_TX_GPIO				GPIOB
+#define USART3_TX_PIN				GPIO_PIN_10
+
+
+//BUZZER config
+#define BUZZER_GPIO_Port        GPIOB
+#define BUZZER_GPIO_Pin         GPIO_PIN_9
 
 
 //USB config
