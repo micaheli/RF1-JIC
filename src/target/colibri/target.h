@@ -1,14 +1,19 @@
-#define	SP3EVO
+#define	COLIBRI
 //led config
 #define LEDn                    1
-
-#define LED1_GPIO_Port          GPIOB
-#define LED1_GPIO_Pin           GPIO_PIN_8
+#define LED1_GPIO_Port          GPIOC
+#define LED1_GPIO_Pin           GPIO_PIN_15
+#define LED2_GPIO_Port          GPIOC
+#define LED2_GPIO_Pin           GPIO_PIN_14
+#define LED3_GPIO_Port          GPIOC
+#define LED3_GPIO_Pin           GPIO_PIN_13
 
 //BUZZER config
-#define BUZZER_GPIO_Port        GPIOC
-#define BUZZER_GPIO_Pin         GPIO_PIN_15
+#define BUZZER_GPIO_Port        GPIOB
+#define BUZZER_GPIO_Pin         GPIO_PIN_13
+#define BUZZER_INVERTED
 
+//gyro setup
 #define GYRO_SPI                SPI1
 #define GYRO_SPI_CS_GPIO_Port   GPIOA
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_4
@@ -19,10 +24,10 @@
 #define VBUS_SENSING_PIN			GPIO_PIN_5
 
 #define USE_USART1
-#define USART1_RX_GPIO				GPIOA
-#define USART1_RX_PIN				GPIO_PIN_9
-#define USART1_TX_GPIO				GPIOA
-#define USART1_TX_PIN				GPIO_PIN_10
+#define USART1_RX_GPIO				GPIOC
+#define USART1_RX_PIN				GPIO_PIN_5
+#define USART1_TX_GPIO				GPIOC
+#define USART1_TX_PIN				GPIO_PIN_4
 
 #define USE_USART2
 #define USART2_RX_GPIO				GPIOA
@@ -32,7 +37,7 @@
 
 #define USE_USART3
 #define USART3_RX_GPIO				GPIOB
-#define USART3RX_PIN				GPIO_PIN_11
+#define USART3_RX_PIN				GPIO_PIN_11
 #define USART3_TX_GPIO				GPIOB
 #define USART3_TX_PIN				GPIO_PIN_10
 
@@ -53,14 +58,14 @@
 #define GYRO_DMA_RX_IRQHandler  DMA1_Channel2_IRQHandler	//todo: make correct
 
 #define GYRO_EXTI
-#define GYRO_EXTI_GPIO_Port     GPIOC
-#define GYRO_EXTI_GPIO_Pin      GPIO_PIN_13
-#define GYRO_EXTI_IRQn          EXTI15_10_IRQn
-#define GYRO_EXTI_IRQHandler    EXTI15_10_IRQHandler
+#define GYRO_EXTI_GPIO_Port     GPIOA
+#define GYRO_EXTI_GPIO_Pin      GPIO_PIN_5
+#define GYRO_EXTI_IRQn          EXTI15_10_IRQn//TODO: fix
+#define GYRO_EXTI_IRQHandler    EXTI15_10_IRQHandler//TODO: find irq handler
 
 //USB config
-#define RFFW_HID_PRODUCT_STRING "SP3 Evo"
-#define RFBL_HID_PRODUCT_STRING "SP3 Evo RFBL"
+#define RFFW_HID_PRODUCT_STRING "Colibri"
+#define RFBL_HID_PRODUCT_STRING "Colibiri RFBL"
 
 //STM32F3 UID address
 #define DEVICE_ID1                  0x1FFFF7AC
