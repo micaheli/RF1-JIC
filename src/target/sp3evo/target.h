@@ -5,9 +5,15 @@
 #define LED1_GPIO_Port          GPIOB
 #define LED1_GPIO_Pin           GPIO_PIN_8
 
+
+//BUZZER config
+#define BUZZER_GPIO_Port        GPIOB
+#define BUZZER_GPIO_Pin         GPIO_PIN_7
+
 #define GYRO_SPI                SPI1
 #define GYRO_SPI_CS_GPIO_Port   GPIOA
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_4
+
 
 // remapped SPI ports
 #define GYRO_SPI_CLK_GPIO_Port  GPIOB
@@ -31,12 +37,29 @@
 #define GYRO_EXTI_IRQn          EXTI15_10_IRQn
 #define GYRO_EXTI_IRQHandler    EXTI15_10_IRQHandler
 
+
 //USB config
 #define RFFW_HID_PRODUCT_STRING "SP3 Evo"
 #define RFBL_HID_PRODUCT_STRING "SP3 Evo RFBL"
 
-//STM32F3 UID address
-#define DEVICE_ID1                  0x1FFFF7AC
-#define DEVICE_ID2                  0x1FFFF7B0
-#define DEVICE_ID3                  0x1FFFF7B4
 
+//STM32F3 UID address
+#define DEVICE_ID1              0x1FFFF7AC
+#define DEVICE_ID2              0x1FFFF7B0
+#define DEVICE_ID3              0x1FFFF7B4
+
+
+//RFBL config
+#define HARDWARE_RFBL_PLUG
+#define RFBL_GPIO1   GPIOB
+#define RFBL_PIN1    GPIO_PIN_11
+#define RFBL_GPIO2   GPIOB
+#define RFBL_PIN2    GPIO_PIN_10
+#define SPEK_GPIO    GPIOB
+#define SPEK_PIN     GPIO_PIN_11
+
+#define USE_RFBL
+#define ADDRESS_RFBL_START		(0x08000000)
+#define ADDRESS_CONFIG_START	(0x0800A000)
+#define ADDRESS_FLASH_START		(0x0800C000) //0x0800C000 - 0x08010000 - 0x08020000
+#define ADDRESS_FLASH_END		(0x0801FFF0)

@@ -1,6 +1,6 @@
 #define	LUX
 
-#define LEDn                    3
+#define LEDn                    2
 
 #define LED1_GPIO_Port          GPIOC
 #define LED1_GPIO_Pin           GPIO_PIN_15
@@ -8,8 +8,10 @@
 #define LED2_GPIO_Port          GPIOC
 #define LED2_GPIO_Pin           GPIO_PIN_14
 
-#define LED3_GPIO_Port          GPIOC
-#define LED3_GPIO_Pin           GPIO_PIN_13
+//BUZZER config
+#define BUZZER_GPIO_Port        GPIOC
+#define BUZZER_GPIO_Pin         GPIO_PIN_13
+
 
 #define GYRO_SPI                SPI1
 #define GYRO_SPI_CS_GPIO_Port   GPIOA
@@ -42,7 +44,7 @@
 #define RFBL_HID_PRODUCT_STRING "Lux RFBL"
 
 
-//STM32F4 UID address
+//STM32F3 UID address
 #define DEVICE_ID1                  0x1FFFF7AC
 #define DEVICE_ID2                  0x1FFFF7B0
 #define DEVICE_ID3                  0x1FFFF7B4
@@ -50,12 +52,18 @@
 
 //RFBL config
 #define HARDWARE_RFBL_PLUG
-#define RFBL_GPIO1   GPIOA //Servo5
-#define RFBL_PIN1    GPIO_PIN_1
-#define RFBL_GPIO2   GPIOA //Servo6
-#define RFBL_PIN2    GPIO_PIN_0
+#define RFBL_GPIO1   GPIOB
+#define RFBL_PIN1    GPIO_PIN_11
+#define RFBL_GPIO2   GPIOB
+#define RFBL_PIN2    GPIO_PIN_10
 #define SPEK_GPIO    GPIOB
 #define SPEK_PIN     GPIO_PIN_11
+
+#define USE_RFBL
+#define ADDRESS_RFBL_START		(0x08000000)
+#define ADDRESS_CONFIG_START	(0x0800A000)
+#define ADDRESS_FLASH_START		(0x0800C000) //0x0800C000 - 0x08010000 - 0x08020000
+#define ADDRESS_FLASH_END		(0x0801FFF0)
 
 /*
 0x08000000
@@ -69,8 +77,3 @@
 0x08010000 //128
 0x08020000 //256
  */
-#define USE_RFBL
-#define ADDRESS_RFBL_START		(0x08000000)
-#define ADDRESS_CONFIG_START	(0x0800A000)
-#define ADDRESS_FLASH_START		(0x0800C000) //0x0800C000 - 0x08010000 - 0x08020000
-#define ADDRESS_FLASH_END		(0x0801FFF0)

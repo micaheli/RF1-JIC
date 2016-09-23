@@ -61,12 +61,11 @@ int main(void)
 	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
 
-	if (bootDirection != BOOT_TO_APP_AFTER_SPEK_COMMAND) {
-		bootDirection = checkOldConfigDirection (bootDirection, bootCycles); //sets proper boot direction is RFP is used
-	} else {
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
-		boot_to_app();
-	}
+	//if (bootDirection == BOOT_TO_APP_AFTER_SPEK_COMMAND) {
+	//	rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+	//	boot_to_app();
+	//}
+	bootDirection = BOOT_TO_RFBL_COMMAND;
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
