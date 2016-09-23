@@ -39,6 +39,31 @@
 #define GYRO_EXTI_IRQn          EXTI9_5_IRQn
 #define GYRO_EXTI_IRQHandler    EXTI9_5_IRQHandler
 
+//Serial Config
+/*
+#define USE_VCP
+#define VBUS_SENSING_GPIO			GPIOC
+#define VBUS_SENSING_PIN			GPIO_PIN_5
+
+#define USE_USART1
+#define USART1_RX_GPIO				GPIOC
+#define USART1_RX_PIN				GPIO_PIN_5
+#define USART1_TX_GPIO				GPIOC
+#define USART1_TX_PIN				GPIO_PIN_4
+
+#define USE_USART2
+#define USART3_RX_GPIO				GPIOA
+#define USART3_RX_PIN				GPIO_PIN_15
+#define USART3_TX_GPIO				GPIOA
+#define USART3_TX_PIN				GPIO_PIN_14
+
+#define USE_USART3
+#define USART6_RX_GPIO				GPIOB
+#define USART6_RX_PIN				GPIO_PIN_11
+#define USART6_TX_GPIO				GPIOB
+#define USART6_TX_PIN				GPIO_PIN_10
+*/
+
 //BUZZER config
 #define BUZZER_GPIO_Port        GPIOB
 #define BUZZER_GPIO_Pin         GPIO_PIN_9

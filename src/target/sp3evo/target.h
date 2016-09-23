@@ -1,13 +1,40 @@
 #define	SP3EVO
-
+//led config
 #define LEDn                    1
 
 #define LED1_GPIO_Port          GPIOB
 #define LED1_GPIO_Pin           GPIO_PIN_8
 
+//BUZZER config
+#define BUZZER_GPIO_Port        GPIOC
+#define BUZZER_GPIO_Pin         GPIO_PIN_15
+
 #define GYRO_SPI                SPI1
 #define GYRO_SPI_CS_GPIO_Port   GPIOA
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_4
+
+//Serial Config
+#define USE_VCP
+#define VBUS_SENSING_GPIO			GPIOC
+#define VBUS_SENSING_PIN			GPIO_PIN_5
+
+#define USE_USART1
+#define USART1_RX_GPIO				GPIOA
+#define USART1_RX_PIN				GPIO_PIN_9
+#define USART1_TX_GPIO				GPIOA
+#define USART1_TX_PIN				GPIO_PIN_10
+
+#define USE_USART2
+#define USART3_RX_GPIO				GPIOA
+#define USART3_RX_PIN				GPIO_PIN_15
+#define USART3_TX_GPIO				GPIOA
+#define USART3_TX_PIN				GPIO_PIN_14
+
+#define USE_USART3
+#define USART6_RX_GPIO				GPIOB
+#define USART6_RX_PIN				GPIO_PIN_11
+#define USART6_TX_GPIO				GPIOB
+#define USART6_TX_PIN				GPIO_PIN_10
 
 // remapped SPI ports
 #define GYRO_SPI_CLK_GPIO_Port  GPIOB
