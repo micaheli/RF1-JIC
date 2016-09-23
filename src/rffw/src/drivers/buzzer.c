@@ -42,7 +42,7 @@ void UpdateBuzzer(void)
     	Buzz(timeNow,15, 300);
     	Buzz(timeNow,40, 500);
     case STATE_BUZZER_SIMPLE:
-    	Buzz(timenow,300,400);
+    	Buzz(timeNow,300,400);
     	//simple buzz
 
      }
