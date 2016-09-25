@@ -1,7 +1,7 @@
 #include "includes.h"
 
-uint16_t pins[256]; // last byte is count
-GPIO_TypeDef *ports[256]; // last byte is count
+uint16_t pins[16];
+GPIO_TypeDef *ports[10];
 
 
 int InitializeMCUSettings() {
@@ -26,8 +26,16 @@ int InitializeMCUSettings() {
 	pins[14]=GPIO_PIN_14;
 	pins[15]=GPIO_PIN_15;
 
-	pins[255]=16;
-
+	ports[0]=GPIOA;
+	ports[1]=GPIOB;
+	ports[2]=GPIOC;
+	ports[3]=GPIOD;
+	ports[4]=GPIOE;
+	ports[5]=GPIOF;
+	ports[6]=GPIOG;
+	ports[7]=GPIOH;
+	ports[8]=GPIOJ;
+	ports[9]=GPIOK;
 
 	return(1);
 
