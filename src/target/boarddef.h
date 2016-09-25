@@ -1,7 +1,6 @@
 typedef enum {INVERTED_RX, RX, GPS, OSD} usart_usage ;
 
 
-GPIO_TypeDef *pins[255];
 
 
 typedef struct

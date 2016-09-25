@@ -1,6 +1,8 @@
 #include "includes.h"
 
-int InitializeMcu() {
+GPIO_TypeDef *pins[256]; // last byte is count
+
+int InitializeMCUSettings() {
 	//target_pinout pins;
 
 	bzero(pins, sizeof(pins));
