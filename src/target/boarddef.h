@@ -2,24 +2,34 @@ typedef enum {INVERTED_RX, RX, GPS, OSD} usart_usage ;
 
 
 
+#define USARTx_DMA_TX_IRQHandler   DMA1_Stream3_IRQHandler
+#define USARTx_DMA_RX_IRQHandler   DMA1_Stream1_IRQHandler
+#define USARTx_IRQHandler          USART3_IRQHandler
+
 //uint16_t pins;
 
 typedef struct
 {
-	uint16_t rxGPIO;
-	unsigned char rxPIN;
+	unsigned char usart;
 
-	uint16_t txGPIO;
-	unsigned char txPIN;
+	unsigned char rxAF;
+	unsigned char rxIRQn;
+	unsigned char rxGPIO;
+	uint16_t rxPIN;
+
+	unsigned char txAF;
+	unsigned char txIRQn;
+	unsigned char txGPIO;
+	uint16_t txPIN;
 
 	usart_usage usart_type; //verify this turns into a byte, and if not switch it to them
+
+
 } usart_pinout;
 
 typedef struct
 {
 	usart_pinout usart_ports[8];
-
-
 
 
 } target_pinout;

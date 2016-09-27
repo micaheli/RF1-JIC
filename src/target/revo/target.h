@@ -128,6 +128,7 @@ UART_HandleTypeDef uartHandle5;
 UART_HandleTypeDef uartHandle6;
 */
 
+/*
 enum {
 	SERIAL_NOT_USED=0,
 	SERIAL_SBUS_NORMAL,
@@ -135,27 +136,28 @@ enum {
 	SERIAL_SPORT_NORMAL,
 	SERIAL_SPORT_INVERTER,
 	SERIAL_SPEKTRUM,
-	SERIAL_SPKTRUM_TELEMETRY,
+	SERIAL_ SPKTRUM_TELEMETRY,
 };
 
 typedef struct {
-	unsigned char used;
-	UART_HandleTypeDef handle;
-	USART_TypeDef *usart;
-	GPIO_TypeDef *txGpio;
-	uint16_t txPin;
-	uint8_t txGpioAf;
-	uint8_t txIrqn;
-	GPIO_TypeDef *rxGpio;
-	uint16_t rxPin;
-	uint8_t rxGpioAf;
-	uint8_t rxIrqn;
+	//unsigned char used;
+	//UART_HandleTypeDef handle;
+	//USART_TypeDef *usart;
+	//GPIO_TypeDef *txGpio;
+	//uint16_t txPin;
+	//uint8_t txGpioAf;
+	//uint8_t txIrqn;
+	//GPIO_TypeDef *rxGpio;
+	//uint16_t rxPin;
+	//uint8_t rxGpioAf;
+	//uint8_t rxIrqn;
 } board_serial;
 
 
 typedef struct {
 	board_serial serials[6];
 } board_record;
+*/
 
 /*
 //USART Config
