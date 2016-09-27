@@ -117,3 +117,51 @@
 #define ADDRESS_CONFIG_START	(0x0800C000)
 #define ADDRESS_FLASH_START		(0x08020000)
 #define ADDRESS_FLASH_END		(0x080FFFF0)
+
+
+/*
+UART_HandleTypeDef uartHandle1;
+UART_HandleTypeDef uartHandle2;
+UART_HandleTypeDef uartHandle3;
+UART_HandleTypeDef uartHandle4;
+UART_HandleTypeDef uartHandle5;
+UART_HandleTypeDef uartHandle6;
+*/
+
+typedef struct {
+	UART_HandleTypeDef handle;
+	USART_TypeDef *usart;
+	GPIO_TypeDef *txGpio;
+	uint16_t txPin;
+	uint8_t txGpioAf;
+	uint8_t txIrqn;
+	GPIO_TypeDef *rxGpio;
+	uint16_t rxPin;
+	uint8_t rxGpioAf;
+	uint8_t rxIrqn;
+} board_serial;
+
+
+typedef struct {
+	board_serial serials[6];
+} board_record;
+
+/*
+//USART Config
+#define USARTx                     USART3
+#define USARTx_TX_PIN              GPIO_PIN_10
+#define USARTx_TX_GPIO_PORT        GPIOB
+#define USARTx_TX_AF               GPIO_AF7_USART3
+#define USARTx_RX_PIN              GPIO_PIN_11
+#define USARTx_RX_GPIO_PORT        GPIOB
+#define USARTx_RX_AF               GPIO_AF7_USART3
+#define USART_DMA_TX_IRQn          DMA1_Stream3_IRQn
+#define USART_DMA_RX_IRQn          DMA1_Stream1_IRQn
+#define USARTx_IRQn                USART3_IRQn
+*/
+
+#define USARTx_DMA_TX_IRQHandler   DMA1_Stream3_IRQHandler
+#define USARTx_DMA_RX_IRQHandler   DMA1_Stream1_IRQHandler
+#define USARTx_IRQHandler          USART3_IRQHandler
+
+
