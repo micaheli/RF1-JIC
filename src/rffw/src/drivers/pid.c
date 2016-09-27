@@ -1,5 +1,14 @@
 #include "includes.h"
 
+pid_output pids[AXIS_NUMBER] = {
+	{0.0f, 0.0f, 0.0f},
+	{0.0f, 0.0f, 0.0f},
+	{0.0f, 0.0f, 0.0f}
+};
+
+void pidController (float dpsGyroArray[], float curvedRcCommandF[], pid_output pids[], float actuatorRange) {
+
+}
 /*
 #define KD_RING_BUFFER_SIZE 256
 

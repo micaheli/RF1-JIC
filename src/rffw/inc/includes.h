@@ -10,6 +10,7 @@
 #include "mcu_include.h"
 #include "general_functions.h"
 #include "scheduler.h"
+#include "flight.h"
 
 #include "usbd_hid.h"
 #include "usb_device.h"
@@ -26,6 +27,7 @@
 #include "drivers/filter.h"
 #include "drivers/math.h"
 #include "drivers/config.h"
+#include "drivers/mixer.h"
 #include "drivers/actuator_output.h"
 #include "drivers/invensense_device.h"
 #include "drivers/invensense_bus.h"

@@ -24,19 +24,22 @@ uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 
 int main(void)
 {
-    uint8_t count = 0;
+	//Absolutely no MCU specific code to go here.
 
-	SCB->VTOR = ADDRESS_FLASH_START; //set vector register to firmware start
-	__enable_irq(); // enable interrupts
+    uint8_t count = 0;
 
     BoardInit();
     LedInit();
+    UsbInit();
 
-    USB_DEVICE_Init();
+    LoadConfig();
 
-//    if (!accgyroInit(LOOP_H8)) {
-//        ErrorHandler();
-//    }
+    InitRcData();
+    InitMixer();
+
+    if (!accgyroInit(gyroConfig.loopCtrl)) {
+        //ErrorHandler();
+    }
 
     ledStatus.status = LEDS_SLOW_BLINK;
 
@@ -54,9 +57,9 @@ void ErrorHandler(void)
     while (1) {
         LED1_ON;
         LED2_OFF;
-        HAL_Delay(40);
+        DelayMs(40);
         LED1_OFF;
         LED2_ON;
-        HAL_Delay(40);
+        DelayMs(40);
     }
 }

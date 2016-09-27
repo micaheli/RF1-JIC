@@ -194,7 +194,7 @@ void accgyroDeviceReadComplete(void)
     gyroData[1] = (int16_t)((gyroRxFrame.gyroY_H << 8) | gyroRxFrame.gyroY_L);
     gyroData[2] = (int16_t)((gyroRxFrame.gyroZ_H << 8) | gyroRxFrame.gyroZ_L);
 
-    updateGyro(gyroData, 1.f / 16.4f);
+    InlineUpdateGyro(gyroData, 1.f / 16.4f);
 }
 
 void accgyroDeviceCalibrate(int16_t *gyroData)

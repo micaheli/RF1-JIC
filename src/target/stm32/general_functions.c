@@ -15,6 +15,10 @@ void delayUs(uint32_t uSec)
     while ( (DWT->CYCCNT - DWT_START) < DWT_TOTAL);
 }
 
+void DelayMs(uint32_t mSec) {
+	HAL_Delay(mSec);
+}
+
 uint32_t rtc_read_backup_reg(uint32_t BackupRegister) {
     RTC_HandleTypeDef RtcHandle;
     RtcHandle.Instance = RTC;
@@ -27,6 +31,10 @@ void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data) {
     HAL_PWR_EnableBkUpAccess();
     HAL_RTCEx_BKUPWrite(&RtcHandle, BackupRegister, data);
     HAL_PWR_DisableBkUpAccess();
+}
+
+void UsbInit(void) {
+	USB_DEVICE_Init();
 }
 
 inline void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {

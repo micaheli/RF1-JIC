@@ -190,7 +190,7 @@ int main(void)
 
 		inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
 
-		HAL_Delay(70);
+		DelayMs(70);
 
 		for (uint8_t ii = 0; ii < bindSpektrum; ii++) {
 	        // RX line, drive low for 120us
@@ -205,7 +205,7 @@ int main(void)
 		}
 
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_SPEK_COMMAND);
-		HAL_Delay(100);
+		DelayMs(100);
 		startupBlink(20, 20);
 		boot_to_app();
 	}
@@ -405,7 +405,7 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 	for( a = 0; a < blinks; a = a + 1 ){ //fast blink
 		LED1_TOGGLE;
 		LED2_TOGGLE;
-		HAL_Delay(delay);
+		DelayMs(delay);
 	}
 	LED1_OFF;
 	LED2_OFF;
@@ -413,11 +413,11 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 
 void boot_to_app (void) {
 
-	HAL_Delay(250); //quarter second delay before booting into app to allow PDB power to stabilize
+	DelayMs(250); //quarter second delay before booting into app to allow PDB power to stabilize
 
 	USB_DEVICE_DeInit();
 	HAL_RCC_DeInit();
-    HAL_DeInit();
+	DelayMs();
 
 	pFunction Jump_To_Application;
 	uint32_t JumpAddress;
@@ -731,10 +731,10 @@ void ErrorHandler(void)
     while (1) {
         LED2_ON;
         LED3_OFF;
-        HAL_Delay(40);
+        DelayMs(40);
         LED2_OFF;
         LED3_ON;
-        HAL_Delay(40);
+        DelayMs(40);
     }
 }
 

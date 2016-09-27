@@ -1,5 +1,6 @@
 #include "includes.h"
 
+/*
 int InitializeMcu() {
 
 	target_pinout pins;
@@ -15,3 +16,4 @@ int InitializeMcu() {
 	return(1);
 
 }
+*/

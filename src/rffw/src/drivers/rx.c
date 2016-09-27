@@ -1,6 +1,16 @@
 #include "includes.h"
 
-inline void inlineCollectRcCommand (uint16_t rcData[4], float *trueRcCommandF, float *curvedRcCommandF, rcControlsConfig_t rcControlsConfig) {
+float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position
+float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the rcCommand after the curve is applied
+float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
+
+void InitRcData (void) {
+	bzero(trueRcCommandF, MAXCHANNELS);
+	bzero(curvedRcCommandF, MAXCHANNELS);
+	bzero(smoothedRcCommandF, MAXCHANNELS);
+}
+
+inline void InlineCollectRcCommand (uint16_t rcData[], float trueRcCommandF[], float curvedRcCommandF[], rc_control_config rcControlsConfig) {
 
 	uint8_t axis;
 	float rangedRx, oldValue, oldMax, oldMin, newMax, newMin;
@@ -35,12 +45,12 @@ inline void inlineCollectRcCommand (uint16_t rcData[4], float *trueRcCommandF, f
 
 		oldValue = rcData[axis];
 
-		rangedRx = inlineChangeRangef(oldValue, oldMax, oldMin, newMax, newMin);
+		rangedRx = InlineChangeRangef(oldValue, oldMax, oldMin, newMax, newMin);
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
 		if (ABS(rangedRx) > rcControlsConfig.deadBand[axis]) {
-			trueRcCommandF[axis]   = inlineConstrainf ( rangedRx, -1, 1);
-			curvedRcCommandF[axis] = inlineApplyRcCommandCurve (trueRcCommandF[axis], rcControlsConfig.useCurve[axis], rcControlsConfig.curveExpo[axis]);
+			trueRcCommandF[axis]   = InlineConstrainf ( rangedRx, -1, 1);
+			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], rcControlsConfig.useCurve[axis], rcControlsConfig.curveExpo[axis]);
 		} else {
 			// no need to calculate if movement is below deadband
 			trueRcCommandF[axis]   = 0;
@@ -52,7 +62,7 @@ inline void inlineCollectRcCommand (uint16_t rcData[4], float *trueRcCommandF, f
 }
 
 
-inline float inlineApplyRcCommandCurve (float rcCommand, uint8_t curveToUse, float expo) {
+inline float InlineApplyRcCommandCurve (float rcCommand, uint8_t curveToUse, float expo) {
 
 	switch (curveToUse) {
 

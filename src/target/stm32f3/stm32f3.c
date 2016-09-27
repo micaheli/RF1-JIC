@@ -55,6 +55,9 @@ void SystemClock_Config(void)
 
 void BoardInit(void)
 {
+	SCB->VTOR = ADDRESS_FLASH_START; //set vector register to firmware start
+	__enable_irq(); // enable interrupts
+
 	HAL_Init();
 
 	SystemClock_Config();

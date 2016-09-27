@@ -1,7 +1,6 @@
 #include "includes.h"
 
-
-inline float inlineConstrainf(float amt, float low, float high)
+inline float InlineConstrainf(float amt, float low, float high)
 {
     if (amt < low)
         return low;
@@ -11,10 +10,9 @@ inline float inlineConstrainf(float amt, float low, float high)
         return amt;
 }
 
-inline float inlineChangeRangef(float oldValue, float oldMax, float oldMin, float newMax, float newMin) {
-
+inline float InlineChangeRangef(float oldValue, float oldMax, float oldMin, float newMax, float newMin)
+{
 	float oldRange = (oldMax - oldMin);
 	float newRange = (newMax - newMin);
 	return (((oldValue - oldMin) * newRange) / oldRange) + newMin;
-
 }
