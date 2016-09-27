@@ -128,7 +128,18 @@ UART_HandleTypeDef uartHandle5;
 UART_HandleTypeDef uartHandle6;
 */
 
+enum {
+	SERIAL_NOT_USED=0,
+	SERIAL_SBUS_NORMAL,
+	SERIAL_SBUS_INVERTED,
+	SERIAL_SPORT_NORMAL,
+	SERIAL_SPORT_INVERTER,
+	SERIAL_SPEKTRUM,
+	SERIAL_SPKTRUM_TELEMETRY,
+};
+
 typedef struct {
+	unsigned char used;
 	UART_HandleTypeDef handle;
 	USART_TypeDef *usart;
 	GPIO_TypeDef *txGpio;
