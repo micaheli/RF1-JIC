@@ -19,12 +19,13 @@
 #define LED2_GPIO_Port          GPIOB
 #define LED2_GPIO_Pin           GPIO_PIN_5
 
+
 //buzzer setup
 #define BUZZER_GPIO_Port        GPIOA
 #define BUZZER_GPIO_Pin         GPIO_PIN_0
 
-//Gyro Config
 
+//Gyro Config
 #define GYRO_SPI                SPI1
 #define GYRO_SPI_CS_GPIO_Port   GPIOA
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_4
@@ -42,6 +43,22 @@
 #define GYRO_EXTI_GPIO_Pin      GPIO_PIN_4
 #define GYRO_EXTI_IRQn          EXTI4_IRQn
 #define GYRO_EXTI_IRQHandler    EXTI4_IRQHandler
+
+
+//USART Config
+#define USARTx                     USART3
+#define USARTx_TX_PIN              GPIO_PIN_10
+#define USARTx_TX_GPIO_PORT        GPIOB
+#define USARTx_TX_AF               GPIO_AF7_USART3
+#define USARTx_RX_PIN              GPIO_PIN_11
+#define USARTx_RX_GPIO_PORT        GPIOB
+#define USARTx_RX_AF               GPIO_AF7_USART3
+#define USART_DMA_TX_IRQn          DMA1_Stream3_IRQn
+#define USART_DMA_RX_IRQn          DMA1_Stream1_IRQn
+#define USARTx_DMA_TX_IRQHandler   DMA1_Stream3_IRQHandler
+#define USARTx_DMA_RX_IRQHandler   DMA1_Stream1_IRQHandler
+#define USARTx_IRQn                USART3_IRQn
+#define USARTx_IRQHandler          USART3_IRQHandler
 
 
 //USB config
