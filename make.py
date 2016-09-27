@@ -196,7 +196,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["actuator_output", "buzzer", "config", "filter", "flash_chip", "flight_logger", "math", "rx", "mixer", "pid", "mpu6000/spi", "usb_otg_fs"])
+        FEATURES.extend(["actuator_output", "buzzer", "config", "flash_chip", "flight_logger", "pid", "mpu6000/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "revo_rfbl":

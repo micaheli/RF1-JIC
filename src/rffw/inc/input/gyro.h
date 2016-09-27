@@ -36,6 +36,6 @@ typedef enum {
     LOOP_UH32,
 } loopCtrl_e;
 
-void InlineUpdateGyro(int16_t rawGyro[], float scale);
+void InlineUpdateGyro(int16_t rawGyro[], int16_t rawGyroRotated[], float scale);
 void InlineApplyGyroRotation (int16_t rawGyro[], int16_t rawGyroRotated[]);
 void InlineApplyBoardRotationAndScale ( int16_t rawGyroRotated[], float dpsGyroArray[], float scale );

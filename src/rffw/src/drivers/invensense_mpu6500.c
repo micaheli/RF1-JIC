@@ -73,7 +73,7 @@ static gyro6500Config_t mpu6500GyroConfig[] = {
 };
 
 static bool accelUpdate = false;
-
+static int16_t gyroRotated[3];
 static int16_t gyroData[3];
 static int16_t accelData[3];
 
@@ -186,7 +186,7 @@ void accgyroDeviceReadComplete(void)
     gyroData[1] = (int16_t)((gyroRxFrame.gyroY_H << 8) | gyroRxFrame.gyroY_L);
     gyroData[2] = (int16_t)((gyroRxFrame.gyroZ_H << 8) | gyroRxFrame.gyroZ_L);
 
-    InlineUpdateGyro(gyroData, 1.f / 16.4f);
+    InlineUpdateGyro(gyroData, rawGyroRotated, 1.f / 16.4f);
 }
 
 // TODO: this is broken - fix it
