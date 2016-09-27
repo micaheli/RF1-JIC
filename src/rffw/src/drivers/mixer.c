@@ -59,7 +59,6 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[]) 
 	float actuatorRange =    0.0f;
 	float throttle      = curvedRcCommandF[THROTTLE];
 	unsigned char i     = 0;
-	unsigned char actuatorOutOfBounds = 0;
 
 	for (i = 0; i < motorNumber; i++) {
 		stabilizerAttenuation = ApplyAttenuationKpCurve( motorOutput[i] );
@@ -116,5 +115,6 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[]) 
 }
 
 inline void InlineApplyMixer(pid_output pids[], float curvedRcCommandF[]) {
-
+	(void)(pids);
+	(void)(curvedRcCommandF);
 }
