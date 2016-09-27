@@ -16,5 +16,5 @@ void flightCode(float dpsGyroArray[]) {
 	pidController(dpsGyroArray, curvedRcCommandF, pids, actuatorRange);
 	actuatorRange = InlineApplyMotorMixer(pids, curvedRcCommandF);
 	OutputActuators(motorOutput, servoOutput);
-
+	LED1_TOGGLE;
 }

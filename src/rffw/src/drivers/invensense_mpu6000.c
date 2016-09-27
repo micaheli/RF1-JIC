@@ -50,9 +50,9 @@ static gyroFrame_t gyroTxFrame;
 typedef struct {
     uint8_t rateDiv;
     uint8_t gyroDlpf;
-} gyro6000Config_t;
+} gyro_6000_config;
 
-gyro6000Config_t mpu6000GyroConfig[] = {
+gyro_6000_config mpu6000GyroConfig[] = {
     [LOOP_L1] = {1, INVENS_CONST_GYRO_DLPF_188},
     [LOOP_M1] = {8, INVENS_CONST_GYRO_DLPF_256},
     [LOOP_M2] = {4, INVENS_CONST_GYRO_DLPF_256},
@@ -72,7 +72,7 @@ static int16_t gyroCal[3];
 
 bool accgyroDeviceInit(loopCtrl_e gyroLoop)
 {
-    gyro6000Config_t gyroConfig;
+	gyro_6000_config gyroConfig;
 
     // the mpu6000 caps out at 8khz
     if (gyroLoop > LOOP_H8) {

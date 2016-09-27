@@ -44,7 +44,7 @@ typedef struct {
     uint8_t accDlpf;
     uint8_t accDlpfBypass;
     uint8_t accDenom;
-} gyro6500Config_t;
+} gyro_6500_config;
 
 // TODO: check what the acc actually updates at when sample rate divider != 0
 // we have assumed that sample divider rate effects the accelerometer update rate
@@ -52,7 +52,7 @@ typedef struct {
 //            acc update
 //            everything else uses 8khz or 32khz gyro rate, so set acc to 4khz
 //            acc update, get acc update every 2nd or 8th gyro update
-static gyro6500Config_t mpu6500GyroConfig[] = {
+static gyro_6500_config mpu6500GyroConfig[] = {
     [LOOP_L1] = {1, INVENS_CONST_GYRO_DLPF_188, INVENS_CONST_GYRO_FCB_DISABLE, INVENS_CONST_ACC_DLPF_460, INVENS_CONST_ACC_FCB_DISABLE, 1},
     [LOOP_M1] = {8, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
     [LOOP_M2] = {4, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
@@ -79,7 +79,7 @@ static int16_t accelData[3];
 
 bool accgyroDeviceInit(loopCtrl_e gyroLoop)
 {
-    gyro6500Config_t gyroConfig;
+	gyro_6500_config gyroConfig;
 
     // don't overflow array
     if (gyroLoop > LOOP_UH32) {
@@ -186,7 +186,7 @@ void accgyroDeviceReadComplete(void)
     gyroData[1] = (int16_t)((gyroRxFrame.gyroY_H << 8) | gyroRxFrame.gyroY_L);
     gyroData[2] = (int16_t)((gyroRxFrame.gyroZ_H << 8) | gyroRxFrame.gyroZ_L);
 
-    InlineUpdateGyro(gyroData, rawGyroRotated, 1.f / 16.4f);
+    InlineUpdateGyro(gyroData, gyroRotated, 1.f / 16.4f);
 }
 
 // TODO: this is broken - fix it

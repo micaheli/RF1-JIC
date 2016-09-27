@@ -124,7 +124,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F303xC"
         TARGET_SCRIPT = "stm32_flash_f303_256k_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f3"
-        FEATURES.extend(["actuator_output", "buzzer", "config", "filter", "flash_chip", "flight_logger", "math", "mixer", "pid", "rx" "mpu6500/spi", "usb_fs"])
+        FEATURES.extend(["flight_logger", "mpu6500/spi", "usb_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "sp3evo_rfbl":
@@ -142,7 +142,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F303xC"
         TARGET_SCRIPT = "stm32_flash_f303_256k_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f3"
-        FEATURES.extend(["buzzer", "mpu6500/spi", "usb_fs"])
+        FEATURES.extend(["mpu6500/spi", "usb_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "lux_rfbl":
@@ -160,7 +160,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F303xC"
         TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
         TARGET_PROCESSOR_TYPE  = "f3"
-        FEATURES.extend(["buzzer", "mpu6500/spi", "usb_fs"])
+        FEATURES.extend(["mpu6500/spi", "usb_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "colibri_rfbl":
@@ -178,7 +178,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["buzzer", "mpu6500/spi", "usb_otg_fs"])
+        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "revolt_rfbl":
@@ -196,7 +196,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["actuator_output", "buzzer", "config", "flash_chip", "flight_logger", "pid", "mpu6000/spi", "usb_otg_fs"])
+        FEATURES.extend(["flight_logger", "mpu6000/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "revo_rfbl":
@@ -214,7 +214,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["buzzer", "mpu6000/spi", "usb_otg_fs"])
+        FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "kkng_rfbl":
@@ -232,7 +232,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F411xE"
         TARGET_SCRIPT = "stm32_flash_f411.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["buzzer", "mpu6000/spi", "usb_otg_fs"])
+        FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "revonano_rfbl":
@@ -250,7 +250,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["buzzer", "mpu6500/spi", "usb_otg_fs"])
+        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "spmfc384_rfbl":
@@ -268,7 +268,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["buzzer", "mpu6500/spi", "usb_otg_fs"])
+        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "spmfc400_rfbl":
@@ -286,7 +286,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F746xx"
         TARGET_SCRIPT = "STM32F746NGHx_FLASH_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
-        FEATURES.extend(["buzzer", "usb_otg_fs"])
+        FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "f7disco_rfbl":
@@ -304,7 +304,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F746xx"
         TARGET_SCRIPT = "STM32F746NGHx_FLASH_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
-        FEATURES.extend(["buzzer", "mpu6500/spi", "usb_otg_fs"])
+        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "vrracef7_rfbl":
@@ -413,7 +413,7 @@ def configure_target(TARGET):
     if PROJECT == "rffw":
         INCLUDE_DIRS.append("src/rffw/inc/input")
         SOURCE_DIRS.append("src/rffw/src/input")
-        FEATURES.extend(["math", "filter", "mixer", "rx"])
+        FEATURES.extend(["actuator_output", "buzzer", "config", "flash_chip", "pid", "math", "filter", "mixer", "rx"])
     elif PROJECT == "rfesc":
         pass
     elif PROJECT == "rfbl":
