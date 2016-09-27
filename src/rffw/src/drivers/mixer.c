@@ -39,8 +39,8 @@ float servoOutput[MAX_SERVO_NUMBER];
 
 void InitMixer(void) {
 	stabilizerAttenuation = 0;
-	bzero(motorOutput, MAX_MOTOR_NUMBER);
-	bzero(servoOutput, MAX_SERVO_NUMBER);
+	bzero(motorOutput, sizeof(motorOutput));
+	bzero(servoOutput, sizeof(servoOutput));
 }
 
 inline float ApplyAttenuationKdCurve (float motorOutput) {

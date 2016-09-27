@@ -21,10 +21,12 @@ typedef struct {
 
 extern int motorNumber;
 extern int servoNumber;
-extern float motorMixer;
-extern float servoMixer;
-extern float motorOutput;
-extern float servoOutput;
+extern float motorOutput[];
+extern float servoOutput[];
+extern actuator_mixer servoMixer[];
+extern actuator_mixer motorMixer[];
+
+
 
 void InitMixer(void);
 float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[]);

@@ -7,7 +7,10 @@ pid_output pids[AXIS_NUMBER] = {
 };
 
 void pidController (float dpsGyroArray[], float curvedRcCommandF[], pid_output pids[], float actuatorRange) {
-
+	dpsGyroArray = dpsGyroArray;
+	curvedRcCommandF = curvedRcCommandF;
+	pids = pids;
+	actuatorRange = actuatorRange;
 }
 /*
 #define KD_RING_BUFFER_SIZE 256
