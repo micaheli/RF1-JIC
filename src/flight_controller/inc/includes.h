@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "target.h"
+#include "../../low_level_driver/boarddef.h"
 #include "mcu_include.h"
 #include "general_functions.h"
 #include "scheduler.h"
@@ -14,7 +14,6 @@
 
 #include "usbd_hid.h"
 #include "usb_device.h"
-#include "includes.h"
 
 //input
 #include "input/gyro.h"
