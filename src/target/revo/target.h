@@ -45,22 +45,6 @@
 #define GYRO_EXTI_IRQHandler    EXTI4_IRQHandler
 
 
-//USART Config
-#define USARTx                     USART3
-#define USARTx_TX_PIN              GPIO_PIN_10
-#define USARTx_TX_GPIO_PORT        GPIOB
-#define USARTx_TX_AF               GPIO_AF7_USART3
-#define USARTx_RX_PIN              GPIO_PIN_11
-#define USARTx_RX_GPIO_PORT        GPIOB
-#define USARTx_RX_AF               GPIO_AF7_USART3
-#define USART_DMA_TX_IRQn          DMA1_Stream3_IRQn
-#define USART_DMA_RX_IRQn          DMA1_Stream1_IRQn
-#define USARTx_DMA_TX_IRQHandler   DMA1_Stream3_IRQHandler
-#define USARTx_DMA_RX_IRQHandler   DMA1_Stream1_IRQHandler
-#define USARTx_IRQn                USART3_IRQn
-#define USARTx_IRQHandler          USART3_IRQHandler
-
-
 //USB config
 #define RFFW_HID_PRODUCT_STRING "Revolution"
 #define RFBL_HID_PRODUCT_STRING "Revolution RFBL"
@@ -159,7 +143,7 @@ typedef struct {
 } board_record;
 */
 
-/*
+
 //USART Config
 #define USARTx                     USART3
 #define USARTx_TX_PIN              GPIO_PIN_10
@@ -168,13 +152,21 @@ typedef struct {
 #define USARTx_RX_PIN              GPIO_PIN_11
 #define USARTx_RX_GPIO_PORT        GPIOB
 #define USARTx_RX_AF               GPIO_AF7_USART3
-#define USART_DMA_TX_IRQn          DMA1_Stream3_IRQn
-#define USART_DMA_RX_IRQn          DMA1_Stream1_IRQn
+#define USARTx_IRQHandler          USART3_IRQHandler
 #define USARTx_IRQn                USART3_IRQn
-*/
-
+#define USARTx_TX_DMA_STREAM       DMA1_Stream3
+#define USARTx_RX_DMA_STREAM       DMA1_Stream1
+#define USARTx_TX_DMA_CHANNEL      DMA_CHANNEL_4
+#define USARTx_RX_DMA_CHANNEL      DMA_CHANNEL_4
+#define USARTx_DMA_TX_IRQn         DMA1_Stream3_IRQn
+#define USARTx_DMA_RX_IRQn         DMA1_Stream1_IRQn
 #define USARTx_DMA_TX_IRQHandler   DMA1_Stream3_IRQHandler
 #define USARTx_DMA_RX_IRQHandler   DMA1_Stream1_IRQHandler
-#define USARTx_IRQHandler          USART3_IRQHandler
 
+/* Definition for USARTx's DMA */
+
+
+//#define USARTx_DMA_TX_IRQHandler   DMA1_Stream3_IRQHandler
+//#define USARTx_DMA_RX_IRQHandler   DMA1_Stream1_IRQHandler
+//#define USARTx_IRQHandler          USART3_IRQHandler
 

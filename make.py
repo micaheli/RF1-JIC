@@ -413,7 +413,7 @@ def configure_target(TARGET):
     if PROJECT == "rffw":
         INCLUDE_DIRS.append("src/rffw/inc/input")
         SOURCE_DIRS.append("src/rffw/src/input")
-        FEATURES.extend(["actuator_output", "buzzer", "config", "flash_chip", "pid", "math", "filter", "mixer", "rx"])
+        FEATURES.extend(["actuator_output", "buzzer", "config", "flash_chip", "pid", "math", "filter", "serial", "mixer", "rx"])
     elif PROJECT == "rfesc":
         pass
     elif PROJECT == "rfbl":

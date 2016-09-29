@@ -28,6 +28,10 @@ int main(void)
 
     uint8_t count = 0;
 
+    //need to move this to mcu specific code file
+	SCB->VTOR = ADDRESS_FLASH_START; //set vector register to firmware start
+	__enable_irq(); // enable interrupts
+
     BoardInit();
     LedInit();
     UsbInit();
@@ -43,11 +47,38 @@ int main(void)
 
     ledStatus.status = LEDS_SLOW_BLINK;
 
+    BoardUsartInit();
+
+    bzero(aRxBuffer, sizeof(aRxBuffer));
+    bzero(aTxBuffer, sizeof(aTxBuffer));
+
     while (1) {
     	scheduler(count++);
     	if (count == 16) {
     		count = 0;
+
+        	DelayMs(500);
+
+        	aTxBuffer[0]=1;
+        	aTxBuffer[1]=2;
+        	aTxBuffer[2]=3;
+        	aTxBuffer[3]=4;
+        	aTxBuffer[4]=5;
+        	aTxBuffer[5]=6;
+        	aTxBuffer[6]=7;
+        	aTxBuffer[7]=8;
+        	aTxBuffer[8]=9;
+        	aTxBuffer[9]=10;
+
+    		if(HAL_UART_Transmit_DMA(&uartHandle, (uint8_t*)aTxBuffer, TXBUFFERSIZE)!= HAL_OK)
+    		{
+    			ErrorHandler();
+    		}
+
+
     	}
+
+
     }
 
 }

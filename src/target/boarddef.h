@@ -2,9 +2,7 @@ typedef enum {INVERTED_RX, RX, GPS, OSD} usart_usage ;
 
 
 
-#define USARTx_DMA_TX_IRQHandler   DMA1_Stream3_IRQHandler
-#define USARTx_DMA_RX_IRQHandler   DMA1_Stream1_IRQHandler
-#define USARTx_IRQHandler          USART3_IRQHandler
+
 
 //uint16_t pins;
 

@@ -77,8 +77,6 @@ void SystemClock_Config(void)
 void BoardInit(void)
 {
 
-	SCB->VTOR = ADDRESS_FLASH_START; //set vector register to firmware start
-	__enable_irq(); // enable interrupts
 
 	HAL_Init();
 
@@ -101,14 +99,14 @@ void BoardInit(void)
     //__HAL_RCC_GPIOH_CLK_ENABLE();
     //__HAL_RCC_GPIOI_CLK_ENABLE();
 
-    __HAL_RCC_DMA1_CLK_ENABLE()
+    __HAL_RCC_DMA1_CLK_ENABLE();
     __HAL_RCC_DMA2_CLK_ENABLE();
 
     __USART1_CLK_ENABLE();
     __USART2_CLK_ENABLE();
     __USART3_CLK_ENABLE();
-    __USART4_CLK_ENABLE();
-    __USART5_CLK_ENABLE();
+    __UART4_CLK_ENABLE();
+    __UART5_CLK_ENABLE();
     __USART6_CLK_ENABLE();
 }
 

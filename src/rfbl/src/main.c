@@ -46,6 +46,7 @@ int main(void)
 
     rfblVersion = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
     cfg1Version = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
+
     if ((rfblVersion != RFBL_VERSION) || (cfg1Version != CFG1_VERSION)) { //no data or wrong version, let's put defaults
 		rtc_write_backup_reg(RFBL_BKR_RFBL_VERSION_REG,   RFBL_VERSION);
 		rtc_write_backup_reg(RFBL_BKR_CFG1_VERSION_REG,   CFG1_VERSION);
@@ -65,7 +66,7 @@ int main(void)
 	//	rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
 	//	boot_to_app();
 	//}
-	bootDirection = BOOT_TO_RFBL_COMMAND;
+	//bootDirection = BOOT_TO_RFBL_COMMAND;
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
@@ -75,10 +76,45 @@ int main(void)
 	simpleDelay_ASM(1000);
 #endif
 
+
 #ifdef HARDWARE_RFBL_PLUG
     simpleDelay_ASM(10); //let pin status stabilize
 
 	rfbl_plug_attatched = true;
+
+	//RX
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0);
+    GPIO_InitStructure.Pin   = GPIO_PIN_0;
+    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_1);
+    GPIO_InitStructure.Pin   = GPIO_PIN_1;
+    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3);
+    GPIO_InitStructure.Pin   = GPIO_PIN_3;
+    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2);
+    GPIO_InitStructure.Pin   = GPIO_PIN_2;
+    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    inlineDigitalLo(GPIOB, GPIO_PIN_0);
+    inlineDigitalLo(GPIOB, GPIO_PIN_1);
+    inlineDigitalLo(GPIOA, GPIO_PIN_3);
+    inlineDigitalLo(GPIOA, GPIO_PIN_2);
 
 	//RX
     HAL_GPIO_DeInit(RFBL_GPIO1, RFBL_PIN1);
@@ -417,7 +453,7 @@ void boot_to_app (void) {
 
 	USB_DEVICE_DeInit();
 	HAL_RCC_DeInit();
-	DelayMs();
+	DelayMs(1);
 
 	pFunction Jump_To_Application;
 	uint32_t JumpAddress;
