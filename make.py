@@ -456,7 +456,7 @@ def configure_target(TARGET):
         "src/low_level_driver/" + MCU_FAMILY,
     ]
 
-    SOURCE_FILES = []
+    SOURCE_FILES = ["src/low_level_driver/stm32_startup/startup_%s.s" % TARGET_DEVICE.lower()]
 
     # per project includes
 
