@@ -445,7 +445,6 @@ def configure_target(TARGET):
         "src/%s/inc" % PROJECT,
         CMSIS_DIR,
         HAL_DIR + "/Inc",
-        "src/low_level_driver/stm32_startup",
         MCU_DIR,
         "src/low_level_driver/" + MCU_FAMILY,
     ]
@@ -453,7 +452,6 @@ def configure_target(TARGET):
     SOURCE_DIRS = [
         HAL_DIR + "/Src",
         "src/%s/src" % PROJECT,
-        "src/low_level_driver/stm32_startup",
         MCU_DIR,
         "src/low_level_driver/" + MCU_FAMILY,
     ]
