@@ -88,7 +88,7 @@ if IS_CLEANUP:
     sys.exit(0)
 
 TargetConfig = namedtuple('TargetConfig', [
-    'target', 'board',
+    'target',
     'sourcefiles', 'sourcedirs',
     'cflags', 'asmflags', 'ldflags'
 ])
@@ -97,9 +97,72 @@ def configure_target(TARGET):
     # required features
     FEATURES = ["leds"]
 
+    # stm32f051x8 stm32f103xb stm32f303xc stm32f405xx stm32f411xe stm32f745xx stm32f746xx
+
     ################################################################################
     # Determine target variables and features
 
+    if TARGET == "stm32f051x8":
+        PROJECT = "esc"
+        TARGET_DEVICE = "STM32F051x8"
+        TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
+        TARGET_PROCESSOR_TYPE  = "f0"
+        OPTIMIZE_FLAGS = "-O2"
+
+    elif TARGET == "stm32f103xb":
+        PROJECT = "flight_controller"
+        TARGET_DEVICE = "STM32F103xB"
+        TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
+        TARGET_PROCESSOR_TYPE  = "f1"
+        FEATURES.extend(["usb_fs"])
+        OPTIMIZE_FLAGS = "-O2"
+
+    elif TARGET == "stm32f303xc":
+        PROJECT = "flight_controller"
+        TARGET_DEVICE = "STM32F303xC"
+        TARGET_SCRIPT = "stm32_flash_f303_256k_bl.ld"
+        TARGET_PROCESSOR_TYPE  = "f3"
+        FEATURES.extend(["flight_logger", "mpu6500/spi", "usb_fs"])
+        OPTIMIZE_FLAGS = "-O2"
+
+    elif TARGET == "stm32f405xx":
+        PROJECT = "flight_controller"
+        TARGET_DEVICE = "STM32F405xx"
+        TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-O2"
+
+    elif TARGET == "stm32f405xx_rfbl":
+        PROJECT = "boot_loader"
+        TARGET_DEVICE = "STM32F405xx"
+        TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Os"
+
+    elif TARGET == "stm32f411xe":
+        PROJECT = "flight_controller"
+        TARGET_DEVICE = "STM32F411xE"
+        TARGET_SCRIPT = "stm32_flash_f411.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-O2"
+
+    elif TARGET == "stm32f746xx":
+        PROJECT = "flight_controller"
+        TARGET_DEVICE = "STM32F746xx"
+        TARGET_SCRIPT = "STM32F746NGHx_FLASH_bl.ld"
+        TARGET_PROCESSOR_TYPE  = "f7"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-O2"   
+    
+    else:
+        print("ERROR: NOT VALID TARGET: ", TARGET, file=sys.stderr)
+        sys.exit(1)
+
+
+        """
     if TARGET == "cc3d":
         PROJECT = "rffw"
         TARGET_BOARD = "cc3d"
@@ -323,10 +386,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
         TARGET_PROCESSOR_TYPE  = "f0"
         OPTIMIZE_FLAGS = "-O2"
-
-    else:
-        print("ERROR: NOT VALID TARGET: ", TARGET, file=sys.stderr)
-        sys.exit(1)
+    """
 
 
 
@@ -378,7 +438,7 @@ def configure_target(TARGET):
         print("ERROR: NOT VALID PROCESSOR TYPE FOR TARGET %s, CHECK MAKE FILE CODE" % TARGET, file=sys.stderr)
         sys.exit(1)
 
-    MCU_DIR    = "src/target/stm32%s" % TARGET_PROCESSOR_TYPE
+    MCU_DIR    = "src/low_level_driver/stm32%s" % TARGET_PROCESSOR_TYPE
     CMSIS_DIR  = "lib/CMSIS/Device/ST/STM32%sxx/Include" % TARGET_PROCESSOR_TYPE.upper()
     HAL_DIR    = "lib/STM32%sxx_HAL_Driver" % TARGET_PROCESSOR_TYPE.upper()
 
@@ -393,30 +453,28 @@ def configure_target(TARGET):
         "src/%s/inc" % PROJECT,
         CMSIS_DIR,
         HAL_DIR + "/Inc",
-        "src/target/" + TARGET_BOARD,
         MCU_DIR,
-        "src/target/" + MCU_FAMILY,
+        "src/low_level_driver/" + MCU_FAMILY,
     ]
 
     SOURCE_DIRS = [
         HAL_DIR + "/Src",
         "src/%s/src" % PROJECT,
-        "src/target/" + TARGET_BOARD,
         MCU_DIR,
-        "src/target/" + MCU_FAMILY,
+        "src/low_level_driver/" + MCU_FAMILY,
     ]
 
-    SOURCE_FILES = []
+    SOURCE_FILES = ["src/low_level_driver/stm32_startup/startup_%s.s" % TARGET_DEVICE.lower()]
 
     # per project includes
 
-    if PROJECT == "rffw":
-        INCLUDE_DIRS.append("src/rffw/inc/input")
-        SOURCE_DIRS.append("src/rffw/src/input")
+    if PROJECT == "flight_controller":
+        INCLUDE_DIRS.append("src/flight_controller/inc/input")
+        SOURCE_DIRS.append("src/flight_controller/src/input")
         FEATURES.extend(["actuator_output", "buzzer", "config", "flash_chip", "pid", "math", "filter", "serial", "mixer", "rx"])
-    elif PROJECT == "rfesc":
+    elif PROJECT == "esc":
         pass
-    elif PROJECT == "rfbl":
+    elif PROJECT == "boot_loader":
         pass
     else:
         print("ERROR: NOT VALID PROJECT TYPE, CHECK MAKE FILE CODE", file=sys.stderr)
@@ -443,8 +501,8 @@ def configure_target(TARGET):
             SOURCE_DIRS.extend(USB_SOURCE_DIRS)
             INCLUDE_DIRS.extend(USB_INCLUDE_DIRS)
             # add usb class specific files
-            SOURCE_DIRS.append("src/target/" + feature)
-            INCLUDE_DIRS.append("src/target/" + feature)
+            SOURCE_DIRS.append("src/low_level_driver/" + feature)
+            INCLUDE_DIRS.append("src/low_level_driver/" + feature)
 
         elif feature.startswith("mpu"):
             # gyro named by "gyro/bus", e.g. "mpu6000/spi"
@@ -485,8 +543,8 @@ def configure_target(TARGET):
     ])
 
     mapFile = os.path.join("output", TARGET + ".map")
-    linkerDir = os.path.join("src", "target")
-    ldScript = os.path.join("src", "target", TARGET_SCRIPT)
+    linkerDir = os.path.join("src", "low_level_driver")
+    ldScript = os.path.join("src", "low_level_driver", TARGET_SCRIPT)
     LDFLAGS = " ".join([
         "-lm -nostartfiles --specs=nano.specs -lc -lnosys",
         ARCH_FLAGS,
@@ -504,7 +562,6 @@ def configure_target(TARGET):
 
     target_config = TargetConfig(
         target=TARGET,
-        board=TARGET_BOARD,
         sourcefiles=SOURCE_FILES,
         sourcedirs=SOURCE_DIRS,
         cflags=CFLAGS,
@@ -656,7 +713,7 @@ def FileModified(fileName, target_config):
         return True
 
     # if the target file is more recent than the output, return true
-    target_file = "src/target/%s/target.h".path % target_config.board
+    target_file = "src/low_level_driver/boarddef.h".path
     if os.path.getmtime(target_file) > os.path.getmtime(outputFile):
         return True
 

@@ -182,12 +182,19 @@ void USARTx_DMA_RX_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&dmaUartRx);
 
-  if (HAL_DMA_GetState(&dmaUartRx) == HAL_DMA_STATE_READY) {
-      // reset chip select line
-      //HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
+//  typedef enum
+//  {
+//    HAL_DMA_STATE_RESET             = 0x00U,  /*!< DMA not yet initialized or disabled */
+//    HAL_DMA_STATE_READY             = 0x01U,  /*!< DMA initialized and ready for use   */
+//    HAL_DMA_STATE_BUSY              = 0x02U,  /*!< DMA process is ongoing              */
+//    HAL_DMA_STATE_TIMEOUT           = 0x03U,  /*!< DMA timeout state                   */
+//    HAL_DMA_STATE_ERROR             = 0x04U,  /*!< DMA error state                     */
+//    HAL_DMA_STATE_ABORT             = 0x05U,  /*!< DMA Abort state                     */
+//  }HAL_DMA_StateTypeDef;
 
-      // run callback for completed gyro read
-      //accgyroDeviceReadComplete();
+  if (HAL_DMA_GetState(&dmaUartRx) == HAL_DMA_STATE_READY) {
+      // RX is done. Call whatever function you want to happen here.
+
   }
 
 }
@@ -195,6 +202,7 @@ void USARTx_DMA_RX_IRQHandler(void)
 void USARTx_DMA_TX_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&dmaUartTx);
+
 }
 
 void USARTx_IRQHandler(void)
