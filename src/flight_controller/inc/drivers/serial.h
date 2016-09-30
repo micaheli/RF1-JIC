@@ -15,6 +15,7 @@ unsigned char aTxBuffer[TXBUFFERSIZE];
 /* Buffer used for reception */
 unsigned char aRxBuffer[RXBUFFERSIZE];
 
+unsigned char txTransimissionReady;
 
 void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *huart);
 void UsartDmaInit(UART_HandleTypeDef *huart);

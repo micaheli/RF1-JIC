@@ -130,8 +130,16 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
+        FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
+
+    elif TARGET == "stm32f405xx_rfbl":
+        PROJECT = "boot_loader"
+        TARGET_DEVICE = "STM32F405xx"
+        TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Os"
 
     elif TARGET == "stm32f411xe":
         PROJECT = "flight_controller"

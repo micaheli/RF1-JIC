@@ -52,29 +52,47 @@ int main(void)
     bzero(aRxBuffer, sizeof(aRxBuffer));
     bzero(aTxBuffer, sizeof(aTxBuffer));
 
+    txTransimissionReady = 1;
+
     while (1) {
     	scheduler(count++);
     	if (count == 16) {
     		count = 0;
-
-        	DelayMs(500);
-
-        	aTxBuffer[0]=1;
-        	aTxBuffer[1]=2;
-        	aTxBuffer[2]=3;
-        	aTxBuffer[3]=4;
-        	aTxBuffer[4]=5;
-        	aTxBuffer[5]=6;
-        	aTxBuffer[6]=7;
-        	aTxBuffer[7]=8;
-        	aTxBuffer[8]=9;
-        	aTxBuffer[9]=10;
-
-    		if(HAL_UART_Transmit_DMA(&uartHandle, (uint8_t*)aTxBuffer, TXBUFFERSIZE)!= HAL_OK)
+/*
+    		if(uartHandle.gState != HAL_UART_STATE_BUSY_TX)
     		{
-    			ErrorHandler();
-    		}
+				aTxBuffer[0]=1;
+				aTxBuffer[1]=2;
+				aTxBuffer[2]=3;
+				aTxBuffer[3]=4;
+				aTxBuffer[4]=5;
+				aTxBuffer[5]=6;
+				aTxBuffer[6]=7;
+				aTxBuffer[7]=8;
+				aTxBuffer[8]=9;
+				aTxBuffer[9]=10;
 
+				if(HAL_UART_Transmit_DMA(&uartHandle, (uint8_t*)aTxBuffer, TXBUFFERSIZE)!= HAL_OK)
+				{
+					ErrorHandler();
+				}
+    		}
+*/
+    		if(uartHandle.RxState != HAL_UART_STATE_BUSY_RX)
+    		{
+
+				// ##-2- Put UART peripheral in reception process ###########################
+				if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
+				{
+					ErrorHandler();
+				}
+				for (unsigned char i=0;i<63;i++) {
+					tInBuffer[i] = aRxBuffer[i];
+				}
+				tInBuffer[0] = 1;
+
+			    USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
+    		}
 
     	}
 
