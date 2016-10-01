@@ -2,7 +2,7 @@
 buzzerStatus_t buzzerStatus;
 
 
-void InitializeBuzzer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
+void BuzzerInit(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -16,6 +16,9 @@ void InitializeBuzzer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
     HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
 
     HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
+
+    buzzerStatus.status = STATE_BUZZER_OFF;
+
 }
 
 void UpdateBuzzer(void)
@@ -33,17 +36,19 @@ void UpdateBuzzer(void)
     switch(buzzerStatus.status)
     {
 
-    case STATE_BUZZER_ON:
-    	BUZZER_ON;
+    default:
     case STATE_BUZZER_OFF:
         BUZZER_OFF;
+        break;
+    case STATE_BUZZER_ON:
+    	BUZZER_ON;
+    	break;
     case STATE_BUZZER_LOST:
-    	Buzz(timeNow,300, 400);
-    	Buzz(timeNow,15, 300);
     	Buzz(timeNow,40, 500);
+    	break;
     case STATE_BUZZER_SIMPLE:
     	Buzz(timeNow,300,400);
-    	//simple buzz
+    	break;
 
      }
 
