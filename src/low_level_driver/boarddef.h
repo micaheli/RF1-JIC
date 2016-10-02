@@ -50,12 +50,6 @@
 #define RFBL_HID_PRODUCT_STRING "Revolution RFBL"
 
 
-//STM32F4 UID address
-#define DEVICE_ID1					0x1FFF7A10
-#define DEVICE_ID2					0x1FFF7A14
-#define DEVICE_ID3					0x1FFF7A18
-
-
 //Sbus inverter config
 #define USE_SBUS_HARDWARE_INVERTER
 #define SBUS_HARDWARE_GPIO			GPIOC
@@ -96,11 +90,6 @@
 #define SPEK_GPIO    GPIOB
 #define SPEK_PIN     GPIO_PIN_11
 
-#define USE_RFBL
-#define ADDRESS_RFBL_START		(0x08000000)
-#define ADDRESS_CONFIG_START	(0x0800C000)
-#define ADDRESS_FLASH_START		(0x08020000)
-#define ADDRESS_FLASH_END		(0x080FFFF0)
 
 
 /*
@@ -126,6 +115,17 @@ enum {
 
 */
 
+
+typedef struct {
+	USART_TypeDef *port;
+	uint8_t async;
+} serial_type;
+
+
+typedef struct {
+	SPI_TypeDef *port;
+} spi_type;
+
 typedef struct {
 	uint32_t PinMode;
 	uint32_t Pull;
@@ -137,9 +137,10 @@ typedef struct {
 
 	uint8_t RXPort;
 	uint8_t TXPort;
+
 	uint8_t SerialInstance; // loaded from port array
 
-	uint32_t BaudRate
+	uint32_t BaudRate;
 	uint32_t WordLength;
 	uint32_t StopBits;
 	uint32_t Parity;
@@ -166,21 +167,36 @@ typedef struct {
 	uint32_t RXDMAMode;
 	uint32_t RXDMAPriority;
 
-	//unsigned char used;
-	//UART_HandleTypeDef handle;
-	//USART_TypeDef *usart;
-	//GPIO_TypeDef *txGpio;
-	//uint16_t txPin;
-	//uint8_t txGpioAf;
-	//uint8_t txIrqn;
-	//GPIO_TypeDef *rxGpio;
-	//uint16_t rxPin;
-	//uint8_t rxGpioAf;
-	//uint8_t rxIrqn;
 } board_serial;
 
 
 typedef struct {
+	uint8_t port;
+	uint32_t pin;
+	uint8_t enabled;
+} internal_led;
+
+typedef struct {
+	uint8_t port;
+	uint32_t pin;
+	uint8_t enabled;
+} gyro;
+
+
+
+typedef struct {
+	uint32_t fc_pllm;
+	uint32_t fc_plln;
+	uint32_t fc_pllp;
+	uint32_t fc_pllq;
+
+	internal_led internalLeds[3];
+
+	uint8_t buzzerPort;
+	uint32_t buzzerPin;
+
+	gyro gyros[3];
+
 	board_serial serials[6];
 } board_record;
 
