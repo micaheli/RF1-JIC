@@ -5,20 +5,20 @@
 ledStatus_t ledStatus;
 
 //todo: Do we want to init LEDs like this? Maybe an array is a better method
-void LedInit (void)
+void InitLeds (void)
 {
 #if LEDn >= 1
-    InitializeLED(LED1_GPIO_Port, LED1_GPIO_Pin);
+	InitializeLed(LED1_GPIO_Port, LED1_GPIO_Pin);
 #endif
 #if LEDn >= 2
-    InitializeLED(LED2_GPIO_Port, LED2_GPIO_Pin);
+    InitializeLed(LED2_GPIO_Port, LED2_GPIO_Pin);
 #endif
 #if LEDn >= 3
-    InitializeLED(LED3_GPIO_Port, LED3_GPIO_Pin);
+    InitializeLed(LED3_GPIO_Port, LED3_GPIO_Pin);
 #endif
 }
 
-void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
+void InitializeLed(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
 

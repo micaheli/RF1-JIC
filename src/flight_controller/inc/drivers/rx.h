@@ -8,11 +8,12 @@
 //config structure which is loaded by config
 typedef struct {
     float    deadBand[MAXCHANNELS];
-    uint16_t midRc[MAXCHANNELS];
-    uint16_t minRc[MAXCHANNELS];
-    uint16_t maxRc[MAXCHANNELS];
-    uint8_t  useCurve[MAXCHANNELS];
+    uint32_t midRc[MAXCHANNELS];
+    uint32_t minRc[MAXCHANNELS];
+    uint32_t maxRc[MAXCHANNELS];
+    uint32_t useCurve[MAXCHANNELS];
     float    curveExpo[MAXCHANNELS];
+    float    rates[3];
 } rc_control_config;
 
 //Enumerate the different channels in code. The TX map is not affected by this. This is for internal code only.
@@ -40,5 +41,5 @@ extern float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this
 extern float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
 
 void InitRcData(void);
-void InlineCollectRcCommand (uint16_t rcData[], float trueRcCommandF[], float curvedRcCommandF[], rc_control_config rcControlsConfig);
-float InlineApplyRcCommandCurve (float rcCommand, uint8_t curveToUse, float expo);
+void InlineCollectRcCommand (uint32_t rcData[], float trueRcCommandF[], float curvedRcCommandF[], rc_control_config rcControlsConfig);
+float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo);

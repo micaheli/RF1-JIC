@@ -36,12 +36,13 @@ int main(void)
 
     LoadConfig();
 
-    BuzzerInit();
-    LedInit();
-    UsbInit();
-
+    InitBuzzer();
+    InitLeds();
+    InitUsb();
     InitRcData();
     InitMixer();
+    InitFlightCode();
+    InitPid();
 
     if (!accgyroInit(gyroConfig.loopCtrl)) {
         //ErrorHandler();

@@ -10,10 +10,10 @@ void InitRcData (void) {
 	bzero(smoothedRcCommandF, MAXCHANNELS);
 }
 
-inline void InlineCollectRcCommand (uint16_t rcData[], float trueRcCommandF[], float curvedRcCommandF[], rc_control_config rcControlsConfig) {
+inline void InlineCollectRcCommand (uint32_t rcData[], float trueRcCommandF[], float curvedRcCommandF[], rc_control_config rcControlsConfig) {
 
-	uint8_t axis;
-	float rangedRx, oldValue, oldMax, oldMin, newMax, newMin;
+	uint32_t axis;
+	float rangedRx;
 
 	//scale
     //////masterConfig.rxConfig.midrc = 1500;
@@ -29,23 +29,12 @@ inline void InlineCollectRcCommand (uint16_t rcData[], float trueRcCommandF[], f
 	//rc data is taken from RX and using the map is put into the correct "axis"
 	for (axis = 0; axis < MAXCHANNELS; axis++) {
 
-		if (rcData[axis] < rcControlsConfig.midRc[axis]) { //negative  range
-			//-1 to 0
-			oldMax = rcControlsConfig.midRc[axis];
-			oldMin = rcControlsConfig.minRc[axis];
-			newMax = 0;
-			newMin = -1;
-		} else { //positive range
-			//0 to +1
-			oldMax = rcControlsConfig.maxRc[axis];
-			oldMin = rcControlsConfig.midRc[axis];
-			newMax = 1;
-			newMin = 0;
-		}
+		if (rcData[axis] < rcControlsConfig.midRc[axis])  //negative  range
+			rangedRx = InlineChangeRangef(rcData[axis], rcControlsConfig.midRc[axis], rcControlsConfig.minRc[axis], 0.0, -1.0); //-1 to 0
+		else
+			rangedRx = InlineChangeRangef(rcData[axis], rcControlsConfig.maxRc[axis], rcControlsConfig.midRc[axis], 1.0, 0.0); //0 to +1
 
-		oldValue = rcData[axis];
 
-		rangedRx = InlineChangeRangef(oldValue, oldMax, oldMin, newMax, newMin);
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
 		if (ABS(rangedRx) > rcControlsConfig.deadBand[axis]) {
@@ -62,7 +51,7 @@ inline void InlineCollectRcCommand (uint16_t rcData[], float trueRcCommandF[], f
 }
 
 
-inline float InlineApplyRcCommandCurve (float rcCommand, uint8_t curveToUse, float expo) {
+inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo) {
 
 	switch (curveToUse) {
 

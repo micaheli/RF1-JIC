@@ -1,17 +1,54 @@
 #include "includes.h"
 
-pid_output pids[AXIS_NUMBER] = {
-	{0.0f, 0.0f, 0.0f},
-	{0.0f, 0.0f, 0.0f},
-	{0.0f, 0.0f, 0.0f}
-};
+paf_state pitchKdFilterState;
+paf_state rollKdFilterState;
+paf_state yawKdFilterState;
 
-void pidController (float dpsGyroArray[], float curvedRcCommandF[], pid_output pids[], float actuatorRange) {
-	dpsGyroArray = dpsGyroArray;
-	curvedRcCommandF = curvedRcCommandF;
-	pids = pids;
-	actuatorRange = actuatorRange;
+void InitPid (void) {
+
+	pitchKdFilterState = InitPaf(filterConfig.pitchKdFilter.q, filterConfig.pitchKdFilter.r, filterConfig.pitchKdFilter.q, 0);
+	rollKdFilterState  = InitPaf(filterConfig.rollKdFilter.q, filterConfig.rollKdFilter.r, filterConfig.rollKdFilter.q, 0);
+	yawKdFilterState   = InitPaf(filterConfig.yawKdFilter.q, filterConfig.yawKdFilter.r, filterConfig.yawKdFilter.q, 0);
+
 }
+
+inline pid_output InlinePidController (float filteredGyroData[], float curvedRcCommandF[], pid_output flightPids[], float actuatorRange) {
+
+	int32_t axis;
+
+#define KD_RING_BUFFER_SIZE 256
+
+	static float kd_ring_buffer_p[KD_RING_BUFFER_SIZE];
+	static float kd_ring_buffer_p_sum = 0;
+	static uint32_t kd_ring_buffer_p_pointer = 0;
+	static float kd_ring_buffer_r[KD_RING_BUFFER_SIZE];
+	static float kd_ring_buffer_r_sum = 0;
+	static uint32_t kd_ring_buffer_r_pointer = 0;
+	static float kd_ring_buffer_y[KD_RING_BUFFER_SIZE];
+	static float kd_ring_buffer_y_sum = 0;
+	static uint32_t kd_ring_buffer_y_pointer = 0;
+
+	(void)(filteredGyroData);
+	(void)(curvedRcCommandF);
+	(void)(flightPids)
+	(void)(actuatorRange);
+
+
+	for (axis = 2; axis >= 0; axis--) {
+
+	}
+
+
+	flightPids.kp = 0.0f;
+	flightPids.ki = 0.0f;
+	flightPids.kd = 0.0f;
+
+
+	return (pids);
+
+}
+
+
 /*
 #define KD_RING_BUFFER_SIZE 256
 

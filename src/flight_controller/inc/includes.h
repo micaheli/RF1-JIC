@@ -43,7 +43,7 @@
 #include "drivers/serial.h"
 #include "drivers/leds.h"
 #include "drivers/buzzer.h"
-#include "drivers/pid.h"
+#include "pid.h"
 #include "drivers/rx.h"
 #include "drivers/filter.h"
 #include "drivers/math.h"

@@ -33,7 +33,7 @@ void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data) {
     HAL_PWR_DisableBkUpAccess();
 }
 
-void UsbInit(void) {
+void InitUsb(void) {
 	USB_DEVICE_Init();
 }
 

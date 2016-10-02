@@ -1,15 +1,30 @@
 #pragma once
 
-//Single axis kalman filter
+//Single axis paf filter
 typedef struct {
 	float q; //process noise covariance
 	float r; //measurement noise covariance
 	float x; //value
 	float p; //estimation error covariance
-	float k; //kalman gain
-} kalman_state;
+	float k; //paf gain
+} paf_state;
 
-kalman_state kalman_init(float q, float r, float p, float intial_value);
-void kalman_update(kalman_state *state, float measurement);
+//config structure which is loaded by config
+typedef struct {
+    float q;
+    float r;
+    float p;
+} filter_config;
+
+typedef struct {
+	filter_config gyroFilter;
+	filter_config pitchKdFilter;
+	filter_config rollKdFilter;
+	filter_config yawKdFilter;
+} filter_device;
+
+
+paf_state InitPaf(float q, float r, float p, float intial_value);
+void PafUpdate(paf_state *state, float measurement);
 
 #define M_PI_FLOAT	3.14159265358979323846f

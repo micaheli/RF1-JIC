@@ -16,4 +16,5 @@ extern pid_output pids[AXIS_NUMBER];
 
 
 
-void pidController (float dpsGyroArray[], float curvedRcCommandF[], pid_output pids[], float actuatorRange);
+pid_output InlinePidController (float dpsGyroArray[], float curvedRcCommandF[], pid_output pids[], float actuatorRange);
+

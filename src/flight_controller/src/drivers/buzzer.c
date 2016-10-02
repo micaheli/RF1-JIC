@@ -2,7 +2,7 @@
 buzzerStatus_t buzzerStatus;
 
 
-void BuzzerInit(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
+void InitBuzzer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
 

@@ -1,3 +1,4 @@
 #pragma once
 
-void flightCode(float dpsGyroArray[]);
+void InitFlightCode(void);
+void InlineFlightCodeFlightCode(float dpsGyroArray[]);
