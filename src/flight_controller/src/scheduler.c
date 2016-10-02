@@ -50,6 +50,7 @@ void taskHandlePcComm(void)
 	if (tOutBuffer[0]==2) { //we have a usb report
 
 		ledStatus.status = tOutBuffer[1];
+		buzzerStatus.status = tOutBuffer[2];
 		tInBuffer[0] = 1;
 		tInBuffer[1]=(int8_t)dpsGyroArray[0];
 		tInBuffer[2]=(int8_t)dpsGyroArray[1];

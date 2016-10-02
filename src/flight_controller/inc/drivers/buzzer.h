@@ -8,7 +8,7 @@
 
 enum
 {
-    STATE_BUZZER_OFF,
+    STATE_BUZZER_OFF = 0,
     STATE_BUZZER_ON,
     STATE_BUZZER_ERROR,
 	STATE_BUZZER_LOST,
@@ -27,6 +27,6 @@ typedef struct buzzerStatus_t
 extern buzzerStatus_t buzzerStatus;
 
 //void BuzzerInit (void);
-void InitializeBuzzer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+void BuzzerInit(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2);
 void UpdateBuzzer(void);

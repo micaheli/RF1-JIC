@@ -1,5 +1,7 @@
 #include "includes.h"
 
+#include <stdio.h>
+
 ledStatus_t ledStatus;
 
 //todo: Do we want to init LEDs like this? Maybe an array is a better method
@@ -30,6 +32,8 @@ void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
     HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
 
     HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
+
+    ledStatus.status = LEDS_OFF;
 }
 
 void UpdateLeds(void)

@@ -33,10 +33,12 @@ int main(void)
 	__enable_irq(); // enable interrupts
 
     BoardInit();
-    LedInit();
-    UsbInit();
 
     LoadConfig();
+
+    BuzzerInit();
+    LedInit();
+    UsbInit();
 
     InitRcData();
     InitMixer();
@@ -45,6 +47,7 @@ int main(void)
         //ErrorHandler();
     }
 
+    buzzerStatus.status = STATE_BUZZER_OFF;
     ledStatus.status = LEDS_SLOW_BLINK;
 
     BoardUsartInit();
