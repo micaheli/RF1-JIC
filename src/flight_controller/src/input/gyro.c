@@ -47,7 +47,7 @@ inline void InlineUpdateGyro(int16_t rawGyro[], int16_t rawGyroRotated[], float 
     InlineApplyGyroRotation(rawGyro, rawGyroRotated);
     InlineApplyBoardRotationAndScale(rawGyroRotated, dpsGyroArray, scale);
 
-    flightCode(dpsGyroArray);
+    InlineFlightCode(dpsGyroArray);
 }
 
 inline void InlineApplyGyroRotation (int16_t rawGyro[], int16_t rawGyroRotated[]) {

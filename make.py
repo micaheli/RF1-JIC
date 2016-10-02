@@ -393,19 +393,19 @@ def configure_target(TARGET):
     ################################################################################
     # Set per target compilation options
 
-    STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
+    STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -D" + TARGET
     STM32F0_ARCH_FLAGS = "-mthumb -mcpu=cortex-m0"
 
-    STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
+    STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -D" + TARGET
     STM32F1_ARCH_FLAGS = "-mthumb -mcpu=cortex-m3"
 
-    STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
+    STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -D" + TARGET
     STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-    STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE
+    STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -D" + TARGET
     STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=25000000 -D" + TARGET_DEVICE
+    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=25000000 -D" + TARGET_DEVICE + " -D" + TARGET
     STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
 
@@ -471,7 +471,7 @@ def configure_target(TARGET):
     if PROJECT == "flight_controller":
         INCLUDE_DIRS.append("src/flight_controller/inc/input")
         SOURCE_DIRS.append("src/flight_controller/src/input")
-        FEATURES.extend(["actuator_output", "buzzer", "config", "flash_chip", "pid", "math", "filter", "serial", "mixer", "rx"])
+        FEATURES.extend(["actuator_output", "buzzer", "config", "flash_chip", "math", "filter", "serial", "mixer", "rx"])
     elif PROJECT == "esc":
         pass
     elif PROJECT == "boot_loader":

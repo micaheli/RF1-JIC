@@ -12,7 +12,7 @@ void InitPid (void) {
 
 }
 
-inline pid_output InlinePidController (float filteredGyroData[], float curvedRcCommandF[], pid_output flightPids[], float actuatorRange) {
+inline void InlinePidController (float filteredGyroData[], float curvedRcCommandF[], pid_output flightPids[], float actuatorRange) {
 
 	int32_t axis;
 
@@ -30,8 +30,18 @@ inline pid_output InlinePidController (float filteredGyroData[], float curvedRcC
 
 	(void)(filteredGyroData);
 	(void)(curvedRcCommandF);
-	(void)(flightPids)
+	(void)(flightPids);
 	(void)(actuatorRange);
+
+	(void)(kd_ring_buffer_p);
+	(void)(kd_ring_buffer_p_sum);
+	(void)(kd_ring_buffer_p_pointer);
+	(void)(kd_ring_buffer_r);
+	(void)(kd_ring_buffer_r_sum);
+	(void)(kd_ring_buffer_r_pointer);
+	(void)(kd_ring_buffer_y);
+	(void)(kd_ring_buffer_y_sum);
+	(void)(kd_ring_buffer_y_pointer);
 
 
 	for (axis = 2; axis >= 0; axis--) {
@@ -39,12 +49,9 @@ inline pid_output InlinePidController (float filteredGyroData[], float curvedRcC
 	}
 
 
-	flightPids.kp = 0.0f;
-	flightPids.ki = 0.0f;
-	flightPids.kd = 0.0f;
-
-
-	return (pids);
+	flightPids->kp = 0.0f;
+	flightPids->ki = 0.0f;
+	flightPids->kd = 0.0f;
 
 }
 
