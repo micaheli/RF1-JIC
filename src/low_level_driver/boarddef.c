@@ -1,3 +1,10 @@
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+#include <stm32f405xx.h>
 #include "includes.h"
 
 GPIO_TypeDef *ports[10];
@@ -16,7 +23,7 @@ int InitializeMCUSettings() {
 	ports[5]=GPIOF;
 	ports[6]=GPIOG;
 	ports[7]=GPIOH;
-	ports[8]=GPIOJ;
+	ports[8]=_GPIOJ;
 	ports[9]=GPIOK;
 
 	bzero(usarts, sizeof(usarts));
@@ -30,3 +37,7 @@ int InitializeMCUSettings() {
 
 	return(1);
 }
+
+#ifdef F4
+#define _GPIOA null
+#elf

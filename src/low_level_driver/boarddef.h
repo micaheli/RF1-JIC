@@ -89,9 +89,9 @@
 
 //RFBL config
 #define HARDWARE_RFBL_PLUG
-#define RFBL_GPIO1   GPIOA //Servo5
+#define RFBL_GPIO1   GPIOA /* Servo5 */
 #define RFBL_PIN1    GPIO_PIN_1
-#define RFBL_GPIO2   GPIOA //Servo6
+#define RFBL_GPIO2   GPIOA /* Servo6 */
 #define RFBL_PIN2    GPIO_PIN_0
 #define SPEK_GPIO    GPIOB
 #define SPEK_PIN     GPIO_PIN_11
@@ -123,7 +123,49 @@ enum {
 	SERIAL_ SPKTRUM_TELEMETRY,
 };
 
+
+*/
+
 typedef struct {
+	uint32_t PinMode;
+	uint32_t Pull;
+	uint32_t Speed;
+	uint32_t TXAlternate;
+	uint32_t TXPin;
+	uint32_t RXAlternate;
+	uint32_t RXPin;
+
+	uint8_t RXPort;
+	uint8_t TXPort;
+	uint8_t SerialInstance; // loaded from port array
+
+	uint32_t BaudRate
+	uint32_t WordLength;
+	uint32_t StopBits;
+	uint32_t Parity;
+	uint32_t HwFlowCtl;
+	uint32_t Mode;
+
+	uint8_t  TXDMAStream; // looked up from array
+	uint32_t TXDMAChannel;
+	uint32_t TXDMADirection;
+	uint32_t TXDMAPeriphInc;
+	uint32_t TXDMAMemInc;
+	uint32_t TXDMAPeriphDataAlignment;
+	uint32_t TXDMAMemDataAlignment;
+	uint32_t TXDMAMode;
+	uint32_t TXDMAPriority;
+
+	uint8_t  RXDMAStream; // looked up from array
+	uint32_t RXDMAChannel;
+	uint32_t RXDMADirection;
+	uint32_t RXDMAPeriphInc;
+	uint32_t RXDMAMemInc;
+	uint32_t RXDMAPeriphDataAlignment;
+	uint32_t RXDMAMemDataAlignment;
+	uint32_t RXDMAMode;
+	uint32_t RXDMAPriority;
+
 	//unsigned char used;
 	//UART_HandleTypeDef handle;
 	//USART_TypeDef *usart;
@@ -141,7 +183,7 @@ typedef struct {
 typedef struct {
 	board_serial serials[6];
 } board_record;
-*/
+
 
 
 //USART Config
