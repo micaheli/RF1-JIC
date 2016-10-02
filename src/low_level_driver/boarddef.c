@@ -7,7 +7,9 @@
 #include "includes.h"
 
 GPIO_TypeDef *ports[11];
-USART_TypeDef *usarts[6];
+serial_type usarts[6];
+spi_type spis[5];
+
 
 
 int InitializeMCUSettings() {
@@ -27,17 +29,26 @@ int InitializeMCUSettings() {
 	ports[10]=_GPIOK;
 
 	bzero(usarts, sizeof(usarts));
-	usarts[0]=USART1;
-	usarts[1]=USART2;
-	usarts[2]=USART3;
-	usarts[3]=USART4;
-	usarts[4]=USART5;
-	usarts[5]=USART6;
+	usarts.port[0]=_USART1;
+	usarts.async[0]=_USART1s;
+
+	usarts.port[1]=_USART2;
+	usarts.async[1]=_USART2s;
+
+	usarts.port[2]=_USART3;
+	usarts.async[2]=_USART3s;
+
+	usarts.port[3]=_USART4;
+	usarts.async[3]=_USART4s;
+
+	usarts.port[4]=_USART5;
+	usarts.async[4]=_USART5s;
+
+	usarts.port[5]=_USART6;
+	usarts.async[5]=_USART6s;
+
 
 
 	return(1);
 }
 
-#ifdef F4
-#define _GPIOA null
-#elf
