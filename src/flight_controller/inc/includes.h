@@ -5,6 +5,27 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stddef.h>
+
+
+#ifdef stm32f405xx
+#include <stm32f405xx.h>
+#define _GPIOE GPIOE
+#define _GPIOF GPIOF
+#define _GPIOG GPIOG
+#define _GPIOH GPIOH
+#define _GPIOI GPIOI
+#define _GPIOJ NULL
+#define _GPIOK NULL
+#endif
+
+
+
+#define _GPIOA GPIOA
+#define _GPIOB GPIOB
+#define _GPIOC GPIOC
+#define _GPIOD GPIOD
+
 
 #include "../../low_level_driver/boarddef.h"
 #include "mcu_include.h"

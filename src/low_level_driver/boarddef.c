@@ -4,10 +4,9 @@
 #include <string.h>
 #include <math.h>
 
-#include <stm32f405xx.h>
 #include "includes.h"
 
-GPIO_TypeDef *ports[10];
+GPIO_TypeDef *ports[11];
 USART_TypeDef *usarts[6];
 
 
@@ -15,16 +14,17 @@ int InitializeMCUSettings() {
 	//target_pinout pins;
 
 	bzero(ports, sizeof(ports));
-	ports[0]=GPIOA;
-	ports[1]=GPIOB;
-	ports[2]=GPIOC;
-	ports[3]=GPIOD;
-	ports[4]=GPIOE;
-	ports[5]=GPIOF;
-	ports[6]=GPIOG;
-	ports[7]=GPIOH;
-	ports[8]=_GPIOJ;
-	ports[9]=GPIOK;
+	ports[0]=_GPIOA;
+	ports[1]=_GPIOB;
+	ports[2]=_GPIOC;
+	ports[3]=_GPIOD;
+	ports[4]=_GPIOE;
+	ports[5]=_GPIOF;
+	ports[6]=_GPIOG;
+	ports[7]=_GPIOH;
+	ports[8]=_GPIOI;
+	ports[9]=_GPIOJ;
+	ports[10]=_GPIOK;
 
 	bzero(usarts, sizeof(usarts));
 	usarts[0]=USART1;
