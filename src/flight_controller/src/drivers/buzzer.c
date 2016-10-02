@@ -28,10 +28,9 @@ void UpdateBuzzer(void)
 	if (buzzerStatus.status != buzzerStatus.lastStatus)
 	{
 		buzzerStatus.timeStart = timeNow;
-		//starting with buzzer off
-		buzzerStatus.on = false;
 	}
 	buzzerStatus.lastStatus = buzzerStatus.status;
+
 	//different states for buzzer
     switch(buzzerStatus.status)
     {

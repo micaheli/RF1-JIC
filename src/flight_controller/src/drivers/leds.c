@@ -1,5 +1,7 @@
 #include "includes.h"
 
+#include <stdio.h>
+
 ledStatus_t ledStatus;
 
 //todo: Do we want to init LEDs like this? Maybe an array is a better method
