@@ -2,10 +2,10 @@
 
 void InitActuators(void) {
 
-	InitActuatorTimer(GPIOB, GPIO_PIN_0, TIM3, GPIO_AF2_TIM3 );
+	InitActuatorTimer(GPIOB, GPIO_PIN_0, TIM3, TIM_CHANNEL_3, GPIO_AF2_TIM3 );
 }
 
-void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t alternateFunction) {
+void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *timer, uint32_t timerChannel, uint32_t alternateFunction) {
 
 	GPIO_InitTypeDef GPIO_InitStruct;
 
@@ -22,7 +22,7 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t alternat
 	TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
 	TIM_OC_InitTypeDef sConfigOC;
 
-	pwmTimer.Instance = TIM3;
+	pwmTimer.Instance = timer;
 	pwmTimer.Init.Prescaler = 1000;
 	pwmTimer.Init.CounterMode = TIM_COUNTERMODE_UP;
 	pwmTimer.Init.Period = 8399;
@@ -38,7 +38,7 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t alternat
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
 	sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
-	HAL_TIM_OC_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3);
+	HAL_TIM_OC_ConfigChannel(&pwmTimer, &sConfigOC, timerChannel);
 }
 
 void OutputActuators(float motorOutput[], float servoOutput[]) {
