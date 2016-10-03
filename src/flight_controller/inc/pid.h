@@ -16,5 +16,4 @@ extern pid_output pids[AXIS_NUMBER];
 
 
 void InitPid (void);
-void InlinePidController (float dpsGyroArray[], float curvedRcCommandF[], pid_output flightPids[], float actuatorRange);
-
+void InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange);

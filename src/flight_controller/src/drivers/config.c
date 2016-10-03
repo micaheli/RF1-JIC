@@ -94,5 +94,8 @@ void LoadConfig (void)
 	rcControlsConfig.rates[ROLL]         = 400.0;
 	rcControlsConfig.rates[PITCH]        = 400.0;
 
+	rcControlsConfig.acroPlus[YAW]       = 40.00;
+	rcControlsConfig.acroPlus[ROLL]      = 40.00;
+	rcControlsConfig.acroPlus[PITCH]     = 40.00;
 }
 

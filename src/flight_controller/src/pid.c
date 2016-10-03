@@ -12,7 +12,7 @@ void InitPid (void) {
 
 }
 
-inline void InlinePidController (float filteredGyroData[], float curvedRcCommandF[], pid_output flightPids[], float actuatorRange) {
+inline void InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange) {
 
 	int32_t axis;
 
@@ -29,7 +29,7 @@ inline void InlinePidController (float filteredGyroData[], float curvedRcCommand
 	static uint32_t kd_ring_buffer_y_pointer = 0;
 
 	(void)(filteredGyroData);
-	(void)(curvedRcCommandF);
+	(void)(flightSetPoints);
 	(void)(flightPids);
 	(void)(actuatorRange);
 
@@ -45,7 +45,7 @@ inline void InlinePidController (float filteredGyroData[], float curvedRcCommand
 
 
 	for (axis = 2; axis >= 0; axis--) {
-
+		//setPoint = rcControlsConfig.rates[axis]
 	}
 
 

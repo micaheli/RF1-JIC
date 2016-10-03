@@ -9,8 +9,15 @@
 
 
 
+#define _GPIOA GPIOA
+#define _GPIOB GPIOB
+#define _GPIOC GPIOC
+#define _GPIOD GPIOD
+
 #ifdef stm32f405xx
+
 #include <stm32f405xx.h>
+
 #define _GPIOE GPIOE
 #define _GPIOF GPIOF
 #define _GPIOG GPIOG
@@ -35,15 +42,10 @@
 #define _USART7s 1
 
 
-
-
-
-
 //STM32F4 UID address
 #define DEVICE_ID1					0x1FFF7A10
 #define DEVICE_ID2					0x1FFF7A14
 #define DEVICE_ID3					0x1FFF7A18
-
 
 
 #define USE_RFBL
@@ -52,19 +54,8 @@
 #define ADDRESS_FLASH_START		(0x08020000)
 #define ADDRESS_FLASH_END		(0x080FFFF0)
 
-
-
-
-
-
 #endif
 
-
-
-#define _GPIOA GPIOA
-#define _GPIOB GPIOB
-#define _GPIOC GPIOC
-#define _GPIOD GPIOD
 
 
 #include "../../low_level_driver/boarddef.h"

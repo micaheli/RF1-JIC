@@ -3,17 +3,21 @@
 float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position
 float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the rcCommand after the curve is applied
 float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
+unsigned char isRxDataNew;
 
 void InitRcData (void) {
 	bzero(trueRcCommandF, MAXCHANNELS);
 	bzero(curvedRcCommandF, MAXCHANNELS);
 	bzero(smoothedRcCommandF, MAXCHANNELS);
+	isRxDataNew = 0;
 }
 
 inline void InlineCollectRcCommand (uint32_t rcData[], float trueRcCommandF[], float curvedRcCommandF[], rc_control_config rcControlsConfig) {
 
 	uint32_t axis;
 	float rangedRx;
+
+	isRxDataNew = 1; //this function is to be called by reception of vali RX data, so we know we have new RX data now
 
 	//scale
     //////masterConfig.rxConfig.midrc = 1500;
@@ -48,6 +52,7 @@ inline void InlineCollectRcCommand (uint32_t rcData[], float trueRcCommandF[], f
 
 	}
 
+
 }
 
 
@@ -69,4 +74,45 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 			break;
 
 	}
+}
+
+
+inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]) {
+    static float lastCommand[4] = { 0, 0, 0, 0 };
+    static float deltaRC[4] = { 0, 0, 0, 0 };
+    int32_t factor;
+    int32_t channel;
+
+    int32_t smoothingInterval = 88; //todo: calculate this number to be number of loops between PID loops
+	//88  for spektrum at  8 KHz loop time
+	//264 for spektrum at 32 KHz loop time
+	//352 for spektrum at 32 KHz loop time
+
+    if (isRxDataNew)
+    {
+        for (channel=3; channel >= 0; channel--)
+        {
+            deltaRC[channel] = curvedRcCommandF[channel] -  (lastCommand[channel] - ((deltaRC[channel] * (float)factor) / (float)smoothingInterval));
+            lastCommand[channel] = curvedRcCommandF[channel];
+        }
+        factor = smoothingInterval - 1;
+        isRxDataNew = false;
+    }
+    else
+    {
+    	factor--;
+    }
+
+    if (factor > 0)
+    {
+    	for (channel=3; channel >= 0; channel--)
+    	{
+    		smoothedRcCommandF[channel] = (lastCommand[channel] - ( (deltaRC[channel] * (float)factor) / (float)smoothingInterval));
+    	}
+    }
+    else
+    {
+    	factor = 0;
+    }
+
 }

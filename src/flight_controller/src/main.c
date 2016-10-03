@@ -26,7 +26,7 @@ int main(void)
 {
 	//Absolutely no MCU specific code to go here.
 
-    uint8_t count = 0;
+    int32_t count = 16;
 
     //need to move this to mcu specific code file
 	SCB->VTOR = ADDRESS_FLASH_START; //set vector register to firmware start
@@ -59,9 +59,9 @@ int main(void)
     txTransimissionReady = 1;
 
     while (1) {
-    	scheduler(count++);
-    	if (count == 16) {
-    		count = 0;
+    	scheduler(count--);
+    	if (count == -1) {
+    		count = 16;
 /*
     		if(uartHandle.gState != HAL_UART_STATE_BUSY_TX)
     		{

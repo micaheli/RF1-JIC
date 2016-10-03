@@ -14,6 +14,7 @@ typedef struct {
     uint32_t useCurve[MAXCHANNELS];
     float    curveExpo[MAXCHANNELS];
     float    rates[3];
+    float    acroPlus[3];
 } rc_control_config;
 
 //Enumerate the different channels in code. The TX map is not affected by this. This is for internal code only.
@@ -34,12 +35,15 @@ enum {
 	NO_EXPO = 0,
 	SKITZO_EXPO = 1,
 	TARANIS_EXPO = 2,
+	ACRO_PLUS = 33,
 };
 
 extern float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position
 extern float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the rcCommand after the curve is applied
 extern float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
+extern unsigned char isRxDataNew;
 
 void InitRcData(void);
 void InlineCollectRcCommand (uint32_t rcData[], float trueRcCommandF[], float curvedRcCommandF[], rc_control_config rcControlsConfig);
 float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo);
+void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]);

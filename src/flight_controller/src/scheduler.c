@@ -3,7 +3,7 @@
 extern uint8_t tOutBuffer[];
 extern uint8_t tInBuffer[];
 
-void scheduler(uint8_t count)
+void scheduler(int32_t count)
 {
 
 	switch (count) {
