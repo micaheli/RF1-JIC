@@ -9,7 +9,7 @@
 GPIO_TypeDef *ports[11];
 serial_type usarts[6];
 spi_type spis[5];
-
+TIM_TypeDef timers[14];
 
 
 int InitializeMCUSettings() {
@@ -47,6 +47,21 @@ int InitializeMCUSettings() {
 	usarts.port[5]=_USART6;
 	usarts.async[5]=_USART6s;
 
+	bzero(timers, sizeof(timers));
+	timers[0]=_TIM1;
+	timers[1]=_TIM2;
+	timers[2]=_TIM3;
+	timers[3]=_TIM4;
+	timers[4]=_TIM5;
+	timers[5]=_TIM6;
+	timers[6]=_TIM7;
+	timers[7]=_TIM8;
+	timers[8]=_TIM9;
+	timers[9]=_TIM10;
+	timers[10]=_TIM11;
+	timers[11]=_TIM12;
+	timers[12]=_TIM13;
+	timers[13]=_TIM14;
 
 
 	return(1);

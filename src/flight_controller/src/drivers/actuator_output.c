@@ -3,7 +3,28 @@
 static uint32_t idlePulseValue;
 static uint32_t pulseValueRange;
 
+typedef struct {
+	unsigned char active;
+	uint32_t timer;
+	uint32_t timerChannel;
+	uint32_t ccr;
+} motor_output_array;
+
+motor_output_array motorOutputArray[MAX_MOTOR_NUMBER];
+
 void InitActuators(void) {
+
+	bzero(motorOutputArray, sizeof(motorOutputArray));
+
+	motorOutputArray[0].active = 1;
+	motorOutputArray[1].active = 1;
+	motorOutputArray[2].active = 1;
+	motorOutputArray[3].active = 1;
+
+	motorOutputArray[0].timer = _TIM3;
+	motorOutputArray[1].timer = _TIM3;
+	motorOutputArray[2].timer = _TIM9;
+	motorOutputArray[3].timer = _TIM2;
 
 	//these calues come from config
 	//this is for multishot at 32KHz on STM32F4 running at 192MHz
@@ -90,6 +111,10 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 }
 
 void OutputActuators(float motorOutput[], float servoOutput[]) {
-	(void)(motorOutput);
+	TIM3->CCR3 = ((uint32_t) ((float)motorOutput[0] * (float)pulseValueRange) + idlePulseValue);
+	TIM3->CCR4 = ((uint32_t) ((float)motorOutput[1] * (float)pulseValueRange) + idlePulseValue);
+	TIM9->CCR2 = ((uint32_t) ((float)motorOutput[2] * (float)pulseValueRange) + idlePulseValue);
+	TIM2->CCR3 = ((uint32_t) ((float)motorOutput[3] * (float)pulseValueRange) + idlePulseValue);
+
 	(void)(servoOutput);
 }
