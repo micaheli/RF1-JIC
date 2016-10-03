@@ -1,6 +1,9 @@
 #pragma once
 
-uint32_t millis(void);
+extern uint32_t systemUsTicks;
+
+uint32_t InlineMillis(void);
+uint32_t Micros(void);
 
 void DelayMs(uint32_t mSec);
 void delayUs(uint32_t uSec);
@@ -12,3 +15,7 @@ void InitUsb(void);
 void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 void inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 bool inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+
+void InlineUpdateMillisClock (void);
+
+void VectorIrqInit(void);

@@ -52,7 +52,7 @@ inline float ApplyAttenuationKpCurve (float motorOutput) {
 }
 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
-inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[]) {
+inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], float motorOutput[]) {
 
 	float highestMotor  = -100.0f;
 	float lowestMotor   =  100.0f;

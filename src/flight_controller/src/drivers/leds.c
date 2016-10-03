@@ -38,7 +38,7 @@ void InitializeLed(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
 void UpdateLeds(void)
 {
-	uint32_t timeNow = millis();
+	uint32_t timeNow = InlineMillis();
 
 	if (ledStatus.status != ledStatus.lastStatus)
 	{

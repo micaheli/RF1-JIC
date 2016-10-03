@@ -51,6 +51,8 @@ void SystemClock_Config(void)
   __HAL_RCC_PWR_CLK_ENABLE();
   /* SysTick_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+
+  systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
 }
 
 void BoardInit(void)

@@ -107,7 +107,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F051x8"
         TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
         TARGET_PROCESSOR_TYPE  = "f0"
-        OPTIMIZE_FLAGS = "-O2"
+        OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f103xb":
         PROJECT = "flight_controller"
@@ -115,7 +115,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
         TARGET_PROCESSOR_TYPE  = "f1"
         FEATURES.extend(["usb_fs"])
-        OPTIMIZE_FLAGS = "-O2"
+        OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f303xc":
         PROJECT = "flight_controller"
@@ -123,7 +123,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f303_256k_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f3"
         FEATURES.extend(["flight_logger", "mpu6500/spi", "usb_fs"])
-        OPTIMIZE_FLAGS = "-O2"
+        OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f405xx":
         PROJECT = "flight_controller"
@@ -131,7 +131,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
+        OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f405xx_rfbl":
         PROJECT = "boot_loader"
@@ -147,7 +147,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f411.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
+        OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f746xx":
         PROJECT = "flight_controller"
@@ -155,7 +155,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "STM32F746NGHx_FLASH_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"   
+        OPTIMIZE_FLAGS = "-O3"   
     
     else:
         print("ERROR: NOT VALID TARGET: ", TARGET, file=sys.stderr)

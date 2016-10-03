@@ -28,10 +28,7 @@ int main(void)
 
     int32_t count = 16;
 
-    //need to move this to mcu specific code file
-	SCB->VTOR = ADDRESS_FLASH_START; //set vector register to firmware start
-	__enable_irq(); // enable interrupts
-
+	VectorIrqInit();
     BoardInit();
 
     LoadConfig();
@@ -55,8 +52,6 @@ int main(void)
 
     bzero(aRxBuffer, sizeof(aRxBuffer));
     bzero(aTxBuffer, sizeof(aTxBuffer));
-
-    txTransimissionReady = 1;
 
     while (1) {
     	scheduler(count--);

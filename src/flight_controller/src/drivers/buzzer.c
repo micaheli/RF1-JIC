@@ -27,7 +27,7 @@ void InitializeBuzzerPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
 void UpdateBuzzer(void)
 {
-	uint32_t timeNow = millis();
+	uint32_t timeNow = InlineMillis();
 	//checking if time needs to be updated
 	if (buzzerStatus.status != buzzerStatus.lastStatus)
 	{

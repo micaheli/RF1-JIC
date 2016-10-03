@@ -63,6 +63,7 @@
 #include "general_functions.h"
 #include "scheduler.h"
 #include "flight.h"
+#include "debug.h"
 
 #include "usbd_hid.h"
 #include "usb_device.h"

@@ -38,13 +38,15 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
+	uint32_t catfish = Micros();
+
 	PafUpdate(&yawPafState, dpsGyroArray[YAW]);
 	PafUpdate(&rollPafState, dpsGyroArray[ROLL]);
 	PafUpdate(&pitchPafState, dpsGyroArray[PITCH]);
 
-	filteredGyroData[YAW]=yawPafState.x;
-	filteredGyroData[ROLL]=rollPafState.x;
-	filteredGyroData[PITCH]=pitchPafState.x;
+	filteredGyroData[YAW]   = yawPafState.x;
+	filteredGyroData[ROLL]  = rollPafState.x;
+	filteredGyroData[PITCH] = pitchPafState.x;
 
 	InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
 
@@ -54,9 +56,12 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	InlinePidController(filteredGyroData, flightSetPoints, &flightPids, actuatorRange);
 
-	actuatorRange = InlineApplyMotorMixer(&flightPids, smoothedRcCommandF); //put in PIDs and Throttle or passthru
+	actuatorRange = InlineApplyMotorMixer(&flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
 
 	OutputActuators(motorOutput, servoOutput);
+	debugU32[0] = Micros() - catfish;
+
+
 
 }
 

@@ -9,7 +9,7 @@
 
 float dpsGyroArray[3] = {0.0f, 0.0f, 0.0f};
 
-static uint32_t calibrationCycles = CALIBRATION_CYCLES * 100;
+static uint32_t calibrationCycles = CALIBRATION_CYCLES * 1;
 
 static inline void InlineUpdateCalibration(int16_t *rawGyro)
 {

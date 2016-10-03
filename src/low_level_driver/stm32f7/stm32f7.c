@@ -56,6 +56,8 @@ void SystemClock_Config(void)
   {
     while(1);
   }
+
+  systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
 }
 
 void BoardInit(void)

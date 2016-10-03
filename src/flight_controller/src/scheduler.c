@@ -55,11 +55,11 @@ void taskHandlePcComm(void)
 		tInBuffer[1]=(int8_t)dpsGyroArray[0];
 		tInBuffer[2]=(int8_t)dpsGyroArray[1];
 		tInBuffer[3]=(int8_t)dpsGyroArray[2];
-		tInBuffer[4]=0x67;
-		tInBuffer[5]=0x67;
-		tInBuffer[6]=0x67;
-		tInBuffer[7]=0x67;
-		tInBuffer[8]=0x67;
+		tInBuffer[4]=(uint8_t)debugU32[0];
+		tInBuffer[5]=(uint8_t)debugU32[1];
+		tInBuffer[6]=(uint8_t)debugU32[2];
+		tInBuffer[7]=(uint8_t)debugU32[3];
+		tInBuffer[8]=(uint8_t)debugU32[4];
 		tInBuffer[9]=0x68;
 		tInBuffer[10]=0x74;
 		tInBuffer[11]=0x20;

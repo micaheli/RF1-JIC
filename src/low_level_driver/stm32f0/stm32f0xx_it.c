@@ -110,6 +110,8 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   HAL_IncTick();
+  HAL_SYSTICK_IRQHandler();
+  InlineUpdateMillisClock();
 }
 
 /******************************************************************************/
