@@ -2,7 +2,7 @@
 
 void InitActuators(void) {
 
-	InitActuatorTimer(GPIOE, GPIO_PIN_12, GPIO_AF1_TIM1 )
+	InitActuatorTimer(GPIOB, GPIO_PIN_0, TIM3, GPIO_AF2_TIM3 );
 }
 
 void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t alternateFunction) {
@@ -22,7 +22,7 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t alternat
 	TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
 	TIM_OC_InitTypeDef sConfigOC;
 
-	pwmTimer.Instance = TIM1;
+	pwmTimer.Instance = TIM3;
 	pwmTimer.Init.Prescaler = 1000;
 	pwmTimer.Init.CounterMode = TIM_COUNTERMODE_UP;
 	pwmTimer.Init.Period = 8399;
