@@ -40,6 +40,7 @@ int main(void)
     InitMixer();
     InitFlightCode();
     InitPid();
+    InitActuators();
 
     if (!accgyroInit(gyroConfig.loopCtrl)) {
         //ErrorHandler();
