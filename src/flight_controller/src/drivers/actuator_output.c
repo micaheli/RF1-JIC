@@ -1,7 +1,7 @@
 #include "includes.h"
 
-static uint32_t idlePulseValue;
-static uint32_t pulseValueRange;
+volatile uint32_t idlePulseValue;
+volatile uint32_t pulseValueRange;
 
 typedef struct {
 	unsigned char active;
@@ -63,8 +63,8 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 
 	GPIO_InitStruct.Pin = GPIO_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
 	GPIO_InitStruct.Alternate = alternateFunction;
 	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
 
@@ -111,10 +111,11 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 }
 
 void OutputActuators(float motorOutput[], float servoOutput[]) {
-	TIM3->CCR3 = ((uint32_t) ((float)motorOutput[0] * (float)pulseValueRange) + idlePulseValue);
-	TIM3->CCR4 = ((uint32_t) ((float)motorOutput[1] * (float)pulseValueRange) + idlePulseValue);
-	TIM9->CCR2 = ((uint32_t) ((float)motorOutput[2] * (float)pulseValueRange) + idlePulseValue);
-	TIM2->CCR3 = ((uint32_t) ((float)motorOutput[3] * (float)pulseValueRange) + idlePulseValue);
+
+	TIM3->CCR3 = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + idlePulseValue;
+	TIM3->CCR4 = (uint32_t)((float)motorOutput[1] * (float)pulseValueRange) + idlePulseValue;
+	TIM9->CCR2 = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + idlePulseValue;
+	TIM2->CCR3 = (uint32_t)((float)motorOutput[3] * (float)pulseValueRange) + idlePulseValue;
 
 	(void)(servoOutput);
 }
