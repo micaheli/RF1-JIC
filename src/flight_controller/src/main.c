@@ -31,6 +31,8 @@ int main(void)
 	VectorIrqInit();
     BoardInit();
 
+    HandleRfbl();
+
     LoadConfig();
 
     InitBuzzer();

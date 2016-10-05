@@ -95,7 +95,7 @@ TargetConfig = namedtuple('TargetConfig', [
 
 def configure_target(TARGET):
     # required features
-    FEATURES = ["leds"]
+    FEATURES = []
 
     # stm32f051x8 stm32f103xb stm32f303xc stm32f405xx stm32f411xe stm32f745xx stm32f746xx
 
@@ -135,6 +135,14 @@ def configure_target(TARGET):
 
     elif TARGET == "stm32f405xx_rfbl":
         PROJECT = "boot_loader"
+        TARGET_DEVICE = "STM32F405xx"
+        TARGET_SCRIPT = "stm32_flash_f405.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Os"
+
+    elif TARGET == "stm32f405xx_rfbll":
+        PROJECT = "boot_loader_loader"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
@@ -473,9 +481,11 @@ def configure_target(TARGET):
         SOURCE_DIRS.append("src/flight_controller/src/input")
         FEATURES.extend(["actuator_output", "buzzer", "config", "flash_chip", "math", "filter", "serial", "mixer", "rx"])
     elif PROJECT == "esc":
-        pass
+        FEATURES.extend(["leds"])
     elif PROJECT == "boot_loader":
-        pass
+        FEATURES.extend(["leds"])
+    elif PROJECT == "boot_loader_loader":
+        FEATURES.extend(["leds"])
     else:
         print("ERROR: NOT VALID PROJECT TYPE, CHECK MAKE FILE CODE", file=sys.stderr)
         sys.exit(1)

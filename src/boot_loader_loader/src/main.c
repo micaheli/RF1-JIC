@@ -32,7 +32,6 @@ cfg1_t cfg1;
 int main(void)
 {
 
-	bool rfbl_plug_attatched = false;
 	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress;
 
 	simpleDelay_ASM(5000);
@@ -62,123 +61,8 @@ int main(void)
 	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
 
-	//if (bootDirection == BOOT_TO_APP_AFTER_SPEK_COMMAND) {
-	//	rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
-	//	boot_to_app();
-	//}
-	//bootDirection = BOOT_TO_RFBL_COMMAND;
-
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
-#if defined(HARDWARE_BIND_PLUG) || defined(HARDWARE_DFU_PLUG) || defined(HARDWARE_RFBL_PLUG) || defined(VBUS_SENSE)
-    GPIO_InitTypeDef GPIO_InitStructure;
-#else
-	simpleDelay_ASM(1000);
-#endif
-
-
-#ifdef HARDWARE_RFBL_PLUG
-    simpleDelay_ASM(10); //let pin status stabilize
-
-	rfbl_plug_attatched = true;
-
-	//RX
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0);
-    GPIO_InitStructure.Pin   = GPIO_PIN_0;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_1);
-    GPIO_InitStructure.Pin   = GPIO_PIN_1;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3);
-    GPIO_InitStructure.Pin   = GPIO_PIN_3;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2);
-    GPIO_InitStructure.Pin   = GPIO_PIN_2;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    inlineDigitalLo(GPIOB, GPIO_PIN_0);
-    inlineDigitalLo(GPIOB, GPIO_PIN_1);
-    inlineDigitalLo(GPIOA, GPIO_PIN_3);
-    inlineDigitalLo(GPIOA, GPIO_PIN_2);
-
-	//RX
-    HAL_GPIO_DeInit(RFBL_GPIO1, RFBL_PIN1);
-
-    GPIO_InitStructure.Pin   = RFBL_PIN1;
-    GPIO_InitStructure.Mode  = GPIO_MODE_INPUT;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-    HAL_GPIO_Init(RFBL_GPIO1, &GPIO_InitStructure);
-
-    //TX
-    HAL_GPIO_DeInit(RFBL_GPIO2, RFBL_PIN2);
-
-    GPIO_InitStructure.Pin   = RFBL_PIN2;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_NOPULL;
-    HAL_GPIO_Init(RFBL_GPIO2, &GPIO_InitStructure);
-
-    inlineDigitalHi(RFBL_GPIO2, RFBL_PIN2);
-	simpleDelay_ASM(1); //let pin status stabilize
-    if ((inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX hi
-    	rfbl_plug_attatched = false;
-    }
-
-	inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
-	simpleDelay_ASM(1); //let pin status stabilize
-    if (!(inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX low
-    	rfbl_plug_attatched = false;
-    }
-
-    inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
-
-
-	if (rfbl_plug_attatched) {
-
-		startupBlink (150, 25);
-		//pins attached, let's wait 4 seconds and see if they're still attached
-
-		rfbl_plug_attatched = true;
-
-	    inlineDigitalHi(RFBL_GPIO2, RFBL_PIN2);
-		simpleDelay_ASM(1); //let pin status stabilize
-	    if ((inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX hi
-	    	rfbl_plug_attatched = false;
-	    }
-
-		inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
-		simpleDelay_ASM(1); //let pin status stabilize
-	    if (!(inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX low
-	    	rfbl_plug_attatched = false;
-	    }
-
-	    if (rfbl_plug_attatched) {
-	    	//pin still attached, let's go to DFU mode
-	    	systemResetToDfuBootloader();
-	    } else {
-	    	//pin not attached, let's go into RFBL proper
-	    	bootToRfbl = true;
-	    }
-
-	}
-
-#endif
 
 
 	if (!bootToRfbl) {
@@ -214,42 +98,6 @@ int main(void)
 		}
 	}
 
-	if (bindSpektrum != 0) {
-
-	    HAL_GPIO_DeInit(SPEK_GPIO, SPEK_PIN);
-
-	    GPIO_InitStructure.Pin   = SPEK_PIN;
-	    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-	    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-	    GPIO_InitStructure.Pull  = GPIO_NOPULL;
-	    HAL_GPIO_Init(SPEK_GPIO, &GPIO_InitStructure);
-
-		inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
-
-		DelayMs(70);
-
-		for (uint8_t ii = 0; ii < bindSpektrum; ii++) {
-	        // RX line, drive low for 120us
-			inlineDigitalLo(SPEK_GPIO, SPEK_PIN);
-
-			simpleDelay_ASM(288); //300 is 125 us once booted
-
-	        // RX line, drive high for 120us
-			inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
-
-			simpleDelay_ASM(288);
-		}
-
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_SPEK_COMMAND);
-		DelayMs(100);
-		startupBlink(20, 20);
-		boot_to_app();
-	}
-	uint32_t cat = HAL_RCC_GetHCLKFreq();
-
-	if (cat == 1) {
-		LED1_TOGGLE;
-	}
 
 	//initialize RFBL State and Command
 	RfblCommand_e RfblCommand = RFBLC_NONE;
