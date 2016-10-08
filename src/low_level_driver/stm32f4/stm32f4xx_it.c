@@ -23,12 +23,9 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
     while (1) {
-        LED1_ON;
-        LED2_ON;
-        LED3_ON;
-        LED1_OFF;
-        LED2_OFF;
-        LED3_OFF;
+		DoLed(0, 1);
+		DoLed(1, 1);
+		DoLed(2, 1);
     }
 }
 

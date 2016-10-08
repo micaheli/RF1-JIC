@@ -106,11 +106,11 @@ int main(void)
 void ErrorHandler(void)
 {
     while (1) {
-        LED1_ON;
-        LED2_OFF;
+		DoLed(0, 1);
+		DoLed(1, 0);
         DelayMs(40);
-        LED1_OFF;
-        LED2_ON;
+		DoLed(0, 0);
+		DoLed(1, 1);
         DelayMs(40);
     }
 }

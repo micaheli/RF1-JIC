@@ -1,5 +1,8 @@
 #pragma once
 
+
+/*
+
 #if LEDn >= 1
 #define LED1_ON     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_GPIO_Pin, GPIO_PIN_RESET)
 #define LED1_OFF    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_GPIO_Pin, GPIO_PIN_SET)
@@ -30,7 +33,7 @@
 #define LED3_TOGGLE
 #endif
 
-
+*/
 enum
 {
     LEDS_OFF,
@@ -52,7 +55,8 @@ typedef struct ledStatus_t
 
 extern ledStatus_t ledStatus;
 
-void InitLeds (void);
-void InitializeLed(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-void UpdateLeds(void);
-void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2);
+extern void DoLed(uint32_t number, uint32_t on);
+extern void InitLeds (void);
+extern void InitializeLed(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern void UpdateLeds(void);
+extern void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2);

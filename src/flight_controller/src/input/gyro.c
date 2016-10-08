@@ -36,7 +36,6 @@ static inline void InlineUpdateCalibration(int16_t *rawGyro)
 inline void InlineUpdateGyro(int16_t rawGyro[], int16_t rawGyroRotated[], float scale)
 {
 
-	LED1_TOGGLE;
     if (calibrationCycles != 0) {
         InlineUpdateCalibration(rawGyro);
         return;
