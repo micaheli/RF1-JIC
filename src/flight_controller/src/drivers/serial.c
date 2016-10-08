@@ -173,26 +173,35 @@ void BoardUsartInit () {
     HAL_NVIC_DisableIRQ(USARTx_DMA_RX_IRQn);
 
     // read and write settings at slow speed
-    UsartInit(9600, USART3, &uartHandle);
+    UsartInit(115200, USART3, &uartHandle);
 
 }
 
+volatile char Rx_data;
+
+//Interrupt callback routine
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+	HAL_UART_Transmit_DMA(&huart, (uint8_t *)&Rx_data, 1);
+	(void)(Rx_data);
+	(void)(Rx_data);
+}
+
 	//Preston, look at this
 	//http://electronics.stackexchange.com/questions/173025/stm32f0-uart-dma-interrupt-with-stm32cubemx-hal-1-2-1-problem
   /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
+//	__HAL_UART_FLUSH_DRREGISTER(huart);
+//	HAL_UART_Transmit_DMA(&huart2, (uint8_t *)&rxBuffer, 1);
+//  UNUSED(huart);
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_UART_RxCpltCallback can be implemented in the user file.
    */
-}
 
 void USARTx_DMA_RX_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&dmaUartRx);
-
+  volatile char mouse = Rx_data;
 //  typedef enum
 //  {
 //    HAL_DMA_STATE_RESET             = 0x00U,  /*!< DMA not yet initialized or disabled */
@@ -203,10 +212,10 @@ void USARTx_DMA_RX_IRQHandler(void)
 //    HAL_DMA_STATE_ABORT             = 0x05U,  /*!< DMA Abort state                     */
 //  }HAL_DMA_StateTypeDef;
 
-  if (HAL_DMA_GetState(&dmaUartRx) == HAL_DMA_STATE_READY) {
-      // RX is done. Call whatever function you want to happen here.
-
-  }
+//  if (HAL_DMA_GetState(&dmaUartRx) == HAL_DMA_STATE_READY) {
+//      // RX is done. Call whatever function you want to happen here.
+//
+//  }
 
 }
 
