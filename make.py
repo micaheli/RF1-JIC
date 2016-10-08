@@ -479,7 +479,7 @@ def configure_target(TARGET):
     if PROJECT == "flight_controller":
         INCLUDE_DIRS.append("src/flight_controller/inc/input")
         SOURCE_DIRS.append("src/flight_controller/src/input")
-        FEATURES.extend(["actuator_output", "buzzer", "config", "flash_chip", "math", "filter", "serial", "mixer", "rx"])
+        FEATURES.extend(["leds", "actuator_output", "buzzer", "config", "flash_chip", "math", "filter", "serial", "mixer", "rx"])
     elif PROJECT == "esc":
         FEATURES.extend(["leds"])
     elif PROJECT == "boot_loader":
