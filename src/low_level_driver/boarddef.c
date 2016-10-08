@@ -9,7 +9,7 @@
 GPIO_TypeDef *ports[11];
 serial_type usarts[6];
 spi_type spis[5];
-TIM_TypeDef timers[14];
+TIM_TypeDef *timers[14];
 board_type board;
 
 
@@ -32,23 +32,23 @@ int InitializeMCUSettings() {
 	ports[10]=_GPIOK;
 
 	bzero(usarts, sizeof(usarts));
-	usarts.port[0]=_USART1;
-	usarts.async[0]=_USART1s;
+	usarts[0].port=_USART1;
+	usarts[0].async=_USART1s;
 
-	usarts.port[1]=_USART2;
-	usarts.async[1]=_USART2s;
+	usarts[1].port=_USART2;
+	usarts[1].async=_USART2s;
 
-	usarts.port[2]=_USART3;
-	usarts.async[2]=_USART3s;
+	usarts[2].port=_USART3;
+	usarts[2].async=_USART3s;
 
-	usarts.port[3]=_USART4;
-	usarts.async[3]=_USART4s;
+	usarts[3].port=_USART4;
+	usarts[3].async=_USART4s;
 
-	usarts.port[4]=_USART5;
-	usarts.async[4]=_USART5s;
+	usarts[4].port=_USART5;
+	usarts[4].async=_USART5s;
 
-	usarts.port[5]=_USART6;
-	usarts.async[5]=_USART6s;
+	usarts[5].port=_USART6;
+	usarts[5].async=_USART6s;
 
 	bzero(timers, sizeof(timers));
 	timers[0]=_TIM1;
@@ -68,18 +68,18 @@ int InitializeMCUSettings() {
 
 
 
-	bzero(board, sizeof(board));
+	bzero(&board, sizeof(board));
 
-	board->internalLeds[0].enabled=1;
-	board->internalLeds[0].pin=GPIO_PIN_4;
-	board->internalLeds[0].port=1;
+	board.internalLeds[0].enabled=1;
+	board.internalLeds[0].pin=GPIO_PIN_4;
+	board.internalLeds[0].port=1;
 
-	board->internalLeds[1].enabled=1;
-	board->internalLeds[1].pin=GPIO_PIN_5;
-	board->internalLeds[1].port=1;
+	board.internalLeds[1].enabled=1;
+	board.internalLeds[1].pin=GPIO_PIN_5;
+	board.internalLeds[1].port=1;
 
-	board->buzzerPort=0;
-	board->buzzerPin=GPIO_PIN_0;
+	board.buzzerPort=0;
+	board.buzzerPin=GPIO_PIN_0;
 
 
 
