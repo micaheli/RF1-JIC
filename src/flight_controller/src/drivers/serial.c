@@ -183,8 +183,7 @@ volatile char Rx_data;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	HAL_UART_Transmit_DMA(&huart, (uint8_t *)&Rx_data, 1);
-	(void)(Rx_data);
-	(void)(Rx_data);
+	Rx_data = Rx_data;
 }
 
 	//Preston, look at this

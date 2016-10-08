@@ -60,12 +60,14 @@ void taskHandlePcComm(void)
 		tInBuffer[6]=(uint8_t)debugU32[2];
 		tInBuffer[7]=(uint8_t)debugU32[3];
 		tInBuffer[8]=(uint8_t)debugU32[4];
+		/*
 		tInBuffer[9]=Rx_Buffer[0];
 		tInBuffer[10]=Rx_Buffer[1];
 		tInBuffer[11]=Rx_Buffer[2];
 		tInBuffer[12]=Rx_Buffer[3];
 		tInBuffer[13]=Rx_Buffer[4];
 		tInBuffer[14]=Rx_Buffer[5];
+		*/
 		tInBuffer[15]=0x21;
 		tInBuffer[16]=0x21;
 	    USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
