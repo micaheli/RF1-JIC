@@ -201,7 +201,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void USARTx_DMA_RX_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&dmaUartRx);
-  volatile char mouse = Rx_data;
 //  typedef enum
 //  {
 //    HAL_DMA_STATE_RESET             = 0x00U,  /*!< DMA not yet initialized or disabled */
