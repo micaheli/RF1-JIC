@@ -6,7 +6,7 @@ DMA_HandleTypeDef dmaUartTx;
 
 __IO ITStatus UartReady = RESET;
 
-
+uint8_t catfish;
 
 void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *huart) {
 
@@ -125,6 +125,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	dmaUartTx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
 	dmaUartTx.Init.Mode                = DMA_NORMAL;
 	dmaUartTx.Init.Priority            = DMA_PRIORITY_LOW;
+	dmaUartTx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
 
 	HAL_DMA_Init(&dmaUartTx);
 
@@ -139,8 +140,9 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	dmaUartRx.Init.MemInc              = DMA_MINC_ENABLE;
 	dmaUartRx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
 	dmaUartRx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-	dmaUartRx.Init.Mode                = DMA_CIRCULAR;
+	dmaUartRx.Init.Mode                = DMA_NORMAL;
 	dmaUartRx.Init.Priority            = DMA_PRIORITY_HIGH;
+	dmaUartRx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
 
 	HAL_DMA_Init(&dmaUartRx);
 
@@ -165,6 +167,10 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
     HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
     HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, 1, 0);
     HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
+
+    __HAL_UART_FLUSH_DRREGISTER(huart);
+    //HAL_UART_Receive_DMA(huart, &catfish, 1);
+    HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE);
 }
 
 void BoardUsartInit () {
@@ -177,13 +183,24 @@ void BoardUsartInit () {
 
 }
 
-volatile char Rx_data;
-
+//volatile uint8_t Rx_data;
+extern uint8_t tInBuffer[HID_EPIN_SIZE];
 //Interrupt callback routine
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	HAL_UART_Transmit_DMA(&huart, (uint8_t *)&Rx_data, 1);
-	Rx_data = Rx_data;
+	//HAL_UART_Transmit_DMA(huart, &Rx_data, 1);
+	// ##-2- Put UART peripheral in reception process ###########################
+	__HAL_UART_FLUSH_DRREGISTER(huart);
+	if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
+	{
+		ErrorHandler();
+	}
+	for (unsigned char i=0;i<63;i++) {
+		tInBuffer[i] = aRxBuffer[i];
+	}
+	tInBuffer[0] = 1;
+
+    USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
 }
 
 	//Preston, look at this
@@ -225,5 +242,26 @@ void USARTx_DMA_TX_IRQHandler(void)
 
 void USARTx_IRQHandler(void)
 {
-  HAL_UART_IRQHandler(&uartHandle);
+	HAL_UART_IRQHandler(&uartHandle);
+//	if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
+//	{
+//		ErrorHandler();
+//	}
+  /*
+	if(uartHandle.RxState != HAL_UART_STATE_BUSY_RX)
+	{
+
+		// ##-2- Put UART peripheral in reception process ###########################
+		if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
+		{
+			ErrorHandler();
+		}
+		for (unsigned char i=0;i<63;i++) {
+			tInBuffer[i] = aRxBuffer[i];
+		}
+		tInBuffer[0] = 1;
+
+		USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
+	}
+	*/
 }

@@ -82,6 +82,7 @@ int main(void)
 				}
     		}
 */
+/*
     		if(uartHandle.RxState != HAL_UART_STATE_BUSY_RX)
     		{
 
@@ -97,7 +98,7 @@ int main(void)
 
 			    USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
     		}
-
+*/
     	}
 
 
