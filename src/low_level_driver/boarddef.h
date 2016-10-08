@@ -5,8 +5,9 @@
 #define	REVO
 
 //USB config
-#define RFFW_HID_PRODUCT_STRING "RaceFlightFC"
+#define RFFW_HID_PRODUCT_STRING "RaceFlight FC"
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
+#define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
 
 //MCU config
@@ -49,12 +50,6 @@
 #define GYRO_EXTI_GPIO_Pin      GPIO_PIN_4
 #define GYRO_EXTI_IRQn          EXTI4_IRQn
 #define GYRO_EXTI_IRQHandler    EXTI4_IRQHandler
-
-
-//USB config
-#define RFFW_HID_PRODUCT_STRING "RaceFlight"
-#define RFBL_HID_PRODUCT_STRING "RaceFlight Bootloader"
-#define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
 
 //Sbus inverter config
