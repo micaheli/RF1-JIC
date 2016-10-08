@@ -35,6 +35,8 @@ int main(void)
 
     LoadConfig();
 
+    InitializeMCUSettings();
+
     InitBuzzer();
     InitLeds();
     InitUsb();

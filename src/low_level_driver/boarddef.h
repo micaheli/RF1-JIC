@@ -264,5 +264,5 @@ typedef struct
 extern board_type board;
 extern GPIO_TypeDef *ports[];
 
-
+extern int InitializeMCUSettings();
 
