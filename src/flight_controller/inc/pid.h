@@ -10,10 +10,16 @@ typedef struct {
     float kd;
 } pid_output;
 
+typedef struct {
+    float kp;
+    float ki;
+    float kd;
+} pid_terms;
+
 extern float pidSetpoint[AXIS_NUMBER];    //3 axis for pidc. range is in DPS.
 extern pid_output pids[AXIS_NUMBER];
 
 
 
 void InitPid (void);
-void InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange);
+void InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[]);

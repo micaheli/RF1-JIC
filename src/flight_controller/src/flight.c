@@ -1,6 +1,6 @@
 #include "includes.h"
 
-pid_output flightPids;
+pid_output flightPids[3];
 float filteredGyroData[3];
 paf_state yawPafState;
 paf_state rollPafState;
@@ -54,9 +54,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], rcControlsConfig.rates[ROLL], rcControlsConfig.acroPlus[ROLL]);
 	flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], rcControlsConfig.rates[PITCH], rcControlsConfig.acroPlus[PITCH]);
 
-	InlinePidController(filteredGyroData, flightSetPoints, &flightPids, actuatorRange);
+	InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, pidConfig);
 
-	actuatorRange = InlineApplyMotorMixer(&flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
+	actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
 
 	OutputActuators(motorOutput, servoOutput);
 	debugU32[0] = Micros() - catfish;

@@ -1,22 +1,24 @@
 #include "includes.h"
 
-paf_state pitchKdFilterState;
-paf_state rollKdFilterState;
-paf_state yawKdFilterState;
+paf_state kdFilterState[3];
 
 void InitPid (void) {
 
-	pitchKdFilterState = InitPaf(filterConfig.pitchKdFilter.q, filterConfig.pitchKdFilter.r, filterConfig.pitchKdFilter.q, 0);
-	rollKdFilterState  = InitPaf(filterConfig.rollKdFilter.q, filterConfig.rollKdFilter.r, filterConfig.rollKdFilter.q, 0);
-	yawKdFilterState   = InitPaf(filterConfig.yawKdFilter.q, filterConfig.yawKdFilter.r, filterConfig.yawKdFilter.q, 0);
+	kdFilterState[PITCH] = InitPaf(filterConfig.pitchKdFilter.q, filterConfig.pitchKdFilter.r, filterConfig.pitchKdFilter.q, 0);
+	kdFilterState[ROLL]  = InitPaf(filterConfig.rollKdFilter.q, filterConfig.rollKdFilter.r, filterConfig.rollKdFilter.q, 0);
+	kdFilterState[YAW]   = InitPaf(filterConfig.yawKdFilter.q, filterConfig.yawKdFilter.r, filterConfig.yawKdFilter.q, 0);
 
 }
 
-inline void InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange) {
+inline void InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[]) {
 
 	int32_t axis;
 
 #define KD_RING_BUFFER_SIZE 256
+
+	float dT = 0.000125; //8KHz
+	float error, delta;
+	static float lastError[3];
 
 	static float kd_ring_buffer_p[KD_RING_BUFFER_SIZE];
 	static float kd_ring_buffer_p_sum = 0;
@@ -45,13 +47,26 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 
 
 	for (axis = 2; axis >= 0; axis--) {
-		//setPoint = rcControlsConfig.rates[axis]
+
+		error = flightSetPoints[axis] - filteredGyroData[axis];
+
+		// calculate Kp
+		flightPids[axis].kp = error * (pidConfig[axis].kp/4);
+
+		// calculate Ki
+		flightPids[axis].ki = filteredGyroData[axis] * (pidConfig[axis].ki/4);
+		flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + error * dT * (pidConfig[axis].ki / 2)  * 10, -251.0f, 251.0f);
+
+		// calculate Kd
+	    delta = -(error - lastError[axis]);
+	    lastError[axis] = error;
+
+	    PafUpdate(&kdFilterState[axis], delta);
+	    delta = kdFilterState[axis].x * (1.0f / dT);
+
+		flightPids[axis].kd = InlineConstrainf(delta * (pidConfig[axis].kd/10), -351.0f, 351.0f);
+
 	}
-
-
-	flightPids->kp = 0.0f;
-	flightPids->ki = 0.0f;
-	flightPids->kd = 0.0f;
 
 }
 
