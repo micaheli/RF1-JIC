@@ -469,6 +469,7 @@ def configure_target(TARGET):
         HAL_DIR + "/Src",
         "src/%s/src" % PROJECT,
         MCU_DIR,
+        "src/low_level_driver/",
         "src/low_level_driver/" + MCU_FAMILY,
     ]
 
