@@ -169,8 +169,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
     HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
 
     __HAL_UART_FLUSH_DRREGISTER(huart);
-    //HAL_UART_Receive_DMA(huart, &catfish, 1);
-    HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE);
+    HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, 16);
 }
 
 void BoardUsartInit () {
@@ -191,7 +190,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	//HAL_UART_Transmit_DMA(huart, &Rx_data, 1);
 	// ##-2- Put UART peripheral in reception process ###########################
 	__HAL_UART_FLUSH_DRREGISTER(huart);
-	if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
+	if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, 16) != HAL_OK)
 	{
 		ErrorHandler();
 	}
