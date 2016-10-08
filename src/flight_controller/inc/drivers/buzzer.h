@@ -1,9 +1,9 @@
 #pragma once
-
+/*
 #define BUZZER_ON     HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_GPIO_Pin, GPIO_PIN_RESET)
 #define BUZZER_OFF    HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_GPIO_Pin, GPIO_PIN_SET)
 #define BUZZER_TOGGLE HAL_GPIO_TogglePin(BUZZER_GPIO_Port, BUZZER_GPIO_Pin)
-
+*/
 
 
 enum

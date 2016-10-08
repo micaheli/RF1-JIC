@@ -2,8 +2,9 @@
 buzzerStatus_t buzzerStatus;
 
 
+
 void InitBuzzer(void) {
-	InitializeBuzzerPin(BUZZER_GPIO_Port, BUZZER_GPIO_Pin);
+	InitializeBuzzerPin(ports[board.buzzerPort], board.buzzerPin);
 }
 
 void InitializeBuzzerPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
@@ -25,6 +26,21 @@ void InitializeBuzzerPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
 }
 
+
+void DoBuzz(int on)
+{
+	if (on)
+	{
+    	HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_RESET);
+	}
+	else
+	{
+    	HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_SET);
+	}
+
+
+}
+
 void UpdateBuzzer(void)
 {
 	uint32_t timeNow = InlineMillis();
@@ -41,10 +57,10 @@ void UpdateBuzzer(void)
 
     default:
     case STATE_BUZZER_OFF:
-        BUZZER_OFF;
-        break;
+    	DoBuzz(0);
+    	break;
     case STATE_BUZZER_ON:
-    	BUZZER_ON;
+    	DoBuzz(1);
     	break;
     case STATE_BUZZER_LOST:
     	Buzz(timeNow,40, 500);
@@ -63,13 +79,13 @@ void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2) {
 	//does this for the amount of time for time1
 	if (((timeNow - buzzerStatus.timeStart) < time1) && (!buzzerStatus.on) )
 	{
-		BUZZER_ON;
+		DoBuzz(1);
 		buzzerStatus.on = true;
 	}
 	//does this for the amount of time2
 	else if (((timeNow - buzzerStatus.timeStart) > time1) && ((timeNow - buzzerStatus.timeStart) < time2) && (buzzerStatus.on) )
 	{
-		BUZZER_OFF;
+		DoBuzz(0);
 		buzzerStatus.on = false;
 	}
 	//if greater than time time2 reset timestart

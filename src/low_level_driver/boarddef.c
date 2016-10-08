@@ -70,6 +70,20 @@ int InitializeMCUSettings() {
 
 	bzero(board, sizeof(board));
 
+	board->internalLeds[0].enabled=1;
+	board->internalLeds[0].pin=GPIO_PIN_4;
+	board->internalLeds[0].port=1;
+
+	board->internalLeds[1].enabled=1;
+	board->internalLeds[1].pin=GPIO_PIN_5;
+	board->internalLeds[1].port=1;
+
+	board->buzzerPort=0;
+	board->buzzerPin=GPIO_PIN_0;
+
+
+
+
 
 
 	return(1);

@@ -2,6 +2,8 @@
 
 #include "mcu_include.h"
 
+
+
 #define	REVO
 
 //USB config
@@ -18,6 +20,7 @@
 
 
 //LED config
+/*
 #define LEDn                    2
 
 #define LED1_GPIO_Port          GPIOB
@@ -30,7 +33,7 @@
 //buzzer setup
 #define BUZZER_GPIO_Port        GPIOA
 #define BUZZER_GPIO_Pin         GPIO_PIN_0
-
+*/
 
 //Gyro Config
 #define GYRO_SPI                SPI1
@@ -229,6 +232,7 @@ typedef enum {INVERTED_RX, RX, GPS, OSD} usart_usage ;
 
 //uint16_t pins;
 
+/*
 typedef struct
 {
 	unsigned char usart;
@@ -254,3 +258,11 @@ typedef struct
 
 
 } target_pinout;
+
+*/
+
+extern board_type board;
+extern GPIO_TypeDef *ports[];
+
+
+
