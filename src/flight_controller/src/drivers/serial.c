@@ -139,7 +139,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	dmaUartRx.Init.MemInc              = DMA_MINC_ENABLE;
 	dmaUartRx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
 	dmaUartRx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-	dmaUartRx.Init.Mode                = DMA_NORMAL;
+	dmaUartRx.Init.Mode                = DMA_CIRCULAR;
 	dmaUartRx.Init.Priority            = DMA_PRIORITY_HIGH;
 
 	HAL_DMA_Init(&dmaUartRx);
@@ -177,6 +177,17 @@ void BoardUsartInit () {
 
 }
 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	//Preston, look at this
+	//http://electronics.stackexchange.com/questions/173025/stm32f0-uart-dma-interrupt-with-stm32cubemx-hal-1-2-1-problem
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(huart);
+
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_UART_RxCpltCallback can be implemented in the user file.
+   */
+}
 
 void USARTx_DMA_RX_IRQHandler(void)
 {
