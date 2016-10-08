@@ -33,16 +33,17 @@
 */
 
 /* Includes ------------------------------------------------------------------*/
+#include "../../../recovery_loader/inc/usb/usbd_desc.h"
+
+#include "../../../recovery_loader/inc/includes.h"
 #include "usbd_core.h"
-#include "usbd_desc.h"
 #include "usbd_conf.h"
-#include "includes.h"
 
 #define USBD_VID                        1155 //0x0483
 #define USBD_LANGID_STRING              1033 //0x409
 #define USBD_MANUFACTURER_STRING        "RaceFlight"
 #define USBD_PID_FS                     22337 //0x5741
-#define USBD_PRODUCT_STRING_FS          RFBL_HID_PRODUCT_STRING
+#define USBD_PRODUCT_STRING_FS          RFRC_HID_PRODUCT_STRING
 //#define USBD_SERIALNUMBER_STRING_FS     "00000000001A"
 #define USBD_CONFIGURATION_STRING_FS    "HID Config"
 #define USBD_INTERFACE_STRING_FS        "HID Interface"

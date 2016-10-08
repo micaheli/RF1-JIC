@@ -1,7 +1,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include <stdbool.h>
 
-#include "includes.h"
+#include "../../recovery_loader/inc/includes.h"
 
 
 /* Private typedef -----------------------------------------------------------*/
@@ -12,11 +12,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
-
-uint32_t StartSector = 0, EndSector = 0, Address = 0, i = 0 ;
-__IO uint32_t data32 = 0 , MemoryProgramStatus = 0 ;
 uint32_t toggle_led = 0;
-bool bootToRfbl = false;
+bool usbStarted = false;
 uint32_t ApplicationAddress = ADDRESS_FLASH_START;
 uint8_t bindSpektrum = 0;
 char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
@@ -32,27 +29,13 @@ cfg1_t cfg1;
 int main(void)
 {
 
-	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress;
+	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress, rebootPending;
 
-	simpleDelay_ASM(5000);
 	__enable_irq();
 
 	HAL_RCC_DeInit();
     HAL_DeInit();
     BoardInit();
-    LedInit();
-    USB_DEVICE_Init(); //start USB
-
-    rfblVersion = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
-    cfg1Version = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
-
-    if ((rfblVersion != RFBL_VERSION) || (cfg1Version != CFG1_VERSION)) { //no data or wrong version, let's put defaults
-		rtc_write_backup_reg(RFBL_BKR_RFBL_VERSION_REG,   RFBL_VERSION);
-		rtc_write_backup_reg(RFBL_BKR_CFG1_VERSION_REG,   CFG1_VERSION);
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
-		rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG,    (uint32_t)0x00000000);
-		rtc_write_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG,  APP_ADDRESS);
-    }
 
     //get config data from backup registers
 	rfblVersion   = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
@@ -60,44 +43,51 @@ int main(void)
 	bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
 	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
+	rebootPending = rtc_read_backup_reg(RFBL_BKR_REBOOT_PENDING_REG);
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
-
-
-	if (!bootToRfbl) {
-		//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
-		//the inside of these brackets means the RFBL pins are not shorted
-		switch (bootDirection) {
-			case BOOT_TO_APP_COMMAND:
-				//simpleDelay_ASM(100000);
-				startupBlink(20, 20);
-				boot_to_app();  //jump to application
-				break;
-			case BOOT_TO_ADDRESS:
-				//simpleDelay_ASM(100000);
-				ApplicationAddress = rebootAddress;
-				startupBlink(20, 20);
-				boot_to_app();  //jump to application
-				break;
-			case BOOT_TO_SPEKTRUM5:
-				bindSpektrum = 4; //set spektrum bind number and head to RFBL
-				break;
-			case BOOT_TO_SPEKTRUM9:
-				bindSpektrum = 8; //set spektrum bind number and head to RFBL
-				break;
-			case BOOT_TO_DFU_COMMAND:
-				systemResetToDfuBootloader(); //reset to DFU
-				break;
-			case BOOT_TO_RFBL_COMMAND:
-			default:
-				startupBlink(20, 20);
-				//simpleDelay_ASM(100000);
-				//default is to do nothing, continue to RFBL
-				break;
+	if (bootCycles > 1) { //we've restarted for some reason, check restart register and clear it
+		//Let's clear the registers and go into Recovery mode.
+		if (!rebootPending) {
+			//a reboot failed.
+			bootDirection = BOOT_TO_RECOVERY_COMMAND;
 		}
+		if (rebootPending == 222) {
+			//special case, if this equals 222 then we reboot to
+		}
+		rtc_write_backup_reg(RFBL_BKR_REBOOT_PENDING_REG, 0); //clear the reboot pending since reboot happened
+		rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, 0);    //
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND); //default is always boot to app
 	}
 
+	//serial number check here:
+	//if (SERIALNUMBER != readSerialNumber) {
+	//	bootDirection = BOOT_TO_RECOVERY_COMMAND;
+	//}
+
+	//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
+	//the inside of these brackets means the RFBL pins are not shorted
+	switch (bootDirection) {
+		case BOOT_TO_DFU_COMMAND:
+			systemResetToDfuBootloader(); //reset to DFU
+			break;
+		case BOOT_TO_ADDRESS:
+		case BOOT_TO_SPEKTRUM5:
+		case BOOT_TO_SPEKTRUM9:
+		case BOOT_TO_APP_COMMAND:
+		case BOOT_TO_RFBL_COMMAND:
+		default: //default is to boot to rfbl quietly
+			boot_to_app();  //jump to application
+			break;
+		case BOOT_TO_RECOVERY_COMMAND: //go into recovery mode
+			startupBlink(20, 20);
+			break;
+	}
+
+    LedInit();
+    usbStarted=true;
+    USB_DEVICE_Init(); //start USB
 
 	//initialize RFBL State and Command
 	RfblCommand_e RfblCommand = RFBLC_NONE;
@@ -299,7 +289,9 @@ void boot_to_app (void) {
 
 	DelayMs(250); //quarter second delay before booting into app to allow PDB power to stabilize
 
-	USB_DEVICE_DeInit();
+	if (usbStarted) {
+		USB_DEVICE_DeInit();
+	}
 	HAL_RCC_DeInit();
 	DelayMs(1);
 
@@ -678,6 +670,7 @@ FwInfo.mode    = 0; //Auto, Manu (Manual will place the FW into the location spe
 FwInfo.erase   = 0; //All, FW, FWCF, (All only the RFBL will do) (FW will only replace the FW area) (FW + Config will erase FW area and config location for it)
 
 RFBL Commands:
+
 	RFBLC_NONE,             //No command.
 	RFBLC_REBOOT_TO_DFU,		//Will reboot STM32 into Factory DFU mode
 	RFBLC_REBOOT_TO_RFBL,		//Will reboot into RFBL
@@ -693,20 +686,24 @@ RFBL Commands:
 	RFBLC_ERROR,				//Will put the device into error mode
 	RFBLC_LAST,					//Last enumeration. Same as RFBLC_ERROR
 
-RFBL States:
 	RFBLS_IDLE,						//RFBL is Idle and awaiting command
 	RFBLS_REBOOT_TO_DFU,			//RFBL is rebooting into DFU
 	RFBLS_REBOOT_TO_RFBL,			//RFBL is rebooting into RFBL
 	RFBLS_REBOOT_TO_APP,			//RFBL is rebooting into APP
+    RFBLS_REBOOT_TO_CUSTOM,         //RFBL is rebooting to custom FLASH location
 	RFBLS_PREPARING_FOR_UPDATE,		//RFBL is preparing for update
+    RFBLS_AWAITING_FW_DATA,         //RFBL is waiting for FW data
+    RFBLS_WRITE_FW_DATA,            //RFBL is writing FW data
+    RFBLS_DONE_UPGRADING,           //RFBL is done upgrading
 	RFBLS_LOAD_TO_BL,				//RFBL is upgrading firmware from PC
 	RFBLS_LOAD_FROM_BL,				//RFBL is reading firmware to PC
 	RFBLS_TOGGLE_LEDS,				//RFBL is toggling the LEDs
 	RFBLS_ERASE_CFG1_FLASH,			//RFBL is erasing config1 flash
 	RFBLS_ERASE_CFG2_FLASH,			//RFBL is erasing config2 flash
 	RFBLS_ERASE_ALL_FLASH,			//RFBL is erasing chip flash
-	RFBLS_ERROR,					//RFBL is in error mode
-	RFBLS_LAST,						//Last enumeration. Same as RFBLS_ERROR
-
+    RFBLS_BOOT_TO_APP,              //RFBL is booting to app
+    RFBLS_VERSION,                  //RFBL is reporting FW version
+    RFBLS_ERROR,                    //RFBL is in error mode
+    RFBLS_LAST,                     //RFBL is in error mode Last enumeration is same as error mode
 
  */

@@ -142,7 +142,7 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-Os"
 
     elif TARGET == "stm32f405xx_rfbll":
-        PROJECT = "boot_loader_loader"
+        PROJECT = "recovery_loader"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
@@ -484,7 +484,7 @@ def configure_target(TARGET):
         FEATURES.extend(["leds"])
     elif PROJECT == "boot_loader":
         FEATURES.extend(["leds"])
-    elif PROJECT == "boot_loader_loader":
+    elif PROJECT == "recovery_loader":
         FEATURES.extend(["leds"])
     else:
         print("ERROR: NOT VALID PROJECT TYPE, CHECK MAKE FILE CODE", file=sys.stderr)

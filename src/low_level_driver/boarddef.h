@@ -48,8 +48,9 @@
 
 
 //USB config
-#define RFFW_HID_PRODUCT_STRING "Revolution"
-#define RFBL_HID_PRODUCT_STRING "Revolution RFBL"
+#define RFFW_HID_PRODUCT_STRING "RaceFlight"
+#define RFBL_HID_PRODUCT_STRING "RaceFlight Bootloader"
+#define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
 
 //Sbus inverter config

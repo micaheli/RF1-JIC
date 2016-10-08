@@ -9,15 +9,15 @@
 
 
 #include "../../low_level_driver/boarddef.h"
+#include "../../recovery_loader/inc/drivers/leds.h"
+#include "../../recovery_loader/inc/rfbl.h"
+#include "../../recovery_loader/inc/usb/usb_device.h"
 #include "mcu_include.h"
 #include "general_functions.h"
 
 #include "usbd_hid.h"
-#include "usb_device.h"
-
 #include "rfbl.h"
 
-#include "drivers/leds.h"
 
 void BoardInit(void);
 void gpioClockInit(void);

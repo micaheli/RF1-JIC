@@ -34,9 +34,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 
-#include "usb_device.h"
+#include "../../../recovery_loader/inc/usb/usb_device.h"
+
+#include "../../../recovery_loader/inc/usb/usbd_desc.h"
 #include "usbd_core.h"
-#include "usbd_desc.h"
 #include "usbd_hid.h"
 
 /* USB Device Core handle declaration */

@@ -830,6 +830,7 @@ FwInfo.mode    = 0; //Auto, Manu (Manual will place the FW into the location spe
 FwInfo.erase   = 0; //All, FW, FWCF, (All only the RFBL will do) (FW will only replace the FW area) (FW + Config will erase FW area and config location for it)
 
 RFBL Commands:
+
 	RFBLC_NONE,             //No command.
 	RFBLC_REBOOT_TO_DFU,		//Will reboot STM32 into Factory DFU mode
 	RFBLC_REBOOT_TO_RFBL,		//Will reboot into RFBL
@@ -845,20 +846,24 @@ RFBL Commands:
 	RFBLC_ERROR,				//Will put the device into error mode
 	RFBLC_LAST,					//Last enumeration. Same as RFBLC_ERROR
 
-RFBL States:
 	RFBLS_IDLE,						//RFBL is Idle and awaiting command
 	RFBLS_REBOOT_TO_DFU,			//RFBL is rebooting into DFU
 	RFBLS_REBOOT_TO_RFBL,			//RFBL is rebooting into RFBL
 	RFBLS_REBOOT_TO_APP,			//RFBL is rebooting into APP
+    RFBLS_REBOOT_TO_CUSTOM,         //RFBL is rebooting to custom FLASH location
 	RFBLS_PREPARING_FOR_UPDATE,		//RFBL is preparing for update
+    RFBLS_AWAITING_FW_DATA,         //RFBL is waiting for FW data
+    RFBLS_WRITE_FW_DATA,            //RFBL is writing FW data
+    RFBLS_DONE_UPGRADING,           //RFBL is done upgrading
 	RFBLS_LOAD_TO_BL,				//RFBL is upgrading firmware from PC
 	RFBLS_LOAD_FROM_BL,				//RFBL is reading firmware to PC
 	RFBLS_TOGGLE_LEDS,				//RFBL is toggling the LEDs
 	RFBLS_ERASE_CFG1_FLASH,			//RFBL is erasing config1 flash
 	RFBLS_ERASE_CFG2_FLASH,			//RFBL is erasing config2 flash
 	RFBLS_ERASE_ALL_FLASH,			//RFBL is erasing chip flash
-	RFBLS_ERROR,					//RFBL is in error mode
-	RFBLS_LAST,						//Last enumeration. Same as RFBLS_ERROR
-
+    RFBLS_BOOT_TO_APP,              //RFBL is booting to app
+    RFBLS_VERSION,                  //RFBL is reporting FW version
+    RFBLS_ERROR,                    //RFBL is in error mode
+    RFBLS_LAST,                     //RFBL is in error mode Last enumeration is same as error mode
 
  */
