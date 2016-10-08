@@ -4,6 +4,10 @@
 
 #define	REVO
 
+//USB config
+#define RFFW_HID_PRODUCT_STRING "RaceFlightFC"
+#define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
+
 
 //MCU config
 #define FC_PLLM	8
@@ -47,9 +51,6 @@
 #define GYRO_EXTI_IRQHandler    EXTI4_IRQHandler
 
 
-//USB config
-#define RFFW_HID_PRODUCT_STRING "Revolution"
-#define RFBL_HID_PRODUCT_STRING "Revolution RFBL"
 
 
 //Sbus inverter config
@@ -82,15 +83,6 @@
 #define USART6_TX_GPIO				GPIOC
 #define USART6_TX_PIN				GPIO_PIN_6
 
-
-//RFBL config
-#define HARDWARE_RFBL_PLUG
-#define RFBL_GPIO1   GPIOA /* Servo5 */
-#define RFBL_PIN1    GPIO_PIN_1
-#define RFBL_GPIO2   GPIOA /* Servo6 */
-#define RFBL_PIN2    GPIO_PIN_0
-#define SPEK_GPIO    GPIOB
-#define SPEK_PIN     GPIO_PIN_11
 
 
 
@@ -176,13 +168,13 @@ typedef struct {
 	uint8_t port;
 	uint32_t pin;
 	uint8_t enabled;
-} internal_led;
+} internal_led_type;
 
 typedef struct {
 	uint8_t port;
 	uint32_t pin;
 	uint8_t enabled;
-} gyro;
+} gyro_type;
 
 
 
@@ -192,15 +184,15 @@ typedef struct {
 	uint32_t fc_pllp;
 	uint32_t fc_pllq;
 
-	internal_led internalLeds[3];
+	internal_led_type internalLeds[3];
 
 	uint8_t buzzerPort;
 	uint32_t buzzerPin;
 
-	gyro gyros[3];
+	gyro_type gyros[3];
 
 	board_serial serials[6];
-} board_record;
+} board_type;
 
 
 
@@ -229,27 +221,6 @@ typedef struct {
 //#define USARTx_DMA_TX_IRQHandler   DMA1_Stream3_IRQHandler
 //#define USARTx_DMA_RX_IRQHandler   DMA1_Stream1_IRQHandler
 //#define USARTx_IRQHandler          USART3_IRQHandler
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 typedef enum {INVERTED_RX, RX, GPS, OSD} usart_usage ;
 
