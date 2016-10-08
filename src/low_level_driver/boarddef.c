@@ -10,10 +10,13 @@ GPIO_TypeDef *ports[11];
 serial_type usarts[6];
 spi_type spis[5];
 TIM_TypeDef timers[14];
+board_type board;
 
 
 int InitializeMCUSettings() {
 	//target_pinout pins;
+
+
 
 	bzero(ports, sizeof(ports));
 	ports[0]=_GPIOA;
@@ -62,6 +65,11 @@ int InitializeMCUSettings() {
 	timers[11]=_TIM12;
 	timers[12]=_TIM13;
 	timers[13]=_TIM14;
+
+
+
+	bzero(board, sizeof(board));
+
 
 
 	return(1);

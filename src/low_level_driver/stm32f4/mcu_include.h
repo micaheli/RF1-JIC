@@ -38,7 +38,7 @@
 #define _GPIOC GPIOC
 #define _GPIOD GPIOD
 
-#ifdef STM32F405xx
+#ifdef stm32f405xx
 
 #include <stm32f405xx.h>
 
