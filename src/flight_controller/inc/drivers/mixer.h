@@ -32,3 +32,5 @@ extern actuator_mixer motorMixer[];
 void InitMixer(void);
 float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], float motorOutput[]);
 void InlineApplyMixer(pid_output pids[], float curvedRcCommandF[]);
+float ApplyAttenuationKpCurve (float motorOutput);
+float ApplyAttenuationKdCurve (float motorOutput);
