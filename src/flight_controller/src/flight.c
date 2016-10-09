@@ -23,6 +23,10 @@ void InitFlightCode(void) {
 
 }
 
+extern uint8_t tInBuffer[];
+extern uint8_t tOutBuffer[];
+volatile float rat[80];
+volatile float cat[80];
 
 inline void InlineFlightCode(float dpsGyroArray[]) {
 
@@ -41,6 +45,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//output to motors
 
 	uint32_t catfish = Micros();
+	static uint32_t counterFish = 0;
+	static uint32_t counterDog = 0;
+
 
 	PafUpdate(&yawPafState, dpsGyroArray[YAW]);
 	PafUpdate(&rollPafState, dpsGyroArray[ROLL]);
@@ -50,16 +57,54 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	filteredGyroData[ROLL]  = rollPafState.x;
 	filteredGyroData[PITCH] = pitchPafState.x;
 
-	InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
+	smoothedRcCommandF[0]=0.20;
+	smoothedRcCommandF[1]=curvedRcCommandF[1];
+	smoothedRcCommandF[2]=curvedRcCommandF[2];
+	smoothedRcCommandF[3]=curvedRcCommandF[3];
+	//InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
+
+
+
+	counterFish++;
+	counterDog++;
+	rat[counterDog] = curvedRcCommandF[YAW];
+	cat[counterDog] = smoothedRcCommandF[YAW];
+	(void)(rat);
+	(void)(cat);
+	if (counterDog == 79) {
+		counterDog =0;
+	}
+	if (counterFish>=2000) {
+		counterFish=0;
+		tInBuffer[0] = 1;
+		tInBuffer[1]=(int8_t)dpsGyroArray[0];
+		tInBuffer[2]=(int8_t)dpsGyroArray[1];
+		tInBuffer[3]=(int8_t)dpsGyroArray[2];
+		tInBuffer[4]=(uint8_t)(curvedRcCommandF[YAW]*100);
+		tInBuffer[5]=(uint8_t)(curvedRcCommandF[ROLL]*100);
+		tInBuffer[6]=(uint8_t)(curvedRcCommandF[PITCH]*100);
+		tInBuffer[7]=(uint8_t)(curvedRcCommandF[THROTTLE]*100);
+		tInBuffer[8]=(uint8_t)(smoothedRcCommandF[YAW]*100);
+		tInBuffer[9]=(uint8_t)(smoothedRcCommandF[ROLL]*100);
+		tInBuffer[10]=(uint8_t)(smoothedRcCommandF[PITCH]*100);
+		tInBuffer[11]=(uint8_t)(smoothedRcCommandF[THROTTLE]*100);
+		tInBuffer[12]=(uint8_t)debugU32[4];
+		tInBuffer[14]=(uint8_t)debugU32[4];
+
+		USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
+	}
+
+
 
 	flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], rcControlsConfig.rates[YAW], rcControlsConfig.acroPlus[YAW]);
 	flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], rcControlsConfig.rates[ROLL], rcControlsConfig.acroPlus[ROLL]);
 	flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], rcControlsConfig.rates[PITCH], rcControlsConfig.acroPlus[PITCH]);
 
-	if (boardArmed)
-		InlinePidController(filteredGyroData, flightSetPoints, &flightPids, actuatorRange, &pidConfig);
+	if (boardArmed) {
+		InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, pidConfig);
 
-	actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
+		actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
+	}
 
 	OutputActuators(motorOutput, servoOutput);
 
@@ -76,5 +121,5 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 }
 
 inline float InlineGetSetPoint(float curvedRcCommandF, float rates, float acroPlus) {
-	return (curvedRcCommandF * (rates + (rates*acroPlus))); //setpoint in DPS
+	return ((curvedRcCommandF * (rates + (rates*acroPlus))) * 0.10 ); //setpoint in DPS
 }

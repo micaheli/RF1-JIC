@@ -6,7 +6,7 @@ void LoadConfig (void)
 	//todo: Read this from storage. These are defaults for now.
 	float deadband = 0.025; //2.5% deadband
 	uint32_t minRc = 0; // middle of rc input, one for each channel. Default being 1500
-	uint32_t midRc = 1000; // middle of rc input, one for each channel. Default being 1500
+	uint32_t midRc = 1024; // middle of rc input, one for each channel. Default being 1500
 	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
 
 	pidConfig[YAW].kp	= .0012500;
@@ -49,7 +49,7 @@ void LoadConfig (void)
 	rcControlsConfig.deadBand[PITCH]    = deadband;
 	rcControlsConfig.deadBand[ROLL]     = deadband;
 	rcControlsConfig.deadBand[YAW]      = deadband;
-	rcControlsConfig.deadBand[THROTTLE] = deadband;
+	rcControlsConfig.deadBand[THROTTLE] = 0;
 	rcControlsConfig.deadBand[AUX1]     = deadband;
 	rcControlsConfig.deadBand[AUX2]     = deadband;
 	rcControlsConfig.deadBand[AUX3]     = deadband;

@@ -39,8 +39,8 @@ void ProcessSpektrumPacket(void)
 
 	if (rxData[4] > 1500) { //todo: MOVE!!! - uglied up Preston's code.
 		boardArmed = 1;
-	} else {
-//		boardArmed = 0;
+	} else if (rxData[4] > 100) {
+		boardArmed = 0;
 	}
 	InlineCollectRcCommand ( );
 }
@@ -123,10 +123,10 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]) {
     static float lastCommand[4] = { 0, 0, 0, 0 };
     static float deltaRC[4] = { 0, 0, 0, 0 };
-    int32_t factor;
+    static int32_t factor = 0;
     int32_t channel;
 
-    int32_t smoothingInterval = 88; //todo: calculate this number to be number of loops between PID loops
+    int32_t smoothingInterval = 20; //todo: calculate this number to be number of loops between PID loops
 	//88  for spektrum at  8 KHz loop time
 	//264 for spektrum at 32 KHz loop time
 	//352 for spektrum at 32 KHz loop time
