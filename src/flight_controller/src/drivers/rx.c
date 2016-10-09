@@ -5,6 +5,37 @@ float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the
 float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
 unsigned char isRxDataNew;
 
+
+uint32_t rxData[MAXCHANNELS];
+
+
+
+// 2048 resolution
+uint32_t spektrumChannelShift = 3;
+uint32_t spektrumChannelMask = 0x07;
+
+/*
+//1024 resolution
+spektrumChannelShift = 2;
+spektrumChannelMask = 0x03;
+*/
+
+
+
+void ProcessSpektrumPacket()
+{
+	uint32_t spektrumChannel;
+	uint32_t x;
+
+	for (x = 3; x < 16; x += 2) {
+		spektrumChannel = 0x0F & (aRxBuffer[x - 1] >> spektrumChannelShift);
+		if (spektrumChannel < MAXCHANNELS) {
+			rxData[spektrumChannel] = ((uint32_t)(aRxBuffer[x - 1] & spektrumChannelMask) << 8) + aRxBuffer[x];
+		}
+	}
+}
+
+
 void InitRcData (void) {
 	bzero(trueRcCommandF, MAXCHANNELS);
 	bzero(curvedRcCommandF, MAXCHANNELS);

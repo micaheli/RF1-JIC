@@ -1,6 +1,6 @@
 #pragma once
 
-#define MAXCHANNELS 8
+#define MAXCHANNELS 16
 
 #define MINRC 1000 //1000 to 2000 is old standard for RC channels. midRc needs to be adjustable.
 #define MAXRC 2000 //1000 to 2000 is old standard for RC channels. midRc needs to be adjustable.
@@ -41,6 +41,7 @@ enum {
 extern float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position
 extern float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the rcCommand after the curve is applied
 extern float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
+extern uint32_t rxData[MAXCHANNELS];
 extern unsigned char isRxDataNew;
 
 void InitRcData(void);

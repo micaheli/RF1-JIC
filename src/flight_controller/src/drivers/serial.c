@@ -114,6 +114,7 @@ void UsartDeinit(UART_HandleTypeDef *huart, USART_TypeDef *Usart, GPIO_TypeDef *
 
 void UsartDmaInit(UART_HandleTypeDef *huart)
 {
+	int x;
 	/*##-3- Configure the DMA ##################################################*/
 	/* Configure the DMA handler for Transmission process */
 	dmaUartTx.Instance                 = USARTx_TX_DMA_STREAM;
@@ -169,7 +170,17 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
     HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
 
     __HAL_UART_FLUSH_DRREGISTER(huart);
-    HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, 16);
+
+    for (x=0;x<100;x++)
+    {
+    	if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, 16) == HAL_OK)
+    		break;
+    }
+
+    if (x==100)
+    {
+    	// SHOW SOME CRAZY ERRORS
+    }
 }
 
 void BoardUsartInit () {
@@ -190,17 +201,25 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	//HAL_UART_Transmit_DMA(huart, &Rx_data, 1);
 	// ##-2- Put UART peripheral in reception process ###########################
 	__HAL_UART_FLUSH_DRREGISTER(huart);
-	if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, 16) != HAL_OK)
-	{
-		ErrorHandler();
-	}
+
+
+	ProcessSpektrumPacket();
+	/*
 	for (unsigned char i=0;i<63;i++) {
 		tInBuffer[i] = aRxBuffer[i];
 	}
 	tInBuffer[0] = 1;
 
+
     USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
+
+*/
+	if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, 16) != HAL_OK)
+	{
+		ErrorHandler();
+	}
 }
+
 
 	//Preston, look at this
 	//http://electronics.stackexchange.com/questions/173025/stm32f0-uart-dma-interrupt-with-stm32cubemx-hal-1-2-1-problem
