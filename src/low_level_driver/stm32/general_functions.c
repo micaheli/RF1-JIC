@@ -78,8 +78,8 @@ inline bool inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
 	return true; //pin is reset, so it is not set, which means it is on, so the statement is true
 }
 
-void VectorIrqInit(void) {
-	SCB->VTOR = ADDRESS_FLASH_START; //set vector register to firmware start
+void VectorIrqInit(uint32_t address) {
+	SCB->VTOR = address; //set vector register to firmware start
 	__enable_irq(); // enable interrupts
 
 	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;

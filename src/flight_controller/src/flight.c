@@ -7,13 +7,15 @@ paf_state rollPafState;
 paf_state pitchPafState;
 float actuatorRange;
 float flightSetPoints[3];
-
+uint32_t boardArmed, calibrateMotors;
 
 void InitFlightCode(void) {
 
 	bzero(filteredGyroData,sizeof(filteredGyroData));
 	bzero(&flightPids,sizeof(flightPids));
 	actuatorRange = 0;
+	boardArmed = 0;
+	calibrateMotors = 0;
 
 	yawPafState   = InitPaf(filterConfig.gyroFilter.q, filterConfig.gyroFilter.r, filterConfig.gyroFilter.q, 0);
 	rollPafState  = InitPaf(filterConfig.gyroFilter.q, filterConfig.gyroFilter.r, filterConfig.gyroFilter.q, 0);
@@ -56,12 +58,21 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, pidConfig);
 
-	actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
+	if (boardArmed) {
+		actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
 
-	OutputActuators(motorOutput, servoOutput);
+		OutputActuators(motorOutput, servoOutput);
+	}
+
 	debugU32[0] = Micros() - catfish;
 
+	debugU32[1] = flightPids[0].kp;
+	debugU32[2] = flightPids[1].kp;
+	debugU32[3] = flightPids[2].kp;
 
+	debugU32[1] = filteredGyroData[0];
+	debugU32[2] = filteredGyroData[1];
+	debugU32[3] = filteredGyroData[2];
 
 }
 

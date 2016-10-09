@@ -27,7 +27,9 @@ void InitializeLed(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 //todo: Do we want to init LEDs like this? Maybe an array is a better method
 void InitLeds (void)
 {
-	for (int x;x<3;x++)
+	int x;
+
+	for (x=0;x<3;x++)
 	{
 		if (board.internalLeds[x].enabled)
 		{

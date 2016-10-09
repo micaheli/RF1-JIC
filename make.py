@@ -128,7 +128,7 @@ def configure_target(TARGET):
     elif TARGET == "stm32f405xx":
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
+        TARGET_SCRIPT = "stm32_flash_f405.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
@@ -136,7 +136,7 @@ def configure_target(TARGET):
     elif TARGET == "stm32f405xx_rfbl":
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405.ld"
+        TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Os"
@@ -144,7 +144,7 @@ def configure_target(TARGET):
     elif TARGET == "stm32f405xx_rfbll":
         PROJECT = "recovery_loader"
         TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405.ld"
+        TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Os"
@@ -541,8 +541,7 @@ def configure_target(TARGET):
         DEF_FLAGS,
         DEBUG_FLAGS if args.debug else OPTIMIZE_FLAGS,
         INCLUDES,
-        "-Wunused-parameter -Wdouble-promotion -save-temps=obj -std=gnu99",
-        "-Wall -Wextra -Wunsafe-loop-optimizations",
+        "-Wall -Wextra -pedantic -Wmaybe-uninitialized "
         "-ffunction-sections -fdata-sections -MMD -MP"
     ])
 

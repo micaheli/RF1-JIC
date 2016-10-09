@@ -194,12 +194,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	{
 		ErrorHandler();
 	}
-	for (unsigned char i=0;i<63;i++) {
-		tInBuffer[i] = aRxBuffer[i];
-	}
-	tInBuffer[0] = 1;
+	//for (unsigned char i=0;i<63;i++) {
+	//	tInBuffer[i] = aRxBuffer[i];
+	//}
+	//tInBuffer[0] = 1;
 
-    USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
+    //USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
 }
 
 	//Preston, look at this

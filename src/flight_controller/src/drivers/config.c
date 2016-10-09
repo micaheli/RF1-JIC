@@ -9,17 +9,17 @@ void LoadConfig (void)
 	uint32_t minRc = 1000; // middle of rc input, one for each channel. Default being 1500
 	uint32_t maxRc = 2000; // middle of rc input, one for each channel. Default being 1500
 
-	pidConfig[YAW].kp	= 5.000;
-	pidConfig[YAW].ki	= 1.000;
-	pidConfig[YAW].kd	= 0.100;
+	pidConfig[YAW].kp	= .0012500;
+	pidConfig[YAW].ki	= .0005000;
+	pidConfig[YAW].kd	= .0000001;
 
-	pidConfig[ROLL].kp	= 5.000;
-	pidConfig[ROLL].ki	= 1.000;
-	pidConfig[ROLL].kd	= 0.100;
+	pidConfig[ROLL].kp	= .0012500;
+	pidConfig[ROLL].ki	= .0005000;
+	pidConfig[ROLL].kd	= .0000001;
 
-	pidConfig[PITCH].kp	= 5.000;
-	pidConfig[PITCH].ki	= 1.000;
-	pidConfig[PITCH].kd	= 0.100;
+	pidConfig[PITCH].kp	= .0012500;
+	pidConfig[PITCH].ki	= .0005000;
+	pidConfig[PITCH].kd	= .0000001;
 
 	filterConfig.gyroFilter.q    = 0.100;
 	filterConfig.gyroFilter.r    = 250.0;

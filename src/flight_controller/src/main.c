@@ -28,7 +28,7 @@ int main(void)
 
     int32_t count = 16;
 
-	VectorIrqInit();
+    VectorIrqInit(0x08020000);
     BoardInit();
 
     HandleRfbl();

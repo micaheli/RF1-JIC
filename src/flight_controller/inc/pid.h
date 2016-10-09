@@ -1,6 +1,7 @@
 #pragma once
 
 #define AXIS_NUMBER 3
+#define KD_RING_BUFFER_SIZE 256
 
 enum { KP = 0, KD, KI, PID_VARIABLE_COUNT };
 

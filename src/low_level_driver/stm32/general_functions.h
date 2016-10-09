@@ -18,8 +18,7 @@ bool inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 void InlineUpdateMillisClock (void);
 
-void VectorIrqInit(void);
-
+void VectorIrqInit(uint32_t address);
 
 
 

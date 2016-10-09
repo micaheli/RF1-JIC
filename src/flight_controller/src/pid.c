@@ -14,10 +14,8 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 
 	int32_t axis;
 
-#define KD_RING_BUFFER_SIZE 256
-
 	float dT = 0.000125; //8KHz
-	float error, delta;
+	float pidError, pidDelta;
 	static float lastError[3];
 
 	static float kd_ring_buffer_p[KD_RING_BUFFER_SIZE];
@@ -46,25 +44,24 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 	(void)(kd_ring_buffer_y_pointer);
 
 
-	for (axis = 2; axis >= 0; axis--) {
+	for (axis = 2; axis >= 0; --axis) {
 
-		error = flightSetPoints[axis] - filteredGyroData[axis];
+		pidError = flightSetPoints[axis] - filteredGyroData[axis];
 
 		// calculate Kp
-		flightPids[axis].kp = error * (pidConfig[axis].kp/4);
+		flightPids[axis].kp = pidError * pidConfig[axis].kp;
 
 		// calculate Ki
-		flightPids[axis].ki = filteredGyroData[axis] * (pidConfig[axis].ki/4);
-		flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + error * dT * (pidConfig[axis].ki / 2)  * 10, -251.0f, 251.0f);
+		flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * dT * pidConfig[axis].ki, -251.0f, 251.0f);
 
 		// calculate Kd
-	    delta = -(error - lastError[axis]);
-	    lastError[axis] = error;
+		pidDelta = -(pidError - lastError[axis]);
+	    lastError[axis] = pidError;
 
-	    PafUpdate(&kdFilterState[axis], delta);
-	    delta = kdFilterState[axis].x * (1.0f / dT);
+	    PafUpdate(&kdFilterState[axis], pidDelta);
+	    pidDelta = kdFilterState[axis].x * (1.0f / dT);
 
-		flightPids[axis].kd = InlineConstrainf(delta * (pidConfig[axis].kd/10), -351.0f, 351.0f);
+		flightPids[axis].kd = InlineConstrainf(pidDelta * pidConfig[axis].kd, -351.0f, 351.0f);
 
 	}
 

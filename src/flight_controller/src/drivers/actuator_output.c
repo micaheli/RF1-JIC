@@ -1,5 +1,6 @@
 #include "includes.h"
 
+volatile uint32_t disarmPulseValue;
 volatile uint32_t idlePulseValue;
 volatile uint32_t pulseValueRange;
 
@@ -28,7 +29,8 @@ void InitActuators(void) {
 
 	//these calues come from config
 	//this is for multishot at 32KHz on STM32F4 running at 192MHz
-	float idleUs  = 5;
+	float disarmUs  = 5;
+	float idleUs  = 6.5;
 	float walledUs  = 20;
 	uint32_t pwmHz   = 32000;
 	uint32_t timerHz = 48000000;
@@ -38,14 +40,15 @@ void InitActuators(void) {
 	float period = ((float)timerHz/(float)pwmHz);
 	float pwmUs = (1000000/(float)pwmHz); //31.25 / 1500
 	float pwmUsPerTimerStep = (pwmUs / (period-1)); //us per timer step, 0.02083333333333333
-	idlePulseValue = (uint32_t) (idleUs/pwmUsPerTimerStep);
+	disarmPulseValue = (uint32_t) (disarmUs/pwmUsPerTimerStep);
+	idlePulseValue   = (uint32_t) (idleUs/pwmUsPerTimerStep);
 	walledPulseValue = (uint32_t) (walledUs/pwmUsPerTimerStep);
-	pulseValueRange = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
+	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
-	InitActuatorTimer(GPIOB, GPIO_PIN_0, TIM3, TIM_CHANNEL_3, GPIO_AF2_TIM3, TIM_OCPOLARITY_HIGH, idlePulseValue, pwmHz, timerHz );
-	InitActuatorTimer(GPIOB, GPIO_PIN_1, TIM3, TIM_CHANNEL_4, GPIO_AF2_TIM3, TIM_OCPOLARITY_HIGH, idlePulseValue, pwmHz, timerHz );
-	InitActuatorTimer(GPIOA, GPIO_PIN_3, TIM9, TIM_CHANNEL_2, GPIO_AF3_TIM9, TIM_OCPOLARITY_HIGH, idlePulseValue, pwmHz, timerHz );
-	InitActuatorTimer(GPIOA, GPIO_PIN_2, TIM2, TIM_CHANNEL_3, GPIO_AF1_TIM2, TIM_OCPOLARITY_HIGH, idlePulseValue, pwmHz, timerHz );
+	InitActuatorTimer(GPIOB, GPIO_PIN_0, TIM3, TIM_CHANNEL_3, GPIO_AF2_TIM3, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz );
+	InitActuatorTimer(GPIOB, GPIO_PIN_1, TIM3, TIM_CHANNEL_4, GPIO_AF2_TIM3, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz );
+	InitActuatorTimer(GPIOA, GPIO_PIN_3, TIM9, TIM_CHANNEL_2, GPIO_AF3_TIM9, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz );
+	InitActuatorTimer(GPIOA, GPIO_PIN_2, TIM2, TIM_CHANNEL_3, GPIO_AF1_TIM2, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz );
 
 }
 
@@ -99,10 +102,10 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
 	sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
 	 */
-	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.OCMode = TIM_OCMODE_PWM2;
 	sConfigOC.Pulse = pulseValue;
 	sConfigOC.OCPolarity = polarity;
-	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
 	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
 
 	HAL_TIM_OC_ConfigChannel(&pwmTimer, &sConfigOC, timerChannel);
@@ -111,11 +114,32 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 }
 
 void OutputActuators(float motorOutput[], float servoOutput[]) {
+	int x;
+	uint32_t pulseValue;
+	if (boardArmed || calibrateMotors) {
 
-	TIM3->CCR3 = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + idlePulseValue;
-	TIM3->CCR4 = (uint32_t)((float)motorOutput[1] * (float)pulseValueRange) + idlePulseValue;
-	TIM9->CCR2 = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + idlePulseValue;
-	TIM2->CCR3 = (uint32_t)((float)motorOutput[3] * (float)pulseValueRange) + idlePulseValue;
+		if (calibrateMotors) {
+			pulseValue = disarmPulseValue;
+		} else {
+			pulseValue = idlePulseValue;
+		}
+		for(x=7; x>=0; x--)
+		{
+			motorOutput[x] = InlineConstrainf(motorOutput[x], 0.0, 1.0);
+		}
 
-	(void)(servoOutput);
+		TIM2->CCR3 = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + pulseValue;
+		TIM3->CCR4 = (uint32_t)((float)motorOutput[1] * (float)pulseValueRange) + pulseValue;
+		TIM3->CCR3 = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + pulseValue;
+		TIM9->CCR2 = (uint32_t)((float)motorOutput[3] * (float)pulseValueRange) + pulseValue;
+
+	} else {
+
+		TIM3->CCR3 = disarmPulseValue;
+		TIM3->CCR4 = disarmPulseValue;
+		TIM9->CCR2 = disarmPulseValue;
+		TIM2->CCR3 = disarmPulseValue;
+
+	}
+
 }

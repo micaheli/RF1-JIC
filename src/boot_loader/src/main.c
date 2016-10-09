@@ -17,7 +17,7 @@ uint32_t StartSector = 0, EndSector = 0, Address = 0, i = 0 ;
 __IO uint32_t data32 = 0 , MemoryProgramStatus = 0 ;
 uint32_t toggle_led = 0;
 bool bootToRfbl = false;
-uint32_t ApplicationAddress = ADDRESS_FLASH_START;
+uint32_t ApplicationAddress = 0x08020000;
 uint8_t bindSpektrum = 0;
 char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
 
@@ -32,17 +32,18 @@ cfg1_t cfg1;
 int main(void)
 {
 
-	bool rfbl_plug_attatched = false;
-	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress;
+	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress, toggleLedOn;
 
-	simpleDelay_ASM(5000);
+	VectorIrqInit(0x08008000);
 	__enable_irq();
 
 	HAL_RCC_DeInit();
     HAL_DeInit();
     BoardInit();
-    LedInit();
     USB_DEVICE_Init(); //start USB
+    boot_to_app();
+    InitializeMCUSettings();
+    InitLeds();
 
     rfblVersion = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
     cfg1Version = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
@@ -70,121 +71,13 @@ int main(void)
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
-#if defined(HARDWARE_BIND_PLUG) || defined(HARDWARE_DFU_PLUG) || defined(HARDWARE_RFBL_PLUG) || defined(VBUS_SENSE)
-    GPIO_InitTypeDef GPIO_InitStructure;
-#else
-	simpleDelay_ASM(1000);
-#endif
-
-
-#ifdef HARDWARE_RFBL_PLUG
-    simpleDelay_ASM(10); //let pin status stabilize
-
-	rfbl_plug_attatched = true;
-
-	//RX
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0);
-    GPIO_InitStructure.Pin   = GPIO_PIN_0;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_1);
-    GPIO_InitStructure.Pin   = GPIO_PIN_1;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3);
-    GPIO_InitStructure.Pin   = GPIO_PIN_3;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2);
-    GPIO_InitStructure.Pin   = GPIO_PIN_2;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    inlineDigitalLo(GPIOB, GPIO_PIN_0);
-    inlineDigitalLo(GPIOB, GPIO_PIN_1);
-    inlineDigitalLo(GPIOA, GPIO_PIN_3);
-    inlineDigitalLo(GPIOA, GPIO_PIN_2);
-
-	//RX
-    HAL_GPIO_DeInit(RFBL_GPIO1, RFBL_PIN1);
-
-    GPIO_InitStructure.Pin   = RFBL_PIN1;
-    GPIO_InitStructure.Mode  = GPIO_MODE_INPUT;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-    HAL_GPIO_Init(RFBL_GPIO1, &GPIO_InitStructure);
-
-    //TX
-    HAL_GPIO_DeInit(RFBL_GPIO2, RFBL_PIN2);
-
-    GPIO_InitStructure.Pin   = RFBL_PIN2;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStructure.Pull  = GPIO_NOPULL;
-    HAL_GPIO_Init(RFBL_GPIO2, &GPIO_InitStructure);
-
-    inlineDigitalHi(RFBL_GPIO2, RFBL_PIN2);
-	simpleDelay_ASM(1); //let pin status stabilize
-    if ((inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX hi
-    	rfbl_plug_attatched = false;
-    }
-
-	inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
-	simpleDelay_ASM(1); //let pin status stabilize
-    if (!(inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX low
-    	rfbl_plug_attatched = false;
-    }
-
-    inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
-
-
-	if (rfbl_plug_attatched) {
-
-		startupBlink (150, 25);
-		//pins attached, let's wait 4 seconds and see if they're still attached
-
-		rfbl_plug_attatched = true;
-
-	    inlineDigitalHi(RFBL_GPIO2, RFBL_PIN2);
-		simpleDelay_ASM(1); //let pin status stabilize
-	    if ((inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX hi
-	    	rfbl_plug_attatched = false;
-	    }
-
-		inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
-		simpleDelay_ASM(1); //let pin status stabilize
-	    if (!(inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX low
-	    	rfbl_plug_attatched = false;
-	    }
-
-	    if (rfbl_plug_attatched) {
-	    	//pin still attached, let's go to DFU mode
-	    	systemResetToDfuBootloader();
-	    } else {
-	    	//pin not attached, let's go into RFBL proper
-	    	bootToRfbl = true;
-	    }
-
-	}
-
-#endif
-
 
 	if (!bootToRfbl) {
 		//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
 		//the inside of these brackets means the RFBL pins are not shorted
 		switch (bootDirection) {
+			case BOOT_TO_SPEKTRUM5:
+			case BOOT_TO_SPEKTRUM9:
 			case BOOT_TO_APP_COMMAND:
 				//simpleDelay_ASM(100000);
 				startupBlink(20, 20);
@@ -195,12 +88,6 @@ int main(void)
 				ApplicationAddress = rebootAddress;
 				startupBlink(20, 20);
 				boot_to_app();  //jump to application
-				break;
-			case BOOT_TO_SPEKTRUM5:
-				bindSpektrum = 4; //set spektrum bind number and head to RFBL
-				break;
-			case BOOT_TO_SPEKTRUM9:
-				bindSpektrum = 8; //set spektrum bind number and head to RFBL
 				break;
 			case BOOT_TO_DFU_COMMAND:
 				systemResetToDfuBootloader(); //reset to DFU
@@ -214,42 +101,6 @@ int main(void)
 		}
 	}
 
-	if (bindSpektrum != 0) {
-
-	    HAL_GPIO_DeInit(SPEK_GPIO, SPEK_PIN);
-
-	    GPIO_InitStructure.Pin   = SPEK_PIN;
-	    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-	    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-	    GPIO_InitStructure.Pull  = GPIO_NOPULL;
-	    HAL_GPIO_Init(SPEK_GPIO, &GPIO_InitStructure);
-
-		inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
-
-		DelayMs(70);
-
-		for (uint8_t ii = 0; ii < bindSpektrum; ii++) {
-	        // RX line, drive low for 120us
-			inlineDigitalLo(SPEK_GPIO, SPEK_PIN);
-
-			simpleDelay_ASM(288); //300 is 125 us once booted
-
-	        // RX line, drive high for 120us
-			inlineDigitalHi(SPEK_GPIO, SPEK_PIN);
-
-			simpleDelay_ASM(288);
-		}
-
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_SPEK_COMMAND);
-		DelayMs(100);
-		startupBlink(20, 20);
-		boot_to_app();
-	}
-	uint32_t cat = HAL_RCC_GetHCLKFreq();
-
-	if (cat == 1) {
-		LED1_TOGGLE;
-	}
 
 	//initialize RFBL State and Command
 	RfblCommand_e RfblCommand = RFBLC_NONE;
@@ -280,9 +131,17 @@ int main(void)
 				break;
 
 			case RFBLS_TOGGLE_LEDS:
-				LED1_TOGGLE;
-				LED2_TOGGLE;
-				LED3_TOGGLE;
+				if (toggleLedOn) {
+					toggleLedOn = 0;
+					DoLed(0, 0);
+					DoLed(1, 0);
+					DoLed(2, 0);
+				} else {
+					toggleLedOn = 1;
+					DoLed(0, 1);
+					DoLed(1, 1);
+					DoLed(2, 1);
+				}
 
 				rfbl_report_state(&RfblState);
 				RfblState = RFBLS_IDLE;
@@ -365,32 +224,32 @@ int main(void)
 			case RFBLS_IDLE:
 			default:
 				if (toggle_led < 1000000) {
-					LED2_OFF;
+					DoLed(1, 0);
 					if (toggle_led % 8 == 0) {
-						LED1_ON;
+						DoLed(0, 1);
 					} else {
-						LED1_OFF;
+						DoLed(0, 0);
 					}
 				} else if (toggle_led < 2000000) {
-					LED1_OFF;
+					DoLed(0, 0);
 					if (toggle_led % 6 == 0) {
-						LED1_ON;
+						DoLed(0, 1);
 					} else {
-						LED1_OFF;
+						DoLed(0, 0);
 					}
 				} else if (toggle_led < 3000000) {
-					LED1_OFF;
+					DoLed(0, 0);
 					if (toggle_led % 4 == 0) {
-						LED1_ON;
+						DoLed(0, 1);
 					} else {
-						LED1_OFF;
+						DoLed(0, 0);
 					}
 				} else if (toggle_led < 4000000) {
-					LED1_OFF;
+					DoLed(0, 0);
 					if (toggle_led % 2 == 0) {
-						LED2_ON;
+						DoLed(1, 1);
 					} else {
-						LED2_OFF;
+						DoLed(1, 0);
 					}
 				} else {
 					toggle_led = 0;
@@ -433,18 +292,26 @@ uint32_t checkOldConfigDirection (uint32_t bootDirection, uint32_t bootCycles) {
 
 void startupBlink (uint16_t blinks, uint32_t delay) {
 
-	uint8_t a;
+	uint32_t a, catfishLedToggle;
 
 	//Startup Blink
-	LED1_ON;
-	LED2_OFF;
+	catfishLedToggle = 0;
+	DoLed(0, 1);
+	DoLed(1, 0);
 	for( a = 0; a < blinks; a = a + 1 ){ //fast blink
-		LED1_TOGGLE;
-		LED2_TOGGLE;
+		if (catfishLedToggle) {
+			catfishLedToggle=0;
+			DoLed(0, 1);
+			DoLed(1, 0);
+		} else {
+			catfishLedToggle=1;
+			DoLed(0, 0);
+			DoLed(1, 1);
+		}
 		DelayMs(delay);
 	}
-	LED1_OFF;
-	LED2_OFF;
+	DoLed(0, 0);
+	DoLed(1, 0);
 }
 
 void boot_to_app (void) {
@@ -477,6 +344,8 @@ void errorBlink(void) {
 //todo: add micros command
 void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 
+	static uint32_t catfishLedToggle = 0;
+
 	if (*RfblState == RFBLS_AWAITING_FW_DATA) {
 		//Let's limit how long we can wait between packets.
 		//todo: add micros() command
@@ -492,16 +361,23 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 			//FwInfo.time_last_packet	= micros(); //Set time of packet reception
 			FwInfo.time_last_packet	= 0; //Set time of packet reception
 			FwInfo.data_packets++; //we got a packet. Let's increment the value.
-			LED1_TOGGLE;
-			LED2_TOGGLE;
+			if (catfishLedToggle) {
+				catfishLedToggle=0;
+				DoLed(0, 1);
+				DoLed(1, 0);
+			} else {
+				catfishLedToggle=1;
+				DoLed(0, 0);
+				DoLed(1, 1);
+			}
 			if (FwInfo.data_packets >= FwInfo.expected_packets+1) { //Is this the last packet?
 				*RfblState = RFBLS_DONE_UPGRADING; //yes
-				LED1_OFF;
-				LED2_OFF;
+				DoLed(0, 0);
+				DoLed(1, 0);
 			} else if ((FwInfo.wordOffset + (FwInfo.skipTo - ADDRESS_RFBL_START)) == FwInfo.size)  {
 				*RfblState = RFBLS_DONE_UPGRADING; //yes
-				LED1_OFF;
-				LED2_OFF;
+				DoLed(0, 0);
+				DoLed(1, 0);
 			}
 			memcpy( &FwInfo.data[0], tOutBuffer, HID_EPOUT_SIZE-1 ); //capture outbuffer
 			memset(tOutBuffer, 0, HID_EPOUT_SIZE-1); //clear outbuffer
@@ -590,9 +466,9 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 
 void rfbl_execute_load_command(void) {
 
-	LED1_OFF;
-	LED2_OFF;
-	LED3_OFF;
+	DoLed(0, 0);
+	DoLed(1, 0);
+	DoLed(2, 0);
 	//TODO: Add some sanity checks
 	if ( (FwInfo.type == RFFW) && (FwInfo.mode == AUTO) ) { //Auto load RFFW, RaceFlight FW
 		FwInfo.address = ADDRESS_FLASH_START;
@@ -626,17 +502,17 @@ void rfbl_execute_load_command(void) {
 //todo: only works for F4 and F7. F1 and F3 require different flash handling.
 void rfbl_prepare_flash(void) {
 
-	LED1_ON;
-	LED2_ON;
-	LED3_ON;
+	DoLed(0, 1);
+	DoLed(1, 1);
+	DoLed(2, 1);
 
     if (!EraseFlash(ADDRESS_FLASH_START, ADDRESS_FLASH_END) ) {
     	ErrorHandler();
     }
 
-	LED1_OFF;
-	LED2_OFF;
-	LED3_OFF;
+	DoLed(0, 0);
+	DoLed(1, 0);
+	DoLed(2, 0);
 }
 
 
@@ -765,11 +641,11 @@ void systemResetToDfuBootloader(void) {
 void ErrorHandler(void)
 {
     while (1) {
-        LED2_ON;
-        LED3_OFF;
+        DoLed(1, 1);
+        DoLed(2, 0);
         DelayMs(40);
-        LED2_OFF;
-        LED3_ON;
+        DoLed(1, 0);
+        DoLed(2, 1);
         DelayMs(40);
     }
 }

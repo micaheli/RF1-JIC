@@ -34,21 +34,35 @@ actuator_mixer servoMixer[MAX_SERVO_NUMBER] =  {
 static float stabilizerAttenuation;
 float motorOutput[MAX_MOTOR_NUMBER];
 float servoOutput[MAX_SERVO_NUMBER];
-
+int32_t activeMotorCounter = -1; //number of active motors minus 1
 
 
 void InitMixer(void) {
+	int32_t i;
+
 	stabilizerAttenuation = 0;
 	bzero(motorOutput, sizeof(motorOutput));
 	bzero(servoOutput, sizeof(servoOutput));
+
+	//number of active moters starting from 0.
+	//quad is 3, hex is 5, octo is 7
+	//todo: need to set this based on mixer
+	for (i = (MAX_MOTOR_NUMBER-1); i>=0; i--  ) {
+		//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
+		if ( (motorMixer[i].yaw != 0 ) || (motorMixer[i].roll != 0 ) || (motorMixer[i].pitch != 0 ) || (motorMixer[i].throttle != 0 ) )
+		{
+			activeMotorCounter++; //increment active motor counter
+		}
+	}
+
 }
 
 inline float ApplyAttenuationKdCurve (float motorOutput) {
-	return motorOutput;
+	return 1;
 }
 
 inline float ApplyAttenuationKpCurve (float motorOutput) {
-	return motorOutput;
+	return 1;
 }
 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
@@ -58,9 +72,9 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 	float lowestMotor   =  100.0f;
 	float actuatorRange =    0.0f;
 	float throttle      = curvedRcCommandF[THROTTLE];
-	unsigned char i     = 0;
+	int32_t i     = 0;
 
-	for (i = 0; i < motorNumber; i++) {
+	for (i = activeMotorCounter; i >= 0; i--) {
 		stabilizerAttenuation = ApplyAttenuationKpCurve( motorOutput[i] );
 		motorOutput[i] = (
 				( (stabilizerAttenuation * pids[YAW].kp + pids[YAW].kd) + pids[YAW].ki )  * motorMixer[i].yaw +
@@ -86,7 +100,7 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 
 		//(1 / highestMotor); //this give us the multiplier we apply to each motor
 
-		for (i = 0; i < motorNumber; i++) { //throttle is not zero, so we can add throttle.
+		for (i = 3; i >= 0; i--) { //throttle is not zero, so we can add throttle.
 			motorOutput[i] *= (1 / highestMotor); //this squashes the mixer to fit within range.
 			//this is a horrible way to do it though, so we need to make sure the PIDC doesn't allow this to happen.
 			//we do this by communicating the actuator condition back to the PIDC
@@ -104,7 +118,7 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 			throttle -= (throttle + actuatorRange) - 1;
 		}
 
-		for (i = 0; i < motorNumber; i++) { //throttle is not zero, so we can add throttle.
+		for (i = activeMotorCounter; i >= 0; --i) { //throttle is not zero, so we can add throttle.
 			motorOutput[i] += throttle;
 		}
 

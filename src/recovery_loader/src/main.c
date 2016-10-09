@@ -14,7 +14,7 @@
 uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 uint32_t toggle_led = 0;
 bool usbStarted = false;
-uint32_t ApplicationAddress = ADDRESS_FLASH_START;
+uint32_t ApplicationAddress = 0x08008000;
 uint8_t bindSpektrum = 0;
 char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
 
@@ -29,7 +29,7 @@ cfg1_t cfg1;
 int main(void)
 {
 
-	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress, rebootPending;
+	uint32_t rebootAddress, bootDirection, bootCycles, rebootPending, toggleLedOn;
 
 	__enable_irq();
 
@@ -38,8 +38,6 @@ int main(void)
     BoardInit();
 
     //get config data from backup registers
-	rfblVersion   = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
-	cfg1Version   = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
 	bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
 	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
@@ -55,12 +53,14 @@ int main(void)
 		}
 		if (rebootPending == 222) {
 			//special case, if this equals 222 then we reboot to
+			ApplicationAddress = rebootAddress;
 		}
 		rtc_write_backup_reg(RFBL_BKR_REBOOT_PENDING_REG, 0); //clear the reboot pending since reboot happened
 		rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, 0);    //
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND); //default is always boot to app
 	}
 
+	boot_to_app();
 	//serial number check here:
 	//if (SERIALNUMBER != readSerialNumber) {
 	//	bootDirection = BOOT_TO_RECOVERY_COMMAND;
@@ -85,7 +85,9 @@ int main(void)
 			break;
 	}
 
-    LedInit();
+	InitializeMCUSettings();
+
+	InitLeds();
     usbStarted=true;
     USB_DEVICE_Init(); //start USB
 
@@ -118,9 +120,17 @@ int main(void)
 				break;
 
 			case RFBLS_TOGGLE_LEDS:
-				LED1_TOGGLE;
-				LED2_TOGGLE;
-				LED3_TOGGLE;
+				if (toggleLedOn) {
+					toggleLedOn = 0;
+					DoLed(0, 0);
+					DoLed(1, 0);
+					DoLed(2, 0);
+				} else {
+					toggleLedOn = 1;
+					DoLed(0, 1);
+					DoLed(1, 1);
+					DoLed(2, 1);
+				}
 
 				rfbl_report_state(&RfblState);
 				RfblState = RFBLS_IDLE;
@@ -203,32 +213,32 @@ int main(void)
 			case RFBLS_IDLE:
 			default:
 				if (toggle_led < 1000000) {
-					LED2_OFF;
+					DoLed(1, 0);;
 					if (toggle_led % 8 == 0) {
-						LED1_ON;
+						DoLed(0, 1);;
 					} else {
-						LED1_OFF;
+						DoLed(0, 0);;
 					}
 				} else if (toggle_led < 2000000) {
-					LED1_OFF;
+					DoLed(0, 0);;
 					if (toggle_led % 6 == 0) {
-						LED1_ON;
+						DoLed(0, 1);;
 					} else {
-						LED1_OFF;
+						DoLed(0, 0);;
 					}
 				} else if (toggle_led < 3000000) {
-					LED1_OFF;
+					DoLed(0, 0);;
 					if (toggle_led % 4 == 0) {
-						LED1_ON;
+						DoLed(0, 1);;
 					} else {
-						LED1_OFF;
+						DoLed(0, 0);;
 					}
 				} else if (toggle_led < 4000000) {
-					LED1_OFF;
+					DoLed(0, 0);;
 					if (toggle_led % 2 == 0) {
-						LED2_ON;
+						DoLed(1, 1);;
 					} else {
-						LED2_OFF;
+						DoLed(1, 0);;
 					}
 				} else {
 					toggle_led = 0;
@@ -243,46 +253,28 @@ int main(void)
 
 }
 
-uint32_t checkOldConfigDirection (uint32_t bootDirection, uint32_t bootCycles) {
-
-	uint32_t firmwareFinderData[5];
-
-	uint32_t addressStart = ADDRESS_CONFIG_START;
-	uint32_t addressEnd   = ADDRESS_FLASH_START;
-
-	for (volatile uint32_t byteOffset = addressStart; byteOffset < addressEnd; byteOffset += 1) {
-
-		memcpy( &firmwareFinderData, (char *) byteOffset, sizeof(firmwareFinderData) );
-
-		if ( (firmwareFinderData[0] == RFBL1) && (firmwareFinderData[1] == RFBL2) && (firmwareFinderData[2] == RFBL3) && (firmwareFinderData[3] == RFBL4) ) {
-			if (bootCycles < 3) {
-				bootDirection = firmwareFinderData[4];
-			} else {
-				bootDirection = firmwareFinderData[4];
-				//rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, 0x00000000);
-				//rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
-				//bootDirection = BOOT_TO_APP_COMMAND;
-			}
-			break;
-		}
-	}
-	return bootDirection;
-}
-
 void startupBlink (uint16_t blinks, uint32_t delay) {
 
-	uint8_t a;
+	uint32_t a, catfishLedToggle;
 
 	//Startup Blink
-	LED1_ON;
-	LED2_OFF;
+	catfishLedToggle = 0;
+	DoLed(0, 1);
+	DoLed(1, 0);
 	for( a = 0; a < blinks; a = a + 1 ){ //fast blink
-		LED1_TOGGLE;
-		LED2_TOGGLE;
+		if (catfishLedToggle) {
+			catfishLedToggle=0;
+			DoLed(0, 1);
+			DoLed(1, 0);
+		} else {
+			catfishLedToggle=1;
+			DoLed(0, 0);
+			DoLed(1, 1);
+		}
 		DelayMs(delay);
 	}
-	LED1_OFF;
-	LED2_OFF;
+	DoLed(0, 0);
+	DoLed(1, 0);
 }
 
 void boot_to_app (void) {
@@ -317,6 +309,8 @@ void errorBlink(void) {
 //todo: add micros command
 void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 
+	static uint32_t catfishLedToggle = 0;
+
 	if (*RfblState == RFBLS_AWAITING_FW_DATA) {
 		//Let's limit how long we can wait between packets.
 		//todo: add micros() command
@@ -332,16 +326,23 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 			//FwInfo.time_last_packet	= micros(); //Set time of packet reception
 			FwInfo.time_last_packet	= 0; //Set time of packet reception
 			FwInfo.data_packets++; //we got a packet. Let's increment the value.
-			LED1_TOGGLE;
-			LED2_TOGGLE;
+			if (catfishLedToggle) {
+				catfishLedToggle=0;
+				DoLed(0, 1);
+				DoLed(1, 0);
+			} else {
+				catfishLedToggle=1;
+				DoLed(0, 0);
+				DoLed(1, 1);
+			}
 			if (FwInfo.data_packets >= FwInfo.expected_packets+1) { //Is this the last packet?
 				*RfblState = RFBLS_DONE_UPGRADING; //yes
-				LED1_OFF;
-				LED2_OFF;
+				DoLed(0, 0);;
+				DoLed(1, 0);;
 			} else if ((FwInfo.wordOffset + (FwInfo.skipTo - ADDRESS_RFBL_START)) == FwInfo.size)  {
 				*RfblState = RFBLS_DONE_UPGRADING; //yes
-				LED1_OFF;
-				LED2_OFF;
+				DoLed(0, 0);;
+				DoLed(1, 0);;
 			}
 			memcpy( &FwInfo.data[0], tOutBuffer, HID_EPOUT_SIZE-1 ); //capture outbuffer
 			memset(tOutBuffer, 0, HID_EPOUT_SIZE-1); //clear outbuffer
@@ -430,9 +431,9 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 
 void rfbl_execute_load_command(void) {
 
-	LED1_OFF;
-	LED2_OFF;
-	LED3_OFF;
+	DoLed(0, 0);;
+	DoLed(1, 0);;
+	DoLed(2, 0);;
 	//TODO: Add some sanity checks
 	if ( (FwInfo.type == RFFW) && (FwInfo.mode == AUTO) ) { //Auto load RFFW, RaceFlight FW
 		FwInfo.address = ADDRESS_FLASH_START;
@@ -466,17 +467,17 @@ void rfbl_execute_load_command(void) {
 //todo: only works for F4 and F7. F1 and F3 require different flash handling.
 void rfbl_prepare_flash(void) {
 
-	LED1_ON;
-	LED2_ON;
-	LED3_ON;
+	DoLed(0, 1);;
+	DoLed(1, 1);;
+	DoLed(2, 1);;
 
     if (!EraseFlash(ADDRESS_FLASH_START, ADDRESS_FLASH_END) ) {
     	ErrorHandler();
     }
 
-	LED1_OFF;
-	LED2_OFF;
-	LED3_OFF;
+	DoLed(0, 0);;
+	DoLed(1, 0);;
+	DoLed(2, 0);;
 }
 
 
@@ -605,11 +606,11 @@ void systemResetToDfuBootloader(void) {
 void ErrorHandler(void)
 {
     while (1) {
-        LED2_ON;
-        LED3_OFF;
+        DoLed(1, 1);;
+        DoLed(2, 0);;
         DelayMs(40);
-        LED2_OFF;
-        LED3_ON;
+        DoLed(1, 0);;
+        DoLed(2, 1);;
         DelayMs(40);
     }
 }
