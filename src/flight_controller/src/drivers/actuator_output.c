@@ -128,6 +128,8 @@ void OutputActuators(float motorOutput[], float servoOutput[]) {
 			motorOutput[x] = InlineConstrainf(motorOutput[x], 0.0, 1.0);
 		}
 
+		float mouse0 = motorOutput[0];
+		float mouse1 = motorOutput[1];
 		TIM2->CCR3 = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + pulseValue;
 		TIM3->CCR4 = (uint32_t)((float)motorOutput[1] * (float)pulseValueRange) + pulseValue;
 		TIM3->CCR3 = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + pulseValue;

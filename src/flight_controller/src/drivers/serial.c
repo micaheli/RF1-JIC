@@ -142,7 +142,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	dmaUartRx.Init.MemInc              = DMA_MINC_ENABLE;
 	dmaUartRx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
 	dmaUartRx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-	dmaUartRx.Init.Mode                = DMA_NORMAL;
+	dmaUartRx.Init.Mode                = DMA_CIRCULAR;
 	dmaUartRx.Init.Priority            = DMA_PRIORITY_HIGH;
 	dmaUartRx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
 
@@ -210,7 +210,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 	if(HAL_UART_Receive_DMA(huart, (uint8_t *)aRxBuffer, 16) != HAL_OK)
 	{
-		ErrorHandler();
+		//ErrorHandler();
 	}
 }
 	//Preston, look at this

@@ -59,12 +59,12 @@ void InitMixer(void) {
 
 inline float ApplyAttenuationKdCurve (float motorOutput) {
 	(void)(motorOutput);
-	return 1;
+	return (1.0);
 }
 
 inline float ApplyAttenuationKpCurve (float motorOutput) {
 	(void)(motorOutput);
-	return 1;
+	return (1.0);
 }
 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
@@ -77,7 +77,8 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 	int32_t i     = 0;
 
 	for (i = activeMotorCounter; i >= 0; i--) {
-		stabilizerAttenuation = ApplyAttenuationKpCurve( motorOutput[i] );
+		//stabilizerAttenuation = ApplyAttenuationKpCurve( motorOutput[i] );
+		stabilizerAttenuation = 1.0f;
 		motorOutput[i] = (
 				( (stabilizerAttenuation * pids[YAW].kp + pids[YAW].kd) + pids[YAW].ki )  * motorMixer[i].yaw +
 				( (stabilizerAttenuation * pids[ROLL].kp + pids[ROLL].kd) + pids[ROLL].ki )  * motorMixer[i].roll +

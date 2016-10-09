@@ -56,7 +56,8 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], rcControlsConfig.rates[ROLL], rcControlsConfig.acroPlus[ROLL]);
 	flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], rcControlsConfig.rates[PITCH], rcControlsConfig.acroPlus[PITCH]);
 
-	InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, pidConfig);
+	if (boardArmed)
+		InlinePidController(filteredGyroData, flightSetPoints, &flightPids, actuatorRange, &pidConfig);
 
 	actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
 

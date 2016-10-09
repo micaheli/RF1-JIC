@@ -45,7 +45,7 @@ extern uint32_t rxData[MAXCHANNELS];
 extern unsigned char isRxDataNew;
 
 void InitRcData(void);
-void InlineCollectRcCommand (uint32_t rcData[], float trueRcCommandF[], float curvedRcCommandF[], rc_control_config rcControlsConfig);
+void InlineCollectRcCommand (void);
 float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo);
 void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]);
 void ProcessSpektrumPacket(void);

@@ -33,6 +33,16 @@ void ProcessSpektrumPacket(void)
 			rxData[spektrumChannel] = ((uint32_t)(aRxBuffer[x - 1] & spektrumChannelMask) << 8) + aRxBuffer[x];
 		}
 	}
+	x=rxData[0];
+	rxData[0] = rxData[3];
+	rxData[3] = x;
+
+	if (rxData[4] > 1500) { //todo: MOVE!!! - uglied up Preston's code.
+		boardArmed = 1;
+	} else {
+//		boardArmed = 0;
+	}
+	InlineCollectRcCommand ( );
 }
 
 
@@ -43,13 +53,15 @@ void InitRcData (void) {
 	isRxDataNew = 0;
 }
 
-inline void InlineCollectRcCommand (uint32_t rcData[], float trueRcCommandF[], float curvedRcCommandF[], rc_control_config rcControlsConfig) {
+inline void InlineCollectRcCommand (void) {
 
 	uint32_t axis;
 	float rangedRx;
 
 	isRxDataNew = 1; //this function is to be called by reception of vali RX data, so we know we have new RX data now
 
+	//TAER
+	//YAET
 	//scale
     //////masterConfig.rxConfig.midrc = 1500;
     //////masterConfig.rxConfig.mincheck = 1005;
@@ -64,10 +76,10 @@ inline void InlineCollectRcCommand (uint32_t rcData[], float trueRcCommandF[], f
 	//rc data is taken from RX and using the map is put into the correct "axis"
 	for (axis = 0; axis < MAXCHANNELS; axis++) {
 
-		if (rcData[axis] < rcControlsConfig.midRc[axis])  //negative  range
-			rangedRx = InlineChangeRangef(rcData[axis], rcControlsConfig.midRc[axis], rcControlsConfig.minRc[axis], 0.0, -1.0); //-1 to 0
+		if (rxData[axis] < rcControlsConfig.midRc[axis])  //negative  range
+			rangedRx = InlineChangeRangef(rxData[axis], rcControlsConfig.midRc[axis], rcControlsConfig.minRc[axis], 0.0, -1.0); //-1 to 0
 		else
-			rangedRx = InlineChangeRangef(rcData[axis], rcControlsConfig.maxRc[axis], rcControlsConfig.midRc[axis], 1.0, 0.0); //0 to +1
+			rangedRx = InlineChangeRangef(rxData[axis], rcControlsConfig.maxRc[axis], rcControlsConfig.midRc[axis], 1.0, 0.0); //0 to +1
 
 
 

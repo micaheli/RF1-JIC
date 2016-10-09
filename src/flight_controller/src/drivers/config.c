@@ -5,9 +5,9 @@ void LoadConfig (void)
 
 	//todo: Read this from storage. These are defaults for now.
 	float deadband = 0.025; //2.5% deadband
-	uint32_t midRc = 1500; // middle of rc input, one for each channel. Default being 1500
-	uint32_t minRc = 1000; // middle of rc input, one for each channel. Default being 1500
-	uint32_t maxRc = 2000; // middle of rc input, one for each channel. Default being 1500
+	uint32_t minRc = 0; // middle of rc input, one for each channel. Default being 1500
+	uint32_t midRc = 1000; // middle of rc input, one for each channel. Default being 1500
+	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
 
 	pidConfig[YAW].kp	= .0012500;
 	pidConfig[YAW].ki	= .0005000;
