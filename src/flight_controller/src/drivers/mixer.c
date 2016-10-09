@@ -58,10 +58,12 @@ void InitMixer(void) {
 }
 
 inline float ApplyAttenuationKdCurve (float motorOutput) {
+	(void)(motorOutput);
 	return 1;
 }
 
 inline float ApplyAttenuationKpCurve (float motorOutput) {
+	(void)(motorOutput);
 	return 1;
 }
 

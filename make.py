@@ -78,14 +78,14 @@ args = parser.parse_args()
 
 IS_CLEANUP = args.clean
 
-if IS_CLEANUP:
-    if os.path.exists(OUTPUT_PATH):
-        for root, dirs, files in os.walk(OUTPUT_PATH, topdown=False):
-            for name in files:
-                os.remove(os.path.join(root, name))
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
-    sys.exit(0)
+#if IS_CLEANUP:
+if os.path.exists(OUTPUT_PATH):
+    for root, dirs, files in os.walk(OUTPUT_PATH, topdown=False):
+        for name in files:
+            os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
+#    sys.exit(0)
 
 TargetConfig = namedtuple('TargetConfig', [
     'target',

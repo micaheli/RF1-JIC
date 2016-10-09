@@ -58,11 +58,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, pidConfig);
 
-	if (boardArmed) {
-		actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
+	actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
 
-		OutputActuators(motorOutput, servoOutput);
-	}
+	OutputActuators(motorOutput, servoOutput);
 
 	debugU32[0] = Micros() - catfish;
 

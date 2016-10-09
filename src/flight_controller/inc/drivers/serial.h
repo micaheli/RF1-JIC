@@ -4,7 +4,7 @@
 UART_HandleTypeDef uartHandle;
 DMA_HandleTypeDef dmaUartRx;
 DMA_HandleTypeDef dmaUartTx;
-
+extern uint32_t lastRXPacket;
 
 #define RXBUFFERSIZE 64
 #define TXBUFFERSIZE 64

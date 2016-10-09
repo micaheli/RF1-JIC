@@ -36,6 +36,7 @@ void scheduler(int32_t count)
 		case 11:
 			break;
 		case 12:
+			taskFailsafe();
 			break;
 		default:
 			break;
@@ -44,7 +45,19 @@ void scheduler(int32_t count)
 
 }
 
-void taskHandlePcComm(void)
+inline void taskFailsafe(void) {
+
+	if (
+		(boardArmed) &&
+		((InlineMillis() - lastRXPacket) > 1000)
+		) //board disarmed and no rx packet in 1000 millis
+
+		boardArmed = 0;
+
+
+}
+
+inline void taskHandlePcComm(void)
 {
 
 	if (tOutBuffer[0]==2) { //we have a usb report
@@ -124,12 +137,12 @@ void taskHandlePcComm(void)
 
 }
 
-void taskLed(void)
+inline void taskLed(void)
 {
 	UpdateLeds();
 }
 
-void taskBuzzer(void)
+inline void taskBuzzer(void)
 {
 	UpdateBuzzer();
 }

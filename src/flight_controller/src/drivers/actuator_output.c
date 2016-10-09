@@ -22,10 +22,10 @@ void InitActuators(void) {
 	motorOutputArray[2].active = 1;
 	motorOutputArray[3].active = 1;
 
-	motorOutputArray[0].timer = _TIM3;
-	motorOutputArray[1].timer = _TIM3;
-	motorOutputArray[2].timer = _TIM9;
-	motorOutputArray[3].timer = _TIM2;
+	//motorOutputArray[0].timer = _TIM3;
+	//motorOutputArray[1].timer = _TIM3;
+	//motorOutputArray[2].timer = _TIM9;
+	//motorOutputArray[3].timer = _TIM2;
 
 	//these calues come from config
 	//this is for multishot at 32KHz on STM32F4 running at 192MHz
@@ -142,4 +142,5 @@ void OutputActuators(float motorOutput[], float servoOutput[]) {
 
 	}
 
+	(void)(servoOutput);
 }
