@@ -57,7 +57,7 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	filteredGyroData[ROLL]  = rollPafState.x;
 	filteredGyroData[PITCH] = pitchPafState.x;
 
-	smoothedRcCommandF[0]=0.20;
+	smoothedRcCommandF[0]=curvedRcCommandF[0];
 	smoothedRcCommandF[1]=curvedRcCommandF[1];
 	smoothedRcCommandF[2]=curvedRcCommandF[2];
 	smoothedRcCommandF[3]=curvedRcCommandF[3];
@@ -67,8 +67,8 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	counterFish++;
 	counterDog++;
-	rat[counterDog] = curvedRcCommandF[YAW];
-	cat[counterDog] = smoothedRcCommandF[YAW];
+	rat[counterDog] = rxData[PITCH];
+	cat[counterDog] = smoothedRcCommandF[PITCH];
 	(void)(rat);
 	(void)(cat);
 	if (counterDog == 79) {

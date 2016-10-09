@@ -27,6 +27,9 @@ void ProcessSpektrumPacket(void)
 	uint32_t spektrumChannel;
 	uint32_t x;
 
+	if ((InlineMillis() - lastRXPacket) < 10) {
+		return;
+	}
 	for (x = 3; x < 16; x += 2) {
 		spektrumChannel = 0x0F & (aRxBuffer[x - 1] >> spektrumChannelShift);
 		if (spektrumChannel < MAXCHANNELS) {
