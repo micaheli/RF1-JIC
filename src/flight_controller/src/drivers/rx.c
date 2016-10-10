@@ -21,22 +21,44 @@ spektrumChannelMask = 0x03;
 */
 
 
+uint32_t tempData[MAXCHANNELS];
+
+
 void ProcessSpektrumPacket(void)
 {
 	uint32_t spektrumChannel;
 	uint32_t x;
 	uint32_t value;
 
+	bzero(&tempData, sizeof(tempData));
+
+
 	for (x = 2; x < 16; x += 2) {
 
 		value = (aRxBuffer[x] << 8) + (aRxBuffer[x+1]);
 		spektrumChannel = (value & 0x7800) >> 11;
 		if (spektrumChannel < MAXCHANNELS) {
-			rxData[spektrumChannel] = value & 0x7FF;
+			tempData[spektrumChannel] = value & 0x7FF;
 		}
 	}
 
 
+	if ((tempData[0] != tempData[3]) && (tempData[0] != 0))
+		rxData[3] = tempData[0];
+
+	rxData[0] = tempData[3];
+	rxData[1] = tempData[1];
+	rxData[2] = tempData[2];
+
+
+	for (x=4;x<MAXCHANNELS;x++)
+	{
+		if (tempData[x] != 0) {
+			rxData[x] = tempData[x];
+		}
+
+
+	}
 
 
 	/*
@@ -47,10 +69,11 @@ void ProcessSpektrumPacket(void)
 
 	}
 */
+	/*
 	x=rxData[0];
 	rxData[0] = rxData[3];
-	rxData[3] = 0;
-
+	rxData[3] = x;
+*/
 	if (rxData[4] > 1500) { //todo: MOVE!!! - uglied up Preston's code.
 		boardArmed = 1;
 	} else if (rxData[4] > 100) {

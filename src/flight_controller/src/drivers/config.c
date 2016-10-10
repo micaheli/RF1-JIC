@@ -9,15 +9,15 @@ void LoadConfig (void)
 	uint32_t midRc = 1024; // middle of rc input, one for each channel. Default being 1500
 	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
 
-	pidConfig[YAW].kp	= .0006500;
+	pidConfig[YAW].kp	= .0013000;
 	pidConfig[YAW].ki	= .0005000;
 	pidConfig[YAW].kd	= .0000001;
 
-	pidConfig[ROLL].kp	= .0006500;
+	pidConfig[ROLL].kp	= .0013000;
 	pidConfig[ROLL].ki	= .0005000;
 	pidConfig[ROLL].kd	= .0000001;
 
-	pidConfig[PITCH].kp	= .0006500;
+	pidConfig[PITCH].kp	= .0013000;
 	pidConfig[PITCH].ki	= .0005000;
 	pidConfig[PITCH].kd	= .0000001;
 
@@ -55,9 +55,9 @@ void LoadConfig (void)
 	rcControlsConfig.deadBand[AUX3]     = deadband;
 	rcControlsConfig.deadBand[AUX4]     = deadband;
 
-	rcControlsConfig.midRc[PITCH]    = midRc;
-	rcControlsConfig.midRc[ROLL]     = midRc;
-	rcControlsConfig.midRc[YAW]      = midRc;
+	rcControlsConfig.midRc[PITCH]    = 1029;
+	rcControlsConfig.midRc[ROLL]     = 1011;
+	rcControlsConfig.midRc[YAW]      = 1030;
 	rcControlsConfig.midRc[THROTTLE] = midRc;
 	rcControlsConfig.midRc[AUX1]     = midRc;
 	rcControlsConfig.midRc[AUX2]     = midRc;
@@ -92,9 +92,9 @@ void LoadConfig (void)
 	rcControlsConfig.useCurve[AUX3]      = NO_EXPO;
 	rcControlsConfig.useCurve[AUX4]      = NO_EXPO;
 
-	rcControlsConfig.curveExpo[PITCH]    = 60.0f;
-	rcControlsConfig.curveExpo[ROLL]     = 60.0f;
-	rcControlsConfig.curveExpo[YAW]      = 60.0f;
+	rcControlsConfig.curveExpo[PITCH]    = 70.0f;
+	rcControlsConfig.curveExpo[ROLL]     = 70.0f;
+	rcControlsConfig.curveExpo[YAW]      = 70.0f;
 	rcControlsConfig.curveExpo[THROTTLE] = 0;
 	rcControlsConfig.curveExpo[AUX1]     = 0;
 	rcControlsConfig.curveExpo[AUX2]     = 0;
@@ -105,8 +105,8 @@ void LoadConfig (void)
 	rcControlsConfig.rates[ROLL]         = 400.0;
 	rcControlsConfig.rates[PITCH]        = 400.0;
 
-	rcControlsConfig.acroPlus[YAW]       = 40.00;
-	rcControlsConfig.acroPlus[ROLL]      = 40.00;
-	rcControlsConfig.acroPlus[PITCH]     = 40.00;
+	rcControlsConfig.acroPlus[YAW]       = 10.00;
+	rcControlsConfig.acroPlus[ROLL]      = 10.00;
+	rcControlsConfig.acroPlus[PITCH]     = 10.00;
 }
 
