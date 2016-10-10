@@ -21,6 +21,12 @@ spektrumChannelMask = 0x03;
 */
 
 
+uint8_t shiftB(uint8_t b)
+{
+	b = ((b * 0x0802LU & 0x22110LU) | (b * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16;
+	return b;
+}
+
 
 void ProcessSpektrumPacket(void)
 {
@@ -30,23 +36,24 @@ void ProcessSpektrumPacket(void)
 	//if ((InlineMillis() - lastRXPacket) < 10) {
 	//	return;
 	//}
+
 	for (x = 2; x < 16; x += 2) {
-		value = (aRxBuffer[x+1] << 8) + (aRxBuffer[x]);
+
+		value = (aRxBuffer[x] << 8) + (aRxBuffer[x+1]);
 		spektrumChannel = value & 0x7800;
 		if (spektrumChannel < MAXCHANNELS) {
 			rxData[spektrumChannel] = value & 0x7FF;
-		} else {
-			x = x;
 		}
 	}
-
+x=x+1;
+	/*
 	if (rxData[0] > 200) {
 		volatile uint32_t cat = 88;
 	} else {
 		volatile uint32_t dog = 88;
 
 	}
-
+*/
 	x=rxData[0];
 	rxData[0] = rxData[3];
 	rxData[3] = x;
