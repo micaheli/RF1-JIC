@@ -62,6 +62,9 @@ inline void taskHandlePcComm(void)
 
 	if (tOutBuffer[0]==2) { //we have a usb report
 
+		if ((tOutBuffer[1] == 'D') && (tOutBuffer[2] == 'F') && (tOutBuffer[3] == 'U')) {
+			SystemResetToDfuBootloader();
+		}
 		if (tOutBuffer[1] == 6) {
 			calibrateMotors = 1;
 			motorOutput[0] = 1;

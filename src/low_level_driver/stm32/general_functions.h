@@ -20,6 +20,8 @@ void InlineUpdateMillisClock (void);
 
 void VectorIrqInit(uint32_t address);
 
+void SystemReset(void);
+void SystemResetToDfuBootloader(void);
 
 
 

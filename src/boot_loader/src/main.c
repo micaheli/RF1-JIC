@@ -90,7 +90,7 @@ int main(void)
 				boot_to_app();  //jump to application
 				break;
 			case BOOT_TO_DFU_COMMAND:
-				systemResetToDfuBootloader(); //reset to DFU
+				SystemResetToDfuBootloader(); //reset to DFU
 				break;
 			case BOOT_TO_RFBL_COMMAND:
 			default:
@@ -151,7 +151,7 @@ int main(void)
 			case RFBLS_REBOOT_TO_DFU:
 				rfbl_report_state(&RfblState);
 				RfblState = RFBLS_IDLE;
-				systemResetToDfuBootloader();
+				SystemResetToDfuBootloader();
 				break;
 
 			case RFBLS_REBOOT_TO_RFBL:
@@ -624,18 +624,6 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 
 	USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
 
-}
-
-void systemReset(void)
-{
-	__disable_irq();
-	NVIC_SystemReset();
-}
-
-void systemResetToDfuBootloader(void) {
-	//todo make this work on all MCUs
-	*((uint32_t *)0x2001FFFC) = 0xDEADBEEF; // 128KB SRAM STM32F4XX
-	NVIC_SystemReset();
 }
 
 void ErrorHandler(void)

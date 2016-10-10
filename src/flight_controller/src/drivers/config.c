@@ -10,44 +10,44 @@ void LoadConfig (void)
 	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
 
 	pidConfig[YAW].kp	= .00140000;
-	pidConfig[YAW].ki	= .00140000;
-	pidConfig[YAW].kd	= .00000280;
-	pidConfig[YAW].wc	= 32;
+	pidConfig[YAW].ki	= .00280000;
+	pidConfig[YAW].kd	= .00000420;
+	pidConfig[YAW].wc	= 16;
 
 	pidConfig[ROLL].kp	= .00140000;
-	pidConfig[ROLL].ki	= .00140000;
-	pidConfig[ROLL].kd	= .00000280;
-	pidConfig[ROLL].wc	= 32;
+	pidConfig[ROLL].ki	= .00280000;
+	pidConfig[ROLL].kd	= .00000420;
+	pidConfig[ROLL].wc	= 16;
 
 	pidConfig[PITCH].kp	= .00140000;
-	pidConfig[PITCH].ki	= .00140000;
-	pidConfig[PITCH].kd	= .00000280;
-	pidConfig[PITCH].wc	= 32;
+	pidConfig[PITCH].ki	= .00280000;
+	pidConfig[PITCH].kd	= .00000420;
+	pidConfig[PITCH].wc	= 16;
 
 
-	filterConfig[YAW].gyro.q   = 0.0010;
-	filterConfig[YAW].gyro.r   = 2.5000;
-	filterConfig[YAW].gyro.p   = 0.0015;
+	filterConfig[YAW].gyro.q   = 0.00010;
+	filterConfig[YAW].gyro.r   = 0.02600;
+	filterConfig[YAW].gyro.p   = 0.00015;
 
-	filterConfig[ROLL].gyro.q  = 0.0010;
-	filterConfig[ROLL].gyro.r  = 2.5000;
-	filterConfig[ROLL].gyro.p  = 0.0015;
+	filterConfig[ROLL].gyro.q  = 0.00010;
+	filterConfig[ROLL].gyro.r  = 0.02600;
+	filterConfig[ROLL].gyro.p  = 0.00015;
 
-	filterConfig[PITCH].gyro.q = 0.0010;
-	filterConfig[PITCH].gyro.r = 2.5000;
-	filterConfig[PITCH].gyro.p = 0.0015;
+	filterConfig[PITCH].gyro.q = 0.00010;
+	filterConfig[PITCH].gyro.r = 0.02600;
+	filterConfig[PITCH].gyro.p = 0.00015;
 
-	filterConfig[YAW].kd.q     = 0.0010;
-	filterConfig[YAW].kd.r     = 2.1000;
-	filterConfig[YAW].kd.p     = 0.0015;
+	filterConfig[YAW].kd.q     = 0.00010;
+	filterConfig[YAW].kd.r     = 0.01000;
+	filterConfig[YAW].kd.p     = 0.00015;
 
-	filterConfig[ROLL].kd.q    = 0.0010;
-	filterConfig[ROLL].kd.r    = 2.1000;
-	filterConfig[ROLL].kd.p    = 0.0015;
+	filterConfig[ROLL].kd.q    = 0.00010;
+	filterConfig[ROLL].kd.r    = 0.01000;
+	filterConfig[ROLL].kd.p    = 0.00015;
 
-	filterConfig[PITCH].kd.q   = 0.0010;
-	filterConfig[PITCH].kd.r   = 2.1000;
-	filterConfig[PITCH].kd.p   = 0.0015;
+	filterConfig[PITCH].kd.q   = 0.00010;
+	filterConfig[PITCH].kd.r   = 0.01000;
+	filterConfig[PITCH].kd.p   = 0.00015;
 
 
 	gyroConfig.minorBoardRotation[X] = 0;

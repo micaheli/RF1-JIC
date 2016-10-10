@@ -63,6 +63,18 @@ void InitUsb(void) {
 	USB_DEVICE_Init();
 }
 
+void SystemReset(void)
+{
+	__disable_irq();
+	NVIC_SystemReset();
+}
+
+void SystemResetToDfuBootloader(void) {
+	//todo make this work on all MCUs
+	*((uint32_t *)0x2001FFFC) = 0xDEADBEEF; // 128KB SRAM STM32F4XX
+	NVIC_SystemReset();
+}
+
 inline void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
 	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
 }

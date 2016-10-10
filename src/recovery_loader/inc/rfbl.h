@@ -87,10 +87,6 @@ void rfbl_finish_flash(void);
 void errorBlink(void);
 void erase_all_flash (void);
 
-void systemReset(void);
-void systemResetToBootloader(void);
-void systemResetToDfuBootloader(void);
-
 typedef void (*pFunction)(void);
 pFunction JumpToApplication;
 uint32_t jumpAddress;
