@@ -71,7 +71,7 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 	float highestMotor  = -100.0f;
 	float lowestMotor   =  100.0f;
 	float actuatorRange =    0.0f;
-	float throttle      = trueRcCommandF[THROTTLE];
+	float throttle      = curvedRcCommandF[THROTTLE];
 	int32_t i           = 0;
 
 	uint32_t threeDeeMode = 0;
@@ -91,11 +91,6 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 		if (motorOutput[i] > highestMotor) { highestMotor = motorOutput[i]; }
 		if (motorOutput[i] < lowestMotor)  { lowestMotor  = motorOutput[i]; }
 	}
-
-	volatile float amotor0 = motorOutput[0];
-	volatile float amotor1 = motorOutput[1];
-	volatile float amotor2 = motorOutput[2];
-	volatile float amotor3 = motorOutput[3];
 
 	actuatorRange = highestMotor - lowestMotor;
 
@@ -130,21 +125,10 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 
 	}
 
-	volatile float bmotor0 = motorOutput[0];
-	volatile float bmotor1 = motorOutput[1];
-	volatile float bmotor2 = motorOutput[2];
-	volatile float bmotor3 = motorOutput[3];
-
 	for(x=7; x>=0; x--)
 	{
-		//motorOutput[x] += throttle;
 		motorOutput[x] = InlineConstrainf(motorOutput[x]+throttle,0.0,1.0);
-		//motorOutput[x] = ((motorOutput[x]+1)*0.5)+throttle;
 	}
-	volatile float cmotor0 = motorOutput[0];
-	volatile float cmotor1 = motorOutput[1];
-	volatile float cmotor2 = motorOutput[2];
-	volatile float cmotor3 = motorOutput[3];
 
 	return actuatorRange;
 

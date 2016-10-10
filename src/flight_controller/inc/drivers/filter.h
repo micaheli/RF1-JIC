@@ -17,12 +17,9 @@ typedef struct {
 } filter_config;
 
 typedef struct {
-	filter_config gyroFilter;
-	filter_config pitchKdFilter;
-	filter_config rollKdFilter;
-	filter_config yawKdFilter;
+	filter_config kd;
+	filter_config gyro;
 } filter_device;
-
 
 paf_state InitPaf(float q, float r, float p, float intial_value);
 void PafUpdate(paf_state *state, float measurement);

@@ -15,12 +15,15 @@ typedef struct {
     float kp;
     float ki;
     float kd;
+    uint32_t wc;
 } pid_terms;
 
 extern float pidSetpoint[AXIS_NUMBER];    //3 axis for pidc. range is in DPS.
 extern pid_output pids[AXIS_NUMBER];
-
+extern float currentKdFilterConfig[AXIS_NUMBER];
 
 
 void InitPid (void);
+void InlineInitPidFilters(void);
 void InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[]);
+void InlineUpdateWitchcraft(pid_terms pidConfig[]);

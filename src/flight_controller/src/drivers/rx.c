@@ -76,6 +76,9 @@ void ProcessSpektrumPacket(void)
 */
 	if (rxData[4] > 1500) { //todo: MOVE!!! - uglied up Preston's code.
 		boardArmed = 1;
+		rcControlsConfig.midRc[PITCH] = rxData[PITCH];
+		rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
+		rcControlsConfig.midRc[YAW]   = rxData[YAW];
 	} else if (rxData[4] > 100) {
 		boardArmed = 0;
 	}

@@ -1,13 +1,21 @@
 #include "includes.h"
 
-pid_output flightPids[3];
-float filteredGyroData[3];
-paf_state yawPafState;
+pid_output flightPids[AXIS_NUMBER];
+float filteredGyroData[AXIS_NUMBER];
+paf_state pafStates[AXIS_NUMBER];
 paf_state rollPafState;
 paf_state pitchPafState;
 float actuatorRange;
-float flightSetPoints[3];
-uint32_t boardArmed, calibrateMotors;
+float flightSetPoints[AXIS_NUMBER];
+uint32_t boardArmed, calibrateMotors, fullKiLatched;
+float currentGyroFilterConfig[AXIS_NUMBER];
+uint32_t flightcodeTimeStart;
+float flightcodeTime;
+
+extern uint8_t tInBuffer[];
+extern uint8_t tOutBuffer[];
+uint32_t counterFish = 0;
+uint32_t loopCounter = 4294967295;
 
 void InitFlightCode(void) {
 
@@ -16,19 +24,29 @@ void InitFlightCode(void) {
 	actuatorRange = 0;
 	boardArmed = 0;
 	calibrateMotors = 0;
+	fullKiLatched = 0;
+	flightcodeTime = 0.0f;
+	flightcodeTimeStart = 0;
 
-	yawPafState   = InitPaf(filterConfig.gyroFilter.q, filterConfig.gyroFilter.r, filterConfig.gyroFilter.q, 0);
-	rollPafState  = InitPaf(filterConfig.gyroFilter.q, filterConfig.gyroFilter.r, filterConfig.gyroFilter.q, 0);
-	pitchPafState = InitPaf(filterConfig.gyroFilter.q, filterConfig.gyroFilter.r, filterConfig.gyroFilter.q, 0);
+	InlineInitGyroFilters();
 
 }
 
-extern uint8_t tInBuffer[];
-extern uint8_t tOutBuffer[];
-uint32_t counterFish = 0;
+inline void InlineInitGyroFilters(void)  {
 
-volatile float rat[80];
-volatile float cat[80];
+	int32_t axis;
+
+	for (axis = 2; axis >= 0; --axis) {
+
+		pafStates[axis]   = InitPaf( filterConfig[axis].gyro.q, filterConfig[axis].gyro.r, filterConfig[axis].gyro.p, filteredGyroData[axis]);
+
+		currentGyroFilterConfig[axis] = filterConfig[axis].gyro.r;
+
+	}
+
+}
+
+
 inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	//Gyro routine:
@@ -45,85 +63,77 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
+	if (loopCounter-- & 32 ) { //check if the 32 bit is set and run this code
 
-	static uint32_t counterFish = 0;
-	static uint32_t counterDog = 0;
-	counterFish++;
-	counterDog++;
-	rat[counterDog] = rxData[THROTTLE];
-	cat[counterDog] = smoothedRcCommandF[THROTTLE];
-	(void)(rat);
-	(void)(cat);
-	if (counterDog == 79) {
-		counterDog =0;
+		//every 32 cycles we check if the filter needs an update.
+		if (
+				(currentGyroFilterConfig[YAW] != filterConfig[YAW].gyro.r) ||
+				(currentGyroFilterConfig[ROLL] != filterConfig[ROLL].gyro.r) ||
+				(currentGyroFilterConfig[PITCH] != filterConfig[PITCH].gyro.r)
+		) {
+			InlineInitGyroFilters();
+		}
+
+		if (
+				(currentKdFilterConfig[YAW] != filterConfig[YAW].kd.r) ||
+				(currentKdFilterConfig[ROLL] != filterConfig[ROLL].kd.r) ||
+				(currentKdFilterConfig[PITCH] != filterConfig[PITCH].kd.r)
+		) {
+			InlineInitPidFilters();
+		}
+
+		//update blackbox here
+
+
+		//check for fullKiLatched here
+		if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > 0.15) ) {
+			fullKiLatched = 1;
+		}
+
+		//cycle time averaged
+		flightcodeTime = ( (float)Micros() - (float)flightcodeTimeStart ) * 0.03125; // 1/32 as a multiplier
+		flightcodeTimeStart = Micros();
+
 	}
 
 
-	uint32_t catfish = Micros();
 
-	PafUpdate(&yawPafState, dpsGyroArray[YAW]);
-	PafUpdate(&rollPafState, dpsGyroArray[ROLL]);
-	PafUpdate(&pitchPafState, dpsGyroArray[PITCH]);
+	//update gyro filter
+	PafUpdate(&pafStates[YAW], dpsGyroArray[YAW]);
+	PafUpdate(&pafStates[ROLL], dpsGyroArray[ROLL]);
+	PafUpdate(&pafStates[PITCH], dpsGyroArray[PITCH]);
 
-	filteredGyroData[YAW]   = yawPafState.x;
-	filteredGyroData[ROLL]  = rollPafState.x;
-	filteredGyroData[PITCH] = pitchPafState.x;
+	filteredGyroData[YAW]   = pafStates[YAW].x;
+	filteredGyroData[ROLL]  = pafStates[ROLL].x;
+	filteredGyroData[PITCH] = pafStates[PITCH].x;
 
-	//smoothedRcCommandF[0]=curvedRcCommandF[0];
-	//smoothedRcCommandF[1]=curvedRcCommandF[1];
-	//smoothedRcCommandF[2]=curvedRcCommandF[2];
-	//smoothedRcCommandF[3]=curvedRcCommandF[3];
+
+	//smooth the rx data between rx signals
 	InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
 
-
-
-
-	counterFish++;
-	if (counterFish>=2000) {
-		counterFish=0;
-		tInBuffer[0] = 1;
-		//tInBuffer[1]=(int8_t)dpsGyroArray[0];
-		//tInBuffer[2]=(int8_t)dpsGyroArray[1];
-		//tInBuffer[3]=(int8_t)dpsGyroArray[2];
-		tInBuffer[1]=(uint8_t)(motorOutput[YAW]*100);
-		tInBuffer[2]=(uint8_t)(motorOutput[ROLL]*100);
-		tInBuffer[3]=(uint8_t)(motorOutput[PITCH]*100);
-		tInBuffer[4]=(uint8_t)(motorOutput[THROTTLE]*100);
-		tInBuffer[8]=(uint8_t)(smoothedRcCommandF[YAW]*100);
-		tInBuffer[9]=(uint8_t)(smoothedRcCommandF[ROLL]*100);
-		tInBuffer[10]=(uint8_t)(smoothedRcCommandF[PITCH]*100);
-		tInBuffer[11]=(uint8_t)(smoothedRcCommandF[THROTTLE]*100);
-		tInBuffer[12]=(uint8_t)debugU32[4];
-		tInBuffer[14]=(uint8_t)debugU32[4];
-
-		USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
-	}
-
-
-
+	//get setpoint for PIDC
 	flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], rcControlsConfig.rates[YAW], rcControlsConfig.acroPlus[YAW]);
 	flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], rcControlsConfig.rates[ROLL], rcControlsConfig.acroPlus[ROLL]);
 	flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], rcControlsConfig.rates[PITCH], rcControlsConfig.acroPlus[PITCH]);
 
-
+	//Run PIDC
+	InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, pidConfig);
 
 	if (boardArmed) {
-		InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, pidConfig);
-
+		//only run mixer if armed
 		actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
+	} else {
+		//otherwise we keep Ki zeroed.
+		flightPids[YAW].ki = 0;
+		flightPids[ROLL].ki = 0;
+		flightPids[PITCH].ki = 0;
+		fullKiLatched = 0;
 	}
 
+	//output to actuators
 	OutputActuators(motorOutput, servoOutput);
 
-	debugU32[0] = Micros() - catfish;
-
-	debugU32[1] = flightPids[0].kp;
-	debugU32[2] = flightPids[1].kp;
-	debugU32[3] = flightPids[2].kp;
-
-	debugU32[1] = filteredGyroData[0];
-	debugU32[2] = filteredGyroData[1];
-	debugU32[3] = filteredGyroData[2];
+	debugU32[0] = Micros() - flightcodeTime;
 
 }
 

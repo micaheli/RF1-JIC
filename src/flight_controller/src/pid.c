@@ -1,70 +1,105 @@
 #include "includes.h"
 
-paf_state kdFilterState[3];
+paf_state kdFilterState[AXIS_NUMBER];
+float currentKdFilterConfig[AXIS_NUMBER];
+float kdRingBuffer[AXIS_NUMBER][KD_RING_BUFFER_SIZE];
+float kdRingBufferSum[AXIS_NUMBER];
+uint32_t kdRingBufferPoint[AXIS_NUMBER];
+float kdDelta[AXIS_NUMBER];
+
 
 void InitPid (void) {
-
-	kdFilterState[PITCH] = InitPaf(filterConfig.pitchKdFilter.q, filterConfig.pitchKdFilter.r, filterConfig.pitchKdFilter.q, 0);
-	kdFilterState[ROLL]  = InitPaf(filterConfig.rollKdFilter.q, filterConfig.rollKdFilter.r, filterConfig.rollKdFilter.q, 0);
-	kdFilterState[YAW]   = InitPaf(filterConfig.yawKdFilter.q, filterConfig.yawKdFilter.r, filterConfig.yawKdFilter.q, 0);
-
+	bzero(kdDelta, sizeof(kdDelta));
+	bzero(kdRingBuffer, sizeof(kdRingBuffer));
+	bzero(kdRingBufferSum, sizeof(kdRingBufferSum));
+	bzero(kdRingBufferPoint, sizeof(kdRingBufferPoint));
+	InlineInitPidFilters();
 }
 
+inline void InlineInitPidFilters (void) {
 
+	int32_t axis;
+
+	for (axis = 2; axis >= 0; --axis) {
+
+		kdFilterState[axis] = InitPaf( filterConfig[axis].kd.q, filterConfig[axis].kd.r, filterConfig[axis].kd.p, kdDelta[axis]);
+
+		currentKdFilterConfig[axis] = filterConfig[axis].kd.r;
+
+	}
+
+}
 
 inline void InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[]) {
 
 	int32_t axis;
 
 	float dT = 0.000125; //8KHz
-	float pidError, pidDelta;
+	float pidError;
 	static float lastError[3];
+	static float usedFlightSetPoints[3];
+	float kiErrorLimit[3];
 
-	static float kd_ring_buffer_p[KD_RING_BUFFER_SIZE];
-	static float kd_ring_buffer_p_sum = 0;
-	static uint32_t kd_ring_buffer_p_pointer = 0;
-	static float kd_ring_buffer_r[KD_RING_BUFFER_SIZE];
-	static float kd_ring_buffer_r_sum = 0;
-	static uint32_t kd_ring_buffer_r_pointer = 0;
-	static float kd_ring_buffer_y[KD_RING_BUFFER_SIZE];
-	static float kd_ring_buffer_y_sum = 0;
-	static uint32_t kd_ring_buffer_y_pointer = 0;
-
-	(void)(filteredGyroData);
-	(void)(flightSetPoints);
-	(void)(actuatorRange);
-
-	(void)(kd_ring_buffer_p);
-	(void)(kd_ring_buffer_p_sum);
-	(void)(kd_ring_buffer_p_pointer);
-	(void)(kd_ring_buffer_r);
-	(void)(kd_ring_buffer_r_sum);
-	(void)(kd_ring_buffer_r_pointer);
-	(void)(kd_ring_buffer_y);
-	(void)(kd_ring_buffer_y_sum);
-	(void)(kd_ring_buffer_y_pointer);
-
+	//set point limiter.
+	if ( actuatorRange >= 0.90 ) {
+		//we don't change the setpoint when actuators are maxed, unless setpoint is shrinking
+		for (axis = 2; axis >= 0; --axis) {
+			if ( abs(usedFlightSetPoints[axis]) > abs(flightSetPoints[axis]) ) {
+				usedFlightSetPoints[axis] = flightSetPoints[axis];
+			}
+		}
+	} else if ( actuatorRange >= 0.70 ) {
+		//if actuator is near max, we limit the change of the setpoint unless the setpoint is shrinking
+		for (axis = 2; axis >= 0; --axis) {
+			if ( abs(usedFlightSetPoints[axis]) > abs(flightSetPoints[axis]) ) {
+				usedFlightSetPoints[axis] = flightSetPoints[axis];
+			} else {
+				usedFlightSetPoints[axis] += ( (flightSetPoints[axis]-usedFlightSetPoints[axis]) * 0.5 );
+			}
+		}
+	} else {
+		//else we set the full setpoint
+		usedFlightSetPoints[0] = flightSetPoints[0];
+		usedFlightSetPoints[1] = flightSetPoints[1];
+		usedFlightSetPoints[1] = flightSetPoints[2];
+	}
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		pidError = flightSetPoints[axis] - filteredGyroData[axis];
+		pidError = usedFlightSetPoints[axis] - filteredGyroData[axis];
 
 		// calculate Kp
 		flightPids[axis].kp = (pidError * pidConfig[axis].kp);
 
 		// calculate Ki
-		flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * dT * pidConfig[axis].ki, -251.0f, 251.0f);
-		//flightPids[axis].ki = 0;
+		if ( fullKiLatched ) {
 
-		// calculate Kd
-		pidDelta = -(pidError - lastError[axis]);
+			flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * dT * pidConfig[axis].ki, -212.121f, 212.121f); //prevent insane windup
+
+			if ( actuatorRange == 1 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
+			} else {
+				kiErrorLimit[axis] = ABS(kiErrorLimit[axis]);
+			}
+
+		} else {
+
+			flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * dT * pidConfig[axis].ki, -21.21f, 21.21f); //limit Ki when fullKiLatched is false
+
+		}
+
+		// calculate Kd ////////////////////////// V
+		kdDelta[axis] = -(pidError - lastError[axis]);
 	    lastError[axis] = pidError;
 
-	    PafUpdate(&kdFilterState[axis], pidDelta);
-	    pidDelta = kdFilterState[axis].x * (1.0f / dT);
+	    //updated Kd filter
+	    PafUpdate(&kdFilterState[axis], kdDelta[axis]);
+	    kdDelta[axis] = kdFilterState[axis].x * (1.0f / dT);
 
-		flightPids[axis].kd = InlineConstrainf(pidDelta * pidConfig[axis].kd, -351.0f, 351.0f);
-		//flightPids[axis].kd = 0;
+	    InlineUpdateWitchcraft(pidConfig);
+
+		flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidConfig[axis].kd, -351.0f, 351.0f);
+		// calculate Kd ////////////////////////// ^
 
 	}
 
@@ -72,6 +107,24 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 
 }
 
+inline void InlineUpdateWitchcraft(pid_terms pidConfig[]) {
+
+	int32_t axis;
+
+	for (axis = 2; axis >= 0; --axis) {
+		if (pidConfig[axis].wc) {
+			kdRingBuffer[axis][kdRingBufferPoint[axis]++] = kdDelta[axis];
+			kdRingBufferSum[axis] += kdDelta[axis];
+
+			if (kdRingBufferPoint[axis] == pidConfig[axis].wc)
+				kdRingBufferPoint[axis] = 0;
+
+			kdRingBufferSum[axis] -= kdRingBuffer[axis][kdRingBufferPoint[axis]];
+			kdDelta[axis] = (float)(kdRingBufferSum[axis] / (float) (pidConfig[axis].wc));
+		}
+	}
+
+}
 
 /*
 #define KD_RING_BUFFER_SIZE 256

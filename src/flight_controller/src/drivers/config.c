@@ -11,38 +11,50 @@ void LoadConfig (void)
 
 	pidConfig[YAW].kp	= .0013000;
 	pidConfig[YAW].ki	= .0005000;
-	pidConfig[YAW].kd	= .0000001;
+	pidConfig[YAW].kd	= .0000002;
+	pidConfig[YAW].wc	= 72;
 
 	pidConfig[ROLL].kp	= .0013000;
 	pidConfig[ROLL].ki	= .0005000;
-	pidConfig[ROLL].kd	= .0000001;
+	pidConfig[ROLL].kd	= .0000002;
+	pidConfig[ROLL].wc	= 72;
 
 	pidConfig[PITCH].kp	= .0013000;
 	pidConfig[PITCH].ki	= .0005000;
-	pidConfig[PITCH].kd	= .0000001;
+	pidConfig[PITCH].kd	= .0000002;
+	pidConfig[PITCH].wc	= 72;
 
-	filterConfig.gyroFilter.q    = 0.100;
-	filterConfig.gyroFilter.r    = 250.0;
-	filterConfig.gyroFilter.p    = 0.150;
 
-	filterConfig.pitchKdFilter.q = 0.100;
-	filterConfig.pitchKdFilter.r = 250.0;
-	filterConfig.pitchKdFilter.p = 0.150;
+	filterConfig[YAW].gyro.q   = 0.0010;
+	filterConfig[YAW].gyro.r   = 2.5000;
+	filterConfig[YAW].gyro.p   = 0.0015;
 
-	filterConfig.rollKdFilter.q  = 0.100;
-	filterConfig.rollKdFilter.r  = 250.0;
-	filterConfig.rollKdFilter.p  = 0.150;
+	filterConfig[ROLL].gyro.q  = 0.0010;
+	filterConfig[ROLL].gyro.r  = 2.5000;
+	filterConfig[ROLL].gyro.p  = 0.0015;
 
-	filterConfig.yawKdFilter.q   = 0.100;
-	filterConfig.yawKdFilter.r   = 250.0;
-	filterConfig.yawKdFilter.p   = 0.150;
+	filterConfig[PITCH].gyro.q = 0.0010;
+	filterConfig[PITCH].gyro.r = 2.5000;
+	filterConfig[PITCH].gyro.p = 0.0015;
+
+	filterConfig[YAW].kd.q     = 0.0010;
+	filterConfig[YAW].kd.r     = 2.5000;
+	filterConfig[YAW].kd.p     = 0.0015;
+
+	filterConfig[ROLL].kd.q    = 0.0010;
+	filterConfig[ROLL].kd.r    = 2.5000;
+	filterConfig[ROLL].kd.p    = 0.0015;
+
+	filterConfig[PITCH].kd.q   = 0.0010;
+	filterConfig[PITCH].kd.r   = 2.5000;
+	filterConfig[PITCH].kd.p   = 0.0015;
 
 
 	gyroConfig.minorBoardRotation[X] = 0;
 	gyroConfig.minorBoardRotation[Y] = 0;
 	gyroConfig.minorBoardRotation[Z] = 0;
 
-	gyroConfig.gyroRotation  = CW0;
+	gyroConfig.gyroRotation  = CW270;
 	gyroConfig.boardRotation = CW0;
 	gyroConfig.loopCtrl = LOOP_H8;
 
@@ -55,9 +67,9 @@ void LoadConfig (void)
 	rcControlsConfig.deadBand[AUX3]     = deadband;
 	rcControlsConfig.deadBand[AUX4]     = deadband;
 
-	rcControlsConfig.midRc[PITCH]    = 1029;
-	rcControlsConfig.midRc[ROLL]     = 1011;
-	rcControlsConfig.midRc[YAW]      = 1030;
+	rcControlsConfig.midRc[PITCH]    = midRc;
+	rcControlsConfig.midRc[ROLL]     = midRc;
+	rcControlsConfig.midRc[YAW]      = midRc;
 	rcControlsConfig.midRc[THROTTLE] = midRc;
 	rcControlsConfig.midRc[AUX1]     = midRc;
 	rcControlsConfig.midRc[AUX2]     = midRc;
