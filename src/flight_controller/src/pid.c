@@ -53,8 +53,8 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 		flightPids[axis].kp = (pidError * pidConfig[axis].kp);
 
 		// calculate Ki
-		//flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * dT * pidConfig[axis].ki, -251.0f, 251.0f);
-		flightPids[axis].ki = 0;
+		flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * dT * pidConfig[axis].ki, -251.0f, 251.0f);
+		//flightPids[axis].ki = 0;
 
 		// calculate Kd
 		pidDelta = -(pidError - lastError[axis]);
@@ -63,8 +63,8 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 	    PafUpdate(&kdFilterState[axis], pidDelta);
 	    pidDelta = kdFilterState[axis].x * (1.0f / dT);
 
-		//flightPids[axis].kd = InlineConstrainf(pidDelta * pidConfig[axis].kd, -351.0f, 351.0f);
-		flightPids[axis].kd = 0;
+		flightPids[axis].kd = InlineConstrainf(pidDelta * pidConfig[axis].kd, -351.0f, 351.0f);
+		//flightPids[axis].kd = 0;
 
 	}
 

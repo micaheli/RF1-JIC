@@ -129,10 +129,10 @@ void OutputActuators(float motorOutput[], float servoOutput[]) {
 
 		//float mouse0 = motorOutput[0];
 		//float mouse1 = motorOutput[1];
-		TIM2->CCR3 = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + pulseValue;
+		TIM3->CCR3 = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + pulseValue;
 		TIM3->CCR4 = (uint32_t)((float)motorOutput[1] * (float)pulseValueRange) + pulseValue;
-		TIM3->CCR3 = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + pulseValue;
-		TIM9->CCR2 = (uint32_t)((float)motorOutput[3] * (float)pulseValueRange) + pulseValue;
+		TIM9->CCR2 = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + pulseValue;
+		TIM2->CCR3 = (uint32_t)((float)motorOutput[3] * (float)pulseValueRange) + pulseValue;
 
 	} else {
 
