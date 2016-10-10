@@ -259,9 +259,14 @@ void USARTx_IRQHandler(void)
 
 		// ##-2- Put UART peripheral in reception process ###########################
 		__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
-
-		ProcessSpektrumPacket();
-
+		
+		//check that DMA counter reached 0
+		if ((uint16_t)(USARTx_RX_DMA_STREAM->NDTR) == 0)
+		{
+			ProcessSpektrumPacket();
+		}
+		
+		USARTx_RX_DMA_STREAM->NDTR = 16;
 		lastRXPacket = InlineMillis();
 
 		if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, 16) != HAL_OK)
