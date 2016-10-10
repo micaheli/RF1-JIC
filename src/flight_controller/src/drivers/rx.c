@@ -26,16 +26,27 @@ void ProcessSpektrumPacket(void)
 {
 	uint32_t spektrumChannel;
 	uint32_t x;
-
-	if ((InlineMillis() - lastRXPacket) < 10) {
-		return;
-	}
-	for (x = 3; x < 16; x += 2) {
-		spektrumChannel = 0x0F & (aRxBuffer[x - 1] >> spektrumChannelShift);
+	uint32_t value;
+	//if ((InlineMillis() - lastRXPacket) < 10) {
+	//	return;
+	//}
+	for (x = 2; x < 16; x += 2) {
+		value = (aRxBuffer[x+1] << 8) + (aRxBuffer[x]);
+		spektrumChannel = value & 0x7800;
 		if (spektrumChannel < MAXCHANNELS) {
-			rxData[spektrumChannel] = ((uint32_t)(aRxBuffer[x - 1] & spektrumChannelMask) << 8) + aRxBuffer[x];
+			rxData[spektrumChannel] = value & 0x7FF;
+		} else {
+			x = x;
 		}
 	}
+
+	if (rxData[0] > 200) {
+		volatile uint32_t cat = 88;
+	} else {
+		volatile uint32_t dog = 88;
+
+	}
+
 	x=rxData[0];
 	rxData[0] = rxData[3];
 	rxData[3] = x;
@@ -129,7 +140,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     static int32_t factor = 0;
     int32_t channel;
 
-    int32_t smoothingInterval = 20; //todo: calculate this number to be number of loops between PID loops
+    int32_t smoothingInterval = 88; //todo: calculate this number to be number of loops between PID loops
 	//88  for spektrum at  8 KHz loop time
 	//264 for spektrum at 32 KHz loop time
 	//352 for spektrum at 32 KHz loop time

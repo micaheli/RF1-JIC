@@ -25,9 +25,10 @@ void InitFlightCode(void) {
 
 extern uint8_t tInBuffer[];
 extern uint8_t tOutBuffer[];
+uint32_t counterFish = 0;
+
 volatile float rat[80];
 volatile float cat[80];
-
 inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	//Gyro routine:
@@ -44,10 +45,21 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
-	uint32_t catfish = Micros();
+
 	static uint32_t counterFish = 0;
 	static uint32_t counterDog = 0;
+	counterFish++;
+	counterDog++;
+	rat[counterDog] = rxData[THROTTLE];
+	cat[counterDog] = smoothedRcCommandF[THROTTLE];
+	(void)(rat);
+	(void)(cat);
+	if (counterDog == 79) {
+		counterDog =0;
+	}
 
+
+	uint32_t catfish = Micros();
 
 	PafUpdate(&yawPafState, dpsGyroArray[YAW]);
 	PafUpdate(&rollPafState, dpsGyroArray[ROLL]);
@@ -57,33 +69,26 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	filteredGyroData[ROLL]  = rollPafState.x;
 	filteredGyroData[PITCH] = pitchPafState.x;
 
-	smoothedRcCommandF[0]=curvedRcCommandF[0];
-	smoothedRcCommandF[1]=curvedRcCommandF[1];
-	smoothedRcCommandF[2]=curvedRcCommandF[2];
-	smoothedRcCommandF[3]=curvedRcCommandF[3];
-	//InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
+	//smoothedRcCommandF[0]=curvedRcCommandF[0];
+	//smoothedRcCommandF[1]=curvedRcCommandF[1];
+	//smoothedRcCommandF[2]=curvedRcCommandF[2];
+	//smoothedRcCommandF[3]=curvedRcCommandF[3];
+	InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
+
 
 
 
 	counterFish++;
-	counterDog++;
-	rat[counterDog] = rxData[PITCH];
-	cat[counterDog] = smoothedRcCommandF[PITCH];
-	(void)(rat);
-	(void)(cat);
-	if (counterDog == 79) {
-		counterDog =0;
-	}
 	if (counterFish>=2000) {
 		counterFish=0;
 		tInBuffer[0] = 1;
-		tInBuffer[1]=(int8_t)dpsGyroArray[0];
-		tInBuffer[2]=(int8_t)dpsGyroArray[1];
-		tInBuffer[3]=(int8_t)dpsGyroArray[2];
-		tInBuffer[4]=(uint8_t)(curvedRcCommandF[YAW]*100);
-		tInBuffer[5]=(uint8_t)(curvedRcCommandF[ROLL]*100);
-		tInBuffer[6]=(uint8_t)(curvedRcCommandF[PITCH]*100);
-		tInBuffer[7]=(uint8_t)(curvedRcCommandF[THROTTLE]*100);
+		//tInBuffer[1]=(int8_t)dpsGyroArray[0];
+		//tInBuffer[2]=(int8_t)dpsGyroArray[1];
+		//tInBuffer[3]=(int8_t)dpsGyroArray[2];
+		tInBuffer[1]=(uint8_t)(motorOutput[YAW]*100);
+		tInBuffer[2]=(uint8_t)(motorOutput[ROLL]*100);
+		tInBuffer[3]=(uint8_t)(motorOutput[PITCH]*100);
+		tInBuffer[4]=(uint8_t)(motorOutput[THROTTLE]*100);
 		tInBuffer[8]=(uint8_t)(smoothedRcCommandF[YAW]*100);
 		tInBuffer[9]=(uint8_t)(smoothedRcCommandF[ROLL]*100);
 		tInBuffer[10]=(uint8_t)(smoothedRcCommandF[PITCH]*100);
@@ -99,6 +104,8 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], rcControlsConfig.rates[YAW], rcControlsConfig.acroPlus[YAW]);
 	flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], rcControlsConfig.rates[ROLL], rcControlsConfig.acroPlus[ROLL]);
 	flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], rcControlsConfig.rates[PITCH], rcControlsConfig.acroPlus[PITCH]);
+
+
 
 	if (boardArmed) {
 		InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, pidConfig);

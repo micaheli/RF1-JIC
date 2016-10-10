@@ -30,7 +30,7 @@ void InitActuators(void) {
 	//these calues come from config
 	//this is for multishot at 32KHz on STM32F4 running at 192MHz
 	float disarmUs  = 5;
-	float idleUs  = 6.5;
+	float idleUs  = 6;
 	float walledUs  = 20;
 	uint32_t pwmHz   = 32000;
 	uint32_t timerHz = 48000000;
@@ -113,9 +113,11 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 	HAL_TIM_PWM_Start(&pwmTimer, timerChannel);
 }
 
+
+
 void OutputActuators(float motorOutput[], float servoOutput[]) {
-	int x;
 	uint32_t pulseValue;
+
 	if (boardArmed || calibrateMotors) {
 
 		if (calibrateMotors) {
@@ -123,10 +125,7 @@ void OutputActuators(float motorOutput[], float servoOutput[]) {
 		} else {
 			pulseValue = idlePulseValue;
 		}
-		for(x=7; x>=0; x--)
-		{
-			motorOutput[x] = InlineConstrainf(motorOutput[x], 0.0, 1.0);
-		}
+
 
 		//float mouse0 = motorOutput[0];
 		//float mouse1 = motorOutput[1];

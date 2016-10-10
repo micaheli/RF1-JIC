@@ -9,15 +9,15 @@ void LoadConfig (void)
 	uint32_t midRc = 1024; // middle of rc input, one for each channel. Default being 1500
 	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
 
-	pidConfig[YAW].kp	= .0012500;
+	pidConfig[YAW].kp	= .0006500;
 	pidConfig[YAW].ki	= .0005000;
 	pidConfig[YAW].kd	= .0000001;
 
-	pidConfig[ROLL].kp	= .0012500;
+	pidConfig[ROLL].kp	= .0006500;
 	pidConfig[ROLL].ki	= .0005000;
 	pidConfig[ROLL].kd	= .0000001;
 
-	pidConfig[PITCH].kp	= .0012500;
+	pidConfig[PITCH].kp	= .0006500;
 	pidConfig[PITCH].ki	= .0005000;
 	pidConfig[PITCH].kd	= .0000001;
 
