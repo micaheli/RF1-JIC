@@ -1,8 +1,11 @@
 #pragma once
 
+#define GYRO_CALIBRATION_CYCLES 1000
+
 extern float dpsGyroArrayUnrotated[3];
 extern float dpsGyroArray[3];
 extern int16_t rawGyroRotated[3];
+extern uint32_t gyroCalibrationCycles;
 
 //config structure which is loaded by config
 typedef struct {
@@ -36,6 +39,7 @@ typedef enum {
     LOOP_UH32,
 } loopCtrl_e;
 
+void ResetGyroCalibration(void);
 void InlineUpdateGyro(int16_t rawGyro[], int16_t rawGyroRotated[], float scale);
 void InlineApplyGyroRotation (int16_t rawGyro[], int16_t rawGyroRotated[]);
 void InlineApplyBoardRotationAndScale ( int16_t rawGyroRotated[], float dpsGyroArray[], float scale );

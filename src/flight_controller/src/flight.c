@@ -93,6 +93,8 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 		//cycle time averaged
 		flightcodeTime = ( (float)Micros() - (float)flightcodeTimeStart ) * 0.03125; // 1/32 as a multiplier
 		flightcodeTimeStart = Micros();
+		debugU32[0] = flightcodeTime;
+
 
 	}
 
@@ -120,6 +122,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, pidConfig);
 
 	if (boardArmed) {
+	   if (gyroCalibrationCycles != 0) {
+			return;
+		}
 		//only run mixer if armed
 		actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
 	} else {
@@ -133,7 +138,6 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//output to actuators
 	OutputActuators(motorOutput, servoOutput);
 
-	debugU32[0] = Micros() - flightcodeTime;
 
 }
 

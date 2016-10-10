@@ -32,6 +32,7 @@ void ProcessSpektrumPacket(void)
 
 	bzero(&tempData, sizeof(tempData));
 
+	lastRXPacket = InlineMillis();
 
 	for (x = 2; x < 16; x += 2) {
 
@@ -73,16 +74,21 @@ void ProcessSpektrumPacket(void)
 	x=rxData[0];
 	rxData[0] = rxData[3];
 	rxData[3] = x;
+
 */
-	if (rxData[4] > 1500) { //todo: MOVE!!! - uglied up Preston's code.
+
+	//todo: MOVE!!! - uglied up Preston's code.
+	if ( (!boardArmed) && (rxData[4] > 1500) ) {
+		ResetGyroCalibration();
 		boardArmed = 1;
 		rcControlsConfig.midRc[PITCH] = rxData[PITCH];
 		rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
 		rcControlsConfig.midRc[YAW]   = rxData[YAW];
-	} else if (rxData[4] > 100) {
+	} else if (rxData[4] < 400) {
 		boardArmed = 0;
 	}
-	InlineCollectRcCommand ( );
+
+	InlineCollectRcCommand();
 }
 
 

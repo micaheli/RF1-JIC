@@ -5,28 +5,34 @@
 
 #include "includes.h"
 
-#define CALIBRATION_CYCLES 1000
-
 float dpsGyroArray[3] = {0.0f, 0.0f, 0.0f};
+static int32_t gyroSum[3] = {0, 0, 0};
 
-static uint32_t calibrationCycles = CALIBRATION_CYCLES * 1;
+uint32_t gyroCalibrationCycles = GYRO_CALIBRATION_CYCLES * 1;
+
+void ResetGyroCalibration(void) {
+
+	bzero(gyroSum,sizeof(gyroSum));
+	gyroCalibrationCycles = GYRO_CALIBRATION_CYCLES * 1;
+
+}
 
 static inline void InlineUpdateCalibration(int16_t *rawGyro)
 {
-    static int32_t gyroSum[3] = {0, 0, 0};
+
     int16_t gyroCalibration[3];
     uint8_t axis;
 
-    if (calibrationCycles <= CALIBRATION_CYCLES) {
+    if (gyroCalibrationCycles <= GYRO_CALIBRATION_CYCLES) {
         for (axis = 0; axis < 3; axis++) {
             gyroSum[axis] += rawGyro[axis];
         }
     }
 
-    if (--calibrationCycles == 0) {
+    if (--gyroCalibrationCycles == 0) {
         for (axis = 0; axis < 3; axis++) {
             // add what comes out to be 1/2 to improve rounding
-            gyroCalibration[axis] = (int16_t)(-(gyroSum[axis] + (CALIBRATION_CYCLES / 2)) / CALIBRATION_CYCLES);
+            gyroCalibration[axis] = (int16_t)(-(gyroSum[axis] + (GYRO_CALIBRATION_CYCLES / 2)) / GYRO_CALIBRATION_CYCLES);
         }
 
         accgyroDeviceCalibrate(gyroCalibration);
@@ -36,7 +42,7 @@ static inline void InlineUpdateCalibration(int16_t *rawGyro)
 inline void InlineUpdateGyro(int16_t rawGyro[], int16_t rawGyroRotated[], float scale)
 {
 
-    if (calibrationCycles != 0) {
+    if (gyroCalibrationCycles != 0) {
         InlineUpdateCalibration(rawGyro);
         return;
     }

@@ -9,20 +9,20 @@ void LoadConfig (void)
 	uint32_t midRc = 1024; // middle of rc input, one for each channel. Default being 1500
 	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
 
-	pidConfig[YAW].kp	= .0013000;
-	pidConfig[YAW].ki	= .0005000;
-	pidConfig[YAW].kd	= .0000002;
-	pidConfig[YAW].wc	= 72;
+	pidConfig[YAW].kp	= .00140000;
+	pidConfig[YAW].ki	= .00140000;
+	pidConfig[YAW].kd	= .00000280;
+	pidConfig[YAW].wc	= 32;
 
-	pidConfig[ROLL].kp	= .0013000;
-	pidConfig[ROLL].ki	= .0005000;
-	pidConfig[ROLL].kd	= .0000002;
-	pidConfig[ROLL].wc	= 72;
+	pidConfig[ROLL].kp	= .00140000;
+	pidConfig[ROLL].ki	= .00140000;
+	pidConfig[ROLL].kd	= .00000280;
+	pidConfig[ROLL].wc	= 32;
 
-	pidConfig[PITCH].kp	= .0013000;
-	pidConfig[PITCH].ki	= .0005000;
-	pidConfig[PITCH].kd	= .0000002;
-	pidConfig[PITCH].wc	= 72;
+	pidConfig[PITCH].kp	= .00140000;
+	pidConfig[PITCH].ki	= .00140000;
+	pidConfig[PITCH].kd	= .00000280;
+	pidConfig[PITCH].wc	= 32;
 
 
 	filterConfig[YAW].gyro.q   = 0.0010;
@@ -38,15 +38,15 @@ void LoadConfig (void)
 	filterConfig[PITCH].gyro.p = 0.0015;
 
 	filterConfig[YAW].kd.q     = 0.0010;
-	filterConfig[YAW].kd.r     = 2.5000;
+	filterConfig[YAW].kd.r     = 2.1000;
 	filterConfig[YAW].kd.p     = 0.0015;
 
 	filterConfig[ROLL].kd.q    = 0.0010;
-	filterConfig[ROLL].kd.r    = 2.5000;
+	filterConfig[ROLL].kd.r    = 2.1000;
 	filterConfig[ROLL].kd.p    = 0.0015;
 
 	filterConfig[PITCH].kd.q   = 0.0010;
-	filterConfig[PITCH].kd.r   = 2.5000;
+	filterConfig[PITCH].kd.r   = 2.1000;
 	filterConfig[PITCH].kd.p   = 0.0015;
 
 
@@ -104,9 +104,9 @@ void LoadConfig (void)
 	rcControlsConfig.useCurve[AUX3]      = NO_EXPO;
 	rcControlsConfig.useCurve[AUX4]      = NO_EXPO;
 
-	rcControlsConfig.curveExpo[PITCH]    = 70.0f;
-	rcControlsConfig.curveExpo[ROLL]     = 70.0f;
-	rcControlsConfig.curveExpo[YAW]      = 70.0f;
+	rcControlsConfig.curveExpo[PITCH]    = 60.0f;
+	rcControlsConfig.curveExpo[ROLL]     = 60.0f;
+	rcControlsConfig.curveExpo[YAW]      = 60.0f;
 	rcControlsConfig.curveExpo[THROTTLE] = 0;
 	rcControlsConfig.curveExpo[AUX1]     = 0;
 	rcControlsConfig.curveExpo[AUX2]     = 0;
@@ -117,8 +117,8 @@ void LoadConfig (void)
 	rcControlsConfig.rates[ROLL]         = 400.0;
 	rcControlsConfig.rates[PITCH]        = 400.0;
 
-	rcControlsConfig.acroPlus[YAW]       = 10.00;
-	rcControlsConfig.acroPlus[ROLL]      = 10.00;
-	rcControlsConfig.acroPlus[PITCH]     = 10.00;
+	rcControlsConfig.acroPlus[YAW]       = 14.00;
+	rcControlsConfig.acroPlus[ROLL]      = 14.00;
+	rcControlsConfig.acroPlus[PITCH]     = 14.00;
 }
 

@@ -262,7 +262,6 @@ void USARTx_IRQHandler(void)
 
 		ProcessSpektrumPacket();
 
-		lastRXPacket = InlineMillis();
 
 		if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, 16) != HAL_OK)
 		{

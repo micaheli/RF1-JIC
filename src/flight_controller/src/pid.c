@@ -64,6 +64,11 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 		usedFlightSetPoints[1] = flightSetPoints[2];
 	}
 
+
+	usedFlightSetPoints[0] = flightSetPoints[0];
+	usedFlightSetPoints[1] = flightSetPoints[1];
+	usedFlightSetPoints[2] = flightSetPoints[2];
+
 	for (axis = 2; axis >= 0; --axis) {
 
 		pidError = usedFlightSetPoints[axis] - filteredGyroData[axis];
