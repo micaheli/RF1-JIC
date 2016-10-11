@@ -60,7 +60,7 @@ inline void InlineApplyGyroRotation (int16_t rawGyro[], int16_t rawGyroRotated[]
 	//from gyro, x, y, z (0, 1, 2)
 	// x is roll, y is pitch, z is yaw
 
-    switch (gyroConfig.gyroRotation) {
+    switch (mainConfig.gyroConfig.gyroRotation) {
 
         case CW90:
         	rawGyroRotated[X] =  rawGyro[Y];
@@ -109,7 +109,7 @@ inline void InlineApplyGyroRotation (int16_t rawGyro[], int16_t rawGyroRotated[]
 
 inline void InlineApplyBoardRotationAndScale ( int16_t rawGyroRotated[], float dpsGyroArray[], float scale ) {
 
-	switch (gyroConfig.boardRotation) {
+	switch (mainConfig.gyroConfig.boardRotation) {
 		case CW90:
 			dpsGyroArray[ROLL]  = ((float)rawGyroRotated[Y]  * scale);
 			dpsGyroArray[PITCH] = ((float)-rawGyroRotated[X] * scale);

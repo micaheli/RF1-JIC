@@ -29,6 +29,7 @@ void ProcessSpektrumPacket(void)
 	uint32_t spektrumChannel;
 	uint32_t x;
 	uint32_t value;
+	static uint32_t disarmCount = 0;
 
 	bzero(&tempData, sizeof(tempData));
 
@@ -79,13 +80,17 @@ void ProcessSpektrumPacket(void)
 
 	//todo: MOVE!!! - uglied up Preston's code.
 	if ( (!boardArmed) && (rxData[4] > 1500) ) {
+		disarmCount = 0;
 		ResetGyroCalibration();
 		boardArmed = 1;
-		rcControlsConfig.midRc[PITCH] = rxData[PITCH];
-		rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
-		rcControlsConfig.midRc[YAW]   = rxData[YAW];
+		mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
+		mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
+		mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
 	} else if (rxData[4] < 400) {
-		boardArmed = 0;
+		disarmCount++;
+		if (disarmCount > 10) {
+			boardArmed = 0;
+		}
 	}
 
 	InlineCollectRcCommand();
@@ -122,17 +127,17 @@ inline void InlineCollectRcCommand (void) {
 	//rc data is taken from RX and using the map is put into the correct "axis"
 	for (axis = 0; axis < MAXCHANNELS; axis++) {
 
-		if (rxData[axis] < rcControlsConfig.midRc[axis])  //negative  range
-			rangedRx = InlineChangeRangef(rxData[axis], rcControlsConfig.midRc[axis], rcControlsConfig.minRc[axis], 0.0, -1.0); //-1 to 0
+		if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[axis], mainConfig.rcControlsConfig.minRc[axis], 0.0, -1.0); //-1 to 0
 		else
-			rangedRx = InlineChangeRangef(rxData[axis], rcControlsConfig.maxRc[axis], rcControlsConfig.midRc[axis], 1.0, 0.0); //0 to +1
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[axis], mainConfig.rcControlsConfig.midRc[axis], 1.0, 0.0); //0 to +1
 
 
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
-		if (ABS(rangedRx) > rcControlsConfig.deadBand[axis]) {
+		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis]) {
 			trueRcCommandF[axis]   = InlineConstrainf ( rangedRx, -1, 1);
-			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], rcControlsConfig.useCurve[axis], rcControlsConfig.curveExpo[axis]);
+			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis]);
 		} else {
 			// no need to calculate if movement is below deadband
 			trueRcCommandF[axis]   = 0;

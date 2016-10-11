@@ -28,13 +28,12 @@ int main(void)
 
     int32_t count = 16;
 
-    //VectorIrqInit(0x08020000);
-    VectorIrqInit(0x08000000);
+    VectorIrqInit(ADDRESS_FLASH_START);
     BoardInit();
 
     HandleRfbl();
 
-    LoadConfig();
+    LoadConfig(ADDRESS_CONFIG_START);
 
     InitializeMCUSettings();
 
@@ -47,7 +46,7 @@ int main(void)
     InitPid();
     InitActuators();
 
-    if (!accgyroInit(gyroConfig.loopCtrl)) {
+    if (!accgyroInit(mainConfig.gyroConfig.loopCtrl)) {
         //ErrorHandler();
     }
 

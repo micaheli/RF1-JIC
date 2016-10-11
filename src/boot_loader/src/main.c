@@ -524,13 +524,9 @@ void rfbl_write_packet(void) {
 
 		if ( (FwInfo.address + FwInfo.wordOffset) >= FwInfo.skipTo  ) { //only write to FW at this point
 
-			data32 = (uint32_t) ( (FwInfo.data[wordoffsetter+1] << 0) | (FwInfo.data[wordoffsetter+2] << 8) | (FwInfo.data[wordoffsetter+3] << 16) | (FwInfo.data[wordoffsetter+4] << 24));
+			uint32_t data32 = (uint32_t) ( (FwInfo.data[wordoffsetter+1] << 0) | (FwInfo.data[wordoffsetter+2] << 8) | (FwInfo.data[wordoffsetter+3] << 16) | (FwInfo.data[wordoffsetter+4] << 24));
 
-			if (HAL_FLASH_Program(TYPEPROGRAM_WORD, FwInfo.address + FwInfo.wordOffset, data32) == HAL_OK) {
-			} else {
-				//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-				ErrorHandler();
-			}
+			WriteFlash(data32, FwInfo.address + FwInfo.wordOffset );
 
 		}
 
