@@ -29,7 +29,9 @@ static float stabilizerAttenuation;
 float motorOutput[MAX_MOTOR_NUMBER];
 float servoOutput[MAX_SERVO_NUMBER];
 int32_t activeMotorCounter = -1; //number of active motors minus 1
-
+float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.15, 1.05, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.15, 1.0, 1.0, 1.0, .95, .85, 1.0, .80, .85};
+float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {.85, .98, 1.0, 1.0, .95, .85, 1.0, .80, .85};
 
 void InitMixer(void) {
 	int32_t i;
@@ -52,7 +54,22 @@ void InitMixer(void) {
 	activeMotorCounter=3;
 }
 
-inline float ApplyAttenuationKdCurve (float motorOutput) {
+inline float ApplyAttenuationCurve (float input, float curve[], int curveSize) {
+    uint32_t index;
+    float remainder;
+
+    remainder = (float)((float)input * (float)curveSize);
+    index =(int)remainder;
+    if (index == 0)
+        return (curve[0]);
+    else
+    {
+        remainder = remainder - (float)index;
+        return (curve[index-1] + (curve[index] * remainder));
+    }
+}
+
+inline float ApplyAttenuationKiCurve (float motorOutput) {
 	(void)(motorOutput);
 	return (1.0);
 }
@@ -84,9 +101,18 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 		//stabilizerAttenuation = ApplyAttenuationKpCurve( motorOutput[i] );
 		stabilizerAttenuation = 1.0f;
 		motorOutput[i] = (
-				( (stabilizerAttenuation * (pids[YAW].kp + pids[YAW].kd) ) + pids[YAW].ki )  * motorMixer[i].yaw +
-				( (stabilizerAttenuation * (pids[ROLL].kp + pids[ROLL].kd) ) + pids[ROLL].ki )  * motorMixer[i].roll +
-				( (stabilizerAttenuation * (pids[PITCH].kp + pids[PITCH].kd) ) + pids[PITCH].ki )  * motorMixer[i].pitch
+				( (stabilizerAttenuation * ((pids[YAW].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ))
+						+ (pids[YAW].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ))) )
+						+ (pids[YAW].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE )) )
+						* motorMixer[i].yaw +
+				( (stabilizerAttenuation * ((pids[ROLL].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ))
+						+ (pids[ROLL].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ))) )
+						+ (pids[ROLL].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE )) )
+						* motorMixer[i].roll +
+				( (stabilizerAttenuation * ((pids[PITCH].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ))
+						+ (pids[PITCH].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ))) )
+						+ (pids[PITCH].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE )) )
+						* motorMixer[i].pitch
 		);
 		if (motorOutput[i] > highestMotor) { highestMotor = motorOutput[i]; }
 		if (motorOutput[i] < lowestMotor)  { lowestMotor  = motorOutput[i]; }

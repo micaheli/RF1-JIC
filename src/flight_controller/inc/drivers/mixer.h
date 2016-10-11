@@ -19,6 +19,7 @@ typedef struct {
 
 #define MAX_MOTOR_NUMBER 8
 #define MAX_SERVO_NUMBER 8
+#define ATTENUATION_CURVE_SIZE 9
 
 
 extern int motorNumber;
