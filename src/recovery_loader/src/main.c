@@ -13,7 +13,7 @@
 /* Private variables ---------------------------------------------------------*/
 uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 uint32_t toggle_led = 0;
-bool usbStarted = false;
+int usbStarted = 0;
 uint32_t ApplicationAddress = 0x08008000;
 uint8_t bindSpektrum = 0;
 char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
@@ -36,6 +36,10 @@ int main(void)
 	HAL_RCC_DeInit();
     HAL_DeInit();
     BoardInit();
+
+    if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight. Imediately jump into program
+    	boot_to_app();
+    }
 
     //get config data from backup registers
 	bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
@@ -88,7 +92,7 @@ int main(void)
 	InitializeMCUSettings();
 
 	InitLeds();
-    usbStarted=true;
+    usbStarted=1;
     USB_DEVICE_Init(); //start USB
 
 	//initialize RFBL State and Command

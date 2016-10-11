@@ -17,6 +17,7 @@ uint32_t StartSector = 0, EndSector = 0, Address = 0, i = 0 ;
 __IO uint32_t data32 = 0 , MemoryProgramStatus = 0 ;
 uint32_t toggle_led = 0;
 bool bootToRfbl = false;
+int usbStarted = 0;
 uint32_t ApplicationAddress = 0x08020000;
 uint8_t bindSpektrum = 0;
 char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
@@ -40,6 +41,12 @@ int main(void)
 	HAL_RCC_DeInit();
     HAL_DeInit();
     BoardInit();
+
+    if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight. Imediately jump into program
+    	boot_to_app();
+    }
+
+    usbStarted=1;
     USB_DEVICE_Init(); //start USB
     boot_to_app();
     InitializeMCUSettings();
@@ -318,7 +325,9 @@ void boot_to_app (void) {
 
 	DelayMs(250); //quarter second delay before booting into app to allow PDB power to stabilize
 
-	USB_DEVICE_DeInit();
+	if (usbStarted) {
+		USB_DEVICE_DeInit();
+	}
 	HAL_RCC_DeInit();
 	DelayMs(1);
 

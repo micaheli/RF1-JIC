@@ -81,7 +81,14 @@ void ProcessSpektrumPacket(void)
 	//todo: MOVE!!! - uglied up Preston's code.
 	if ( (!boardArmed) && (rxData[4] > 1500) ) {
 		disarmCount = 0;
-		ResetGyroCalibration();
+		if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) {
+			//fc crashed during flight
+			debugU32[6]=666;
+		} else {
+			ResetGyroCalibration();
+			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
+			debugU32[6]=777;
+		}
 		boardArmed = 1;
 		mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
 		mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];

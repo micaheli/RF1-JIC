@@ -37,6 +37,13 @@ int main(void)
 
     InitializeMCUSettings();
 
+    if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight.
+    	debugU32[7]=666;
+    	//boot_to_app();
+    } else {
+    	debugU32[7]=777;
+    }
+
     InitBuzzer();
     InitLeds();
     InitUsb();
