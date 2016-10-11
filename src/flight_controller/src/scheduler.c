@@ -49,7 +49,7 @@ inline void taskFailsafe(void) {
 
 	if (
 		(boardArmed) &&
-		((InlineMillis() - lastRXPacket) > 1000)
+		((InlineMillis() - lastRXPacket) > 3000)
 		) //board disarmed and no rx packet in 1000 millis
 
 		boardArmed = 0;
@@ -65,6 +65,11 @@ inline void taskHandlePcComm(void)
 		if ((tOutBuffer[1] == 'D') && (tOutBuffer[2] == 'F') && (tOutBuffer[3] == 'U')) {
 			SystemResetToDfuBootloader();
 		}
+
+		if ((tOutBuffer[1] == 'S') && (tOutBuffer[2] == 'A') && (tOutBuffer[3] == 'V') && (tOutBuffer[4] == 'E')) {
+			SaveConfig (ADDRESS_CONFIG_START);
+		}
+
 		if (tOutBuffer[1] == 6) {
 			calibrateMotors = 1;
 			motorOutput[0] = 1;

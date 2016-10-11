@@ -38,9 +38,9 @@ inline void InlineInitGyroFilters(void)  {
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		pafStates[axis]   = InitPaf( filterConfig[axis].gyro.q, filterConfig[axis].gyro.r, filterConfig[axis].gyro.p, filteredGyroData[axis]);
+		pafStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
 
-		currentGyroFilterConfig[axis] = filterConfig[axis].gyro.r;
+		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].gyro.r;
 
 	}
 
@@ -63,21 +63,25 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
+	DoLed(0, 0);
+	DoLed(1, 0);
+	DoLed(2, 0);
+
 	if (loopCounter-- & 32 ) { //check if the 32 bit is set and run this code
 
 		//every 32 cycles we check if the filter needs an update.
 		if (
-				(currentGyroFilterConfig[YAW] != filterConfig[YAW].gyro.r) ||
-				(currentGyroFilterConfig[ROLL] != filterConfig[ROLL].gyro.r) ||
-				(currentGyroFilterConfig[PITCH] != filterConfig[PITCH].gyro.r)
+				(currentGyroFilterConfig[YAW] != mainConfig.filterConfig[YAW].gyro.r) ||
+				(currentGyroFilterConfig[ROLL] != mainConfig.filterConfig[ROLL].gyro.r) ||
+				(currentGyroFilterConfig[PITCH] != mainConfig.filterConfig[PITCH].gyro.r)
 		) {
 			InlineInitGyroFilters();
 		}
 
 		if (
-				(currentKdFilterConfig[YAW] != filterConfig[YAW].kd.r) ||
-				(currentKdFilterConfig[ROLL] != filterConfig[ROLL].kd.r) ||
-				(currentKdFilterConfig[PITCH] != filterConfig[PITCH].kd.r)
+				(currentKdFilterConfig[YAW] != mainConfig.filterConfig[YAW].kd.r) ||
+				(currentKdFilterConfig[ROLL] != mainConfig.filterConfig[ROLL].kd.r) ||
+				(currentKdFilterConfig[PITCH] != mainConfig.filterConfig[PITCH].kd.r)
 		) {
 			InlineInitPidFilters();
 		}
@@ -114,12 +118,12 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
 
 	//get setpoint for PIDC
-	flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], rcControlsConfig.rates[YAW], rcControlsConfig.acroPlus[YAW]);
-	flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], rcControlsConfig.rates[ROLL], rcControlsConfig.acroPlus[ROLL]);
-	flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], rcControlsConfig.rates[PITCH], rcControlsConfig.acroPlus[PITCH]);
+	flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]);
+	flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL]);
+	flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH]);
 
 	//Run PIDC
-	InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, pidConfig);
+	InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, mainConfig.pidConfig);
 
 	if (boardArmed) {
 	   if (gyroCalibrationCycles != 0) {
@@ -138,6 +142,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//output to actuators
 	OutputActuators(motorOutput, servoOutput);
 
+	DoLed(0, 1);
+	DoLed(1, 1);
+	DoLed(2, 1);
 
 }
 

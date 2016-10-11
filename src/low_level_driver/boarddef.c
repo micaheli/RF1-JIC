@@ -78,6 +78,10 @@ int InitializeMCUSettings() {
 	board.internalLeds[1].pin=GPIO_PIN_5;
 	board.internalLeds[1].port=1;
 
+	board.internalLeds[1].enabled=1;
+	board.internalLeds[1].pin=GPIO_PIN_1;
+	board.internalLeds[1].port=0;
+
 	board.buzzerPort=0;
 	board.buzzerPin=GPIO_PIN_0;
 
