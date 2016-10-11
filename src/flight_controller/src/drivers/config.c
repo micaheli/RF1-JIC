@@ -69,41 +69,41 @@ void ResetConfig (uint32_t addresConfigStart)
 	mainConfig.pidConfig[YAW].kp	= .00140000;
 	mainConfig.pidConfig[YAW].ki	= .00380000;
 	mainConfig.pidConfig[YAW].kd	= .00000320;
-	mainConfig.pidConfig[YAW].wc	= 16;
+	mainConfig.pidConfig[YAW].wc	= 8;
 
 	mainConfig.pidConfig[ROLL].kp	= .00140000;
 	mainConfig.pidConfig[ROLL].ki	= .00380000;
 	mainConfig.pidConfig[ROLL].kd	= .00000320;
-	mainConfig.pidConfig[ROLL].wc	= 16;
+	mainConfig.pidConfig[ROLL].wc	= 8;
 
 	mainConfig.pidConfig[PITCH].kp	= .00140000;
 	mainConfig.pidConfig[PITCH].ki	= .00380000;
 	mainConfig.pidConfig[PITCH].kd	= .00000320;
-	mainConfig.pidConfig[PITCH].wc	= 16;
+	mainConfig.pidConfig[PITCH].wc	= 8;
 
 
 	mainConfig.filterConfig[YAW].gyro.q   = 0.00010;
-	mainConfig.filterConfig[YAW].gyro.r   = 0.01800;
+	mainConfig.filterConfig[YAW].gyro.r   = 0.01100;
 	mainConfig.filterConfig[YAW].gyro.p   = 0.00015;
 
 	mainConfig.filterConfig[ROLL].gyro.q  = 0.00010;
-	mainConfig.filterConfig[ROLL].gyro.r  = 0.01800;
+	mainConfig.filterConfig[ROLL].gyro.r  = 0.01100;
 	mainConfig.filterConfig[ROLL].gyro.p  = 0.00015;
 
 	mainConfig.filterConfig[PITCH].gyro.q = 0.00010;
-	mainConfig.filterConfig[PITCH].gyro.r = 0.01800;
+	mainConfig.filterConfig[PITCH].gyro.r = 0.01100;
 	mainConfig.filterConfig[PITCH].gyro.p = 0.00015;
 
 	mainConfig.filterConfig[YAW].kd.q     = 0.00010;
-	mainConfig.filterConfig[YAW].kd.r     = 0.00200;
+	mainConfig.filterConfig[YAW].kd.r     = 0.00300;
 	mainConfig.filterConfig[YAW].kd.p     = 0.00015;
 
 	mainConfig.filterConfig[ROLL].kd.q    = 0.00010;
-	mainConfig.filterConfig[ROLL].kd.r    = 0.00200;
+	mainConfig.filterConfig[ROLL].kd.r    = 0.00300;
 	mainConfig.filterConfig[ROLL].kd.p    = 0.00015;
 
 	mainConfig.filterConfig[PITCH].kd.q   = 0.00010;
-	mainConfig.filterConfig[PITCH].kd.r   = 0.00200;
+	mainConfig.filterConfig[PITCH].kd.r   = 0.00300;
 	mainConfig.filterConfig[PITCH].kd.p   = 0.00015;
 
 
