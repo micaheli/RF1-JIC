@@ -17,6 +17,8 @@
 #define ADDR_FLASH_SECTOR_11    ((uint32_t)0x080E0000) /* Base @ of Sector 11, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_12    ((uint32_t)0x08100000) /* Base @ of Sector 11, 128 Kbytes */
 
+void PrepareFlash(void);
+void FinishFlash(void);
 int WriteFlash(uint32_t data32, uint32_t flashAddress );
 int EraseFlash(uint32_t flashStart, uint32_t flashEnd);
 uint32_t GetFlashSector(uint32_t flashAddress);

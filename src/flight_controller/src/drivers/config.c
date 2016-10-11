@@ -10,10 +10,11 @@ void SaveConfig (uint32_t addresConfigStart)
 	mainConfig.czechsum = CalculateCzechsum((uint8_t *)(main_config *) &mainConfig, sizeof(main_config));
 
 	EraseFlash(addresConfigStart, addresConfigStart+sizeof(main_config));
+	PrepareFlash();
 	for (addressOffset = 0; addressOffset < sizeof(main_config); addressOffset += 4) {
 		WriteFlash(*(uint32_t *) ((char *) &mainConfig + addressOffset), addresConfigStart+addressOffset );
 	}
-
+	FinishFlash();
 }
 
 uint8_t CalculateCzechsum(uint8_t *data, uint32_t length)

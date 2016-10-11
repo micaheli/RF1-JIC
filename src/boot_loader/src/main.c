@@ -175,7 +175,7 @@ int main(void)
 
 			case RFBLS_DONE_UPGRADING:
 				//Last packet received and written to
-				rfbl_finish_flash();
+				FinishFlash();
 				RfblState = RFBLS_IDLE;
 				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
 				for (int8_t iii = 100; iii >= 0; iii -= 2) {
@@ -487,7 +487,10 @@ void rfbl_execute_load_command(void) {
 
 	if ( (FwInfo.type == RFFW) && (FwInfo.size) ) { //Does the firmware have size? //TODO: Verify size is sane
 		FwInfo.expected_packets = ceil(FwInfo.size / FwInfo.packet_size);
-		rfbl_prepare_flash(); //unlock and erase flash. Then wait for data packets
+		DoLed(0, 1);
+		EraseFlash(ADDRESS_FLASH_START, ADDRESS_FLASH_START)
+	    PrepareFlash();
+		DoLed(0, 0);
 	}
 
 	if (FwInfo.size >= (uint32_t)( (float)(ADDRESS_FLASH_END - ADDRESS_FLASH_START) * 0.94f ) ) {
@@ -497,22 +500,6 @@ void rfbl_execute_load_command(void) {
 		FwInfo.skipTo = ADDRESS_RFBL_START;
 	}
 
-}
-
-//todo: only works for F4 and F7. F1 and F3 require different flash handling.
-void rfbl_prepare_flash(void) {
-
-	DoLed(0, 1);
-	DoLed(1, 1);
-	DoLed(2, 1);
-
-    if (!EraseFlash(ADDRESS_FLASH_START, ADDRESS_FLASH_END) ) {
-    	ErrorHandler();
-    }
-
-	DoLed(0, 0);
-	DoLed(1, 0);
-	DoLed(2, 0);
 }
 
 
@@ -533,13 +520,6 @@ void rfbl_write_packet(void) {
 		FwInfo.wordOffset = FwInfo.wordOffset + 4;
 
 	}
-
-}
-
-
-void rfbl_finish_flash(void) {
-
-	HAL_FLASH_Lock();
 
 }
 

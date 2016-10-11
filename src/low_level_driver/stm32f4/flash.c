@@ -1,5 +1,12 @@
 #include "includes.h"
 
+void PrepareFlash() {
+	HAL_FLASH_Unlock();
+}
+
+void FinishFlash() {
+	HAL_FLASH_Lock();
+}
 
 int WriteFlash(uint32_t data32, uint32_t flashAddress ) {
 
@@ -32,8 +39,10 @@ int EraseFlash(uint32_t flashStart, uint32_t flashEnd) {
 	{
 		//todo: return error code.
 		//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
+		HAL_FLASH_Lock();
 		return 0;
 	}
+	HAL_FLASH_Lock();
 	return 1;
 
 }
