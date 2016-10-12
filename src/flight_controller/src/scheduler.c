@@ -49,7 +49,7 @@ inline void taskFailsafe(void) {
 
 	if (
 		(boardArmed) &&
-		((InlineMillis() - lastRXPacket) > 1000)
+		((InlineMillis() - lastRXPacket) > 3000)
 		) //board disarmed and no rx packet in 1000 millis
 
 		boardArmed = 0;

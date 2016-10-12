@@ -541,7 +541,7 @@ def configure_target(TARGET):
         DEF_FLAGS,
         DEBUG_FLAGS if args.debug else OPTIMIZE_FLAGS,
         INCLUDES,
-        "-Wall -Wextra -pedantic -Wmaybe-uninitialized "
+        "-Wall -Wextra -Wmaybe-uninitialized "
         "-ffunction-sections -fdata-sections -MMD -MP"
     ])
 

@@ -3,7 +3,7 @@
 #define AXIS_NUMBER 3
 #define KD_RING_BUFFER_SIZE 256
 
-enum { KP = 0, KD, KI, PID_VARIABLE_COUNT };
+enum { KP = 0, KD, KI, PID_VARIABLE_COUNT }; // why is there a blank enum here kalyn?
 
 typedef struct {
     float kp;

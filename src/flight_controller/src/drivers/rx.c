@@ -23,20 +23,26 @@ spektrumChannelMask = 0x03;
 
 uint32_t tempData[MAXCHANNELS];
 
+uint32_t copiedBufferData[MAXCHANNELS];
+
 
 void ProcessSpektrumPacket(void)
 {
 	uint32_t spektrumChannel;
 	uint32_t x;
 	uint32_t value;
+	static uint32_t disarmCount = 0;
+															   // Make sure this is very first thing done in function, and its called first on interrupt
+	memcpy(&aRxBuffer, &copiedBufferData, sizeof(aRxBuffer));  // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
+
 
 	bzero(&tempData, sizeof(tempData));
 
-	lastRXPacket = InlineMillis();
+	lastRXPacket = InlineMillis();  // why are we doing this, for failsafe?   this would have caused issues, possibly if we didn't copy buffer first
 
 	for (x = 2; x < 16; x += 2) {
-
-		value = (aRxBuffer[x] << 8) + (aRxBuffer[x+1]);
+		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
 		spektrumChannel = (value & 0x7800) >> 11;
 		if (spektrumChannel < MAXCHANNELS) {
 			tempData[spektrumChannel] = value & 0x7FF;
@@ -44,9 +50,11 @@ void ProcessSpektrumPacket(void)
 	}
 
 
+
 	if ((tempData[0] != tempData[3]) && (tempData[0] != 0))
 		rxData[3] = tempData[0];
 
+	// don't need to check for zero because these channels should be updated every frame
 	rxData[0] = tempData[3];
 	rxData[1] = tempData[1];
 	rxData[2] = tempData[2];
@@ -77,15 +85,19 @@ void ProcessSpektrumPacket(void)
 
 */
 
-	//todo: MOVE!!! - uglied up Preston's code.
-	if ( (!boardArmed) && (rxData[4] > 1500) ) {
+	//todo: MOVE!!! - uglied up Preston's code., yes you did :(
+	if ( (!boardArmed) && (rxData[4] > 1500) ) {  // maybe some sort of movement check here
+		disarmCount = 0;
 		ResetGyroCalibration();
 		boardArmed = 1;
 		rcControlsConfig.midRc[PITCH] = rxData[PITCH];
 		rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
 		rcControlsConfig.midRc[YAW]   = rxData[YAW];
-	} else if (rxData[4] < 400) {
-		boardArmed = 0;
+	} else if (rxData[4] < 400) {  // kalyn why do we need to check this happens more then once?
+		disarmCount++;
+		if (disarmCount > 10) {
+			boardArmed = 0;
+		}
 	}
 
 	InlineCollectRcCommand();
@@ -150,7 +162,7 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 	switch (curveToUse) {
 
 		case SKITZO_EXPO:
-			return (1 + 0.01 * expo * (rcCommand * rcCommand - 1)) * rcCommand;
+			return ((1 + 0.01 * expo * (rcCommand * rcCommand - 1)) * rcCommand); // KALYN listen to your ide, IT SAID USE () :)  This isn't some lame language
 			break;
 
 		case TARANIS_EXPO:
@@ -159,7 +171,7 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 
 		case NO_EXPO:
 		default:
-			return rcCommand; //same as default for now.
+			return(rcCommand); //same as default for now.
 			break;
 
 	}

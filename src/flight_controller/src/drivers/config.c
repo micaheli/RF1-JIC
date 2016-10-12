@@ -1,52 +1,82 @@
 #include "includes.h"
 
+// put this in a config.h
+/*
+#define UINT32 1;
+#define FLOAT 2;
+#define STRING 3;  // max size 32
+
+typedef struct {
+    void *location;
+    char name[8];  // max variable name 12
+} variableList;
+
+variableList variables[100];
+
+
+void AddVariable(char *variableName, void *VariableLocation, uint32_t variableType)
+{
+
+
+}
+*/
+
+
+// use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
+
+
+
+//Dynamic config is bad idea if we are supporting f1, so instead we will go to a static sized structure
+// basically add padding at end of structure to make it a fixed size.   Then always ad variables to the end, then when loading
+// the structure, if your new version have new variables they will be zeroied and then just check in this function for zeroed functions and set default
+
 void LoadConfig (void)
 {
 
 	//todo: Read this from storage. These are defaults for now.
 	float deadband = 0.025; //2.5% deadband
-	uint32_t minRc = 0; // middle of rc input, one for each channel. Default being 1500
+	uint32_t minRc = 0; // bottom of rc input, one for each channel. Default being 1500
 	uint32_t midRc = 1024; // middle of rc input, one for each channel. Default being 1500
 	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
 
 	pidConfig[YAW].kp	= .00140000;
-	pidConfig[YAW].ki	= .00280000;
-	pidConfig[YAW].kd	= .00000420;
+	pidConfig[YAW].ki	= .00380000;
+	pidConfig[YAW].kd	= .00000320;
 	pidConfig[YAW].wc	= 16;
 
 	pidConfig[ROLL].kp	= .00140000;
-	pidConfig[ROLL].ki	= .00280000;
-	pidConfig[ROLL].kd	= .00000420;
+	pidConfig[ROLL].ki	= .00380000;
+	pidConfig[ROLL].kd	= .00000320;
 	pidConfig[ROLL].wc	= 16;
 
 	pidConfig[PITCH].kp	= .00140000;
-	pidConfig[PITCH].ki	= .00280000;
-	pidConfig[PITCH].kd	= .00000420;
+	pidConfig[PITCH].ki	= .00380000;
+	pidConfig[PITCH].kd	= .00000320;
 	pidConfig[PITCH].wc	= 16;
 
 
 	filterConfig[YAW].gyro.q   = 0.00010;
-	filterConfig[YAW].gyro.r   = 0.02600;
+	filterConfig[YAW].gyro.r   = 0.01800;
 	filterConfig[YAW].gyro.p   = 0.00015;
 
 	filterConfig[ROLL].gyro.q  = 0.00010;
-	filterConfig[ROLL].gyro.r  = 0.02600;
+	filterConfig[ROLL].gyro.r  = 0.01800;
 	filterConfig[ROLL].gyro.p  = 0.00015;
 
 	filterConfig[PITCH].gyro.q = 0.00010;
-	filterConfig[PITCH].gyro.r = 0.02600;
+	filterConfig[PITCH].gyro.r = 0.01800;
 	filterConfig[PITCH].gyro.p = 0.00015;
 
 	filterConfig[YAW].kd.q     = 0.00010;
-	filterConfig[YAW].kd.r     = 0.01000;
+	filterConfig[YAW].kd.r     = 0.00200;
 	filterConfig[YAW].kd.p     = 0.00015;
 
 	filterConfig[ROLL].kd.q    = 0.00010;
-	filterConfig[ROLL].kd.r    = 0.01000;
+	filterConfig[ROLL].kd.r    = 0.00200;
 	filterConfig[ROLL].kd.p    = 0.00015;
 
 	filterConfig[PITCH].kd.q   = 0.00010;
-	filterConfig[PITCH].kd.r   = 0.01000;
+	filterConfig[PITCH].kd.r   = 0.00200;
 	filterConfig[PITCH].kd.p   = 0.00015;
 
 
