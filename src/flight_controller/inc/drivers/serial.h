@@ -9,11 +9,8 @@ extern uint32_t lastRXPacket;
 #define RXBUFFERSIZE 64
 #define TXBUFFERSIZE 64
 
-/* Buffer used for transmission */
-unsigned char aTxBuffer[TXBUFFERSIZE];
-
-/* Buffer used for reception */
-unsigned char aRxBuffer[RXBUFFERSIZE];
+extern unsigned char serialTxBuffer[TXBUFFERSIZE];
+extern unsigned char serialRxBuffer[TXBUFFERSIZE];
 
 unsigned char txTransimissionReady;
 

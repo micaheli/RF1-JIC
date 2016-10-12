@@ -65,8 +65,8 @@ int main(void)
 
     BoardUsartInit();
 
-    bzero(aRxBuffer, sizeof(aRxBuffer));
-    bzero(aTxBuffer, sizeof(aTxBuffer));
+    bzero(serialRxBuffer, sizeof(serialRxBuffer));
+    bzero(serialTxBuffer, sizeof(serialTxBuffer));
 
     while (1) {
     	scheduler(count--);

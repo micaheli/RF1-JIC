@@ -9,6 +9,14 @@ __IO ITStatus UartReady = RESET;
 uint8_t catfish;
 uint32_t lastRXPacket;
 
+
+/* Buffer used for transmission */
+unsigned char serialTxBuffer[TXBUFFERSIZE];
+
+/* Buffer used for reception */
+unsigned char serialRxBuffer[RXBUFFERSIZE];
+
+
 void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *huart) {
 
 	GPIO_InitTypeDef  GPIO_InitStruct;
@@ -176,7 +184,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 
     for (x=0;x<100;x++)
     {
-    	if (HAL_UART_Receive_DMA(huart, (uint8_t *)aRxBuffer, 16) == HAL_OK)
+    	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, 16) == HAL_OK)
     		break;
     }
 
@@ -210,7 +218,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 	lastRXPacket = InlineMillis();
 
-	if(HAL_UART_Receive_DMA(huart, (uint8_t *)aRxBuffer, 16) != HAL_OK)
+	if(HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
 	{
 		//ErrorHandler();
 	}
@@ -268,7 +276,7 @@ void USARTx_IRQHandler(void)
 		
 		USARTx_RX_DMA_STREAM->NDTR = 16;
 		lastRXPacket = InlineMillis();
-		if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, 16) != HAL_OK)
+		if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
 		{
 			//ErrorHandler();
 		}
