@@ -122,7 +122,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F303xC"
         TARGET_SCRIPT = "stm32_flash_f303_256k_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f3"
-        FEATURES.extend(["flight_logger", "mpu6500/spi", "usb_fs"])
+        FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f405xx":
@@ -130,7 +130,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
+        FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f405xx_rfbl":
@@ -154,7 +154,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F411xE"
         TARGET_SCRIPT = "stm32_flash_f411.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
+        FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f746xx":
@@ -339,7 +339,7 @@ def configure_target(TARGET):
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
+        FEATURES.extend(["mpugyro/spi", "usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "spmfc400_rfbl":
@@ -480,7 +480,7 @@ def configure_target(TARGET):
     if PROJECT == "flight_controller":
         INCLUDE_DIRS.append("src/flight_controller/inc/input")
         SOURCE_DIRS.append("src/flight_controller/src/input")
-        FEATURES.extend(["leds", "actuator_output", "buzzer", "config", "flash_chip", "math", "filter", "serial", "mixer", "rx"])
+        FEATURES.extend(["actuator_output", "buzzer", "flash_chip", "mpu_icm_device/spi", "leds", "rx", "serial"])
     elif PROJECT == "esc":
         FEATURES.extend(["leds"])
     elif PROJECT == "boot_loader":

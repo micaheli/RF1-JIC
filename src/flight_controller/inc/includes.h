@@ -28,13 +28,14 @@
 #include "drivers/buzzer.h"
 #include "pid.h"
 #include "drivers/rx.h"
-#include "drivers/filter.h"
-#include "drivers/math.h"
-#include "drivers/config.h"
-#include "drivers/mixer.h"
+#include "filter.h"
+#include "math.h"
+#include "config.h"
+#include "mixer.h"
 #include "drivers/actuator_output.h"
-#include "drivers/invensense_device.h"
 #include "drivers/invensense_bus.h"
+#include "drivers/invensense_device.h"
+#include "drivers/invensense_register_map.h"
 
 void BoardInit(void);
 void ErrorHandler(void);

@@ -2,8 +2,8 @@
 
 // all MPU device drivers (e.g. mpu9250) should implement the following
 // functions
-bool accgyroDeviceInit(loopCtrl_e gyroLoop);
-bool accgyroDeviceDetect(void);
+int accgyroDeviceInit(loopCtrl_e gyroLoop);
+int accgyroDeviceDetect(void);
 
 void accgyroDeviceReadGyro(void);
 void accgyroDeviceReadAccGyro(void);
