@@ -1,5 +1,35 @@
 #include "includes.h"
 
+// put this in a config.h
+/*
+#define UINT32 1;
+#define FLOAT 2;
+#define STRING 3;  // max size 32
+
+typedef struct {
+    void *location;
+    char name[8];  // max variable name 12
+} variableList;
+
+variableList variables[100];
+
+
+void AddVariable(char *variableName, void *VariableLocation, uint32_t variableType)
+{
+
+
+}
+*/
+
+
+// use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
+
+
+
+//Dynamic config is bad idea if we are supporting f1, so instead we will go to a static sized structure
+// basically add padding at end of structure to make it a fixed size.   Then always ad variables to the end, then when loading
+// the structure, if your new version have new variables they will be zeroied and then just check in this function for zeroed functions and set default
+
 void SaveConfig (uint32_t addresConfigStart)
 {
 

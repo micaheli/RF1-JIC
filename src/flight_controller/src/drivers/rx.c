@@ -23,6 +23,8 @@ spektrumChannelMask = 0x03;
 
 uint32_t tempData[MAXCHANNELS];
 
+uint32_t copiedBufferData[MAXCHANNELS];
+
 
 void ProcessSpektrumPacket(void)
 {
@@ -30,14 +32,33 @@ void ProcessSpektrumPacket(void)
 	uint32_t x;
 	uint32_t value;
 	static uint32_t disarmCount = 0, latchFirstArm = 0;
+															   // Make sure this is very first thing done in function, and its called first on interrupt
+	//memcpy(&aRxBuffer, &copiedBufferData, sizeof(aRxBuffer));  // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
+
+	copiedBufferData[0] = aRxBuffer[0];
+	copiedBufferData[1] = aRxBuffer[1];
+	copiedBufferData[2] = aRxBuffer[2];
+	copiedBufferData[3] = aRxBuffer[3];
+	copiedBufferData[4] = aRxBuffer[4];
+	copiedBufferData[5] = aRxBuffer[5];
+	copiedBufferData[6] = aRxBuffer[6];
+	copiedBufferData[7] = aRxBuffer[7];
+	copiedBufferData[8] = aRxBuffer[8];
+	copiedBufferData[9] = aRxBuffer[9];
+	copiedBufferData[10] = aRxBuffer[10];
+	copiedBufferData[11] = aRxBuffer[11];
+	copiedBufferData[12] = aRxBuffer[12];
+	copiedBufferData[13] = aRxBuffer[13];
+	copiedBufferData[14] = aRxBuffer[14];
+	copiedBufferData[15] = aRxBuffer[15];
 
 	bzero(&tempData, sizeof(tempData));
 
-	lastRXPacket = InlineMillis();
+	lastRXPacket = InlineMillis();  // why are we doing this, for failsafe?   this would have caused issues, possibly if we didn't copy buffer first
 
 	for (x = 2; x < 16; x += 2) {
-
-		value = (aRxBuffer[x] << 8) + (aRxBuffer[x+1]);
+		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
 		spektrumChannel = (value & 0x7800) >> 11;
 		if (spektrumChannel < MAXCHANNELS) {
 			tempData[spektrumChannel] = value & 0x7FF;
@@ -45,9 +66,11 @@ void ProcessSpektrumPacket(void)
 	}
 
 
+
 	if ((tempData[0] != tempData[3]) && (tempData[0] != 0))
 		rxData[3] = tempData[0];
 
+	// don't need to check for zero because these channels should be updated every frame
 	rxData[0] = tempData[3];
 	rxData[1] = tempData[1];
 	rxData[2] = tempData[2];
@@ -154,7 +177,7 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 	switch (curveToUse) {
 
 		case SKITZO_EXPO:
-			return (1 + 0.01 * expo * (rcCommand * rcCommand - 1)) * rcCommand;
+			return ((1 + 0.01 * expo * (rcCommand * rcCommand - 1)) * rcCommand); // KALYN listen to your ide, IT SAID USE () :)  This isn't some lame language
 			break;
 
 		case TARANIS_EXPO:
@@ -163,7 +186,7 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 
 		case NO_EXPO:
 		default:
-			return rcCommand; //same as default for now.
+			return(rcCommand); //same as default for now.
 			break;
 
 	}
