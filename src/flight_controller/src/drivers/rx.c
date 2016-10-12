@@ -23,7 +23,7 @@ spektrumChannelMask = 0x03;
 
 uint32_t tempData[MAXCHANNELS];
 
-uint32_t copiedBufferData[MAXCHANNELS];
+unsigned char copiedBufferData[16];
 
 
 void ProcessSpektrumPacket(void)
@@ -33,7 +33,7 @@ void ProcessSpektrumPacket(void)
 	uint32_t value;
 	static uint32_t disarmCount = 0, latchFirstArm = 0;
 															   // Make sure this is very first thing done in function, and its called first on interrupt
-	memcpy(copiedBufferData, aRxBuffer, sizeof(aRxBuffer));    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+	memcpy(copiedBufferData, aRxBuffer, sizeof(copiedBufferData));    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
 /*
 	copiedBufferData[0] = aRxBuffer[0];
