@@ -33,9 +33,9 @@ void ProcessSpektrumPacket(void)
 	uint32_t value;
 	static uint32_t disarmCount = 0, latchFirstArm = 0;
 															   // Make sure this is very first thing done in function, and its called first on interrupt
-	//memcpy(&aRxBuffer, &copiedBufferData, sizeof(aRxBuffer));  // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+	memcpy(copiedBufferData, aRxBuffer, sizeof(aRxBuffer));    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
-
+/*
 	copiedBufferData[0] = aRxBuffer[0];
 	copiedBufferData[1] = aRxBuffer[1];
 	copiedBufferData[2] = aRxBuffer[2];
@@ -52,7 +52,7 @@ void ProcessSpektrumPacket(void)
 	copiedBufferData[13] = aRxBuffer[13];
 	copiedBufferData[14] = aRxBuffer[14];
 	copiedBufferData[15] = aRxBuffer[15];
-
+*/
 	bzero(&tempData, sizeof(tempData));
 
 	lastRXPacket = InlineMillis();  // why are we doing this, for failsafe?   this would have caused issues, possibly if we didn't copy buffer first
