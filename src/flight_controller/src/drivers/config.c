@@ -54,7 +54,7 @@ uint8_t CalculateCzechsum(uint8_t *data, uint32_t length)
     const uint8_t *byteOffset;
     for (byteOffset = data; byteOffset < (data + length); byteOffset++)
     	czechsum ^= *byteOffset;
-    return czechsum;
+    return(czechsum);
 
 }
 
