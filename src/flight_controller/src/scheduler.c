@@ -2,6 +2,7 @@
 
 extern uint8_t tOutBuffer[];
 extern uint8_t tInBuffer[];
+uint32_t failsafeStage = 0;
 
 void scheduler(int32_t count)
 {
@@ -47,13 +48,25 @@ void scheduler(int32_t count)
 
 inline void taskFailsafe(void) {
 
+	if (failsafeStage == 1) {
+		if (
+			(boardArmed) &&
+			((InlineMillis() - lastRXPacket) > 3000)
+			) //board disarmed and no rx packet in 1000 millis
+		{
+			failsafeStage=0;
+			boardArmed = 0;
+			debugU32[5]=5;
+		}
+	}
 	if (
 		(boardArmed) &&
-		((InlineMillis() - lastRXPacket) > 3000)
+		((InlineMillis() - lastRXPacket) > 1500)
 		) //board disarmed and no rx packet in 1000 millis
-
-		boardArmed = 0;
-
+	{
+		failsafeStage=1;
+		debugU32[5]=6;
+	}
 
 }
 

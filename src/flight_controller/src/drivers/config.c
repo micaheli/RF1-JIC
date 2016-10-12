@@ -51,7 +51,8 @@ int ValidateConfig (uint32_t addresConfigStart)
 void LoadConfig (uint32_t addresConfigStart)
 {
 	if (ValidateConfig(addresConfigStart) ) {
-		memcpy(&mainConfig, (char *) addresConfigStart, sizeof(main_config));
+		ResetConfig(addresConfigStart);
+		//memcpy(&mainConfig, (char *) addresConfigStart, sizeof(main_config));
 	} else {
 		ResetConfig(addresConfigStart);
 	}
@@ -61,38 +62,38 @@ void ResetConfig (uint32_t addresConfigStart)
 {
 
 	//todo: make each config resettable seprately
-	float deadband = 0.025; //2.5% deadband
+	float deadband = 0.04; //2.5% deadband
 	uint32_t minRc = 0; // middle of rc input, one for each channel. Default being 1500
 	uint32_t midRc = 1024; // middle of rc input, one for each channel. Default being 1500
 	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
 
 	mainConfig.pidConfig[YAW].kp	= .00140000;
-	mainConfig.pidConfig[YAW].ki	= .00380000;
-	mainConfig.pidConfig[YAW].kd	= .00000320;
-	mainConfig.pidConfig[YAW].wc	= 8;
+	mainConfig.pidConfig[YAW].ki	= .00250000;
+	mainConfig.pidConfig[YAW].kd	= .00002500;
+	mainConfig.pidConfig[YAW].wc	=  8;
 
-	mainConfig.pidConfig[ROLL].kp	= .00140000;
-	mainConfig.pidConfig[ROLL].ki	= .00380000;
-	mainConfig.pidConfig[ROLL].kd	= .00000320;
-	mainConfig.pidConfig[ROLL].wc	= 8;
+	mainConfig.pidConfig[ROLL].kp	= .00125000;
+	mainConfig.pidConfig[ROLL].ki	= .00250000;
+	mainConfig.pidConfig[ROLL].kd	= .00002500;
+	mainConfig.pidConfig[ROLL].wc	=  8;
 
-	mainConfig.pidConfig[PITCH].kp	= .00140000;
-	mainConfig.pidConfig[PITCH].ki	= .00380000;
-	mainConfig.pidConfig[PITCH].kd	= .00000320;
-	mainConfig.pidConfig[PITCH].wc	= 8;
+	mainConfig.pidConfig[PITCH].kp	= .00145000;
+	mainConfig.pidConfig[PITCH].ki	= .00250000;
+	mainConfig.pidConfig[PITCH].kd	= .00002500;
+	mainConfig.pidConfig[PITCH].wc	=  8;
 
 
-	mainConfig.filterConfig[YAW].gyro.q   = 0.00010;
-	mainConfig.filterConfig[YAW].gyro.r   = 0.01100;
-	mainConfig.filterConfig[YAW].gyro.p   = 0.00015;
+	mainConfig.filterConfig[YAW].gyro.q   = 0.000010;
+	mainConfig.filterConfig[YAW].gyro.r   = 0.010000;
+	mainConfig.filterConfig[YAW].gyro.p   = 0.000015;
 
-	mainConfig.filterConfig[ROLL].gyro.q  = 0.00010;
-	mainConfig.filterConfig[ROLL].gyro.r  = 0.01100;
-	mainConfig.filterConfig[ROLL].gyro.p  = 0.00015;
+	mainConfig.filterConfig[ROLL].gyro.q  = 0.000010;
+	mainConfig.filterConfig[ROLL].gyro.r  = 0.010000;
+	mainConfig.filterConfig[ROLL].gyro.p  = 0.000015;
 
-	mainConfig.filterConfig[PITCH].gyro.q = 0.00010;
-	mainConfig.filterConfig[PITCH].gyro.r = 0.01100;
-	mainConfig.filterConfig[PITCH].gyro.p = 0.00015;
+	mainConfig.filterConfig[PITCH].gyro.q = 0.000010;
+	mainConfig.filterConfig[PITCH].gyro.r = 0.010000;
+	mainConfig.filterConfig[PITCH].gyro.p = 0.000015;
 
 	mainConfig.filterConfig[YAW].kd.q     = 0.00010;
 	mainConfig.filterConfig[YAW].kd.r     = 0.00300;
@@ -174,9 +175,9 @@ void ResetConfig (uint32_t addresConfigStart)
 	mainConfig.rcControlsConfig.rates[ROLL]         = 400.0;
 	mainConfig.rcControlsConfig.rates[PITCH]        = 400.0;
 
-	mainConfig.rcControlsConfig.acroPlus[YAW]       = 14.00;
-	mainConfig.rcControlsConfig.acroPlus[ROLL]      = 14.00;
-	mainConfig.rcControlsConfig.acroPlus[PITCH]     = 14.00;
+	mainConfig.rcControlsConfig.acroPlus[YAW]       = 1.400;
+	mainConfig.rcControlsConfig.acroPlus[ROLL]      = 1.400;
+	mainConfig.rcControlsConfig.acroPlus[PITCH]     = 1.400;
 
 	SaveConfig(addresConfigStart);
 }

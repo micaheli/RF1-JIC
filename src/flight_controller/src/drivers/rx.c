@@ -29,7 +29,7 @@ void ProcessSpektrumPacket(void)
 	uint32_t spektrumChannel;
 	uint32_t x;
 	uint32_t value;
-	static uint32_t disarmCount = 0;
+	static uint32_t disarmCount = 0, latchFirstArm = 0;
 
 	bzero(&tempData, sizeof(tempData));
 
@@ -58,46 +58,38 @@ void ProcessSpektrumPacket(void)
 		if (tempData[x] != 0) {
 			rxData[x] = tempData[x];
 		}
-
-
 	}
 
-
-	/*
-	if (rxData[0] > 200) {
-		volatile uint32_t cat = 88;
-	} else {
-		volatile uint32_t dog = 88;
-
-	}
-*/
-	/*
-	x=rxData[0];
-	rxData[0] = rxData[3];
-	rxData[3] = x;
-
-*/
 
 	//todo: MOVE!!! - uglied up Preston's code.
-	if ( (!boardArmed) && (rxData[4] > 1500) ) {
+	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
+		latchFirstArm = 1;
+	} else if ( (latchFirstArm == 2) && (!boardArmed) && (rxData[4] > 1500) ) {
+
+		latchFirstArm = 0;
 		disarmCount = 0;
 		if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) {
 			//fc crashed during flight
-			debugU32[6]=666;
+			debugU32[6]=6;
 		} else {
 			ResetGyroCalibration();
 			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
-			debugU32[6]=777;
+			debugU32[6]=7;
 		}
 		boardArmed = 1;
 		mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
 		mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
 		mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
+
 	} else if (rxData[4] < 400) {
-		disarmCount++;
-		if (disarmCount > 10) {
+
+		if (disarmCount++ > 10) {
+			if (latchFirstArm==1) {
+				latchFirstArm = 2;
+			}
 			boardArmed = 0;
 		}
+
 	}
 
 	InlineCollectRcCommand();

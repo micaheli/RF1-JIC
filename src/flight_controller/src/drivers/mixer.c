@@ -54,18 +54,19 @@ void InitMixer(void) {
 	activeMotorCounter=3;
 }
 
-inline float ApplyAttenuationCurve (float input, float curve[], int curveSize) {
-    uint32_t index;
-    float remainder;
+inline float ApplyAttenuationCurve (float inputAttn, float curve[], int curveSize) {
+	return(1.0f);
+    uint32_t indexAttn;
+    float remainderAttn;
 
-    remainder = (float)((float)input * (float)curveSize);
-    index =(int)remainder;
-    if (index == 0)
+    remainderAttn = (float)((float)inputAttn * (float)curveSize);
+    indexAttn =(int)remainderAttn;
+    if (indexAttn == 0)
         return (curve[0]);
     else
     {
-        remainder = remainder - (float)index;
-        return (curve[index-1] + (curve[index] * remainder));
+        remainderAttn = remainderAttn - (float)indexAttn;
+        return (curve[indexAttn-1] + (curve[indexAttn] * remainderAttn));
     }
 }
 

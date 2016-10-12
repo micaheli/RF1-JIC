@@ -71,6 +71,7 @@ void SystemReset(void)
 
 void SystemResetToDfuBootloader(void) {
 	//todo make this work on all MCUs
+	__disable_irq();
 	*((uint32_t *)0x2001FFFC) = 0xDEADBEEF; // 128KB SRAM STM32F4XX
 	NVIC_SystemReset();
 }

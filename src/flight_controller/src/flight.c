@@ -149,5 +149,5 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 }
 
 inline float InlineGetSetPoint(float curvedRcCommandF, float rates, float acroPlus) {
-	return ((curvedRcCommandF * (rates + (rates*acroPlus))) * 0.10 ); //setpoint in DPS
+	return ( (curvedRcCommandF * (rates + (rates*acroPlus) ) ) ); //setpoint in DPS
 }
