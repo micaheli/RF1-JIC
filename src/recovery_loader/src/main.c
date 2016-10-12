@@ -13,7 +13,7 @@
 /* Private variables ---------------------------------------------------------*/
 uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 uint32_t toggle_led = 0;
-bool usbStarted = false;
+int usbStarted = 0;
 uint32_t ApplicationAddress = 0x08008000;
 uint8_t bindSpektrum = 0;
 char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
@@ -36,6 +36,10 @@ int main(void)
 	HAL_RCC_DeInit();
     HAL_DeInit();
     BoardInit();
+
+    if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight. Imediately jump into program
+    	boot_to_app();
+    }
 
     //get config data from backup registers
 	bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
@@ -88,7 +92,7 @@ int main(void)
 	InitializeMCUSettings();
 
 	InitLeds();
-    usbStarted=true;
+    usbStarted=1;
     USB_DEVICE_Init(); //start USB
 
 	//initialize RFBL State and Command
@@ -164,7 +168,7 @@ int main(void)
 
 			case RFBLS_DONE_UPGRADING:
 				//Last packet received and written to
-				rfbl_finish_flash();
+				FinishFlash();
 				RfblState = RFBLS_IDLE;
 				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
 				for (int8_t iii = 100; iii >= 0; iii -= 2) {
@@ -452,7 +456,10 @@ void rfbl_execute_load_command(void) {
 
 	if ( (FwInfo.type == RFFW) && (FwInfo.size) ) { //Does the firmware have size? //TODO: Verify size is sane
 		FwInfo.expected_packets = ceil(FwInfo.size / FwInfo.packet_size);
-		rfbl_prepare_flash(); //unlock and erase flash. Then wait for data packets
+		DoLed(0, 1);
+		EraseFlash(ADDRESS_FLASH_START, ADDRESS_FLASH_START)
+	    PrepareFlash();
+		DoLed(0, 0);
 	}
 
 	if (FwInfo.size >= (uint32_t)( (float)(ADDRESS_FLASH_END - ADDRESS_FLASH_START) * 0.94f ) ) {
@@ -463,23 +470,6 @@ void rfbl_execute_load_command(void) {
 	}
 
 }
-
-//todo: only works for F4 and F7. F1 and F3 require different flash handling.
-void rfbl_prepare_flash(void) {
-
-	DoLed(0, 1);;
-	DoLed(1, 1);;
-	DoLed(2, 1);;
-
-    if (!EraseFlash(ADDRESS_FLASH_START, ADDRESS_FLASH_END) ) {
-    	ErrorHandler();
-    }
-
-	DoLed(0, 0);;
-	DoLed(1, 0);;
-	DoLed(2, 0);;
-}
-
 
 void rfbl_write_packet(void) {
 
@@ -505,12 +495,6 @@ void rfbl_write_packet(void) {
 
 }
 
-
-void rfbl_finish_flash(void) {
-
-	HAL_FLASH_Lock();
-
-}
 
 void rfbl_parse_load_command(void) {
 

@@ -28,15 +28,26 @@ int main(void)
 
     int32_t count = 16;
 
+<<<<<<< HEAD
     VectorIrqInit(0x08020000);
     //VectorIrqInit(0x08000000);
+=======
+    VectorIrqInit(ADDRESS_FLASH_START);
+>>>>>>> 12692b599fbd3112984e15e3f9b54c44a6366d40
     BoardInit();
 
     HandleRfbl();
 
-    LoadConfig();
+    LoadConfig(ADDRESS_CONFIG_START);
 
     InitializeMCUSettings();
+
+    if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight.
+    	debugU32[7]=666;
+    	//boot_to_app();
+    } else {
+    	debugU32[7]=777;
+    }
 
     InitBuzzer();
     InitLeds();
@@ -47,7 +58,7 @@ int main(void)
     InitPid();
     InitActuators();
 
-    if (!accgyroInit(gyroConfig.loopCtrl)) {
+    if (!accgyroInit(mainConfig.gyroConfig.loopCtrl)) {
         //ErrorHandler();
     }
 

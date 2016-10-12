@@ -36,7 +36,6 @@ void ProcessSpektrumPacket(void)
 	memcpy(&aRxBuffer, &copiedBufferData, sizeof(aRxBuffer));  // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
 
-
 	bzero(&tempData, sizeof(tempData));
 
 	lastRXPacket = InlineMillis();  // why are we doing this, for failsafe?   this would have caused issues, possibly if we didn't copy buffer first
@@ -85,15 +84,22 @@ void ProcessSpektrumPacket(void)
 
 */
 
-	//todo: MOVE!!! - uglied up Preston's code., yes you did :(
-	if ( (!boardArmed) && (rxData[4] > 1500) ) {  // maybe some sort of movement check here
+	//todo: MOVE!!! - uglied up Preston's code.
+	if ( (!boardArmed) && (rxData[4] > 1500) ) {
 		disarmCount = 0;
-		ResetGyroCalibration();
+		if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) {
+			//fc crashed during flight
+			debugU32[6]=666;
+		} else {
+			ResetGyroCalibration();
+			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
+			debugU32[6]=777;
+		}
 		boardArmed = 1;
-		rcControlsConfig.midRc[PITCH] = rxData[PITCH];
-		rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
-		rcControlsConfig.midRc[YAW]   = rxData[YAW];
-	} else if (rxData[4] < 400) {  // kalyn why do we need to check this happens more then once?
+		mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
+		mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
+		mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
+	} else if (rxData[4] < 400) {
 		disarmCount++;
 		if (disarmCount > 10) {
 			boardArmed = 0;
@@ -134,17 +140,17 @@ inline void InlineCollectRcCommand (void) {
 	//rc data is taken from RX and using the map is put into the correct "axis"
 	for (axis = 0; axis < MAXCHANNELS; axis++) {
 
-		if (rxData[axis] < rcControlsConfig.midRc[axis])  //negative  range
-			rangedRx = InlineChangeRangef(rxData[axis], rcControlsConfig.midRc[axis], rcControlsConfig.minRc[axis], 0.0, -1.0); //-1 to 0
+		if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[axis], mainConfig.rcControlsConfig.minRc[axis], 0.0, -1.0); //-1 to 0
 		else
-			rangedRx = InlineChangeRangef(rxData[axis], rcControlsConfig.maxRc[axis], rcControlsConfig.midRc[axis], 1.0, 0.0); //0 to +1
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[axis], mainConfig.rcControlsConfig.midRc[axis], 1.0, 0.0); //0 to +1
 
 
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
-		if (ABS(rangedRx) > rcControlsConfig.deadBand[axis]) {
+		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis]) {
 			trueRcCommandF[axis]   = InlineConstrainf ( rangedRx, -1, 1);
-			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], rcControlsConfig.useCurve[axis], rcControlsConfig.curveExpo[axis]);
+			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis]);
 		} else {
 			// no need to calculate if movement is below deadband
 			trueRcCommandF[axis]   = 0;

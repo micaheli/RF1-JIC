@@ -22,9 +22,9 @@ inline void InlineInitPidFilters (void) {
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		kdFilterState[axis] = InitPaf( filterConfig[axis].kd.q, filterConfig[axis].kd.r, filterConfig[axis].kd.p, kdDelta[axis]);
+		kdFilterState[axis] = InitPaf( mainConfig.filterConfig[axis].kd.q, mainConfig.filterConfig[axis].kd.r, mainConfig.filterConfig[axis].kd.p, kdDelta[axis]);
 
-		currentKdFilterConfig[axis] = filterConfig[axis].kd.r;
+		currentKdFilterConfig[axis] = mainConfig.filterConfig[axis].kd.r;
 
 	}
 
