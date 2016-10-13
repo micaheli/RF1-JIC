@@ -5,6 +5,7 @@
 typedef struct {
 	rc_control_config rcControlsConfig;
 	gyro_config       gyroConfig;
+	mixer_config      mixerConfig;
 	filter_device     filterConfig[AXIS_NUMBER];
 	pid_terms         pidConfig[AXIS_NUMBER];
 	uint8_t           version;
@@ -12,7 +13,7 @@ typedef struct {
 	uint8_t           czechsum;
 } main_config;
 
-main_config mainConfig;
+extern main_config mainConfig;
 
 void SaveConfig (uint32_t addresConfigStart);
 uint8_t CalculateCzechsum(uint8_t *data, uint32_t length);

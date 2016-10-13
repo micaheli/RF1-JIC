@@ -25,6 +25,8 @@ void AddVariable(char *variableName, void *VariableLocation, uint32_t variableTy
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
 
+main_config mainConfig;
+
 
 //Dynamic config is bad idea if we are supporting f1, so instead we will go to a static sized structure
 // basically add padding at end of structure to make it a fixed size.   Then always ad variables to the end, then when loading
@@ -92,25 +94,32 @@ void ResetConfig (uint32_t addresConfigStart)
 {
 
 	//todo: make each config resettable seprately
-	float deadband = 0.04; //2.5% deadband
+	float deadband = 0.02; //2.5% deadband
 	uint32_t minRc = 0; // middle of rc input, one for each channel. Default being 1500
 	uint32_t midRc = 1024; // middle of rc input, one for each channel. Default being 1500
 	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
 
 
+	mainConfig.mixerConfig.mixerType = MIXER_X1234_REVERSE_YAW;
+	//mainConfig.mixerConfig.mixerType = MIXER_X1234;
+
+	//mainConfig.gyroConfig.gyroRotation  = CW0; //airbot revolt
+	mainConfig.gyroConfig.gyroRotation  = CW270; //dji revolt and revo
+	mainConfig.gyroConfig.boardRotation = CW0;
+
 	mainConfig.pidConfig[YAW].kp	= .00180000;
-	mainConfig.pidConfig[YAW].ki	= .00850000;
-	mainConfig.pidConfig[YAW].kd	= .00006400;
+	mainConfig.pidConfig[YAW].ki	= .00750000;
+	mainConfig.pidConfig[YAW].kd	= .00005400;
 	mainConfig.pidConfig[YAW].wc	=  16;
 
 	mainConfig.pidConfig[ROLL].kp	= .00130000;
-	mainConfig.pidConfig[ROLL].ki	= .00850000;
-	mainConfig.pidConfig[ROLL].kd	= .00006400;
+	mainConfig.pidConfig[ROLL].ki	= .00750000;
+	mainConfig.pidConfig[ROLL].kd	= .00005400;
 	mainConfig.pidConfig[ROLL].wc	=  8;
 
 	mainConfig.pidConfig[PITCH].kp	= .00140000;
-	mainConfig.pidConfig[PITCH].ki	= .00850000;
-	mainConfig.pidConfig[PITCH].kd	= .00006400;
+	mainConfig.pidConfig[PITCH].ki	= .00750000;
+	mainConfig.pidConfig[PITCH].kd	= .00005400;
 	mainConfig.pidConfig[PITCH].wc	=  8;
 
 
@@ -149,10 +158,7 @@ void ResetConfig (uint32_t addresConfigStart)
 	mainConfig.gyroConfig.minorBoardRotation[Y] = 0;
 	mainConfig.gyroConfig.minorBoardRotation[Z] = 0;
 
-	mainConfig.gyroConfig.gyroRotation  = CW270; //revo
-	mainConfig.gyroConfig.gyroRotation  = CW0; //revolt
-	//mainConfig.gyroConfig.gyroRotation  = CW270; //dji revolt
-	mainConfig.gyroConfig.boardRotation = CW0;
+
 	mainConfig.gyroConfig.loopCtrl = LOOP_UH32;
 
 	mainConfig.rcControlsConfig.deadBand[PITCH]    = deadband;

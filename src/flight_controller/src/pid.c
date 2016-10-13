@@ -6,14 +6,77 @@ float kdRingBuffer[AXIS_NUMBER][KD_RING_BUFFER_SIZE];
 float kdRingBufferSum[AXIS_NUMBER];
 uint32_t kdRingBufferPoint[AXIS_NUMBER];
 float kdDelta[AXIS_NUMBER];
+float dT = 0.000125; //8KHz
+uint32_t uhohNumber = 4000;
+uint32_t uhOhRecover = 0;
 
-
+/*
+ *     LOOP_L1,
+    LOOP_M1,
+    LOOP_M2,
+    LOOP_M4,
+    LOOP_M8,
+    LOOP_H1,
+    LOOP_H2,
+    LOOP_H4,
+    LOOP_H8,
+    LOOP_H16,
+    LOOP_H32,
+    LOOP_UH1,
+    LOOP_UH2,
+    LOOP_UH4,
+    LOOP_UH8,
+    LOOP_UH16,
+    LOOP_UH32,
+ */
 void InitPid (void) {
 	bzero(kdDelta, sizeof(kdDelta));
 	bzero(kdRingBuffer, sizeof(kdRingBuffer));
 	bzero(kdRingBufferSum, sizeof(kdRingBufferSum));
 	bzero(kdRingBufferPoint, sizeof(kdRingBufferPoint));
 	InlineInitPidFilters();
+
+	uhOhRecover = 0; //unset recover mode
+
+	switch (mainConfig.gyroConfig.loopCtrl) {
+		case LOOP_UH32:
+		case LOOP_H32:
+			dT = 0.00003125;
+			uhohNumber = 16000;
+			break;
+		case LOOP_UH16:
+		case LOOP_H16:
+			dT = 0.00006250;
+			uhohNumber = 8000;
+			break;
+		case LOOP_UH8:
+		case LOOP_H8:
+		case LOOP_M8:
+			dT = 0.00012500;
+			uhohNumber = 4000;
+			break;
+		case LOOP_UH4:
+		case LOOP_H4:
+		case LOOP_M4:
+			dT = 0.00025000;
+			uhohNumber = 2000;
+			break;
+		case LOOP_UH2:
+		case LOOP_H2:
+		case LOOP_M2:
+			dT = 0.00050000;
+			uhohNumber = 1000;
+			break;
+		case LOOP_UH1:
+		case LOOP_H1:
+		case LOOP_M1:
+		case LOOP_L1:
+		default:
+			dT = 0.00100000;
+			uhohNumber = 500;
+			break;
+	}
+
 }
 
 inline void InlineInitPidFilters (void) {
@@ -34,12 +97,10 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 
 	int32_t axis;
 
-	float dT = 0.000125; //8KHz
 	float pidError;
 	static float lastError[AXIS_NUMBER], lastfilteredGyroData[AXIS_NUMBER];
 	static float usedFlightSetPoints[AXIS_NUMBER];
 	float kiErrorLimit[AXIS_NUMBER];
-
 
 	//set point limiter.
 	if ( actuatorRange >= 0.90 ) {
@@ -66,51 +127,85 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 	}
 
 
-	//usedFlightSetPoints[0] = flightSetPoints[0];
-	//usedFlightSetPoints[1] = flightSetPoints[1];
-	//usedFlightSetPoints[2] = flightSetPoints[2];
-
 	for (axis = 2; axis >= 0; --axis) {
 
 		pidError = usedFlightSetPoints[axis] - filteredGyroData[axis];
 
-		// calculate Kp
-		flightPids[axis].kp = (pidError * pidConfig[axis].kp);
+	    if ( SpinStopper(axis, pidError) ) {
 
-		// calculate Ki
-		if ( fullKiLatched ) {
+	    	flightPids[axis].kp = 0;
+	    	flightPids[axis].ki = 0;
+	    	flightPids[axis].kd = 0;
 
-			flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * dT * pidConfig[axis].ki, -0.212121f, 0.212121f); //prevent insane windup
+	    } else {
 
-			if ( actuatorRange == 1 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
-				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
+			// calculate Kp
+			flightPids[axis].kp = (pidError * pidConfig[axis].kp);
+
+			// calculate Ki
+			if ( fullKiLatched ) {
+
+				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * dT * pidConfig[axis].ki, -0.212121f, 0.212121f); //prevent insane windup
+
+				if ( actuatorRange == 1 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
+				} else {
+					kiErrorLimit[axis] = ABS(kiErrorLimit[axis]);
+				}
+
 			} else {
-				kiErrorLimit[axis] = ABS(kiErrorLimit[axis]);
+
+				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * dT * pidConfig[axis].ki, -0.02121f, 0.02121f); //limit Ki when fullKiLatched is false
+
 			}
 
-		} else {
+			// calculate Kd ////////////////////////// V
+			kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);
+			lastfilteredGyroData[axis] = filteredGyroData[axis];
 
-			flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * dT * pidConfig[axis].ki, -0.02121f, 0.02121f); //limit Ki when fullKiLatched is false
+			//updated Kd filter
+			PafUpdate(&kdFilterState[axis], kdDelta[axis]);
+			//kdDelta[axis] = kdFilterState[axis].x * (1.0f / dT);
 
-		}
+			InlineUpdateWitchcraft(pidConfig);
 
-		// calculate Kd ////////////////////////// V
-		kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);
-		lastfilteredGyroData[axis] = filteredGyroData[axis];
+			flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidConfig[axis].kd, -0.3510f, 0.3510f);
+			// calculate Kd ////////////////////////// ^
 
-	    //updated Kd filter
-	    PafUpdate(&kdFilterState[axis], kdDelta[axis]);
-	    //kdDelta[axis] = kdFilterState[axis].x * (1.0f / dT);
-
-	    InlineUpdateWitchcraft(pidConfig);
-
-		flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidConfig[axis].kd, -0.3510f, 0.3510f);
-		// calculate Kd ////////////////////////// ^
+	    }
 
 	}
 
 
 
+}
+
+inline uint32_t SpinStopper(int32_t axis, float pidError) {
+
+    static uint32_t countErrorUhoh[AXIS_NUMBER]  = {0, 0, 0};
+    static uint32_t uhOhRecoverCounter = 0;
+
+	if (!uhOhRecover) {
+		uhOhRecoverCounter = 0;
+		if (ABS(pidError) > 1000) {
+			countErrorUhoh[axis]++;
+		} else {
+			countErrorUhoh[axis] = 0;
+		}
+		if (countErrorUhoh[axis] > uhohNumber ) {
+			uhOhRecover = 1;
+		}
+	} else {
+		uhOhRecoverCounter++;
+	}
+	if (uhOhRecoverCounter > uhohNumber) {
+		uhOhRecover = 0;
+		uhOhRecoverCounter = 0;
+	}
+	if (uhOhRecoverCounter) {
+		return (1);
+	}
+	return (0);
 }
 
 inline void InlineUpdateWitchcraft(pid_terms pidConfig[]) {
