@@ -21,10 +21,20 @@ spektrumChannelMask = 0x03;
 */
 
 
-uint32_t tempData[MAXCHANNELS];
+//uint32_t tempData[MAXCHANNELS];
 
 unsigned char copiedBufferData[16];
 
+
+uint32_t SpektrumChannelMap(uint32_t inChannel) {
+	if (inChannel == 3)
+		return(0);
+
+	if (inChannel == 0)
+		return(3);
+
+	return(inChannel);
+}
 
 void ProcessSpektrumPacket(void)
 {
@@ -35,7 +45,7 @@ void ProcessSpektrumPacket(void)
 															   // Make sure this is very first thing done in function, and its called first on interrupt
 	memcpy(copiedBufferData, serialRxBuffer, sizeof(copiedBufferData));    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
-	bzero(&tempData, sizeof(tempData));
+//	bzero(&tempData, sizeof(tempData));
 
 	lastRXPacket = InlineMillis();  // why are we doing this, for failsafe?   this would have caused issues, possibly if we didn't copy buffer first
 
@@ -44,7 +54,7 @@ void ProcessSpektrumPacket(void)
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
 		spektrumChannel = (value & 0x7800) >> 11;
 		if (spektrumChannel < MAXCHANNELS) {
-			rxData[spektrumChannel] = value & 0x7FF;
+			rxData[SpektrumChannelMap(spektrumChannel)] = value & 0x7FF;
 		}
 	}
 
