@@ -6,14 +6,49 @@ float kdRingBuffer[AXIS_NUMBER][KD_RING_BUFFER_SIZE];
 float kdRingBufferSum[AXIS_NUMBER];
 uint32_t kdRingBufferPoint[AXIS_NUMBER];
 float kdDelta[AXIS_NUMBER];
+float dT = 0.000125; //8KHz
 
 
+/*
+ *     LOOP_L1,
+    LOOP_M1,
+    LOOP_M2,
+    LOOP_M4,
+    LOOP_M8,
+    LOOP_H1,
+    LOOP_H2,
+    LOOP_H4,
+    LOOP_H8,
+    LOOP_H16,
+    LOOP_H32,
+    LOOP_UH1,
+    LOOP_UH2,
+    LOOP_UH4,
+    LOOP_UH8,
+    LOOP_UH16,
+    LOOP_UH32,
+ */
 void InitPid (void) {
 	bzero(kdDelta, sizeof(kdDelta));
 	bzero(kdRingBuffer, sizeof(kdRingBuffer));
 	bzero(kdRingBufferSum, sizeof(kdRingBufferSum));
 	bzero(kdRingBufferPoint, sizeof(kdRingBufferPoint));
 	InlineInitPidFilters();
+
+	switch (mainConfig.gyroConfig.loopCtrl) {
+		case LOOP_UH32:
+		case LOOP_H32:
+			dT = 0.00003125;
+			break;
+		case LOOP_UH16:
+		case LOOP_H16:
+			dT = 0.0000625;
+			break;
+		default:
+			dT = 0.000125;
+			break;
+	}
+
 }
 
 inline void InlineInitPidFilters (void) {
@@ -34,12 +69,15 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 
 	int32_t axis;
 
-	float dT = 0.000125; //8KHz
 	float pidError;
 	static float lastError[AXIS_NUMBER], lastfilteredGyroData[AXIS_NUMBER];
 	static float usedFlightSetPoints[AXIS_NUMBER];
 	float kiErrorLimit[AXIS_NUMBER];
 
+    static uint32_t countErrorUhoh[3]  = {0, 0, 0};
+    static bool     uhOhRecover        = false;
+    static uint32_t uhOhRecoverCounter = 0;
+	static uint16_t uhohNumber         = 4000;
 
 	//set point limiter.
 	if ( actuatorRange >= 0.90 ) {
@@ -65,10 +103,6 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 		usedFlightSetPoints[2] = flightSetPoints[2];
 	}
 
-
-	//usedFlightSetPoints[0] = flightSetPoints[0];
-	//usedFlightSetPoints[1] = flightSetPoints[1];
-	//usedFlightSetPoints[2] = flightSetPoints[2];
 
 	for (axis = 2; axis >= 0; --axis) {
 
