@@ -87,7 +87,7 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	if (loopCounter-- & 32 ) { //check if the 32 bit is set and run this code
 
-		FeedTheDog();
+		FeedTheDog(); //resets IWDG time to 0. This tells the timer the board is running.
 
 		//every 32 cycles we check if the filter needs an update.
 		if (
