@@ -25,7 +25,44 @@ spektrumChannelMask = 0x03;
 
 unsigned char copiedBufferData[16];
 
+void RxUpdate(void) // hook for when rx updates
+{
+	static uint32_t disarmCount = 0, latchFirstArm = 0;
 
+	//todo: MOVE!!! - uglied up Preston's code.
+	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
+		latchFirstArm = 1;
+	} else if ( (latchFirstArm == 2) && (!boardArmed) && (rxData[4] > 1500) ) {
+
+		latchFirstArm = 0;
+		disarmCount = 0;
+		if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) {
+			//fc crashed during flight
+			debugU32[6]=6;
+		} else {
+			ResetGyroCalibration();
+			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
+			debugU32[6]=7;
+		}
+		boardArmed = 1;
+		mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
+		mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
+		mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
+
+	} else if (rxData[4] < 400) {
+
+		if (disarmCount++ > 10) {
+			if (latchFirstArm==1) {
+				latchFirstArm = 2;
+			}
+			boardArmed = 0;
+		}
+
+	}
+
+
+
+}
 uint32_t SpektrumChannelMap(uint32_t inChannel) {
 	if (inChannel == 3)
 		return(0);
@@ -41,14 +78,13 @@ void ProcessSpektrumPacket(void)
 	uint32_t spektrumChannel;
 	uint32_t x;
 	uint32_t value;
-	static uint32_t disarmCount = 0, latchFirstArm = 0;
 															   // Make sure this is very first thing done in function, and its called first on interrupt
 	memcpy(copiedBufferData, serialRxBuffer, sizeof(copiedBufferData));    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
 //	bzero(&tempData, sizeof(tempData));
 
 	lastRXPacket = InlineMillis();  // why are we doing this, for failsafe?   this would have caused issues, possibly if we didn't copy buffer first
-
+									// kalyn why are we doing this, and not just basing it on packet count?
 
 	for (x = 2; x < 16; x += 2) {
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
@@ -89,38 +125,8 @@ void ProcessSpektrumPacket(void)
 	}
 */
 
-	//todo: MOVE!!! - uglied up Preston's code.
-	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
-		latchFirstArm = 1;
-	} else if ( (latchFirstArm == 2) && (!boardArmed) && (rxData[4] > 1500) ) {
-
-		latchFirstArm = 0;
-		disarmCount = 0;
-		if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) {
-			//fc crashed during flight
-			debugU32[6]=6;
-		} else {
-			ResetGyroCalibration();
-			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
-			debugU32[6]=7;
-		}
-		boardArmed = 1;
-		mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
-		mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
-		mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
-
-	} else if (rxData[4] < 400) {
-
-		if (disarmCount++ > 10) {
-			if (latchFirstArm==1) {
-				latchFirstArm = 2;
-			}
-			boardArmed = 0;
-		}
-
-	}
-
 	InlineCollectRcCommand();
+	RxUpdate();
 }
 
 
