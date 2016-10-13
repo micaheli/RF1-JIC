@@ -4,6 +4,7 @@ float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly re
 float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the rcCommand after the curve is applied
 float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
 unsigned char isRxDataNew;
+uint32_t disarmCount = 0, latchFirstArm = 0;
 
 
 uint32_t rxData[MAXCHANNELS];
@@ -13,6 +14,7 @@ uint32_t rxData[MAXCHANNELS];
 // 2048 resolution
 uint32_t spektrumChannelShift = 3;
 uint32_t spektrumChannelMask = 0x07;
+
 
 /*
 //1024 resolution
@@ -27,7 +29,6 @@ unsigned char copiedBufferData[16];
 
 inline void RxUpdate(void) // hook for when rx updates
 {
-	static uint32_t disarmCount = 0, latchFirstArm = 0;
 
 	//todo: MOVE!!! - uglied up Preston's code.
 	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {

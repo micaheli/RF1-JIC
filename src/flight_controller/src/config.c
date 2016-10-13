@@ -108,17 +108,17 @@ void ResetConfig (uint32_t addresConfigStart)
 	mainConfig.gyroConfig.boardRotation = CW0;
 
 	mainConfig.pidConfig[YAW].kp	= .00180000;
-	mainConfig.pidConfig[YAW].ki	= .00450000;
+	mainConfig.pidConfig[YAW].ki	= .00750000;
 	mainConfig.pidConfig[YAW].kd	= .00005400;
 	mainConfig.pidConfig[YAW].wc	=  16;
 
 	mainConfig.pidConfig[ROLL].kp	= .00130000;
-	mainConfig.pidConfig[ROLL].ki	= .00450000;
+	mainConfig.pidConfig[ROLL].ki	= .00750000;
 	mainConfig.pidConfig[ROLL].kd	= .00005400;
 	mainConfig.pidConfig[ROLL].wc	=  8;
 
 	mainConfig.pidConfig[PITCH].kp	= .00140000;
-	mainConfig.pidConfig[PITCH].ki	= .00450000;
+	mainConfig.pidConfig[PITCH].ki	= .00750000;
 	mainConfig.pidConfig[PITCH].kd	= .00005400;
 	mainConfig.pidConfig[PITCH].wc	=  8;
 
