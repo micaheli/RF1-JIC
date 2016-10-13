@@ -90,7 +90,6 @@ void ProcessSpektrumPacket(void)
 															   // Make sure this is very first thing done in function, and its called first on interrupt
 	memcpy(copiedBufferData, serialRxBuffer, sizeof(copiedBufferData));    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
-//	bzero(&tempData, sizeof(tempData));
 
 	lastRXPacket = InlineMillis();  // why are we doing this, for failsafe?   this would have caused issues, possibly if we didn't copy buffer first
 									// kalyn why are we doing this, and not just basing it on packet count?
@@ -102,37 +101,6 @@ void ProcessSpektrumPacket(void)
 			rxData[ChannelMap(spektrumChannel)] = value & 0x7FF;
 		}
 	}
-
-
-
-/*
-
-	for (x = 2; x < 16; x += 2) {
-		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
-		spektrumChannel = (value & 0x7800) >> 11;
-		if (spektrumChannel < MAXCHANNELS) {
-			tempData[spektrumChannel] = value & 0x7FF;
-		}
-	}
-
-
-
-	if ((tempData[0] != tempData[3]) && (tempData[0] != 0))
-		rxData[3] = tempData[0];
-
-	// don't need to check for zero because these channels should be updated every frame
-	rxData[0] = tempData[3];
-	rxData[1] = tempData[1];
-	rxData[2] = tempData[2];
-
-
-	for (x=0;x<MAXCHANNELS;x++)
-	{
-		if (tempData[x] != 0) {
-			rxData[x] = tempData[x];
-		}
-	}
-*/
 
 	InlineCollectRcCommand();
 	RxUpdate();
