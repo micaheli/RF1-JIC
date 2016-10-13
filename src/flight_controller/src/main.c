@@ -69,6 +69,15 @@ int main(void)
     bzero(serialTxBuffer, sizeof(serialTxBuffer));
 
     while (1) {
+
+    	// check hard watchdog here update it
+    	rx_timeout++;
+
+    	if (rx_timeout > 50)
+    	{
+    		taskFailsafe();
+    	}
+
     	scheduler(count--);
     	if (count == -1) {
     		count = 16;

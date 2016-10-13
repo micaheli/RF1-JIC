@@ -38,14 +38,16 @@ enum {
 	ACRO_PLUS = 33,
 };
 
+
+extern rc_timeout;
 extern float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position
 extern float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the rcCommand after the curve is applied
 extern float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
 extern uint32_t rxData[MAXCHANNELS];
 extern unsigned char isRxDataNew;
 
-void InitRcData(void);
-void InlineCollectRcCommand (void);
-float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo);
-void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]);
-void ProcessSpektrumPacket(void);
+extern void InitRcData(void);
+extern void InlineCollectRcCommand (void);
+extern float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo);
+extern void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]);
+extern void ProcessSpektrumPacket(void);

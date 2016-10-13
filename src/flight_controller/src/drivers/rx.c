@@ -27,8 +27,11 @@ spektrumChannelMask = 0x03;
 
 unsigned char copiedBufferData[16];
 
+uint32_t rx_timeout=0;
+
 inline void RxUpdate(void) // hook for when rx updates
 {
+
 
 	//todo: MOVE!!! - uglied up Preston's code.
 	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
@@ -76,11 +79,18 @@ inline uint32_t SpektrumChannelMap(uint32_t inChannel) {
 
 inline uint32_t ChannelMap(uint32_t inChannel)
 {
+	uint32_t channel = 0;
+
 	if (1) // here is where we check which rx we are using probably use case
 	{
-		return(SpektrumChannelMap(inChannel));
+		channel = SpektrumChannelMap(inChannel);
+
+		if (channel == 3)
+			rc_timeout = 0;
+
 	}
 
+	return(channel);
 }
 
 void ProcessSpektrumPacket(void)
