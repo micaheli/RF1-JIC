@@ -34,7 +34,7 @@ inline void CheckFailsafe(void) {
 	rx_timeout++;
 	FeedTheDog(); //resets IWDG time to 0. This tells the timer the board is running.
 
-	if (rx_timeout > 50)
+	if (rx_timeout > 1000)
 	{
 		if (boardArmed)
 			boardArmed = 0;
