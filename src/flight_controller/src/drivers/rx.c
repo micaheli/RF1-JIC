@@ -35,27 +35,22 @@ void ProcessSpektrumPacket(void)
 															   // Make sure this is very first thing done in function, and its called first on interrupt
 	memcpy(copiedBufferData, serialRxBuffer, sizeof(copiedBufferData));    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
-/*
-	copiedBufferData[0] = aRxBuffer[0];
-	copiedBufferData[1] = aRxBuffer[1];
-	copiedBufferData[2] = aRxBuffer[2];
-	copiedBufferData[3] = aRxBuffer[3];
-	copiedBufferData[4] = aRxBuffer[4];
-	copiedBufferData[5] = aRxBuffer[5];
-	copiedBufferData[6] = aRxBuffer[6];
-	copiedBufferData[7] = aRxBuffer[7];
-	copiedBufferData[8] = aRxBuffer[8];
-	copiedBufferData[9] = aRxBuffer[9];
-	copiedBufferData[10] = aRxBuffer[10];
-	copiedBufferData[11] = aRxBuffer[11];
-	copiedBufferData[12] = aRxBuffer[12];
-	copiedBufferData[13] = aRxBuffer[13];
-	copiedBufferData[14] = aRxBuffer[14];
-	copiedBufferData[15] = aRxBuffer[15];
-*/
 	bzero(&tempData, sizeof(tempData));
 
 	lastRXPacket = InlineMillis();  // why are we doing this, for failsafe?   this would have caused issues, possibly if we didn't copy buffer first
+
+
+	for (x = 2; x < 16; x += 2) {
+		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
+		spektrumChannel = (value & 0x7800) >> 11;
+		if (spektrumChannel < MAXCHANNELS) {
+			rxData[spektrumChannel] = value & 0x7FF;
+		}
+	}
+
+
+
+/*
 
 	for (x = 2; x < 16; x += 2) {
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
@@ -76,13 +71,13 @@ void ProcessSpektrumPacket(void)
 	rxData[2] = tempData[2];
 
 
-	for (x=4;x<MAXCHANNELS;x++)
+	for (x=0;x<MAXCHANNELS;x++)
 	{
 		if (tempData[x] != 0) {
 			rxData[x] = tempData[x];
 		}
 	}
-
+*/
 
 	//todo: MOVE!!! - uglied up Preston's code.
 	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
