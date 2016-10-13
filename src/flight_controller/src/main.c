@@ -60,6 +60,8 @@ int main(void)
         //ErrorHandler();
     }
 
+    InitWatchdog(WATCHDOG_TIMEOUT_1S);
+
     buzzerStatus.status = STATE_BUZZER_OFF;
     ledStatus.status = LEDS_SLOW_BLINK;
 

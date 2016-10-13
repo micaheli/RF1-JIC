@@ -86,7 +86,7 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 		channel = SpektrumChannelMap(inChannel);
 
 		if (channel == 3)
-			rc_timeout = 0;
+			rx_timeout = 0;
 
 	}
 

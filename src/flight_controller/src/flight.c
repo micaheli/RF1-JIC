@@ -69,6 +69,8 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	if (loopCounter-- & 32 ) { //check if the 32 bit is set and run this code
 
+		FeedTheDog();
+
 		//every 32 cycles we check if the filter needs an update.
 		if (
 				(currentGyroFilterConfig[YAW] != mainConfig.filterConfig[YAW].gyro.r) ||
