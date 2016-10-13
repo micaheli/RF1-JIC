@@ -72,13 +72,6 @@ int main(void)
 
     while (1) {
 
-    	// check hard watchdog here update it
-    	rx_timeout++;
-
-    	if (rx_timeout > 50)
-    	{
-    		taskFailsafe();
-    	}
 
     	scheduler(count--);
     	if (count == -1) {

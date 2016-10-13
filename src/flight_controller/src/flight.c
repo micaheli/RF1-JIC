@@ -49,6 +49,24 @@ inline void InlineInitGyroFilters(void)  {
 
 inline void InlineFlightCode(float dpsGyroArray[]) {
 
+
+
+	/******************************************
+	move this
+
+    	// check hard watchdog here update it
+    	rx_timeout++;
+
+    	if (rx_timeout > 50)
+    	{
+    		if (boardArmed)
+    			taskFailsafe();
+    	}
+
+
+
+	****************************************/
+
 	//Gyro routine:
 	//gyro interrupts
 	//gyro read using DMA
