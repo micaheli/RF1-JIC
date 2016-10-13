@@ -42,10 +42,29 @@ void InitPid (void) {
 			break;
 		case LOOP_UH16:
 		case LOOP_H16:
-			dT = 0.0000625;
+			dT = 0.00006250;
 			break;
+		case LOOP_UH8:
+		case LOOP_H8:
+		case LOOP_M8:
 		default:
-			dT = 0.000125;
+			dT = 0.00012500;
+			break;
+		case LOOP_UH4:
+		case LOOP_H4:
+		case LOOP_M4:
+			dT = 0.00025000;
+			break;
+		case LOOP_UH2:
+		case LOOP_H2:
+		case LOOP_M2:
+			dT = 0.00050000;
+			break;
+		case LOOP_UH1:
+		case LOOP_H1:
+		case LOOP_M1:
+		case LOOP_L1:
+			dT = 0.00100000;
 			break;
 	}
 
