@@ -30,7 +30,7 @@ void InitActuators(void) {
 	//these calues come from config
 	//this is for multishot at 32KHz on STM32F4 running at 192MHz
 	float disarmUs  = 5;
-	float idleUs  = 6;
+	float idleUs  = 6.2;
 	float walledUs  = 20;
 	uint32_t pwmHz   = 32000;
 	uint32_t timerHz = 48000000;
