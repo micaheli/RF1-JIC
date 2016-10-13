@@ -115,7 +115,7 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 
 
 
-void OutputActuators(float motorOutput[], float servoOutput[]) {
+inline void OutputActuators(float motorOutput[], float servoOutput[]) {
 	uint32_t pulseValue;
 
 	if (boardArmed || calibrateMotors) {
@@ -144,4 +144,11 @@ void OutputActuators(float motorOutput[], float servoOutput[]) {
 	}
 
 	(void)(servoOutput);
+}
+
+void ZeroActuators(void) {
+	TIM3->CCR3 = disarmPulseValue;
+	TIM3->CCR4 = disarmPulseValue;
+	TIM9->CCR2 = disarmPulseValue;
+	TIM2->CCR3 = disarmPulseValue;
 }
