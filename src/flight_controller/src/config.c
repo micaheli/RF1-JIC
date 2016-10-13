@@ -98,33 +98,39 @@ void ResetConfig (uint32_t addresConfigStart)
 	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
 
 
-	mainConfig.pidConfig[YAW].kp	= .00110000;
-	mainConfig.pidConfig[YAW].ki	= .00250000;
-	mainConfig.pidConfig[YAW].kd	= .00002400;
-	mainConfig.pidConfig[YAW].wc	=  8;
+	mainConfig.pidConfig[YAW].kp	= .00180000;
+	mainConfig.pidConfig[YAW].ki	= .00850000;
+	mainConfig.pidConfig[YAW].kd	= .00006400;
+	mainConfig.pidConfig[YAW].wc	=  16;
 
-	mainConfig.pidConfig[ROLL].kp	= .00100000;
-	mainConfig.pidConfig[ROLL].ki	= .00250000;
-	mainConfig.pidConfig[ROLL].kd	= .00002400;
+	mainConfig.pidConfig[ROLL].kp	= .00130000;
+	mainConfig.pidConfig[ROLL].ki	= .00850000;
+	mainConfig.pidConfig[ROLL].kd	= .00006400;
 	mainConfig.pidConfig[ROLL].wc	=  8;
 
-	mainConfig.pidConfig[PITCH].kp	= .00110000;
-	mainConfig.pidConfig[PITCH].ki	= .00250000;
-	mainConfig.pidConfig[PITCH].kd	= .00002400;
+	mainConfig.pidConfig[PITCH].kp	= .00140000;
+	mainConfig.pidConfig[PITCH].ki	= .00850000;
+	mainConfig.pidConfig[PITCH].kd	= .00006400;
 	mainConfig.pidConfig[PITCH].wc	=  8;
 
 
-	mainConfig.filterConfig[YAW].gyro.q   = 0.000010;
-	mainConfig.filterConfig[YAW].gyro.r   = 0.001000;
-	mainConfig.filterConfig[YAW].gyro.p   = 0.000015;
+	mainConfig.filterConfig[YAW].gyro.q   = 0.00100;
+	//mainConfig.filterConfig[YAW].gyro.r  = 0.001000;
+	mainConfig.filterConfig[YAW].gyro.r   = 2.630000;
+	//mainConfig.filterConfig[YAW].gyro.r   = 5.630000;
+	mainConfig.filterConfig[YAW].gyro.p   = 0.00150;
 
-	mainConfig.filterConfig[ROLL].gyro.q  = 0.000010;
-	mainConfig.filterConfig[ROLL].gyro.r  = 0.001000;
-	mainConfig.filterConfig[ROLL].gyro.p  = 0.000015;
+	mainConfig.filterConfig[ROLL].gyro.q  = 0.00010;
+	//mainConfig.filterConfig[ROLL].gyro.r  = 0.001000;
+	mainConfig.filterConfig[ROLL].gyro.r  = 0.050000;
+	//mainConfig.filterConfig[ROLL].gyro.r  = 3.550000;
+	mainConfig.filterConfig[ROLL].gyro.p  = 0.00015;
 
-	mainConfig.filterConfig[PITCH].gyro.q = 0.000010;
-	mainConfig.filterConfig[PITCH].gyro.r = 0.001000;
-	mainConfig.filterConfig[PITCH].gyro.p = 0.000015;
+	mainConfig.filterConfig[PITCH].gyro.q = 0.00010;
+	//mainConfig.filterConfig[PITCH].gyro.r = 0.0.001000;
+	mainConfig.filterConfig[PITCH].gyro.r = 0.050000;
+	//mainConfig.filterConfig[PITCH].gyro.r = 3.550000;
+	mainConfig.filterConfig[PITCH].gyro.p = 0.00015;
 
 	mainConfig.filterConfig[YAW].kd.q     = 0.00010;
 	mainConfig.filterConfig[YAW].kd.r     = 0.00300;
@@ -143,9 +149,11 @@ void ResetConfig (uint32_t addresConfigStart)
 	mainConfig.gyroConfig.minorBoardRotation[Y] = 0;
 	mainConfig.gyroConfig.minorBoardRotation[Z] = 0;
 
-	mainConfig.gyroConfig.gyroRotation  = CW270;
+	mainConfig.gyroConfig.gyroRotation  = CW270; //revo
+	mainConfig.gyroConfig.gyroRotation  = CW0; //revolt
+	//mainConfig.gyroConfig.gyroRotation  = CW270; //dji revolt
 	mainConfig.gyroConfig.boardRotation = CW0;
-	mainConfig.gyroConfig.loopCtrl = LOOP_H8;
+	mainConfig.gyroConfig.loopCtrl = LOOP_UH32;
 
 	mainConfig.rcControlsConfig.deadBand[PITCH]    = deadband;
 	mainConfig.rcControlsConfig.deadBand[ROLL]     = deadband;
@@ -193,9 +201,9 @@ void ResetConfig (uint32_t addresConfigStart)
 	mainConfig.rcControlsConfig.useCurve[AUX3]      = NO_EXPO;
 	mainConfig.rcControlsConfig.useCurve[AUX4]      = NO_EXPO;
 
-	mainConfig.rcControlsConfig.curveExpo[PITCH]    = 60.0f;
-	mainConfig.rcControlsConfig.curveExpo[ROLL]     = 60.0f;
-	mainConfig.rcControlsConfig.curveExpo[YAW]      = 60.0f;
+	mainConfig.rcControlsConfig.curveExpo[PITCH]    = 40.0f;
+	mainConfig.rcControlsConfig.curveExpo[ROLL]     = 40.0f;
+	mainConfig.rcControlsConfig.curveExpo[YAW]      = 40.0f;
 	mainConfig.rcControlsConfig.curveExpo[THROTTLE] = 0;
 	mainConfig.rcControlsConfig.curveExpo[AUX1]     = 0;
 	mainConfig.rcControlsConfig.curveExpo[AUX2]     = 0;
@@ -206,9 +214,9 @@ void ResetConfig (uint32_t addresConfigStart)
 	mainConfig.rcControlsConfig.rates[ROLL]         = 400.0;
 	mainConfig.rcControlsConfig.rates[PITCH]        = 400.0;
 
-	mainConfig.rcControlsConfig.acroPlus[YAW]       = 1.400;
-	mainConfig.rcControlsConfig.acroPlus[ROLL]      = 1.400;
-	mainConfig.rcControlsConfig.acroPlus[PITCH]     = 1.400;
+	mainConfig.rcControlsConfig.acroPlus[YAW]       = 2.000;
+	mainConfig.rcControlsConfig.acroPlus[ROLL]      = 2.000;
+	mainConfig.rcControlsConfig.acroPlus[PITCH]     = 2.000;
 
 	SaveConfig(addresConfigStart);
 }
