@@ -25,7 +25,7 @@ spektrumChannelMask = 0x03;
 
 unsigned char copiedBufferData[16];
 
-void RxUpdate(void) // hook for when rx updates
+inline void RxUpdate(void) // hook for when rx updates
 {
 	static uint32_t disarmCount = 0, latchFirstArm = 0;
 
@@ -63,7 +63,7 @@ void RxUpdate(void) // hook for when rx updates
 
 
 }
-uint32_t SpektrumChannelMap(uint32_t inChannel) {
+inline uint32_t SpektrumChannelMap(uint32_t inChannel) {
 	if (inChannel == 3)
 		return(0);
 
@@ -71,6 +71,15 @@ uint32_t SpektrumChannelMap(uint32_t inChannel) {
 		return(3);
 
 	return(inChannel);
+}
+
+inline uint32_t ChannelMap(uint32_t inChannel)
+{
+	if (1) // here is where we check which rx we are using probably use case
+	{
+		return(SpektrumChannelMap(inChannel));
+	}
+
 }
 
 void ProcessSpektrumPacket(void)
@@ -90,7 +99,7 @@ void ProcessSpektrumPacket(void)
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
 		spektrumChannel = (value & 0x7800) >> 11;
 		if (spektrumChannel < MAXCHANNELS) {
-			rxData[SpektrumChannelMap(spektrumChannel)] = value & 0x7FF;
+			rxData[ChannelMap(spektrumChannel)] = value & 0x7FF;
 		}
 	}
 
