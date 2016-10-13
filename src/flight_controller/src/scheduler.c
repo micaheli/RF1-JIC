@@ -37,35 +37,10 @@ void scheduler(int32_t count)
 		case 11:
 			break;
 		case 12:
-			taskFailsafe();
 			break;
 		default:
 			break;
 
-	}
-
-}
-
-inline void taskFailsafe(void) {
-
-	if (failsafeStage == 1) {
-		if (
-			(boardArmed) &&
-			((InlineMillis() - lastRXPacket) > 3000)
-			) //board disarmed and no rx packet in 1000 millis
-		{
-			failsafeStage=0;
-			boardArmed = 0;
-			debugU32[5]=5;
-		}
-	}
-	if (
-		(boardArmed) &&
-		((InlineMillis() - lastRXPacket) > 1500)
-		) //board disarmed and no rx packet in 1000 millis
-	{
-		failsafeStage=1;
-		debugU32[5]=6;
 	}
 
 }

@@ -49,24 +49,6 @@ inline void InlineInitGyroFilters(void)  {
 
 inline void InlineFlightCode(float dpsGyroArray[]) {
 
-
-
-	/******************************************
-	move this
-
-    	// check hard watchdog here update it
-    	rx_timeout++;
-
-    	if (rx_timeout > 50)
-    	{
-    		if (boardArmed)
-    			taskFailsafe();
-    	}
-
-
-
-	****************************************/
-
 	//Gyro routine:
 	//gyro interrupts
 	//gyro read using DMA
@@ -85,9 +67,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	DoLed(1, 0);
 	DoLed(2, 0);
 
-	if (loopCounter-- & 32 ) { //check if the 32 bit is set and run this code
+	if (loopCounter-- & khzDivider ) { //this code runs at 1 KHz by checking the loop counter against the khzDivider bit set in InitPid();
 
-		FeedTheDog(); //resets IWDG time to 0. This tells the timer the board is running.
+		CheckFailsafe();
 
 		//every 32 cycles we check if the filter needs an update.
 		if (

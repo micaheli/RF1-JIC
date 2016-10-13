@@ -9,6 +9,7 @@ float kdDelta[AXIS_NUMBER];
 float dT = 0.000125; //8KHz
 uint32_t uhohNumber = 4000;
 uint32_t uhOhRecover = 0;
+uint32_t khzDivider = 0;
 
 /*
  *     LOOP_L1,
@@ -43,29 +44,34 @@ void InitPid (void) {
 		case LOOP_H32:
 			dT = 0.00003125;
 			uhohNumber = 16000;
+			khzDivider = 32;
 			break;
 		case LOOP_UH16:
 		case LOOP_H16:
 			dT = 0.00006250;
 			uhohNumber = 8000;
+			khzDivider = 16;
 			break;
 		case LOOP_UH8:
 		case LOOP_H8:
 		case LOOP_M8:
 			dT = 0.00012500;
 			uhohNumber = 4000;
+			khzDivider = 8;
 			break;
 		case LOOP_UH4:
 		case LOOP_H4:
 		case LOOP_M4:
 			dT = 0.00025000;
 			uhohNumber = 2000;
+			khzDivider = 4;
 			break;
 		case LOOP_UH2:
 		case LOOP_H2:
 		case LOOP_M2:
 			dT = 0.00050000;
 			uhohNumber = 1000;
+			khzDivider = 2;
 			break;
 		case LOOP_UH1:
 		case LOOP_H1:
@@ -74,6 +80,7 @@ void InitPid (void) {
 		default:
 			dT = 0.00100000;
 			uhohNumber = 500;
+			khzDivider = 1;
 			break;
 	}
 
