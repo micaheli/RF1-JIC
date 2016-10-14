@@ -24,12 +24,19 @@ void AddVariable(char *variableName, void *VariableLocation, uint32_t variableTy
 
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
-
 main_config mainConfig;
 
 const config_variables_rec valueTable[] = {
 
 		{ "mixer_type", typeUINT,  &mainConfig.mixerConfig.mixerType, 0, MIXER_END, MIXER_X1234 },
+
+		//airbot revolt is CW0, dji revolt and revo is CW270
+		{ "gyro_rotation", typeUINT,  &mainConfig.gyroConfig.gyroRotation, 0, 12, CW0 },
+		{ "board_rotation", typeUINT,  &mainConfig.gyroConfig.boardRotation, 0, 12, CW0 },
+		{ "sml_board_rot_x", typeUINT,  &mainConfig.gyroConfig.minorBoardRotation[X], 0, 10, 0, "" },
+		{ "sml_board_rot_y", typeUINT,  &mainConfig.gyroConfig.minorBoardRotation[Y], 0, 10, 0, "" },
+		{ "sml_board_rot_z", typeUINT,  &mainConfig.gyroConfig.minorBoardRotation[Z], 0, 10, 0, "" },
+		{ "rf_loop_ctrl", typeUINT,  &mainConfig.gyroConfig.loopCtrl, 0, LOOP_UH32, LOOP_H8, "" },
 
 		{ "yaw_kp", typeFLOAT,  &mainConfig.pidConfig[YAW].kp, 0, 1, 0.00180000, "" },
 		{ "yaw_ki", typeFLOAT,  &mainConfig.pidConfig[YAW].ki, 0, 1, 0.01000000, "" },
@@ -63,12 +70,6 @@ const config_variables_rec valueTable[] = {
 		{ "pitch_kd_q", typeFLOAT,  &mainConfig.filterConfig[PITCH].kd.q, 0, 10, 0, "" },
 		{ "pitch_kd_r", typeFLOAT,  &mainConfig.filterConfig[PITCH].kd.r, 0, 10, 0, "" },
 		{ "pitch_kd_p", typeFLOAT,  &mainConfig.filterConfig[PITCH].kd.p, 0, 10, 0, "" },
-
-		{ "sml_board_rot_x", typeUINT,  &mainConfig.gyroConfig.minorBoardRotation[X], 0, 10, 0, "" },
-		{ "sml_board_rot_y", typeUINT,  &mainConfig.gyroConfig.minorBoardRotation[Y], 0, 10, 0, "" },
-		{ "sml_board_rot_z", typeUINT,  &mainConfig.gyroConfig.minorBoardRotation[Z], 0, 10, 0, "" },
-
-		{ "rf_loop_ctrl", typeUINT,  &mainConfig.gyroConfig.loopCtrl, 0, LOOP_UH32, LOOP_H8, "" },
 
 		{ "pitch_deadband", typeFLOAT,  &mainConfig.rcControlsConfig.deadBand[PITCH], 0, 0.1, 0.02, "" },
 		{ "roll_deadband", typeFLOAT,  &mainConfig.rcControlsConfig.deadBand[ROLL], 0, 0.1, 0.02, "" },
