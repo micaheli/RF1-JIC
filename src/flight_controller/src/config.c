@@ -25,14 +25,14 @@ void AddVariable(char *variableName, void *VariableLocation, uint32_t variableTy
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
 main_config mainConfig;
+//airbot revolt is CW0, dji revolt and revo is CW270
 
 const config_variables_rec valueTable[] = {
 
-		{ "mixer_type", typeUINT,  &mainConfig.mixerConfig.mixerType, 0, MIXER_END, MIXER_X1234 },
+		{ "mixer_type", typeUINT,  &mainConfig.mixerConfig.mixerType, 0, MIXER_END, MIXER_X1234, "" },
 
-		//airbot revolt is CW0, dji revolt and revo is CW270
-		{ "gyro_rotation", typeUINT,  &mainConfig.gyroConfig.gyroRotation, 0, 12, CW0 },
-		{ "board_rotation", typeUINT,  &mainConfig.gyroConfig.boardRotation, 0, 12, CW0 },
+		{ "gyro_rotation", typeUINT,  &mainConfig.gyroConfig.gyroRotation, 0, 12, CW0, "" },
+		{ "board_rotation", typeUINT,  &mainConfig.gyroConfig.boardRotation, 0, 12, CW0, "" },
 		{ "sml_board_rot_x", typeUINT,  &mainConfig.gyroConfig.minorBoardRotation[X], 0, 10, 0, "" },
 		{ "sml_board_rot_y", typeUINT,  &mainConfig.gyroConfig.minorBoardRotation[Y], 0, 10, 0, "" },
 		{ "sml_board_rot_z", typeUINT,  &mainConfig.gyroConfig.minorBoardRotation[Z], 0, 10, 0, "" },
