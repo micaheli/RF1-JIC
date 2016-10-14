@@ -39,3 +39,4 @@ uint8_t CalculateCzechsum(uint8_t *data, uint32_t length);
 int ValidateConfig (uint32_t addresConfigStart);
 void LoadConfig (uint32_t addresConfigStart);
 void ResetConfig (uint32_t addresConfigStart);
+void GenerateConfig(void);

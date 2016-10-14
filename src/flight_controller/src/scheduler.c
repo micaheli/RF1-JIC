@@ -58,6 +58,10 @@ inline void taskHandlePcComm(void)
 			SaveConfig (ADDRESS_CONFIG_START);
 		}
 
+		if ((tOutBuffer[1] == 'P') && (tOutBuffer[2] == 'O') && (tOutBuffer[3] == 'O')) {
+			GenerateConfig();
+		}
+
 		if (tOutBuffer[1] == 6) {
 			calibrateMotors = 1;
 			motorOutput[0] = 1;
