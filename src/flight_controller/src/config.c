@@ -103,41 +103,41 @@ void ResetConfig (uint32_t addresConfigStart)
 	mainConfig.mixerConfig.mixerType = MIXER_X1234_REVERSE_YAW;
 	//mainConfig.mixerConfig.mixerType = MIXER_X1234;
 
-	//mainConfig.gyroConfig.gyroRotation  = CW0; //airbot revolt
-	mainConfig.gyroConfig.gyroRotation  = CW270; //dji revolt and revo
+	mainConfig.gyroConfig.gyroRotation  = CW0; //airbot revolt
+	//mainConfig.gyroConfig.gyroRotation  = CW270; //dji revolt and revo
 	mainConfig.gyroConfig.boardRotation = CW0;
 
 	mainConfig.pidConfig[YAW].kp	= .00180000;
-	mainConfig.pidConfig[YAW].ki	= .00750000;
-	mainConfig.pidConfig[YAW].kd	= .00005400;
+	mainConfig.pidConfig[YAW].ki	= .01000000;
+	mainConfig.pidConfig[YAW].kd	= .00011400;
 	mainConfig.pidConfig[YAW].wc	=  16;
 
 	mainConfig.pidConfig[ROLL].kp	= .00130000;
-	mainConfig.pidConfig[ROLL].ki	= .00750000;
-	mainConfig.pidConfig[ROLL].kd	= .00005400;
+	mainConfig.pidConfig[ROLL].ki	= .01000000;
+	mainConfig.pidConfig[ROLL].kd	= .00011400;
 	mainConfig.pidConfig[ROLL].wc	=  8;
 
 	mainConfig.pidConfig[PITCH].kp	= .00140000;
-	mainConfig.pidConfig[PITCH].ki	= .00750000;
-	mainConfig.pidConfig[PITCH].kd	= .00005400;
+	mainConfig.pidConfig[PITCH].ki	= .01000000;
+	mainConfig.pidConfig[PITCH].kd	= .00011400;
 	mainConfig.pidConfig[PITCH].wc	=  8;
 
 
 	mainConfig.filterConfig[YAW].gyro.q   = 0.00100;
 	//mainConfig.filterConfig[YAW].gyro.r  = 0.001000;
-	mainConfig.filterConfig[YAW].gyro.r   = 2.630000;
+	mainConfig.filterConfig[YAW].gyro.r   = 3.000000;
 	//mainConfig.filterConfig[YAW].gyro.r   = 5.630000;
 	mainConfig.filterConfig[YAW].gyro.p   = 0.00150;
 
 	mainConfig.filterConfig[ROLL].gyro.q  = 0.00010;
 	//mainConfig.filterConfig[ROLL].gyro.r  = 0.001000;
-	mainConfig.filterConfig[ROLL].gyro.r  = 0.050000;
+	mainConfig.filterConfig[ROLL].gyro.r  = 0.100000;
 	//mainConfig.filterConfig[ROLL].gyro.r  = 3.550000;
 	mainConfig.filterConfig[ROLL].gyro.p  = 0.00015;
 
 	mainConfig.filterConfig[PITCH].gyro.q = 0.00010;
 	//mainConfig.filterConfig[PITCH].gyro.r = 0.0.001000;
-	mainConfig.filterConfig[PITCH].gyro.r = 0.050000;
+	mainConfig.filterConfig[PITCH].gyro.r = 0.100000;
 	//mainConfig.filterConfig[PITCH].gyro.r = 3.550000;
 	mainConfig.filterConfig[PITCH].gyro.p = 0.00015;
 
