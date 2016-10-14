@@ -465,7 +465,7 @@ char *CleanupString(char *inString)
 		if ((last_char == ' ') && (inString[position] == ' ')) // removes multiple spaces in a row
 			continue;
 
-		if (isalnum(inString[position]) || (inString[position] == ' ') || (inString[position] == '=') || (inString[position] == '"') || (inString[position] == '.') || (inString[position] == '-') || (inString[position] == '_'))
+		if (isalnum((unsigned char)inString[position]) || (inString[position] == ' ') || (inString[position] == '=') || (inString[position] == '"') || (inString[position] == '.') || (inString[position] == '-') || (inString[position] == '_'))
 		{
 			inString[head++] = inString[position];
 			last_char = inString[position];
@@ -519,7 +519,7 @@ void SetVariable(char *inString) {
 	inString[x] = 0;
 
 	for (x = 0; x < strlen(inString); x++)
-		inString[x] = tolower(inString[x]);
+		inString[x] = tolower((unsigned char)inString[x]);
 
 	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 	{
@@ -589,7 +589,7 @@ void ProcessCommand(char *inString)
 	inString[x] = 0;
 
 	for (x = 0; x < strlen(inString); x++)
-		inString[x] = tolower(inString[x]);
+		inString[x] = tolower((unsigned char)inString[x]);
 
 	if (!strcmp("set", inString))
 	{
