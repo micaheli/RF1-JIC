@@ -583,11 +583,11 @@ def configure_target(TARGET):
 
 
 
-asm_command = "arm-none-eabi-gcc -c -fdiagnostics-color -o output/{OUTPUT_FILE} {ASMFLAGS} {INPUT_FILE}"
+asm_command = "arm-none-eabi-gcc -c  -o output/{OUTPUT_FILE} {ASMFLAGS} {INPUT_FILE}"
 
-compile_command = "arm-none-eabi-gcc -c -fdiagnostics-color -o output/{OUTPUT_FILE} {CFLAGS} {INPUT_FILE}"
+compile_command = "arm-none-eabi-gcc -c  -o output/{OUTPUT_FILE} {CFLAGS} {INPUT_FILE}"
 
-link_command = "arm-none-eabi-gcc -fdiagnostics-color -o output/{OUTPUT_NAME}.elf {OBJS} {LDFLAGS}"
+link_command = "arm-none-eabi-gcc  -o output/{OUTPUT_NAME}.elf {OBJS} {LDFLAGS}"
 
 size_command = "arm-none-eabi-size output/{OUTPUT_NAME}.elf"
 
