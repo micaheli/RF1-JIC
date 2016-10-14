@@ -27,6 +27,16 @@ void AddVariable(char *variableName, void *VariableLocation, uint32_t variableTy
 
 main_config mainConfig;
 
+const config_variables_rec valueTable[] = {
+
+	{ "mid_rc",                     typeINT,  &masterConfig.rxConfig.midrc, .config.minmax = { 1200,  1700 } },
+    { "min_check",                  VAR_UINT16 | MASTER_VALUE,  &masterConfig.rxConfig.mincheck, .config.minmax = { PWM_RANGE_ZERO,  PWM_RANGE_MAX } }
+
+
+}
+
+
+
 
 //Dynamic config is bad idea if we are supporting f1, so instead we will go to a static sized structure
 // basically add padding at end of structure to make it a fixed size.   Then always ad variables to the end, then when loading

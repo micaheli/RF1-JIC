@@ -13,6 +13,24 @@ typedef struct {
 	uint8_t           czechsum;
 } main_config;
 
+
+
+#define typeINT 0;
+#define typeUINT 1;
+#define typeFLOAT 2;
+#define typeSTRING 3;
+
+
+typedef struct {
+    const char *name;
+    const uint32_t type;
+    void *ptr;
+    float Min;
+    float Max;
+    float Default;
+    const char *strDefault;
+} config_variables_rec;
+
 extern main_config mainConfig;
 
 void SaveConfig (uint32_t addresConfigStart);
