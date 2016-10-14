@@ -122,6 +122,8 @@ int main(void)
 
 void ErrorHandler(void)
 {
+	ZeroActuators();
+
     while (1) {
 		DoLed(0, 1);
 		DoLed(1, 0);
