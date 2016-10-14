@@ -21,6 +21,8 @@ void AddVariable(char *variableName, void *VariableLocation, uint32_t variableTy
 }
 */
 
+#define RF_BUFFER_SIZE 63
+
 
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
@@ -131,10 +133,11 @@ const config_variables_rec valueTable[] = {
 
 		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.acroPlus[PITCH] , 0, 4, 2, "" },
 		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.acroPlus[ROLL] , 0, 4, 2, "" },
-		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.acroPlus[YAW] , 0, 4, 2, "" },
+		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.acroPlus[YAW] , 0, 4, 2, "" }
 
 };
 
+char rf_custom_out_buffer[RF_BUFFER_SIZE];
 
 //test
 
@@ -143,6 +146,55 @@ const config_variables_rec valueTable[] = {
 // basically add padding at end of structure to make it a fixed size.   Then always ad variables to the end, then when loading
 // the structure, if your new version have new variables they will be zeroied and then just check in this function for zeroed functions and set default
 
+
+//TODO REwrite this better
+char *ftoa(float x, char *floatString)
+{
+    int32_t value;
+    char intString1[12];
+    char intString2[12] = { 0, };
+    char *decimalPoint = ".";
+    uint8_t dpLocation;
+
+    if (x > 0)
+        x += 0.0005f;
+    else
+        x -= 0.0005f;
+
+    value = (int32_t)(x * 1000.0f);
+
+    itoa(ABS(value), intString1, 10);
+
+    if (value >= 0)
+        intString2[0] = ' ';
+    else
+        intString2[0] = '-';
+
+    if (strlen(intString1) == 1) {
+        intString2[1] = '0';
+        intString2[2] = '0';
+        intString2[3] = '0';
+        strcat(intString2, intString1);
+    } else if (strlen(intString1) == 2) {
+        intString2[1] = '0';
+        intString2[2] = '0';
+        strcat(intString2, intString1);
+    } else if (strlen(intString1) == 3) {
+        intString2[1] = '0';
+        strcat(intString2, intString1);
+    } else {
+        strcat(intString2, intString1);
+    }
+
+    dpLocation = strlen(intString2) - 3;
+
+    strncpy(floatString, intString2, dpLocation);
+    floatString[dpLocation] = '\0';
+    strcat(floatString, decimalPoint);
+    strcat(floatString, intString2 + dpLocation);
+
+    return(floatString);
+}
 
 
 void GenerateConfig(void)
@@ -372,4 +424,216 @@ void ResetConfig (uint32_t addresConfigStart)
 
 	SaveConfig(addresConfigStart);
 }
+
+
+
+
+
+
+//cleanup string // strip continuous spaces, first space, and non allowed characters
+char *StripSpaces(char *inString)
+{
+	uint16_t head = 0;
+	uint16_t position = 0;
+	uint8_t inQuote = 0;
+	uint16_t inStringLength = strlen(inString);
+
+	for (position = 0; position < inStringLength; position++)
+	{
+		if (inString[position] == '"')
+			inQuote = inQuote ^ 1;
+
+		if ((inQuote) || (inString[position] != ' '))
+			inString[head++] = inString[position];
+	}
+
+
+	inString[head] = 0;
+
+	return (inString);
+}
+
+char *CleanupString(char *inString)
+{
+	char last_char = ' ';
+	uint16_t head = 0;
+	uint16_t position = 0;
+	uint16_t inStringLength = strlen(inString);
+
+	for (position = 0; position < inStringLength; position++)
+	{
+		if ((last_char == ' ') && (inString[position] == ' ')) // removes multiple spaces in a row
+			continue;
+
+		if (isalnum(inString[position]) || (inString[position] == ' ') || (inString[position] == '=') || (inString[position] == '"') || (inString[position] == '.') || (inString[position] == '-') || (inString[position] == '_'))
+		{
+			inString[head++] = inString[position];
+			last_char = inString[position];
+		}
+	}
+
+
+	inString[head] = 0;
+
+	return (inString);
+}
+
+
+
+
+
+void SetValue(uint32_t position, char *value)
+{
+	switch (valueTable[position].type) {
+	//TODO used something better then atoi
+	case typeUINT:
+	case typeINT:
+		*(uint32_t *)valueTable[position].ptr = atoi(value);
+		break;
+
+	case typeFLOAT:
+		*(float *)valueTable[position].ptr = atof(value);
+		break;
+	}
+
+
+}
+
+void SetVariable(char *inString) {
+	uint32_t x;
+	uint32_t inStringLength;
+	char *args = NULL;
+	StripSpaces(inString);
+
+	inStringLength = strlen(inString);
+
+	for (x = 0; x < inStringLength; x++) {
+		if (inString[x] == '=')
+			break;
+	}
+
+	if (inStringLength > x) {
+		args = inString + x + 1;
+	}
+
+	inString[x] = 0;
+
+	for (x = 0; x < strlen(inString); x++)
+		inString[x] = tolower(inString[x]);
+
+	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+	{
+		if (!strcmp(valueTable[x].name, inString))
+		{
+			SetValue(x, args);
+
+		}
+	}
+}
+
+
+
+
+/**********************************************************************************************************/
+void OutputVar(uint32_t position)
+{
+	char fString[20];
+
+	bzero(rf_custom_out_buffer, RF_BUFFER_SIZE);
+	switch (valueTable[position].type) {
+
+	case typeUINT:
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+		break;
+
+
+	case typeINT:
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+		break;
+
+
+	case typeFLOAT:
+		ftoa(*(float *)valueTable[position].ptr, fString);
+		StripSpaces(fString);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%s\n", valueTable[position].name, fString);
+		break;
+	}
+
+	rfCustomReply();
+
+}
+/**********************************************************************************************************************/
+
+
+
+
+void ProcessCommand(char *inString)
+{
+	uint32_t inStringLength;
+	char *args = NULL;
+	uint32_t x;
+
+	inString = CleanupString(inString);
+
+	inStringLength = strlen(inString);
+
+	for (x = 0; x < inStringLength; x++) {
+		if (inString[x] == ' ')
+			break;
+	}
+
+	if (inStringLength > x) {
+		args = inString + x + 1;
+	}
+
+	inString[x] = 0;
+
+	for (x = 0; x < strlen(inString); x++)
+		inString[x] = tolower(inString[x]);
+
+	if (!strcmp("set", inString))
+	{
+		SetVariable(args);
+
+	}
+
+	else if (!strcmp("dump", inString))
+	{
+
+		for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+		{
+			OutputVar(x);
+		}
+	}
+
+/*
+	else if (!strcmp("save", inString))
+	{
+		writeEEPROM();
+		readEEPROM();
+	}
+	else if (!strcmp("reboot", inString))
+	{
+		DoReboot();
+	}
+	else if (!strcmp("1wire", inString))
+	{
+		rfCustom1Wire(args);
+	}
+	else if (!strcmp("rfblbind", inString))
+	{
+		rfCustomRfblBind(args);
+	}
+	else if (!strcmp("resetdfu", inString))
+	{
+		systemResetToDFUloader();
+	}
+
+
+	*/
+}
+
+
+
+
 

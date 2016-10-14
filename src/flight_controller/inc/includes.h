@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <stddef.h>
-
+#include <ctype.h>
 //low level drivers and driver based functions
 #include "../../low_level_driver/boarddef.h"
 #include "mcu_include.h"
