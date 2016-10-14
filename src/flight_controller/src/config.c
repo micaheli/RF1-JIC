@@ -142,6 +142,41 @@ const config_variables_rec valueTable[] = {
 // basically add padding at end of structure to make it a fixed size.   Then always ad variables to the end, then when loading
 // the structure, if your new version have new variables they will be zeroied and then just check in this function for zeroed functions and set default
 
+
+
+void GenerateConfig(void)
+{
+	uint32_t x;
+
+	bzero(&mainConfig, sizeof(mainConfig));
+
+	for (x=0;x<(valueTable/sizeof(config_variables_rec));x++)
+	{
+		switch(valueTable[x].type)
+		{
+		case typeINT:
+			(uint32_t *)valueTable[x].ptr = (uint32_t)valueTable[x].Default;
+			break;
+
+		case typeUINT:
+			(int32_t *)valueTable[x].ptr = (int32_t)valueTable[x].Default;
+			break;
+
+		case typeFLOAT:
+			(float *)valueTable[x].ptr = (float)valueTable[x].Default;
+			break;
+/*
+		case typeSTRING:
+			break;
+*/
+
+		}
+
+	}
+
+
+}
+
 void SaveConfig (uint32_t addresConfigStart)
 {
 
