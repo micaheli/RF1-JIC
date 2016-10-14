@@ -13,7 +13,7 @@ uint32_t flightcodeTimeStart;
 float flightcodeTime;
 
 uint32_t counterFish = 0;
-uint32_t loopCounter = 4194967295;
+uint32_t loopCounter = 429496729U;
 
 void InitFlightCode(void) {
 

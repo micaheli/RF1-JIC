@@ -105,7 +105,7 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 	int32_t axis;
 
 	float pidError;
-	static float lastError[AXIS_NUMBER], lastfilteredGyroData[AXIS_NUMBER];
+	static float lastfilteredGyroData[AXIS_NUMBER];
 	static float usedFlightSetPoints[AXIS_NUMBER];
 	float kiErrorLimit[AXIS_NUMBER];
 
