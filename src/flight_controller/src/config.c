@@ -155,15 +155,15 @@ void GenerateConfig(void)
 		switch(valueTable[x].type)
 		{
 		case typeINT:
-			(uint32_t *)valueTable[x].ptr = (uint32_t)valueTable[x].Default;
+			*(uint32_t *)valueTable[x].ptr = (uint32_t)valueTable[x].Default;
 			break;
 
 		case typeUINT:
-			(int32_t *)valueTable[x].ptr = (int32_t)valueTable[x].Default;
+			*(int32_t *)valueTable[x].ptr = (int32_t)valueTable[x].Default;
 			break;
 
 		case typeFLOAT:
-			(float *)valueTable[x].ptr = (float)valueTable[x].Default;
+			*(float *)valueTable[x].ptr = (float)valueTable[x].Default;
 			break;
 /*
 		case typeSTRING:
