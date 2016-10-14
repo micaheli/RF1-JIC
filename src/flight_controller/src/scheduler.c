@@ -59,7 +59,18 @@ inline void taskHandlePcComm(void)
 		}
 
 		if ((tOutBuffer[1] == 'P') && (tOutBuffer[2] == 'O') && (tOutBuffer[3] == 'O')) {
+			tInBuffer[0] = 1;
+			tInBuffer[6] = mainConfig.pidConfig[YAW].kp;
+			tInBuffer[7] = mainConfig.pidConfig[YAW].kp;
+			tInBuffer[8] = mainConfig.pidConfig[YAW].kp;
+			tInBuffer[9] = mainConfig.pidConfig[YAW].kp;
 			GenerateConfig();
+			tInBuffer[10] = mainConfig.pidConfig[YAW].kp;
+			tInBuffer[11] = mainConfig.pidConfig[YAW].kp;
+			tInBuffer[12] = mainConfig.pidConfig[YAW].kp;
+			tInBuffer[13] = mainConfig.pidConfig[YAW].kp;
+			USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
+
 		}
 
 		if (tOutBuffer[1] == 6) {

@@ -38,7 +38,7 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", typeUINT,  &mainConfig.gyroConfig.minorBoardRotation[Z], 0, 10, 0, "" },
 		{ "rf_loop_ctrl", typeUINT,  &mainConfig.gyroConfig.loopCtrl, 0, LOOP_UH32, LOOP_H8, "" },
 
-		{ "yaw_kp", typeFLOAT,  &mainConfig.pidConfig[YAW].kp, 0, 1, 0.00180000, "" },
+		{ "yaw_kp", typeFLOAT,  &mainConfig.pidConfig[YAW].kp, 0, 1, 0.00181111, "" },
 		{ "yaw_ki", typeFLOAT,  &mainConfig.pidConfig[YAW].ki, 0, 1, 0.01000000, "" },
 		{ "yaw_kd", typeFLOAT,  &mainConfig.pidConfig[YAW].kd, 0, 1, 0.00011400, "" },
 		{ "yaw_wc", typeUINT,  &mainConfig.pidConfig[YAW].wc, 0, 1, 16, "" },
