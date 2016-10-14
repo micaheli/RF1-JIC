@@ -15,7 +15,7 @@ float flightcodeTime;
 extern uint8_t tInBuffer[];
 extern uint8_t tOutBuffer[];
 uint32_t counterFish = 0;
-uint32_t loopCounter = 4294967295;
+uint32_t loopCounter = 429496729;
 
 void InitFlightCode(void) {
 
