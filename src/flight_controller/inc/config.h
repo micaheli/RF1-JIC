@@ -15,10 +15,10 @@ typedef struct {
 
 
 
-#define typeINT 0;
-#define typeUINT 1;
-#define typeFLOAT 2;
-#define typeSTRING 3;
+#define typeINT		0
+#define typeUINT	1
+#define typeFLOAT	2
+#define typeSTRING	3
 
 
 typedef struct {
@@ -32,6 +32,7 @@ typedef struct {
 } config_variables_rec;
 
 extern main_config mainConfig;
+extern const config_variables_rec valueTable[];
 
 void SaveConfig (uint32_t addresConfigStart);
 uint8_t CalculateCzechsum(uint8_t *data, uint32_t length);

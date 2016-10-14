@@ -20,7 +20,7 @@ typedef struct {
     uint32_t mixerType;
 } mixer_config;
 
-enum {MIXER_X1234=0,MIXER_X1234_REVERSE_YAW,MIXER_CUSTOM};
+enum {MIXER_X1234=0,MIXER_X1234_REVERSE_YAW,MIXER_CUSTOM,MIXER_END};
 
 #define MAX_MOTOR_NUMBER 8
 #define MAX_SERVO_NUMBER 8

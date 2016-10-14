@@ -36,6 +36,7 @@ enum {
 	SKITZO_EXPO = 1,
 	TARANIS_EXPO = 2,
 	ACRO_PLUS = 33,
+	EXPO_CURVE_END,
 };
 
 extern void CheckFailsafe(void);
