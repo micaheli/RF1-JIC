@@ -151,7 +151,7 @@ void GenerateConfig(void)
 
 	bzero(&mainConfig, sizeof(mainConfig));
 
-	for (x=0;x<(valueTable/sizeof(config_variables_rec));x++)
+	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 	{
 		switch(valueTable[x].type)
 		{
