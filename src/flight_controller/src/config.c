@@ -36,6 +36,7 @@ const config_variables_rec valueTable[] = {
 }
 
 
+//test
 
 
 //Dynamic config is bad idea if we are supporting f1, so instead we will go to a static sized structure
