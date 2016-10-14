@@ -559,13 +559,23 @@ void OutputVar(uint32_t position)
 		break;
 	}
 
-	rfCustomReply();
-
+	RfCustomReply(rf_custom_out_buffer);
+//USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
 }
 /**********************************************************************************************************************/
 
 
+void RfCustomReply(char *rf_custom_out_buffer) {
 
+	unsigned char rfReplyBuffer[RF_BUFFER_SIZE];
+
+	bzero(rfReplyBuffer, sizeof(rfReplyBuffer));
+
+	rfReplyBuffer[0]=1;
+	memcpy((char *)(rfReplyBuffer+1), rf_custom_out_buffer, RF_BUFFER_SIZE);
+	USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
+
+}
 
 void ProcessCommand(char *inString)
 {
@@ -596,7 +606,6 @@ void ProcessCommand(char *inString)
 		SetVariable(args);
 
 	}
-
 	else if (!strcmp("dump", inString))
 	{
 
@@ -605,17 +614,23 @@ void ProcessCommand(char *inString)
 			OutputVar(x);
 		}
 	}
-
-/*
 	else if (!strcmp("save", inString))
 	{
-		writeEEPROM();
-		readEEPROM();
+		SaveConfig(ADDRESS_CONFIG_START);
 	}
 	else if (!strcmp("reboot", inString))
 	{
-		DoReboot();
+		SystemReset();
 	}
+	else if (!strcmp("resetdfu", inString))
+	{
+		SystemResetToDfuBootloader();
+	}
+	else if (!strcmp("resetconfig", inString))
+	{
+		SystemResetToDfuBootloader();
+	}
+/*
 	else if (!strcmp("1wire", inString))
 	{
 		rfCustom1Wire(args);
@@ -624,13 +639,9 @@ void ProcessCommand(char *inString)
 	{
 		rfCustomRfblBind(args);
 	}
-	else if (!strcmp("resetdfu", inString))
-	{
-		systemResetToDFUloader();
-	}
+*/
 
 
-	*/
 }
 
 

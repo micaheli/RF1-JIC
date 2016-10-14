@@ -50,6 +50,10 @@ inline void taskHandlePcComm(void)
 
 	if (tOutBuffer[0]==2) { //we have a usb report
 
+		ProcessCommand((char *)tOutBuffer);
+		bzero(tOutBuffer, HID_EPIN_SIZE);
+
+/*
 		if ((tOutBuffer[1] == 'D') && (tOutBuffer[2] == 'F') && (tOutBuffer[3] == 'U')) {
 			SystemResetToDfuBootloader();
 		}
@@ -130,20 +134,20 @@ inline void taskHandlePcComm(void)
 		tInBuffer[12]=(uint8_t)debugU32[7];
 		tInBuffer[13]=(uint8_t)debugU32[8];
 		tInBuffer[14]=(uint8_t)debugU32[9];
-		/*
-		tInBuffer[9]=Rx_Buffer[0];
-		tInBuffer[10]=Rx_Buffer[1];
-		tInBuffer[11]=Rx_Buffer[2];
-		tInBuffer[12]=Rx_Buffer[3];
-		tInBuffer[13]=Rx_Buffer[4];
-		tInBuffer[14]=Rx_Buffer[5];
-		*/
+
+//		tInBuffer[9]=Rx_Buffer[0];
+//		tInBuffer[10]=Rx_Buffer[1];
+//		tInBuffer[11]=Rx_Buffer[2];
+//		tInBuffer[12]=Rx_Buffer[3];
+//		tInBuffer[13]=Rx_Buffer[4];
+//		tInBuffer[14]=Rx_Buffer[5];
+
 		tInBuffer[15]=0x21;
 		tInBuffer[16]=0x21;
 	    USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
 
 	    tOutBuffer[0] = 0; //clear buffer id, only need to clear first byte.
-
+*/
 	}
 
 }
