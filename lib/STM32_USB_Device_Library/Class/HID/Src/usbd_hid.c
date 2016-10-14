@@ -52,6 +52,8 @@
 #include "usbd_ctlreq.h"
 
 
+uint32_t hidToPcReady = 1;
+
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
   */
@@ -127,7 +129,7 @@ USBD_ClassTypeDef  USBD_HID =
   USBD_HID_Init,
   USBD_HID_DeInit,
   USBD_HID_Setup,
-  NULL, /*EP0_TxSent*/  
+  NULL, /*EP0_TxSent*/
   NULL, /*EP0_RxReady*/
   USBD_HID_DataIn, /*DataIn*/
   USBD_HID_DataOut, /*DataOut*/
@@ -335,6 +337,7 @@ static uint8_t  USBD_HID_DeInit (USBD_HandleTypeDef *pdev,
   return USBD_OK;
 }
 
+
 /**
   * @brief  USBD_HID_Setup
   *         Handle the HID specific requests
@@ -501,6 +504,7 @@ static uint8_t  USBD_HID_DataIn (USBD_HandleTypeDef *pdev,
   /* Ensure that the FIFO is empty before a new transfer, this condition could 
   be caused by  a new transfer before the end of the previous transfer */
   ((USBD_HID_HandleTypeDef *)pdev->pClassData)->state = HID_IDLE;
+  hidToPcReady = 1;
   return USBD_OK;
 }
 

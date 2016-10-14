@@ -50,6 +50,9 @@ inline void taskHandlePcComm(void)
 
 	if (tOutBuffer[0]==2) { //we have a usb report
 
+		if (tOutBuffer[4]==0) {
+			tOutBuffer[4]=0x20;
+		}
 		ProcessCommand((char *)tOutBuffer);
 		bzero(tOutBuffer, HID_EPIN_SIZE);
 

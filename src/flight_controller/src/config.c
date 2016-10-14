@@ -23,7 +23,6 @@ void AddVariable(char *variableName, void *VariableLocation, uint32_t variableTy
 
 #define RF_BUFFER_SIZE 63
 
-
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
 main_config mainConfig;
@@ -127,13 +126,13 @@ const config_variables_rec valueTable[] = {
 		{ "aux3_expo", typeFLOAT,  &mainConfig.rcControlsConfig.midRc[AUX3], 0, 100, 0, "" },
 		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.midRc[AUX4], 0, 100, 0, "" },
 
-		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.rates[PITCH] , 0, 1400, 400, "" },
-		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.rates[ROLL] , 0, 1400, 400, "" },
-		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.rates[YAW] , 0, 1400, 400, "" },
+		{ "pitch_rate", typeFLOAT,  &mainConfig.rcControlsConfig.rates[PITCH] , 0, 1400, 400, "" },
+		{ "roll_rate", typeFLOAT,  &mainConfig.rcControlsConfig.rates[ROLL] , 0, 1400, 400, "" },
+		{ "yaw_rate", typeFLOAT,  &mainConfig.rcControlsConfig.rates[YAW] , 0, 1400, 400, "" },
 
-		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.acroPlus[PITCH] , 0, 4, 2, "" },
-		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.acroPlus[ROLL] , 0, 4, 2, "" },
-		{ "aux4_expo", typeFLOAT,  &mainConfig.rcControlsConfig.acroPlus[YAW] , 0, 4, 2, "" }
+		{ "pitch_acrop", typeFLOAT,  &mainConfig.rcControlsConfig.acroPlus[PITCH] , 0, 4, 2, "" },
+		{ "roll_acrop", typeFLOAT,  &mainConfig.rcControlsConfig.acroPlus[ROLL] , 0, 4, 2, "" },
+		{ "yaw_acrop", typeFLOAT,  &mainConfig.rcControlsConfig.acroPlus[YAW] , 0, 4, 2, "" }
 
 };
 
@@ -239,12 +238,14 @@ void SaveConfig (uint32_t addresConfigStart)
 	mainConfig.size     = sizeof(main_config);
 	mainConfig.czechsum = CalculateCzechsum((uint8_t *)(main_config *) &mainConfig, sizeof(main_config));
 
+	InitWatchdog(WATCHDOG_TIMEOUT_16S);
 	EraseFlash(addresConfigStart, addresConfigStart+sizeof(main_config));
 	PrepareFlash();
 	for (addressOffset = 0; addressOffset < sizeof(main_config); addressOffset += 4) {
 		WriteFlash(*(uint32_t *) ((char *) &mainConfig + addressOffset), addresConfigStart+addressOffset );
 	}
 	FinishFlash();
+	InitWatchdog(WATCHDOG_TIMEOUT_1S);
 }
 
 uint8_t CalculateCzechsum(uint8_t *data, uint32_t length)
@@ -281,151 +282,12 @@ int ValidateConfig (uint32_t addresConfigStart)
 void LoadConfig (uint32_t addresConfigStart)
 {
 	if (ValidateConfig(addresConfigStart) ) {
-		ResetConfig(addresConfigStart);
-		//memcpy(&mainConfig, (char *) addresConfigStart, sizeof(main_config));
+		memcpy(&mainConfig, (char *) addresConfigStart, sizeof(main_config));
 	} else {
-		ResetConfig(addresConfigStart);
+		GenerateConfig();
+		SaveConfig(addresConfigStart);
 	}
 }
-
-void ResetConfig (uint32_t addresConfigStart)
-{
-
-	//todo: make each config resettable seprately
-	float deadband = 0.02; //2.5% deadband
-	uint32_t minRc = 0; // middle of rc input, one for each channel. Default being 1500
-	uint32_t midRc = 1024; // middle of rc input, one for each channel. Default being 1500
-	uint32_t maxRc = 2048; // middle of rc input, one for each channel. Default being 1500
-
-
-	mainConfig.mixerConfig.mixerType = MIXER_X1234_REVERSE_YAW;
-	//mainConfig.mixerConfig.mixerType = MIXER_X1234;
-
-	mainConfig.gyroConfig.gyroRotation  = CW0; //airbot revolt
-	//mainConfig.gyroConfig.gyroRotation  = CW270; //dji revolt and revo
-	mainConfig.gyroConfig.boardRotation = CW0;
-
-	mainConfig.pidConfig[YAW].kp	= .00180000;
-	mainConfig.pidConfig[YAW].ki	= .01000000;
-	mainConfig.pidConfig[YAW].kd	= .00011400;
-	mainConfig.pidConfig[YAW].wc	=  16;
-
-	mainConfig.pidConfig[ROLL].kp	= .00130000;
-	mainConfig.pidConfig[ROLL].ki	= .01000000;
-	mainConfig.pidConfig[ROLL].kd	= .00011400;
-	mainConfig.pidConfig[ROLL].wc	=  8;
-
-	mainConfig.pidConfig[PITCH].kp	= .00140000;
-	mainConfig.pidConfig[PITCH].ki	= .01000000;
-	mainConfig.pidConfig[PITCH].kd	= .00011400;
-	mainConfig.pidConfig[PITCH].wc	=  8;
-
-
-	mainConfig.filterConfig[YAW].gyro.q   = 0.00100;
-	//mainConfig.filterConfig[YAW].gyro.r  = 0.001000;
-	mainConfig.filterConfig[YAW].gyro.r   = 3.000000;
-	//mainConfig.filterConfig[YAW].gyro.r   = 5.630000;
-	mainConfig.filterConfig[YAW].gyro.p   = 0.00150;
-
-	mainConfig.filterConfig[ROLL].gyro.q  = 0.00010;
-	//mainConfig.filterConfig[ROLL].gyro.r  = 0.001000;
-	mainConfig.filterConfig[ROLL].gyro.r  = 0.100000;
-	//mainConfig.filterConfig[ROLL].gyro.r  = 3.550000;
-	mainConfig.filterConfig[ROLL].gyro.p  = 0.00015;
-
-	mainConfig.filterConfig[PITCH].gyro.q = 0.00010;
-	//mainConfig.filterConfig[PITCH].gyro.r = 0.0.001000;
-	mainConfig.filterConfig[PITCH].gyro.r = 0.100000;
-	//mainConfig.filterConfig[PITCH].gyro.r = 3.550000;
-	mainConfig.filterConfig[PITCH].gyro.p = 0.00015;
-
-	mainConfig.filterConfig[YAW].kd.q     = 0.00010;
-	mainConfig.filterConfig[YAW].kd.r     = 0.00300;
-	mainConfig.filterConfig[YAW].kd.p     = 0.00015;
-
-	mainConfig.filterConfig[ROLL].kd.q    = 0.00010;
-	mainConfig.filterConfig[ROLL].kd.r    = 0.00300;
-	mainConfig.filterConfig[ROLL].kd.p    = 0.00015;
-
-	mainConfig.filterConfig[PITCH].kd.q   = 0.00010;
-	mainConfig.filterConfig[PITCH].kd.r   = 0.00300;
-	mainConfig.filterConfig[PITCH].kd.p   = 0.00015;
-
-
-	mainConfig.gyroConfig.minorBoardRotation[X] = 0;
-	mainConfig.gyroConfig.minorBoardRotation[Y] = 0;
-	mainConfig.gyroConfig.minorBoardRotation[Z] = 0;
-
-
-	mainConfig.gyroConfig.loopCtrl = LOOP_UH32;
-
-	mainConfig.rcControlsConfig.deadBand[PITCH]    = deadband;
-	mainConfig.rcControlsConfig.deadBand[ROLL]     = deadband;
-	mainConfig.rcControlsConfig.deadBand[YAW]      = deadband;
-	mainConfig.rcControlsConfig.deadBand[THROTTLE] = 0;
-	mainConfig.rcControlsConfig.deadBand[AUX1]     = deadband;
-	mainConfig.rcControlsConfig.deadBand[AUX2]     = deadband;
-	mainConfig.rcControlsConfig.deadBand[AUX3]     = deadband;
-	mainConfig.rcControlsConfig.deadBand[AUX4]     = deadband;
-
-	mainConfig.rcControlsConfig.midRc[PITCH]    = midRc;
-	mainConfig.rcControlsConfig.midRc[ROLL]     = midRc;
-	mainConfig.rcControlsConfig.midRc[YAW]      = midRc;
-	mainConfig.rcControlsConfig.midRc[THROTTLE] = midRc;
-	mainConfig.rcControlsConfig.midRc[AUX1]     = midRc;
-	mainConfig.rcControlsConfig.midRc[AUX2]     = midRc;
-	mainConfig.rcControlsConfig.midRc[AUX3]     = midRc;
-	mainConfig.rcControlsConfig.midRc[AUX4]     = midRc;
-
-	//radio calibration data is held here. It save cycles and RAM to just use this directly.
-	mainConfig.rcControlsConfig.minRc[PITCH]    = minRc;
-	mainConfig.rcControlsConfig.minRc[ROLL]     = minRc;
-	mainConfig.rcControlsConfig.minRc[YAW]      = minRc;
-	mainConfig.rcControlsConfig.minRc[THROTTLE] = minRc;
-	mainConfig.rcControlsConfig.minRc[AUX1]     = minRc;
-	mainConfig.rcControlsConfig.minRc[AUX2]     = minRc;
-	mainConfig.rcControlsConfig.minRc[AUX3]     = minRc;
-	mainConfig.rcControlsConfig.minRc[AUX4]     = minRc;
-
-	mainConfig.rcControlsConfig.maxRc[PITCH]    = maxRc;
-	mainConfig.rcControlsConfig.maxRc[ROLL]     = maxRc;
-	mainConfig.rcControlsConfig.maxRc[YAW]      = maxRc;
-	mainConfig.rcControlsConfig.maxRc[THROTTLE] = maxRc;
-	mainConfig.rcControlsConfig.maxRc[AUX1]     = maxRc;
-	mainConfig.rcControlsConfig.maxRc[AUX2]     = maxRc;
-	mainConfig.rcControlsConfig.maxRc[AUX3]     = maxRc;
-	mainConfig.rcControlsConfig.maxRc[AUX4]     = maxRc;
-
-	mainConfig.rcControlsConfig.useCurve[PITCH]     = SKITZO_EXPO;
-	mainConfig.rcControlsConfig.useCurve[ROLL]      = SKITZO_EXPO;
-	mainConfig.rcControlsConfig.useCurve[YAW]       = SKITZO_EXPO;
-	mainConfig.rcControlsConfig.useCurve[THROTTLE]  = NO_EXPO;
-	mainConfig.rcControlsConfig.useCurve[AUX1]      = NO_EXPO;
-	mainConfig.rcControlsConfig.useCurve[AUX2]      = NO_EXPO;
-	mainConfig.rcControlsConfig.useCurve[AUX3]      = NO_EXPO;
-	mainConfig.rcControlsConfig.useCurve[AUX4]      = NO_EXPO;
-
-	mainConfig.rcControlsConfig.curveExpo[PITCH]    = 40.0f;
-	mainConfig.rcControlsConfig.curveExpo[ROLL]     = 40.0f;
-	mainConfig.rcControlsConfig.curveExpo[YAW]      = 40.0f;
-	mainConfig.rcControlsConfig.curveExpo[THROTTLE] = 0;
-	mainConfig.rcControlsConfig.curveExpo[AUX1]     = 0;
-	mainConfig.rcControlsConfig.curveExpo[AUX2]     = 0;
-	mainConfig.rcControlsConfig.curveExpo[AUX3]     = 0;
-	mainConfig.rcControlsConfig.curveExpo[AUX4]     = 0;
-
-	mainConfig.rcControlsConfig.rates[YAW]          = 400.0;
-	mainConfig.rcControlsConfig.rates[ROLL]         = 400.0;
-	mainConfig.rcControlsConfig.rates[PITCH]        = 400.0;
-
-	mainConfig.rcControlsConfig.acroPlus[YAW]       = 2.000;
-	mainConfig.rcControlsConfig.acroPlus[ROLL]      = 2.000;
-	mainConfig.rcControlsConfig.acroPlus[PITCH]     = 2.000;
-
-	SaveConfig(addresConfigStart);
-}
-
-
 
 
 
@@ -560,12 +422,13 @@ void OutputVar(uint32_t position)
 	}
 
 	RfCustomReply(rf_custom_out_buffer);
-//USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
 }
 /**********************************************************************************************************************/
 
 
 void RfCustomReply(char *rf_custom_out_buffer) {
+
+	uint32_t forCounter;
 
 	unsigned char rfReplyBuffer[RF_BUFFER_SIZE];
 
@@ -573,6 +436,14 @@ void RfCustomReply(char *rf_custom_out_buffer) {
 
 	rfReplyBuffer[0]=1;
 	memcpy((char *)(rfReplyBuffer+1), rf_custom_out_buffer, RF_BUFFER_SIZE);
+	//volatile uint32_t cat = &hUsbDeviceFS.dev_state;
+	//volatile uint32_t dog = &hUsbDeviceFS.pClass->EP0_RxReady;
+
+	for (forCounter = 0; forCounter < 40000; forCounter++) {
+		if (hidToPcReady)
+			break;
+	}
+	hidToPcReady = 0;
 	USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
 
 }
@@ -604,31 +475,62 @@ void ProcessCommand(char *inString)
 	if (!strcmp("set", inString))
 	{
 		SetVariable(args);
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "variableset", sizeof("variableset"));
+		RfCustomReply(rf_custom_out_buffer);
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, args, inStringLength);
+		RfCustomReply(rf_custom_out_buffer);
 
 	}
 	else if (!strcmp("dump", inString))
 	{
-
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "dumpstarted", sizeof("dumpstarted"));
+		RfCustomReply(rf_custom_out_buffer);
 		for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 		{
 			OutputVar(x);
 		}
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "dumpcomplete", sizeof("dumpcomplete"));
+		RfCustomReply(rf_custom_out_buffer);
+
 	}
 	else if (!strcmp("save", inString))
 	{
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
+		RfCustomReply(rf_custom_out_buffer);
 		SaveConfig(ADDRESS_CONFIG_START);
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
+		RfCustomReply(rf_custom_out_buffer);
 	}
 	else if (!strcmp("reboot", inString))
 	{
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "rebooting", sizeof("rebooting"));
+		RfCustomReply(rf_custom_out_buffer);
 		SystemReset();
 	}
 	else if (!strcmp("resetdfu", inString))
 	{
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "rebootingdfu", sizeof("rebootingdfu"));
+		RfCustomReply(rf_custom_out_buffer);
 		SystemResetToDfuBootloader();
 	}
 	else if (!strcmp("resetconfig", inString))
 	{
-		SystemResetToDfuBootloader();
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "resettingconfig", sizeof("resettingconfig"));
+		RfCustomReply(rf_custom_out_buffer);
+		GenerateConfig();
+		SaveConfig(ADDRESS_CONFIG_START);
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "configreset", sizeof("configreset"));
+		RfCustomReply(rf_custom_out_buffer);
 	}
 /*
 	else if (!strcmp("1wire", inString))

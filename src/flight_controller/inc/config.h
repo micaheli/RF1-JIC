@@ -38,7 +38,6 @@ extern void SaveConfig (uint32_t addresConfigStart);
 uint8_t CalculateCzechsum(uint8_t *data, uint32_t length);
 int ValidateConfig (uint32_t addresConfigStart);
 extern void LoadConfig (uint32_t addresConfigStart);
-extern void ResetConfig (uint32_t addresConfigStart);
 extern void GenerateConfig(void);
 extern void RfCustomReply(char *rf_custom_out_buffer);
 extern void ProcessCommand(char *inString);
