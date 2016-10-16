@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
+#include <string.h>
 #include <stddef.h>
 #include <ctype.h>
 //low level drivers and driver based functions
@@ -14,7 +14,6 @@
 
 //general includes
 #include "pid.h"
-#include "math.h"
 #include "mixer.h"
 #include "debug.h"
 #include "flight.h"
@@ -40,6 +39,7 @@
 
 //config
 #include "config.h"
+#include "rf_math.h"
 
 void BoardInit(void);
 void ErrorHandler(void);

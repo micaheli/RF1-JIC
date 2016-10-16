@@ -316,7 +316,7 @@
 
 #undef  __CMSIS_GENERIC         /* enable NVIC and Systick functions */
 #include "string.h"
-#include "math.h"
+#include "../../../src/flight_controller/inc/rf_math.h"
 #ifdef   __cplusplus
 extern "C"
 {

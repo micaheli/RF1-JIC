@@ -1,6 +1,7 @@
 #pragma once
 
 #define AXIS_NUMBER 3
+#define VECTOR_NUMBER 3
 #define KD_RING_BUFFER_SIZE 256
 
 enum { KP = 0, KD, KI, PID_VARIABLE_COUNT }; // why is there a blank enum here kalyn?
@@ -22,6 +23,7 @@ extern float pidSetpoint[AXIS_NUMBER];    //3 axis for pidc. range is in DPS.
 extern pid_output pids[AXIS_NUMBER];
 extern float currentKdFilterConfig[AXIS_NUMBER];
 extern uint32_t khzDivider;
+extern float dT;
 
 void InitPid (void);
 void InlineInitPidFilters(void);

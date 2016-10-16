@@ -81,7 +81,7 @@
 /** \example arm_sin_cos_example_f32.c
   */
 
-#include <math.h>
+#include "../../../../../../src/flight_controller/inc/rf_math.h"
 #include "arm_math.h"
 
 /* ----------------------------------------------------------------------

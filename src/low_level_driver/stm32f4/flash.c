@@ -25,7 +25,6 @@ int EraseFlash(uint32_t flashStart, uint32_t flashEnd) {
 
     static FLASH_EraseInitTypeDef EraseInitStruct;
     uint32_t SectorError = 0;
-    uint32_t cat = GetFlashSector(flashEnd) - GetFlashSector(flashStart) + 1;;
 
 	HAL_FLASH_Unlock();
 

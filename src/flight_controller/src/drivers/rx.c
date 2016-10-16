@@ -49,7 +49,7 @@ inline void RxUpdate(void) // hook for when rx updates
 	//todo: MOVE!!! - uglied up Preston's code.
 	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
 		latchFirstArm = 1;
-	} else if ( (latchFirstArm == 2) && (!boardArmed) && (rxData[4] > 1500) ) {
+	} else if ( (latchFirstArm == 2) && (!boardArmed) && (rxData[4] > 1500) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < 0.1) ) { //TODO: make uncalibrated board buzz
 
 		latchFirstArm = 0;
 		disarmCount = 0;

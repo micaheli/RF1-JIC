@@ -35,7 +35,7 @@ extern main_config mainConfig;
 extern const config_variables_rec valueTable[];
 
 extern void SaveConfig (uint32_t addresConfigStart);
-uint8_t CalculateCzechsum(uint8_t *data, uint32_t length);
+extern uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length);
 int ValidateConfig (uint32_t addresConfigStart);
 extern void LoadConfig (uint32_t addresConfigStart);
 extern void GenerateConfig(void);

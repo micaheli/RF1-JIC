@@ -2,17 +2,14 @@
 
 #define GYRO_CALIBRATION_CYCLES 1000
 
-extern float dpsGyroArrayUnrotated[3];
-extern float dpsGyroArray[3];
-extern int16_t rawGyroRotated[3];
 extern uint32_t gyroCalibrationCycles;
 
 //config structure which is loaded by config
 typedef struct {
-    int16_t minorBoardRotation[3]; //X, Y, Z
-    unsigned char gyroRotation;
-    unsigned char boardRotation;
-    unsigned char loopCtrl;
+    int32_t minorBoardRotation[3]; //X, Y, Z
+    uint32_t gyroRotation;
+    uint32_t boardCalibrated; //board calibration complete?
+    uint32_t loopCtrl;
 } gyro_config;
 
 enum {X=0,Y,Z};
@@ -40,6 +37,6 @@ typedef enum {
 } loopCtrl_e;
 
 void ResetGyroCalibration(void);
-void InlineUpdateGyro(int16_t rawGyro[], int16_t rawGyroRotated[], float scale);
-void InlineApplyGyroRotation (int16_t rawGyro[], int16_t rawGyroRotated[]);
-void InlineApplyBoardRotationAndScale ( int16_t rawGyroRotated[], float dpsGyroArray[], float scale );
+void InlineUpdateAcc(int32_t rawAcc[], float scale);
+void InlineUpdateGyro(int32_t rawGyro[], float scale);
+void InlineApplyGyroAccRotationAndScale (int32_t rawData[], float dataArray[], float scale );

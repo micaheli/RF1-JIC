@@ -47,14 +47,6 @@ static gyroFrame_t gyroRxFrame;
 static gyroFrame_t gyroTxFrame;
 uint32_t deviceWhoAmI = 0;
 
-typedef struct {
-    uint8_t rateDiv;
-    uint8_t gyroDlpf;
-    uint8_t gyroDlpfBypass;
-    uint8_t accDlpf;
-    uint8_t accDlpfBypass;
-    uint8_t accDenom;
-} gyro_device_config;
 
 // TODO: check what the acc actually updates at when sample rate divider != 0
 // we have assumed that sample divider rate effects the accelerometer update rate
@@ -83,27 +75,26 @@ static const gyro_device_config mpu6500GyroConfig[] = {
 };
 
 static const gyro_device_config mpu6000GyroConfig[] = {
-    [LOOP_L1] = {1, INVENS_CONST_GYRO_DLPF_188, 0, 0, 0, 0},
-    [LOOP_M1] = {8, INVENS_CONST_GYRO_DLPF_256, 0, 0, 0, 0},
-    [LOOP_M2] = {4, INVENS_CONST_GYRO_DLPF_256, 0, 0, 0, 0},
-    [LOOP_M4] = {2, INVENS_CONST_GYRO_DLPF_256, 0, 0, 0, 0},
-    [LOOP_M8] = {1, INVENS_CONST_GYRO_DLPF_256, 0, 0, 0, 0},
-    [LOOP_H1] = {8, INVENS_CONST_GYRO_DLPF_3600, 0, 0, 0, 0},
-    [LOOP_H2] = {4, INVENS_CONST_GYRO_DLPF_3600, 0, 0, 0, 0},
-    [LOOP_H4] = {2, INVENS_CONST_GYRO_DLPF_3600, 0, 0, 0, 0},
-    [LOOP_H8] = {1, INVENS_CONST_GYRO_DLPF_3600, 0, 0, 0, 0},
+    [LOOP_L1] = {1, INVENS_CONST_GYRO_DLPF_188, 0, 0, 0, 1},
+    [LOOP_M1] = {8, INVENS_CONST_GYRO_DLPF_256, 0, 0, 0, 1},
+    [LOOP_M2] = {4, INVENS_CONST_GYRO_DLPF_256, 0, 0, 0, 2},
+    [LOOP_M4] = {2, INVENS_CONST_GYRO_DLPF_256, 0, 0, 0, 4},
+    [LOOP_M8] = {1, INVENS_CONST_GYRO_DLPF_256, 0, 0, 0, 8},
+    [LOOP_H1] = {8, INVENS_CONST_GYRO_DLPF_3600, 0, 0, 0, 1},
+    [LOOP_H2] = {4, INVENS_CONST_GYRO_DLPF_3600, 0, 0, 0, 2},
+    [LOOP_H4] = {2, INVENS_CONST_GYRO_DLPF_3600, 0, 0, 0, 4},
+    [LOOP_H8] = {1, INVENS_CONST_GYRO_DLPF_3600, 0, 0, 0, 8},
 };
 
 static bool accelUpdate = false;
-static int16_t gyroRotated[3];
-static int16_t gyroData[3];
-static int16_t accelData[3];
-static int16_t gyroCal[3];
+static int32_t accelData[3];
+//static int32_t accelCal[3];
+static int32_t gyroData[3];
+static int32_t gyroCal[3];
+gyro_device_config gyroConfig;
 
 int accgyroDeviceInit(loopCtrl_e gyroLoop)
 {
-
-	gyro_device_config gyroConfig;
 
     // the mpu6000 caps out at 8khz
 	if (deviceWhoAmI == MPU6000_WHO_AM_I) {
@@ -239,26 +230,29 @@ void accgyroDeviceReadGyro(void)
 
     accelUpdate = false;
     accgyroDMAReadWriteData(&gyroTxFrame.gyroAddress, &gyroRxFrame.gyroAddress, 7);
+
 }
 
 void accgyroDeviceReadComplete(void)
 {
-    if (accelUpdate) {
-        accelData[0] = (int16_t)((gyroRxFrame.accelX_H << 8) | gyroRxFrame.accelX_L);
-        accelData[1] = (int16_t)((gyroRxFrame.accelY_H << 8) | gyroRxFrame.accelY_L);
-        accelData[2] = (int16_t)((gyroRxFrame.accelZ_H << 8) | gyroRxFrame.accelZ_L);
 
-        // TODO: updateAccel(accelData, 1.f / 2048.f);
-    }
 
-    gyroData[0] = (int16_t)((gyroRxFrame.gyroX_H << 8) | gyroRxFrame.gyroX_L);
-    gyroData[1] = (int16_t)((gyroRxFrame.gyroY_H << 8) | gyroRxFrame.gyroY_L);
-    gyroData[2] = (int16_t)((gyroRxFrame.gyroZ_H << 8) | gyroRxFrame.gyroZ_L);
+        gyroData[0] = (int32_t)(int16_t)((gyroRxFrame.gyroX_H << 8) | gyroRxFrame.gyroX_L);
+        gyroData[1] = (int32_t)(int16_t)((gyroRxFrame.gyroY_H << 8) | gyroRxFrame.gyroY_L);
+        gyroData[2] = (int32_t)(int16_t)((gyroRxFrame.gyroZ_H << 8) | gyroRxFrame.gyroZ_L);
 
-    InlineUpdateGyro(gyroData, gyroRotated, 1.f / 16.4f);
+        InlineUpdateGyro( gyroData, 0.060975609756098f ); // 1/16.4 is 0.060975609756098
+
+        if (accelUpdate) {
+            accelData[0] = (int32_t)(int16_t)((gyroRxFrame.accelX_H << 8) | gyroRxFrame.accelX_L);
+            accelData[1] = (int32_t)(int16_t)((gyroRxFrame.accelY_H << 8) | gyroRxFrame.accelY_L);
+            accelData[2] = (int32_t)(int16_t)((gyroRxFrame.accelZ_H << 8) | gyroRxFrame.accelZ_L);
+
+            InlineUpdateAcc( accelData, 0.00048828125f); //  1/2048 is 0.00048828125f
+        }
 }
 
-void accgyroDeviceCalibrate(int16_t *gyroData)
+void accgyroDeviceCalibrate(int32_t *gyroData)
 {
     uint8_t idx;
 
@@ -279,7 +273,7 @@ void accgyroDeviceCalibrate(int16_t *gyroData)
      */
 }
 
-void accgyroDeviceApplyCalibration(int16_t *gyroData)
+void accgyroDeviceApplyCalibration(int32_t *gyroData)
 {
     uint8_t idx;
 

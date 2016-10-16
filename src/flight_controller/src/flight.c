@@ -2,18 +2,142 @@
 
 pid_output flightPids[AXIS_NUMBER];
 float filteredGyroData[AXIS_NUMBER];
-paf_state pafStates[AXIS_NUMBER];
-paf_state rollPafState;
-paf_state pitchPafState;
+float filteredAccData[VECTOR_NUMBER];
+paf_state pafGyroStates[AXIS_NUMBER];
+paf_state pafAccStates[AXIS_NUMBER];
 float actuatorRange;
 float flightSetPoints[AXIS_NUMBER];
 uint32_t boardArmed, calibrateMotors, fullKiLatched;
 float currentGyroFilterConfig[AXIS_NUMBER];
+float currentAccFilterConfig[AXIS_NUMBER];
 uint32_t flightcodeTimeStart;
 float flightcodeTime;
+float pitchAttitude = 0, rollAttitude = 0, yawAttitude = 0;
+uint32_t boardOrientation1 = 0;
 
 uint32_t counterFish = 0;
 uint32_t loopCounter = 429496729U;
+
+int SetCalibrate1(void) {
+
+	if ( ABS(filteredAccData[ACCX]) > (ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ])) )
+	{
+		// is king
+		if (filteredAccData[ACCX] < 0) { //ACCX negative
+			//board inverted
+			return (boardOrientation1 = CALIBRATE_BOARD_INVERTED);
+		} else { //ACCX positive
+			//board upright
+			return (boardOrientation1 = CALIBRATE_BOARD_UPRIGHT);
+		}
+
+	}
+	else if ( ABS(filteredAccData[ACCY]) > (ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCZ])) )
+	{
+		//ACCY is king
+		if (filteredAccData[ACCY] < 0) { //ACCY negative
+			return (CALIBRATE_BOARD_FAILED); //board sideways or on nose, return 0
+		} else { //ACCY positive
+			return (CALIBRATE_BOARD_FAILED); //board sideways or on nose, return 0
+		}
+	}
+	else if ( ABS(filteredAccData[ACCZ]) > (ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY])) )
+	{
+		//ACCZ is king
+		if (filteredAccData[ACCZ] < 0) { //ACCZ negative
+			return (CALIBRATE_BOARD_FAILED); //board sideways or on nose, return 0
+		} else { //ACCZ positive
+			return (CALIBRATE_BOARD_FAILED); //board sideways or on nose, return 0
+		}
+	}
+
+	return (CALIBRATE_BOARD_FAILED); //check sanity and return 0 if result not sane.
+
+}
+
+int SetCalibrate2(void) {
+
+	if (!boardOrientation1) { //make sure step one completed successfully.
+		return (0);
+	}
+
+
+	if ( ABS(filteredAccData[ACCX]) > (ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ])) )
+	{
+		//ACCX is king
+		if (filteredAccData[ACCX] < 0) { //ACCX negative
+			boardOrientation1 = 0; //calibration done, reset check
+			return (CALIBRATE_BOARD_FAILED); //board is not on its side
+		} else { //ACCX positive
+			boardOrientation1 = 0; //calibration done, reset check
+			return (CALIBRATE_BOARD_FAILED); //board is not on its side
+		}
+
+	}
+	else if ( ABS(filteredAccData[ACCY]) > (ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCZ])) )
+	{
+		//ACCY is king
+		if (filteredAccData[ACCY] < 0) { //ACCY negative
+			if (boardOrientation1 == CALIBRATE_BOARD_UPRIGHT) {
+				mainConfig.gyroConfig.boardCalibrated = 1;
+				mainConfig.gyroConfig.gyroRotation = CW0; //
+				boardOrientation1 = 0; //calibration done, reset check
+				return (1); //calibration looks good
+			} else {
+				mainConfig.gyroConfig.boardCalibrated = 1;
+				mainConfig.gyroConfig.gyroRotation = CW0_INV; //
+				boardOrientation1 = 0; //calibration done, reset check
+				return (1); //calibration looks good
+			}
+		} else { //ACCY positive
+			if (boardOrientation1 == CALIBRATE_BOARD_UPRIGHT) {
+				mainConfig.gyroConfig.boardCalibrated = 1;
+				mainConfig.gyroConfig.gyroRotation = CW180;
+				boardOrientation1 = 0; //calibration done, reset check
+				return (1); //calibration looks good
+			} else {
+				mainConfig.gyroConfig.boardCalibrated = 1;
+				mainConfig.gyroConfig.gyroRotation = CW180_INV;
+				boardOrientation1 = 0; //calibration done, reset check
+				return (1); //calibration looks good
+			}
+		}
+	}
+	else if ( ABS(filteredAccData[ACCZ]) > (ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY])) )
+	{
+		//ACCZ is king
+		if (filteredAccData[ACCZ] < 0) { //ACCZ negative
+			if (boardOrientation1 == CALIBRATE_BOARD_UPRIGHT) {
+				mainConfig.gyroConfig.boardCalibrated = 1;
+				mainConfig.gyroConfig.gyroRotation = CW90;
+				boardOrientation1 = 0; //calibration done, reset check
+				return (1); //calibration looks good
+			} else {
+				mainConfig.gyroConfig.boardCalibrated = 1;
+				mainConfig.gyroConfig.gyroRotation = CW90_INV;
+				boardOrientation1 = 0; //calibration done, reset check
+				return (1); //calibration looks good
+			}
+		} else { //ACCZ positive
+			if (boardOrientation1 == CALIBRATE_BOARD_UPRIGHT) {
+				mainConfig.gyroConfig.boardCalibrated = 1;
+				mainConfig.gyroConfig.gyroRotation = CW270;
+				boardOrientation1 = 0; //calibration done, reset check
+				return (1); //calibration looks good
+			} else {
+				mainConfig.gyroConfig.boardCalibrated = 1;
+				mainConfig.gyroConfig.gyroRotation = CW270_INV;
+				boardOrientation1 = 0; //calibration done, reset check
+				return (1); //calibration looks good
+			}
+		}
+	}
+
+	boardOrientation1 = 0; //once we get this far we need to repeat step 1 in the event of a failure.
+
+	return (CALIBRATE_BOARD_FAILED); //check sanity and return 0 if result not sane.
+
+}
 
 void InitFlightCode(void) {
 
@@ -27,6 +151,7 @@ void InitFlightCode(void) {
 	flightcodeTimeStart = 0;
 
 	InlineInitGyroFilters();
+	InlineInitAccFilters();
 
 }
 
@@ -36,12 +161,63 @@ inline void InlineInitGyroFilters(void)  {
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		pafStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
+		pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].acc.q, mainConfig.filterConfig[axis].acc.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
 
-		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].gyro.r;
+		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].acc.r;
 
 	}
 
+}
+
+inline void InlineInitAccFilters(void)  {
+
+	int32_t vector;
+
+	for (vector = 2; vector >= 0; --vector) {
+
+		pafAccStates[vector]   = InitPaf( mainConfig.filterConfig[vector].acc.q, mainConfig.filterConfig[vector].acc.r, mainConfig.filterConfig[vector].acc.p, filteredAccData[vector]);
+
+		currentAccFilterConfig[vector] = mainConfig.filterConfig[vector].acc.r;
+
+	}
+
+}
+
+
+inline void InlineUpdateAttitude(float geeForceAccArray[]) {
+	//update gyro filter
+	PafUpdate(&pafAccStates[ACCX], geeForceAccArray[ACCX]);
+	PafUpdate(&pafAccStates[ACCY], geeForceAccArray[ACCY]);
+	PafUpdate(&pafAccStates[ACCZ], geeForceAccArray[ACCZ]);
+
+	filteredAccData[ACCX] = pafAccStates[ACCX].x;
+	filteredAccData[ACCY] = pafAccStates[ACCY].x;
+	filteredAccData[ACCZ] = pafAccStates[ACCZ].x;
+
+}
+
+
+void ComplementaryFilterUpdateAttitude(void)
+{
+	static float pitchAcc = 0, rollAcc = 0;
+
+    // Integrate the gyroscope data
+	pitchAttitude += (filteredGyroData[PITCH] * dT);
+	rollAttitude += (filteredGyroData[ROLL] * dT);
+	yawAttitude += (filteredGyroData[YAW] * dT);
+
+    // Compensate for drift with accelerometer data is valid
+    float forceMagnitudeApprox = ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ]);
+    if (forceMagnitudeApprox > .45 && forceMagnitudeApprox < 2.1) //only look at ACC data if it's within .45 and 2.1 Gees
+    {
+	// Turning around the X axis results in a vector on the Y-axis
+    	pitchAcc = atan2f( (float)filteredAccData[ACCY], (float)filteredAccData[ACCZ]) * 180 * IPIf; //multiplying by the inverse of Pi is faster than dividing by Pi
+    	pitchAttitude = pitchAttitude * 0.98 + pitchAcc * 0.02;
+
+	// Turning around the Y axis results in a vector on the X-axis
+        rollAcc = atan2f((float)filteredAccData[ACCX], (float)filteredAccData[ACCZ]) * 180 * IPIf;
+        rollAttitude = rollAttitude * 0.98 + rollAcc * 0.02;
+    }
 }
 
 
@@ -65,6 +241,20 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	DoLed(1, 0);
 	DoLed(2, 0);
 
+
+	float catt = pitchAttitude;
+	if (catt == 9) {
+		DoLed(0, 1);
+		DoLed(1, 1);
+		DoLed(2, 1);
+	}
+	float dogg = rollAttitude;
+	if (dogg == 9) {
+		DoLed(0, 1);
+		DoLed(1, 1);
+		DoLed(2, 1);
+	}
+
 	if (loopCounter-- & khzDivider ) { //this code runs at 1 KHz by checking the loop counter against the khzDivider bit set in InitPid();
 
 		CheckFailsafe();
@@ -86,6 +276,14 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 			InlineInitPidFilters();
 		}
 
+		if (
+				(currentAccFilterConfig[ACCX] != mainConfig.filterConfig[ACCX].acc.r) ||
+				(currentAccFilterConfig[ACCY] != mainConfig.filterConfig[ACCY].acc.r) ||
+				(currentAccFilterConfig[ACCZ] != mainConfig.filterConfig[ACCZ].acc.r)
+		) {
+			InlineInitAccFilters();
+		}
+
 		//update blackbox here
 
 
@@ -105,13 +303,13 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 
 	//update gyro filter
-	PafUpdate(&pafStates[YAW], dpsGyroArray[YAW]);
-	PafUpdate(&pafStates[ROLL], dpsGyroArray[ROLL]);
-	PafUpdate(&pafStates[PITCH], dpsGyroArray[PITCH]);
+	PafUpdate(&pafGyroStates[YAW], dpsGyroArray[YAW]);
+	PafUpdate(&pafGyroStates[ROLL], dpsGyroArray[ROLL]);
+	PafUpdate(&pafGyroStates[PITCH], dpsGyroArray[PITCH]);
 
-	filteredGyroData[YAW]   = pafStates[YAW].x;
-	filteredGyroData[ROLL]  = pafStates[ROLL].x;
-	filteredGyroData[PITCH] = pafStates[PITCH].x;
+	filteredGyroData[YAW]   = pafGyroStates[YAW].x;
+	filteredGyroData[ROLL]  = pafGyroStates[ROLL].x;
+	filteredGyroData[PITCH] = pafGyroStates[PITCH].x;
 
 
 	//smooth the rx data between rx signals
@@ -141,6 +339,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	//output to actuators
 	OutputActuators(motorOutput, servoOutput);
+
+	ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
+
 
 	DoLed(0, 1);
 	DoLed(1, 1);

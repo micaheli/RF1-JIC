@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <stddef.h>
 
+#include "../../flight_controller/inc/rf_math.h"
 
 #include "../../low_level_driver/boarddef.h"
 #include "mcu_include.h"

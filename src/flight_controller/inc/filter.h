@@ -19,6 +19,7 @@ typedef struct {
 typedef struct {
 	filter_config kd;
 	filter_config gyro;
+	filter_config acc;
 } filter_device;
 
 paf_state InitPaf(float q, float r, float p, float intial_value);

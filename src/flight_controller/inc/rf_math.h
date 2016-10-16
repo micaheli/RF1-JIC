@@ -1,6 +1,7 @@
 #pragma once
 
-#define PIf       3.14159265358979323846f
+#define PIf       3.14159265358f
+#define IPIf      0.31830988618f //inverse of Pi
 
 //These were defined in a lib file?
 #ifndef MIN

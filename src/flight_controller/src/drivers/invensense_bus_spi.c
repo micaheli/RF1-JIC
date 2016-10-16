@@ -87,10 +87,19 @@ bool accgyroInit(loopCtrl_e loopCtrl)
 #ifdef GYRO_EXTI
 void GYRO_EXTI_IRQHandler(void)
 {
+
+	static uint32_t loopCounter = 429496729U;
     HAL_GPIO_EXTI_IRQHandler(GYRO_EXTI_GPIO_Pin);
 
-    if (!skipGyro) {
-        accgyroDeviceReadGyro();
+    if (!skipGyro)
+    {
+
+    	//update ACC after the rest of the flight code upon the proper denom
+        if (loopCounter-- & gyroConfig.accDenom) {
+        	accgyroDeviceReadAccGyro();
+        } else {
+        	accgyroDeviceReadGyro();
+        }
     }
 }
 #endif
@@ -204,6 +213,7 @@ bool accgyroSlowReadData(uint8_t reg, uint8_t *data, uint8_t length)
 bool accgyroDMAReadWriteData(uint8_t *txData, uint8_t *rxData, uint8_t length)
 {
     // ensure that both SPI and DMA resources are available, but don't block if they are not
+	//while (HAL_DMA_GetState(&dma_gyro_rx) != HAL_DMA_STATE_READY && HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
     if (HAL_DMA_GetState(&dma_gyro_rx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&gyro_spi) == HAL_SPI_STATE_READY) {
         HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
 

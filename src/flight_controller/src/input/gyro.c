@@ -6,6 +6,7 @@
 #include "includes.h"
 
 float dpsGyroArray[3] = {0.0f, 0.0f, 0.0f};
+float geeForceAccArray[3] = {0.0f, 0.0f, 0.0f};
 static int32_t gyroSum[3] = {0, 0, 0};
 
 uint32_t gyroCalibrationCycles = GYRO_CALIBRATION_CYCLES * 1;
@@ -17,29 +18,37 @@ void ResetGyroCalibration(void) {
 
 }
 
-static inline void InlineUpdateCalibration(int16_t *rawGyro)
+static inline void InlineUpdateCalibration(int32_t *rawGyro)
 {
 
-    int16_t gyroCalibration[3];
-    uint8_t axis;
+	int32_t gyroCalibration[3];
+	int32_t axis;
 
     if (gyroCalibrationCycles <= GYRO_CALIBRATION_CYCLES) {
-        for (axis = 0; axis < 3; axis++) {
+        for (axis = 2; axis >= 0; axis--) {
             gyroSum[axis] += rawGyro[axis];
         }
     }
 
     if (--gyroCalibrationCycles == 0) {
-        for (axis = 0; axis < 3; axis++) {
+        for (axis = 2; axis >= 0; axis--) {
             // add what comes out to be 1/2 to improve rounding
-            gyroCalibration[axis] = (int16_t)(-(gyroSum[axis] + (GYRO_CALIBRATION_CYCLES / 2)) / GYRO_CALIBRATION_CYCLES);
+            gyroCalibration[axis] = (int32_t)(-(gyroSum[axis] + (GYRO_CALIBRATION_CYCLES / 2)) / GYRO_CALIBRATION_CYCLES);
         }
 
         accgyroDeviceCalibrate(gyroCalibration);
     }
 }
 
-inline void InlineUpdateGyro(int16_t rawGyro[], int16_t rawGyroRotated[], float scale)
+inline void InlineUpdateAcc(int32_t rawAcc[], float scale)
+{
+
+    InlineApplyGyroAccRotationAndScale(rawAcc, geeForceAccArray, scale);
+
+    InlineUpdateAttitude(geeForceAccArray);
+}
+
+inline void InlineUpdateGyro(int32_t rawGyro[], float scale)
 {
 
     if (gyroCalibrationCycles != 0) {
@@ -49,13 +58,12 @@ inline void InlineUpdateGyro(int16_t rawGyro[], int16_t rawGyroRotated[], float 
 
     accgyroDeviceApplyCalibration(rawGyro);
 
-    InlineApplyGyroRotation(rawGyro, rawGyroRotated);
-    InlineApplyBoardRotationAndScale(rawGyroRotated, dpsGyroArray, scale);
+    InlineApplyGyroAccRotationAndScale(rawGyro, dpsGyroArray, scale);
 
     InlineFlightCode(dpsGyroArray);
 }
 
-inline void InlineApplyGyroRotation (int16_t rawGyro[], int16_t rawGyroRotated[]) {
+inline void InlineApplyGyroAccRotationAndScale (int32_t rawData[], float dataArray[], float scale ) {
 
 	//from gyro, x, y, z (0, 1, 2)
 	// x is roll, y is pitch, z is yaw
@@ -63,94 +71,46 @@ inline void InlineApplyGyroRotation (int16_t rawGyro[], int16_t rawGyroRotated[]
     switch (mainConfig.gyroConfig.gyroRotation) {
 
         case CW90:
-        	rawGyroRotated[X] =  rawGyro[Y];
-        	rawGyroRotated[Y] = -rawGyro[X];
-        	rawGyroRotated[Z] =  rawGyro[Z];
+        	dataArray[Y] = ((float)rawData[Y] * scale);
+        	dataArray[Z] = ((float)rawData[X] * -scale);
+        	dataArray[X] = ((float)rawData[Z] * scale);
             break;
         case CW180:
-        	rawGyroRotated[X] = -rawGyro[X];
-            rawGyroRotated[Y] = -rawGyro[Y];
-            rawGyroRotated[Z] =  rawGyro[Z];
+        	dataArray[Y] = ((float)rawData[X] * -scale);
+        	dataArray[Z] = ((float)rawData[Y] * -scale);
+        	dataArray[X] = ((float)rawData[Z] * scale);
             break;
         case CW270:
-        	rawGyroRotated[X] = -rawGyro[Y];
-        	rawGyroRotated[Y] =  rawGyro[X];
-        	rawGyroRotated[Z] =  rawGyro[Z];
+        	dataArray[Y] = ((float)rawData[Y] * -scale);
+        	dataArray[Z] = ((float)rawData[X] * scale);
+        	dataArray[X] = ((float)rawData[Z] * scale);
             break;
         case CW0_INV:
-        	rawGyroRotated[X] = -rawGyro[X];
-        	rawGyroRotated[Y] =  rawGyro[Y];
-        	rawGyroRotated[Z] = -rawGyro[Z];
+        	dataArray[Y] = ((float)rawData[X] * -scale);
+        	dataArray[Z] = ((float)rawData[Y] * scale);
+        	dataArray[X] = ((float)rawData[Z] * -scale);
             break;
         case CW90_INV:
-        	rawGyroRotated[X] =  rawGyro[Y];
-        	rawGyroRotated[Y] =  rawGyro[X];
-        	rawGyroRotated[Z] = -rawGyro[Z];
+        	dataArray[Y] = ((float)rawData[Y] * scale);
+        	dataArray[Z] = ((float)rawData[X] * scale);
+        	dataArray[X] = ((float)rawData[Z] * -scale);
             break;
         case CW180_INV:
-        	rawGyroRotated[X] =  rawGyro[X];
-        	rawGyroRotated[Y] = -rawGyro[Y];
-            rawGyroRotated[Z] = -rawGyro[Z];
+        	dataArray[Y] = ((float)rawData[X] * scale);
+        	dataArray[Z] = ((float)rawData[Y] * -scale);
+        	dataArray[X] = ((float)rawData[Z] * -scale);
             break;
         case CW270_INV:
-        	rawGyroRotated[X] = -rawGyro[Y];
-        	rawGyroRotated[Y] = -rawGyro[X];
-        	rawGyroRotated[Z] = -rawGyro[Z];
+        	dataArray[Y] = ((float)rawData[Y] * -scale);
+        	dataArray[Z] = ((float)rawData[X] * -scale);
+        	dataArray[X] = ((float)rawData[Z] * -scale);
             break;
         case CW0:
         default:
-        	rawGyroRotated[X] =  rawGyro[X];
-        	rawGyroRotated[Y] =  rawGyro[Y];
-        	rawGyroRotated[Z] =  rawGyro[Z];
+        	dataArray[Y] = ((float)rawData[X] * scale);
+        	dataArray[Z] = ((float)rawData[Y] * scale);
+        	dataArray[X] = ((float)rawData[Z] * scale);
             break;
     }
-
-}
-
-inline void InlineApplyBoardRotationAndScale ( int16_t rawGyroRotated[], float dpsGyroArray[], float scale ) {
-
-	switch (mainConfig.gyroConfig.boardRotation) {
-		case CW90:
-			dpsGyroArray[ROLL]  = ((float)rawGyroRotated[Y]  * scale);
-			dpsGyroArray[PITCH] = ((float)-rawGyroRotated[X] * scale);
-			dpsGyroArray[YAW]   = ((float)rawGyroRotated[Z]  * scale);
-			break;
-		case CW180:
-			dpsGyroArray[ROLL]  = ((float)-rawGyroRotated[X] * scale);
-			dpsGyroArray[PITCH] = ((float)-rawGyroRotated[Y] * scale);
-			dpsGyroArray[YAW]   = ((float)rawGyroRotated[Z]  * scale);
-			break;
-		case CW270:
-			dpsGyroArray[ROLL]  = ((float)-rawGyroRotated[Y] * scale);
-			dpsGyroArray[PITCH] = ((float)rawGyroRotated[X]  * scale);
-			dpsGyroArray[YAW]   = ((float)rawGyroRotated[Z]  * scale);
-			break;
-		case CW0_INV:
-			dpsGyroArray[ROLL]  = ((float)-rawGyroRotated[X] * scale);
-			dpsGyroArray[PITCH] = ((float)rawGyroRotated[Y]  * scale);
-			dpsGyroArray[YAW]   = ((float)-rawGyroRotated[Z] * scale);
-			break;
-		case CW90_INV:
-			dpsGyroArray[ROLL]  = ((float)rawGyroRotated[Y]  * scale);
-			dpsGyroArray[PITCH] = ((float)rawGyroRotated[X]  * scale);
-			dpsGyroArray[YAW]   = ((float)-rawGyroRotated[Z] * scale);
-			break;
-		case CW180_INV:
-			dpsGyroArray[ROLL]  = ((float)rawGyroRotated[X]  * scale);
-			dpsGyroArray[PITCH] = ((float)-rawGyroRotated[Y] * scale);
-			dpsGyroArray[YAW]   = ((float)-rawGyroRotated[Z] * scale);
-			break;
-		case CW270_INV:
-			dpsGyroArray[ROLL]  = ((float)-rawGyroRotated[Y] * scale);
-			dpsGyroArray[PITCH] = ((float)-rawGyroRotated[X] * scale);
-			dpsGyroArray[YAW]   = ((float)-rawGyroRotated[Z] * scale);
-			break;
-		case CW0:
-		default:
-			dpsGyroArray[ROLL]  = ((float)rawGyroRotated[X]  * scale);
-			dpsGyroArray[PITCH] = ((float)rawGyroRotated[Y]  * scale);
-			dpsGyroArray[YAW]   = ((float)rawGyroRotated[Z]  * scale);
-			break;
-	}
 
 }

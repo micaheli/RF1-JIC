@@ -29,7 +29,11 @@ enum {
 	AUX4     = 7,
 };
 
-
+enum {
+	ACCX = 0,
+	ACCY = 1,
+	ACCZ = 2,
+};
 //We can use different styles of curves
 enum {
 	NO_EXPO = 0,

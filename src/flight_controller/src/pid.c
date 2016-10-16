@@ -6,7 +6,7 @@ float kdRingBuffer[AXIS_NUMBER][KD_RING_BUFFER_SIZE];
 float kdRingBufferSum[AXIS_NUMBER];
 uint32_t kdRingBufferPoint[AXIS_NUMBER];
 float kdDelta[AXIS_NUMBER];
-float dT = 0.000125; //8KHz
+float dT; //8KHz
 uint32_t uhohNumber = 4000;
 uint32_t uhOhRecover = 0;
 uint32_t khzDivider = 0;
