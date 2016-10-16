@@ -81,3 +81,46 @@
 #define ADDRESS_FLASH_END		(uint32_t)(0x080FFFF0)
 
 #endif
+
+#if defined(stm32f446xx)
+
+#include <stm32f446xx.h>
+
+#define _GPIOE GPIOE
+#define _GPIOF GPIOF
+#define _GPIOG NULL
+#define _GPIOH NULL
+#define _GPIOI NULL
+#define _GPIOJ NULL
+#define _GPIOK NULL
+
+#define _USART1 USART1
+#define _USART1s 0
+#define _USART2 USART2
+#define _USART2s 1
+#define _USART3 USART3
+#define _USART3s 1
+#define _USART4 UART4
+#define _USART4s 1
+#define _USART5 UART5
+#define _USART5s 1
+#define _USART6 USART6
+#define _USART6s 0
+#define _USART7 USART7
+#define _USART7s 0
+
+
+//STM32F4 UID address
+#define DEVICE_ID1					0x1FFF7A10
+#define DEVICE_ID2					0x1FFF7A14
+#define DEVICE_ID3					0x1FFF7A18
+
+
+#define USE_RFBL
+#define ADDRESS_RECOVERY_START	(uint32_t)(0x08000000)
+#define ADDRESS_RFBL_START		(uint32_t)(0x08008000)
+#define ADDRESS_CONFIG_START	(uint32_t)(0x08060000) //0x0800C000
+#define ADDRESS_FLASH_START		(uint32_t)(0x08000000)
+#define ADDRESS_FLASH_END		(uint32_t)(0x0807FFF0)
+
+#endif

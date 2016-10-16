@@ -40,9 +40,9 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 	/*##-1- Configure the UART peripheral ######################################*/
 	/* Put the USART peripheral in the Asynchronous mode (UART Mode) */
 	/* UART configured as follows:
-		- Word Length = 8 Bits
+		- Word LengNoneth = 8 Bits
 		- Stop Bit = One Stop bit
-		- Parity = None
+		- Parity = 
 		- BaudRate = 9600 baud
 		- Hardware flow control disabled (RTS and CTS signals) */
 	uartHandle.Instance        = Usart;
@@ -57,10 +57,23 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 	{
 //		ErrorHandler();
 	}
-	if(HAL_UART_Init(&uartHandle) != HAL_OK)
+
+	//Config uart as  half duplex if TX and RX pins are the same
+	if (USARTx_TX_PIN == USARTx_RX_PIN && USARTx_RX_GPIO_PORT == USARTx_TX_GPIO_PORT)
 	{
-//		ErrorHandler();
+		if (HAL_HalfDuplex_Init(&uartHandle) != HAL_OK)
+		{
+			//ErrorHandler();
+		}
 	}
+	else
+	{
+		if(HAL_UART_Init(&uartHandle) != HAL_OK)
+		{
+			//ErrorHandler();
+		}
+	}
+		
 
 	__HAL_UART_ENABLE_IT(&uartHandle, UART_IT_IDLE);
 
@@ -160,26 +173,26 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 
 	/* Associate the initialized DMA handle to the the UART handle */
 	__HAL_LINKDMA(huart, hdmarx, dmaUartRx);
-
+	
 	/*##-4- Configure the NVIC for DMA #########################################*/
 	/* NVIC configuration for DMA transfer complete interrupt (USART6_TX) */
-	HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, 0, 1);
-	HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
+	//HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, 0, 1);
+	//HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
 
 	/* NVIC configuration for DMA transfer complete interrupt (USART6_RX) */
-	HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
+	//HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, 0, 0);
+	//HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
 
 	/* NVIC for USART, to catch the TX complete */
 	HAL_NVIC_SetPriority(USARTx_IRQn, 0, 1);
 	HAL_NVIC_EnableIRQ(USARTx_IRQn);
 
     /* DMA interrupt init */
-    HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, 1, 0);
-    HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
-    HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, 1, 0);
-    HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
-
+    //HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, 1, 0);
+    //HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
+    //HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, 1, 0);
+    //HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
+	
     __HAL_UART_FLUSH_DRREGISTER(huart);
 
     for (x=0;x<100;x++)
@@ -205,7 +218,7 @@ void BoardUsartInit () {
     HAL_NVIC_DisableIRQ(USARTx_DMA_RX_IRQn);
 
     // read and write settings at slow speed
-    UsartInit(115200, USART3, &uartHandle);
+	UsartInit(115200, USARTx, &uartHandle);
 
 }
 

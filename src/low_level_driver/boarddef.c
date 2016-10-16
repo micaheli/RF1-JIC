@@ -78,11 +78,15 @@ int InitializeMCUSettings() {
 
 	//REVOLT / REVO
 	board.internalLeds[0].enabled=1;
-	board.internalLeds[0].pin=GPIO_PIN_5;
-	board.internalLeds[0].port=_PORTB;
+	board.internalLeds[0].pin=GPIO_PIN_15;
+	board.internalLeds[0].port=0;
 
 	//REVO
 	board.internalLeds[1].enabled=1;
+	board.internalLeds[1].pin=GPIO_PIN_8;
+	board.internalLeds[1].port=2;
+
+	board.internalLeds[1].enabled=0;
 	board.internalLeds[1].pin=GPIO_PIN_1;
 	board.internalLeds[1].port=_PORTA;
 

@@ -163,7 +163,23 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "STM32F746NGHx_FLASH_bl.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O3"   
+        OPTIMIZE_FLAGS = "-O3"
+
+    elif TARGET == "stm32f446xx":
+        PROJECT = "flight_controller"
+        TARGET_DEVICE = "STM32F446xx"
+        TARGET_SCRIPT = "stm32_flash_f446.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-O3"
+
+    elif TARGET == "stm32f446xx_rfbl":
+        PROJECT = "boot_loader"
+        TARGET_DEVICE = "STM32F446xx"
+        TARGET_SCRIPT = "stm32_flash_f446_rfbl.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Os"
     
     else:
         print("ERROR: NOT VALID TARGET: ", TARGET, file=sys.stderr)
