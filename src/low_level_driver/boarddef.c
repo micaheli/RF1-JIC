@@ -102,3 +102,81 @@ int InitializeMCUSettings() {
 	return(1);
 }
 
+void getBoardHardwareDefs(void)
+{
+	//PLL settings
+	board.fc_pllm = FC_PLLM;
+	board.fc_plln = FC_PLLN;
+	board.fc_pllp = FC_PLLP;
+	board.fc_pllq = FC_PLLQ;
+
+
+	//LED Settings
+	board.internalLeds[0].enabled = 1;
+	board.internalLeds[0].pin = GPIO_PIN_15;
+	board.internalLeds[0].port = 0;
+	board.internalLeds[0].inverted = 0;
+
+	board.internalLeds[1].enabled = 1;
+	board.internalLeds[1].pin = GPIO_PIN_8;
+	board.internalLeds[1].port = 2;
+	board.internalLeds[1].inverted = 0;
+
+	board.internalLeds[2].enabled = 0;
+	//board.internalLeds[2].pin = GPIO_PIN_1;
+	//board.internalLeds[2].port = 0;
+	board.internalLeds[2].inverted = 0;
+
+
+	//Buzzer Settings
+	board.buzzerPort = 2;	//Port C
+	board.buzzerPin = GPIO_PIN_2;
+
+	
+	//gyro settings
+
+
+
+	//Uart settings
+	board.serials[4].PinMode = GPIO_MODE_AF_PP;
+	board.serials[4].Pull = GPIO_PULLUP;
+	board.serials[4].Speed = GPIO_SPEED_HIGH;
+	board.serials[4].TXAlternate = USART5_TX_AF;
+	board.serials[4].TXPin = USART5_TX_PIN;
+	board.serials[4].TXPort = USART5_TX_GPIO_PORT;
+	board.serials[4].RXAlternate = USART5_RX_AF;
+	board.serials[4].RXPin = USART5_RX_PIN;
+	board.serials[4].RXPort = USART5_RX_GPIO_PORT;
+	
+
+	board.serials[4].SerialInstance = UART5;  // loaded from port array
+
+	board.serials[4].BaudRate = 115200;
+	board.serials[4].WordLength = UART_WORDLENGTH_8B;
+	board.serials[4].StopBits = UART_STOPBITS_1;
+	board.serials[4].Parity = UART_PARITY_NONE;
+	board.serials[4].HwFlowCtl = UART_HWCONTROL_NONE;
+	board.serials[4].Mode = UART_MODE_TX_RX;
+
+	board.serials[4].TXDMAStream = USART5_TX_DMA_STREAM; // looked up from array
+	board.serials[4].TXDMAChannel = USART5_TX_DMA_CHANNEL;
+	board.serials[4].TXDMADirection = DMA_MEMORY_TO_PERIPH;
+	board.serials[4].TXDMAPeriphInc = DMA_PINC_DISABLE;
+	board.serials[4].TXDMAMemInc = DMA_MINC_ENABLE;
+	board.serials[4].TXDMAPeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+	board.serials[4].TXDMAMemDataAlignment = DMA_MDATAALIGN_BYTE;
+	board.serials[4].TXDMAMode = DMA_NORMAL;
+	board.serials[4].TXDMAPriority = DMA_PRIORITY_LOW;
+	board.serials[4].TXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
+
+	board.serials[4].RXDMAStream = USART5_RX_DMA_STREAM; // looked up from array
+	board.serials[4].RXDMAChannel = USART5_RX_DMA_CHANNEL;
+	board.serials[4].RXDMADirection = DMA_PERIPH_TO_MEMORY;
+	board.serials[4].RXDMAPeriphInc = DMA_PINC_DISABLE;
+	board.serials[4].RXDMAMemInc = DMA_MINC_ENABLE;
+	board.serials[4].RXDMAPeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+	board.serials[4].RXDMAMemDataAlignment = DMA_MDATAALIGN_BYTE;
+	board.serials[4].RXDMAMode = DMA_CIRCULAR;
+	board.serials[4].RXDMAPriority = DMA_PRIORITY_HIGH;
+	board.serials[4].RXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
+}

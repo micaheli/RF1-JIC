@@ -30,6 +30,9 @@ int main(void)
 
     VectorIrqInit(ADDRESS_RFFW_START);
 
+	//TODO Needs to pull parameters from flash here. For now we use defines
+	//getBoardHardwareDefs();
+
     BoardInit();
 
     HandleRfbl();
@@ -62,6 +65,11 @@ int main(void)
 
     BoardUsartInit();
 
+    bzero(serialRxBuffer, sizeof(serialRxBuffer));
+    bzero(serialTxBuffer, sizeof(serialTxBuffer));
+	
+	uint8_t calibrated1 = 0;
+	uint8_t calibrated2 = 0;
     while (1) {
 
 
@@ -69,6 +77,19 @@ int main(void)
 
     	if (count == -1)
     		count = 16;
+			/*
+	    	if (InlineMillis() > 2000 && calibrated1==0)
+	    	{
+		    	SetCalibrate1();
+		    	calibrated1 = 1;
+	    	}
+	    	if (InlineMillis() > 4000 && calibrated2 == 0)
+	    	{
+		    	if(SetCalibrate2())
+		    		SaveConfig(ADDRESS_CONFIG_START);
+		    	calibrated2 = 1;
+	    	}
+			*/
 
     }
 

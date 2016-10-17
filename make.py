@@ -176,7 +176,7 @@ def configure_target(TARGET):
     elif TARGET == "stm32f446xx_rfbl":
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F446xx"
-        TARGET_SCRIPT = "stm32_flash_f446_rfbl.ld"
+        TARGET_SCRIPT = "stm32_flash_f446.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Os"
@@ -426,7 +426,7 @@ def configure_target(TARGET):
     STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -D" + TARGET
     STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-    STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -D" + TARGET
+    STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=12000000 -D" + TARGET_DEVICE + " -D" + TARGET
     STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
     STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=25000000 -D" + TARGET_DEVICE + " -D" + TARGET

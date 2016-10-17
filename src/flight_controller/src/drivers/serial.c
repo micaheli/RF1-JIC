@@ -152,7 +152,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	dmaUartTx.Init.Priority            = DMA_PRIORITY_LOW;
 	dmaUartTx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
 
-	HAL_DMA_Init(&dmaUartTx);
+	//HAL_DMA_Init(&dmaUartTx);
 
 	/* Associate the initialized DMA handle to the UART handle */
 	__HAL_LINKDMA(huart, hdmatx, dmaUartTx);
@@ -176,22 +176,22 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	
 	/*##-4- Configure the NVIC for DMA #########################################*/
 	/* NVIC configuration for DMA transfer complete interrupt (USART6_TX) */
-	//HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, 0, 1);
-	//HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
+	HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, 0, 1);
+	HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
 
 	/* NVIC configuration for DMA transfer complete interrupt (USART6_RX) */
-	//HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, 0, 0);
-	//HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
+	HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
 
 	/* NVIC for USART, to catch the TX complete */
 	HAL_NVIC_SetPriority(USARTx_IRQn, 0, 1);
 	HAL_NVIC_EnableIRQ(USARTx_IRQn);
 
     /* DMA interrupt init */
-    //HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, 1, 0);
-    //HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
-    //HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, 1, 0);
-    //HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
+    HAL_NVIC_SetPriority(USARTx_DMA_TX_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(USARTx_DMA_TX_IRQn);
+    HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
 	
     __HAL_UART_FLUSH_DRREGISTER(huart);
 
@@ -290,7 +290,7 @@ void USARTx_IRQHandler(void)
 			ProcessSpektrumPacket();
 		}
 		
-		USARTx_RX_DMA_STREAM->NDTR = 16;
+		//USARTx_RX_DMA_STREAM->NDTR = 16;
 		lastRXPacket = InlineMillis();
 		if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
 		{

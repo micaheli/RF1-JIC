@@ -178,7 +178,7 @@ enum {
 
 typedef struct {
 	USART_TypeDef *port;
-	uint8_t async;
+	uint32_t async;
 } serial_type;
 
 
@@ -187,75 +187,94 @@ typedef struct {
 } spi_type;
 
 typedef struct {
-	uint32_t PinMode;
-	uint32_t Pull;
-	uint32_t Speed;
-	uint32_t TXAlternate;
-	uint32_t TXPin;
-	uint32_t RXAlternate;
-	uint32_t RXPin;
+	uint32_t	sckPort;
+	uint32_t	sckPin;
+	uint32_t	misoPort;
+	uint32_t	misoPin;
+	uint32_t	mosiPort;
+	uint32_t	mosiPin;
+	uint32_t	enabled;
+} spi_pin_defs;
 
-	uint8_t RXPort;
-	uint8_t TXPort;
+typedef struct {
+	uint32_t	PinMode;
+	uint32_t	Pull;
+	uint32_t	Speed;
+	uint32_t	TXAlternate;
+	uint32_t	TXPin;
+	uint32_t	RXAlternate;
+	uint32_t	RXPin;
 
-	uint8_t SerialInstance; // loaded from port array
+	uint32_t	RXPort;
+	uint32_t	TXPort;
 
-	uint32_t BaudRate;
-	uint32_t WordLength;
-	uint32_t StopBits;
-	uint32_t Parity;
-	uint32_t HwFlowCtl;
-	uint32_t Mode;
+	uint32_t	SerialInstance; // loaded from port array
 
-	uint8_t  TXDMAStream; // looked up from array
-	uint32_t TXDMAChannel;
-	uint32_t TXDMADirection;
-	uint32_t TXDMAPeriphInc;
-	uint32_t TXDMAMemInc;
-	uint32_t TXDMAPeriphDataAlignment;
-	uint32_t TXDMAMemDataAlignment;
-	uint32_t TXDMAMode;
-	uint32_t TXDMAPriority;
+	uint32_t	BaudRate;
+	uint32_t	WordLength;
+	uint32_t	StopBits;
+	uint32_t	Parity;
+	uint32_t	HwFlowCtl;
+	uint32_t	Mode;
 
-	uint8_t  RXDMAStream; // looked up from array
-	uint32_t RXDMAChannel;
-	uint32_t RXDMADirection;
-	uint32_t RXDMAPeriphInc;
-	uint32_t RXDMAMemInc;
-	uint32_t RXDMAPeriphDataAlignment;
-	uint32_t RXDMAMemDataAlignment;
-	uint32_t RXDMAMode;
-	uint32_t RXDMAPriority;
+	uint32_t	TXDMAStream; // looked up from array
+	uint32_t	TXDMAChannel;
+	uint32_t	TXDMADirection;
+	uint32_t	TXDMAPeriphInc;
+	uint32_t	TXDMAMemInc;
+	uint32_t	TXDMAPeriphDataAlignment;
+	uint32_t	TXDMAMemDataAlignment;
+	uint32_t	TXDMAMode;
+	uint32_t	TXDMAPriority;
+	uint32_t	TXDMAFIFOMode;
+
+	uint32_t	RXDMAStream; // looked up from array
+	uint32_t	RXDMAChannel;
+	uint32_t	RXDMADirection;
+	uint32_t	RXDMAPeriphInc;
+	uint32_t	RXDMAMemInc;
+	uint32_t	RXDMAPeriphDataAlignment;
+	uint32_t	RXDMAMemDataAlignment;
+	uint32_t	RXDMAMode;
+	uint32_t	RXDMAPriority;
+	uint32_t	RXDMAFIFOMode;
 
 } board_serial;
 
 
 typedef struct {
-	uint8_t port;
-	uint32_t pin;
-	uint8_t enabled;
+	uint32_t	port;
+	uint32_t	pin;
+	uint32_t	inverted;
+	uint32_t	enabled;
 } internal_led_type;
 
 typedef struct {
-	uint8_t port;
-	uint32_t pin;
-	uint8_t enabled;
+	uint32_t	nssPort;	//for spi only
+	uint32_t	nssPin;		//for spi only
+	uint32_t	intPort;	//for spi only
+	uint32_t	intPin;		//for spi only
+	uint32_t	enabled;
 } gyro_type;
 
 
 
-typedef struct {
-	uint32_t fc_pllm;
-	uint32_t fc_plln;
-	uint32_t fc_pllp;
-	uint32_t fc_pllq;
 
+
+typedef struct {
+	uint32_t	fc_pllm;
+	uint32_t	fc_plln;
+	uint32_t	fc_pllp;
+	uint32_t	fc_pllq;
+	
 	internal_led_type internalLeds[3];
 
-	uint8_t buzzerPort;
-	uint32_t buzzerPin;
+	uint32_t	buzzerPort;
+	uint32_t	buzzerPin;
 
-	gyro_type gyros[3];
+	spi_pin_defs	spi_pins[3];
+
+	gyro_type	gyros[3];
 
 	board_serial serials[6];
 } board_type;
@@ -280,6 +299,26 @@ typedef struct {
 #define USARTx_DMA_RX_IRQn         DMA1_Stream0_IRQn
 #define USARTx_DMA_TX_IRQHandler   DMA1_Stream7_IRQHandler
 #define USARTx_DMA_RX_IRQHandler   DMA1_Stream0_IRQHandler
+
+
+//UART 5 defines
+#define USART5                     UART5
+#define USART5_TX_PIN              GPIO_PIN_12
+#define USART5_TX_GPIO_PORT        GPIOC
+#define USART5_TX_AF               GPIO_AF8_UART5
+#define USART5_RX_PIN              GPIO_PIN_12
+#define USART5_RX_GPIO_PORT        GPIOC
+#define USART5_RX_AF               GPIO_AF8_UART5
+#define USART5_IRQHandler          UART5_IRQHandler
+#define USART5_IRQn                UART5_IRQn
+#define USART5_TX_DMA_STREAM       DMA1_Stream7
+#define USART5_RX_DMA_STREAM       DMA1_Stream0
+#define USART5_TX_DMA_CHANNEL      DMA_CHANNEL_4
+#define USART5_RX_DMA_CHANNEL      DMA_CHANNEL_4
+#define USART5_DMA_TX_IRQn         DMA1_Stream7_IRQn
+#define USART5_DMA_RX_IRQn         DMA1_Stream0_IRQn
+#define USART5_DMA_TX_IRQHandler   DMA1_Stream7_IRQHandler
+#define USART5_DMA_RX_IRQHandler   DMA1_Stream0_IRQHandler
 
 /* Definition for USARTx's DMA */
 
