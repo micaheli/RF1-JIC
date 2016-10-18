@@ -54,11 +54,13 @@
 #define GYRO_EXTI_IRQn          EXTI15_10_IRQn
 #define GYRO_EXTI_IRQHandler    EXTI15_10_IRQHandler
 
-#define GYRO_DMA_TX_IRQn        DMA1_Stream4_IRQn
-#define GYRO_DMA_TX_IRQHandler  DMA1_Stream4_IRQHandler
-#define GYRO_DMA_RX_IRQn        DMA1_Stream3_IRQn
-#define GYRO_DMA_RX_IRQHandler  DMA1_Stream3_IRQHandler
+#define GYRO_TX_DMA_IRQn        DMA1_Stream4_IRQn
+#define GYRO_TX_DMA_IRQHandler  DMA1_Stream4_IRQHandler
+#define GYRO_RX_DMA_IRQn        DMA1_Stream3_IRQn
+#define GYRO_RX_DMA_IRQHandler  DMA1_Stream3_IRQHandler
 
+
+#define RECEIVER_UART			4 //UART number starting from 0. 4 = UART5
 //Sbus inverter config
 //#define USE_SBUS_HARDWARE_INVERTER
 //#define SBUS_HARDWARE_GPIO			GPIOC
@@ -162,10 +164,10 @@
 #define USARTx_RX_DMA_STREAM       DMA1_Stream0
 #define USARTx_TX_DMA_CHANNEL      DMA_CHANNEL_4
 #define USARTx_RX_DMA_CHANNEL      DMA_CHANNEL_4
-#define USARTx_DMA_TX_IRQn         DMA1_Stream7_IRQn
-#define USARTx_DMA_RX_IRQn         DMA1_Stream0_IRQn
-#define USARTx_DMA_TX_IRQHandler   DMA1_Stream7_IRQHandler
-#define USARTx_DMA_RX_IRQHandler   DMA1_Stream0_IRQHandler
+#define USARTx_TX_DMA_IRQn         DMA1_Stream7_IRQn
+#define USARTx_RX_DMA_IRQn         DMA1_Stream0_IRQn
+#define USARTx_TX_DMA_IRQHandler   DMA1_Stream7_IRQHandler
+#define USARTx_RX_DMA_IRQHandler   DMA1_Stream0_IRQHandler
 
 //USART 1 unused
 
@@ -178,7 +180,14 @@
 #define USART2_RX_AF               GPIO_AF7_USART2
 #define USART2_IRQHandler          USART2_IRQHandler
 #define USART2_IRQn                USART2_IRQn
-//No DMA on USART 2
+#define USART2_TX_DMA_STREAM       0				//No TX DMA on USART 2
+#define USART2_TX_DMA_CHANNEL      0
+#define USART2_TX_DMA_IRQn         0
+#define USART2_TX_DMA_IRQHandler   0
+#define USART2_RX_DMA_STREAM       0				//No RX DMA on USART 2
+#define USART2_RX_DMA_CHANNEL      0
+#define USART2_RX_DMA_IRQn         0
+#define USART2_RX_DMA_IRQHandler   0
 
 #define USE_USART3
 #define USART3_TX_PIN              GPIO_PIN_10
@@ -189,14 +198,14 @@
 #define USART3_RX_AF               GPIO_AF7_USART3
 #define USART3_IRQHandler          USART3_IRQHandler
 #define USART3_IRQn                USART3_IRQn
-//#define USART3_TX_DMA_STREAM       DMA1_Stream7
+#define USART3_TX_DMA_STREAM       0				//No TX DMA on USART 3
+#define USART3_TX_DMA_CHANNEL      0
+#define USART3_TX_DMA_IRQn         0
+#define USART3_TX_DMA_IRQHandler   0
 #define USART3_RX_DMA_STREAM       DMA1_Stream1
-//#define USART3_TX_DMA_CHANNEL      DMA_CHANNEL_4
 #define USART3_RX_DMA_CHANNEL      DMA_CHANNEL_4
-//#define USART3_DMA_TX_IRQn         DMA1_Stream7_IRQn
-#define USART3_DMA_RX_IRQn         DMA1_Stream1_IRQn
-//#define USART3_DMA_TX_IRQHandler   DMA1_Stream7_IRQHandler
-#define USART3_DMA_RX_IRQHandler   DMA1_Stream1_IRQHandler
+#define USART3_RX_DMA_IRQn         DMA1_Stream1_IRQn
+#define USART3_RX_DMA_IRQHandler   DMA1_Stream1_IRQHandler
 
 #define USE_UART4
 #define USART4_TX_PIN              GPIO_PIN_0
@@ -207,7 +216,14 @@
 #define USART4_RX_AF               GPIO_AF8_UART4
 #define USART4_IRQHandler          UART4_IRQHandler
 #define USART4_IRQn                UART4_IRQn
-//No DMA for UART 4
+#define USART4_TX_DMA_STREAM       0				//No TX DMA on USART 4
+#define USART4_TX_DMA_CHANNEL      0
+#define USART4_TX_DMA_IRQn         0
+#define USART4_TX_DMA_IRQHandler   0
+#define USART4_RX_DMA_STREAM       0				//No RX DMA on USART 4
+#define USART4_RX_DMA_CHANNEL      0
+#define USART4_RX_DMA_IRQn         0
+#define USART4_RX_DMA_IRQHandler   0
 
 #define USE_UART5
 #define USART5_TX_PIN              GPIO_PIN_12
@@ -219,13 +235,13 @@
 #define USART5_IRQHandler          UART5_IRQHandler
 #define USART5_IRQn                UART5_IRQn
 #define USART5_TX_DMA_STREAM       DMA1_Stream7
-#define USART5_RX_DMA_STREAM       DMA1_Stream0
 #define USART5_TX_DMA_CHANNEL      DMA_CHANNEL_4
+#define USART5_TX_DMA_IRQn         DMA1_Stream7_IRQn
+#define USART5_TX_DMA_IRQHandler   DMA1_Stream7_IRQHandler
+#define USART5_RX_DMA_STREAM       DMA1_Stream0
 #define USART5_RX_DMA_CHANNEL      DMA_CHANNEL_4
-#define USART5_DMA_TX_IRQn         DMA1_Stream7_IRQn
-#define USART5_DMA_RX_IRQn         DMA1_Stream0_IRQn
-#define USART5_DMA_TX_IRQHandler   DMA1_Stream7_IRQHandler
-#define USART5_DMA_RX_IRQHandler   DMA1_Stream0_IRQHandler
+#define USART5_RX_DMA_IRQn         DMA1_Stream0_IRQn
+#define USART5_RX_DMA_IRQHandler   DMA1_Stream0_IRQHandler
 
 #define USE_USART6
 #define USART6_TX_PIN              GPIO_PIN_6
@@ -237,13 +253,13 @@
 #define USART6_IRQHandler          USART6_IRQHandler
 #define USART6_IRQn                USART6_IRQn
 #define USART6_TX_DMA_STREAM       DMA2_Stream6
-#define USART6_RX_DMA_STREAM       DMA2_Stream2
 #define USART6_TX_DMA_CHANNEL      DMA_CHANNEL_4
+#define USART6_TX_DMA_IRQn         DMA2_Stream6_IRQn
+#define USART6_TX_DMA_IRQHandler   DMA2_Stream6_IRQHandler
+#define USART6_RX_DMA_STREAM       DMA2_Stream2
 #define USART6_RX_DMA_CHANNEL      DMA_CHANNEL_4
-#define USART6_DMA_TX_IRQn         DMA2_Stream6_IRQn
-#define USART6_DMA_RX_IRQn         DMA2_Stream2_IRQn
-#define USART6_DMA_TX_IRQHandler   DMA2_Stream6_IRQHandler
-#define USART6_DMA_RX_IRQHandler   DMA2_Stream2_IRQHandler
+#define USART6_RX_DMA_IRQn         DMA2_Stream2_IRQn
+#define USART6_RX_DMA_IRQHandler   DMA2_Stream2_IRQHandler
 //END USART defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //Motor defines

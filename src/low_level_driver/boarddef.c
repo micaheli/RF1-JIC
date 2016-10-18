@@ -279,29 +279,30 @@ void getBoardHardwareDefs(void)
 
 
 	//UART settings ------------------------------------------------------------------------------------------------------------------------------------------------------------
-	board.serials[4].PinMode = GPIO_MODE_AF_PP;
-	board.serials[4].Pull = GPIO_PULLUP;
-	board.serials[4].Speed = GPIO_SPEED_HIGH;
-	board.serials[4].TXAlternate = USART5_TX_AF;
-	board.serials[4].TXPin = USART5_TX_PIN;
-	board.serials[4].TXPort = USART5_TX_GPIO_PORT;
-	board.serials[4].RXAlternate = USART5_RX_AF;
-	board.serials[4].RXPin = USART5_RX_PIN;
-	board.serials[4].RXPort = USART5_RX_GPIO_PORT;
+	
+	board.serials[4].PinMode =		GPIO_MODE_AF_PP;
+	board.serials[4].Pull =			GPIO_PULLUP;
+	board.serials[4].Speed =		GPIO_SPEED_HIGH;
+	board.serials[4].TXAlternate =	USART5_TX_AF;
+	board.serials[4].TXPin =		USART5_TX_PIN;
+	board.serials[4].TXPort =		USART5_TX_GPIO_PORT;
+	board.serials[4].RXAlternate =	USART5_RX_AF;
+	board.serials[4].RXPin =		USART5_RX_PIN;
+	board.serials[4].RXPort =		USART5_RX_GPIO_PORT;
 	
 
 	board.serials[4].SerialInstance = UART5;  // loaded from port array
 
-	board.serials[4].BaudRate = 115200;
-	board.serials[4].WordLength = UART_WORDLENGTH_8B;
-	board.serials[4].StopBits = UART_STOPBITS_1;
-	board.serials[4].Parity = UART_PARITY_NONE;
-	board.serials[4].HwFlowCtl = UART_HWCONTROL_NONE;
-	board.serials[4].Mode = UART_MODE_TX_RX;
+	board.serials[4].BaudRate =		115200;
+	board.serials[4].WordLength =	UART_WORDLENGTH_8B;
+	board.serials[4].StopBits =		UART_STOPBITS_1;
+	board.serials[4].Parity =		UART_PARITY_NONE;
+	board.serials[4].HwFlowCtl =	UART_HWCONTROL_NONE;
+	board.serials[4].Mode =			UART_MODE_TX_RX;
 
-	board.serials[4].USART_IRQn = USART5_IRQn;
+	board.serials[4].USART_IRQn =	USART5_IRQn;
 
-	board.serials[4].TXDMAStream = USART5_TX_DMA_STREAM; // looked up from array
+	board.serials[4].TXDMAStream =	USART5_TX_DMA_STREAM; // looked up from array
 	board.serials[4].TXDMAChannel = USART5_TX_DMA_CHANNEL;
 	board.serials[4].TXDMADirection = DMA_MEMORY_TO_PERIPH;
 	board.serials[4].TXDMAPeriphInc = DMA_PINC_DISABLE;
@@ -323,6 +324,6 @@ void getBoardHardwareDefs(void)
 	board.serials[4].RXDMAPriority = DMA_PRIORITY_HIGH;
 	board.serials[4].RXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
 
-	board.serials[4].TXDMA_IRQn = USART5_DMA_TX_IRQn;
-	board.serials[4].RXDMA_IRQn = USART5_DMA_RX_IRQn;
+	board.serials[4].TXDMA_IRQn = USART5_TX_DMA_IRQn;
+	board.serials[4].RXDMA_IRQn = USART5_RX_DMA_IRQn;
 }

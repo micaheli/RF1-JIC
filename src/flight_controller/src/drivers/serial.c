@@ -23,19 +23,19 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 
 	/*##-2- Configure peripheral GPIO ##########################################*/
 	/* UART TX GPIO pin configuration  */
-	GPIO_InitStruct.Pin       = board.serials[4].TXPin;
-	GPIO_InitStruct.Mode      = board.serials[4].PinMode;
-	GPIO_InitStruct.Pull      = board.serials[4].Pull;
-	GPIO_InitStruct.Speed     = board.serials[4].Speed;
-	GPIO_InitStruct.Alternate = board.serials[4].TXAlternate;
+	GPIO_InitStruct.Pin       = board.serials[RECEIVER_UART].TXPin;
+	GPIO_InitStruct.Mode      = board.serials[RECEIVER_UART].PinMode;
+	GPIO_InitStruct.Pull      = board.serials[RECEIVER_UART].Pull;
+	GPIO_InitStruct.Speed     = board.serials[RECEIVER_UART].Speed;
+	GPIO_InitStruct.Alternate = board.serials[RECEIVER_UART].TXAlternate;
 
-	HAL_GPIO_Init(board.serials[4].TXPort, &GPIO_InitStruct);
+	HAL_GPIO_Init(board.serials[RECEIVER_UART].TXPort, &GPIO_InitStruct);
 
 	/* UART RX GPIO pin configuration  */
-	GPIO_InitStruct.Pin = board.serials[4].RXPin;
-	GPIO_InitStruct.Alternate = board.serials[4].RXAlternate;
+	GPIO_InitStruct.Pin = board.serials[RECEIVER_UART].RXPin;
+	GPIO_InitStruct.Alternate = board.serials[RECEIVER_UART].RXAlternate;
 
-	HAL_GPIO_Init(board.serials[4].RXPort, &GPIO_InitStruct);
+	HAL_GPIO_Init(board.serials[RECEIVER_UART].RXPort, &GPIO_InitStruct);
 
 	/*##-1- Configure the UART peripheral ######################################*/
 	/* Put the USART peripheral in the Asynchronous mode (UART Mode) */
@@ -48,18 +48,18 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 	uartHandle.Instance        = Usart;
 
 	uartHandle.Init.BaudRate   = baudRate;
-	uartHandle.Init.WordLength = board.serials[4].WordLength;
-	uartHandle.Init.StopBits   = board.serials[4].StopBits;
-	uartHandle.Init.Parity     = board.serials[4].Parity;
-	uartHandle.Init.HwFlowCtl  = board.serials[4].HwFlowCtl;
-	uartHandle.Init.Mode       = board.serials[4].Mode;
+	uartHandle.Init.WordLength = board.serials[RECEIVER_UART].WordLength;
+	uartHandle.Init.StopBits   = board.serials[RECEIVER_UART].StopBits;
+	uartHandle.Init.Parity     = board.serials[RECEIVER_UART].Parity;
+	uartHandle.Init.HwFlowCtl  = board.serials[RECEIVER_UART].HwFlowCtl;
+	uartHandle.Init.Mode       = board.serials[RECEIVER_UART].Mode;
 	if(HAL_UART_DeInit(&uartHandle) != HAL_OK)
 	{
 //		ErrorHandler();
 	}
 
 	//Config uart as  half duplex if TX and RX pins are the same
-	if (board.serials[4].TXPin == board.serials[4].RXPin && board.serials[4].RXPort == board.serials[4].TXPort)
+	if (board.serials[RECEIVER_UART].TXPin == board.serials[RECEIVER_UART].RXPin && board.serials[RECEIVER_UART].RXPort == board.serials[RECEIVER_UART].TXPort)
 	{
 		if (HAL_HalfDuplex_Init(&uartHandle) != HAL_OK)
 		{
@@ -141,16 +141,16 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	int x;
 	/*##-3- Configure the DMA ##################################################*/
 	/* Configure the DMA handler for Transmission process */
-	dmaUartTx.Instance                 = board.serials[4].TXDMAStream;
-	dmaUartTx.Init.Channel             = board.serials[4].TXDMAChannel;
-	dmaUartTx.Init.Direction           = board.serials[4].TXDMADirection;
-	dmaUartTx.Init.PeriphInc           = board.serials[4].TXDMAPeriphInc;
-	dmaUartTx.Init.MemInc              = board.serials[4].TXDMAMemInc;
-	dmaUartTx.Init.PeriphDataAlignment = board.serials[4].TXDMAPeriphDataAlignment;
-	dmaUartTx.Init.MemDataAlignment    = board.serials[4].TXDMAMemDataAlignment;
-	dmaUartTx.Init.Mode                = board.serials[4].TXDMAMode;
-	dmaUartTx.Init.Priority            = board.serials[4].TXDMAPriority;
-	dmaUartTx.Init.FIFOMode            = board.serials[4].TXDMAFIFOMode;
+	dmaUartTx.Instance                 = board.serials[RECEIVER_UART].TXDMAStream;
+	dmaUartTx.Init.Channel             = board.serials[RECEIVER_UART].TXDMAChannel;
+	dmaUartTx.Init.Direction           = board.serials[RECEIVER_UART].TXDMADirection;
+	dmaUartTx.Init.PeriphInc           = board.serials[RECEIVER_UART].TXDMAPeriphInc;
+	dmaUartTx.Init.MemInc              = board.serials[RECEIVER_UART].TXDMAMemInc;
+	dmaUartTx.Init.PeriphDataAlignment = board.serials[RECEIVER_UART].TXDMAPeriphDataAlignment;
+	dmaUartTx.Init.MemDataAlignment    = board.serials[RECEIVER_UART].TXDMAMemDataAlignment;
+	dmaUartTx.Init.Mode                = board.serials[RECEIVER_UART].TXDMAMode;
+	dmaUartTx.Init.Priority            = board.serials[RECEIVER_UART].TXDMAPriority;
+	dmaUartTx.Init.FIFOMode            = board.serials[RECEIVER_UART].TXDMAFIFOMode;
 
 	//HAL_DMA_Init(&dmaUartTx);
 
@@ -158,16 +158,16 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	__HAL_LINKDMA(huart, hdmatx, dmaUartTx);
 
 	/* Configure the DMA handler for reception process */
-	dmaUartRx.Instance                 = board.serials[4].RXDMAStream;
-	dmaUartRx.Init.Channel             = board.serials[4].RXDMAChannel;
-	dmaUartRx.Init.Direction           = board.serials[4].RXDMADirection;
-	dmaUartRx.Init.PeriphInc           = board.serials[4].RXDMAPeriphInc;
-	dmaUartRx.Init.MemInc              = board.serials[4].RXDMAMemInc;
-	dmaUartRx.Init.PeriphDataAlignment = board.serials[4].RXDMAPeriphDataAlignment;
-	dmaUartRx.Init.MemDataAlignment    = board.serials[4].RXDMAMemDataAlignment;
-	dmaUartRx.Init.Mode                = board.serials[4].RXDMAMode;
-	dmaUartRx.Init.Priority            = board.serials[4].RXDMAPriority;
-	dmaUartRx.Init.FIFOMode            = board.serials[4].RXDMAFIFOMode;
+	dmaUartRx.Instance                 = board.serials[RECEIVER_UART].RXDMAStream;
+	dmaUartRx.Init.Channel             = board.serials[RECEIVER_UART].RXDMAChannel;
+	dmaUartRx.Init.Direction           = board.serials[RECEIVER_UART].RXDMADirection;
+	dmaUartRx.Init.PeriphInc           = board.serials[RECEIVER_UART].RXDMAPeriphInc;
+	dmaUartRx.Init.MemInc              = board.serials[RECEIVER_UART].RXDMAMemInc;
+	dmaUartRx.Init.PeriphDataAlignment = board.serials[RECEIVER_UART].RXDMAPeriphDataAlignment;
+	dmaUartRx.Init.MemDataAlignment    = board.serials[RECEIVER_UART].RXDMAMemDataAlignment;
+	dmaUartRx.Init.Mode                = board.serials[RECEIVER_UART].RXDMAMode;
+	dmaUartRx.Init.Priority            = board.serials[RECEIVER_UART].RXDMAPriority;
+	dmaUartRx.Init.FIFOMode            = board.serials[RECEIVER_UART].RXDMAFIFOMode;
 
 	HAL_DMA_Init(&dmaUartRx);
 
@@ -176,22 +176,22 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	
 	/*##-4- Configure the NVIC for DMA #########################################*/
 	/* NVIC configuration for DMA transfer complete interrupt (USART6_TX) */
-	HAL_NVIC_SetPriority(board.serials[4].TXDMA_IRQn, 0, 1);
-	HAL_NVIC_EnableIRQ(board.serials[4].TXDMA_IRQn);
+	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].TXDMA_IRQn, 0, 1);
+	HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].TXDMA_IRQn);
 
 	/* NVIC configuration for DMA transfer complete interrupt (USART6_RX) */
-	HAL_NVIC_SetPriority(board.serials[4].RXDMA_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(board.serials[4].RXDMA_IRQn);
+	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].RXDMA_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].RXDMA_IRQn);
 
 	/* NVIC for USART, to catch the TX complete */
-	HAL_NVIC_SetPriority(board.serials[4].USART_IRQn, 0, 1);
-	HAL_NVIC_EnableIRQ(board.serials[4].USART_IRQn);
+	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].USART_IRQn, 0, 1);
+	HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].USART_IRQn);
 
     /* DMA interrupt init */
-	HAL_NVIC_SetPriority(board.serials[4].TXDMA_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(board.serials[4].TXDMA_IRQn);
-	HAL_NVIC_SetPriority(board.serials[4].RXDMA_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(board.serials[4].RXDMA_IRQn);
+	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].TXDMA_IRQn, 1, 0);
+	HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].TXDMA_IRQn);
+	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].RXDMA_IRQn, 1, 0);
+	HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].RXDMA_IRQn);
 	
     __HAL_UART_FLUSH_DRREGISTER(huart);
 
@@ -214,11 +214,11 @@ void BoardUsartInit () {
 
 	lastRXPacket = InlineMillis();
 
-	HAL_NVIC_DisableIRQ(board.serials[4].TXDMA_IRQn);
-	HAL_NVIC_DisableIRQ(board.serials[4].RXDMA_IRQn);
+	HAL_NVIC_DisableIRQ(board.serials[RECEIVER_UART].TXDMA_IRQn);
+	HAL_NVIC_DisableIRQ(board.serials[RECEIVER_UART].RXDMA_IRQn);
 
     // read and write settings at slow speed
-	UsartInit(board.serials[4].BaudRate, board.serials[4].SerialInstance, &uartHandle);
+	UsartInit(board.serials[RECEIVER_UART].BaudRate, board.serials[RECEIVER_UART].SerialInstance, &uartHandle);
 
 }
 
@@ -285,7 +285,7 @@ void USARTx_IRQHandler(void)
 		__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
 		
 		//check that DMA counter reached 0
-		if ((uint16_t)(board.serials[4].RXDMAStream->NDTR) == 0)
+		if ((uint16_t)(board.serials[RECEIVER_UART].RXDMAStream->NDTR) == 0)
 		{
 			ProcessSpektrumPacket();
 		}

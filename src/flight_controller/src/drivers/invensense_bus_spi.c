@@ -37,10 +37,10 @@ static void SPI_Init(uint32_t baudRatePrescaler)
 static void DMA_Init(void)
 {
     /* DMA interrupt init */
-    HAL_NVIC_SetPriority(GYRO_DMA_TX_IRQn, 1, 0);
-    HAL_NVIC_EnableIRQ(GYRO_DMA_TX_IRQn);
-    HAL_NVIC_SetPriority(GYRO_DMA_RX_IRQn, 1, 0);
-    HAL_NVIC_EnableIRQ(GYRO_DMA_RX_IRQn);
+    HAL_NVIC_SetPriority(GYRO_TX_DMA_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(GYRO_TX_DMA_IRQn);
+    HAL_NVIC_SetPriority(GYRO_RX_DMA_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(GYRO_RX_DMA_IRQn);
 }
 
 bool accgyroInit(loopCtrl_e loopCtrl)
@@ -49,8 +49,8 @@ bool accgyroInit(loopCtrl_e loopCtrl)
     // ensure the interrupt is not running
     HAL_NVIC_DisableIRQ(GYRO_EXTI_IRQn);
 #endif
-    HAL_NVIC_DisableIRQ(GYRO_DMA_TX_IRQn);
-    HAL_NVIC_DisableIRQ(GYRO_DMA_RX_IRQn);
+    HAL_NVIC_DisableIRQ(GYRO_TX_DMA_IRQn);
+    HAL_NVIC_DisableIRQ(GYRO_RX_DMA_IRQn);
 
     // read and write settings at slow speed
     SPI_Init(GYRO_SPI_SLOW_BAUD);
@@ -104,12 +104,12 @@ void GYRO_EXTI_IRQHandler(void)
 }
 #endif
 
-void GYRO_DMA_TX_IRQHandler(void)
+void GYRO_TX_DMA_IRQHandler(void)
 {
     HAL_DMA_IRQHandler(&dma_gyro_tx);
 }
 
-void GYRO_DMA_RX_IRQHandler(void)
+void GYRO_RX_DMA_IRQHandler(void)
 {
     HAL_DMA_IRQHandler(&dma_gyro_rx);
 
