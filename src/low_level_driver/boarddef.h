@@ -134,6 +134,10 @@
 #define USART5_TX_GPIO				GPIOC
 #define USART5_TX_PIN				GPIO_PIN_12
 
+
+
+
+
 /*
 #define USE_USART6
 #define USART6_RX_GPIO				GPIOC
@@ -205,10 +209,10 @@ typedef struct {
 	uint32_t	RXAlternate;
 	uint32_t	RXPin;
 
-	uint32_t	RXPort;
-	uint32_t	TXPort;
+	GPIO_TypeDef *	RXPort;
+	GPIO_TypeDef *	TXPort;
 
-	uint32_t	SerialInstance; // loaded from port array
+	USART_TypeDef *	SerialInstance; // loaded from port array
 
 	uint32_t	BaudRate;
 	uint32_t	WordLength;
@@ -217,7 +221,9 @@ typedef struct {
 	uint32_t	HwFlowCtl;
 	uint32_t	Mode;
 
-	uint32_t	TXDMAStream; // looked up from array
+	uint32_t	USART_IRQn;
+
+	DMA_Stream_TypeDef *	TXDMAStream; // looked up from array
 	uint32_t	TXDMAChannel;
 	uint32_t	TXDMADirection;
 	uint32_t	TXDMAPeriphInc;
@@ -228,7 +234,7 @@ typedef struct {
 	uint32_t	TXDMAPriority;
 	uint32_t	TXDMAFIFOMode;
 
-	uint32_t	RXDMAStream; // looked up from array
+	DMA_Stream_TypeDef *	RXDMAStream; // looked up from array
 	uint32_t	RXDMAChannel;
 	uint32_t	RXDMADirection;
 	uint32_t	RXDMAPeriphInc;
@@ -238,6 +244,9 @@ typedef struct {
 	uint32_t	RXDMAMode;
 	uint32_t	RXDMAPriority;
 	uint32_t	RXDMAFIFOMode;
+
+	uint32_t	TXDMA_IRQn;
+	uint32_t	RXDMA_IRQn;
 
 } board_serial;
 
@@ -257,7 +266,14 @@ typedef struct {
 	uint32_t	enabled;
 } gyro_type;
 
-
+typedef struct {
+	TIM_TypeDef *		timer;
+	uint32_t			pin;
+	GPIO_TypeDef *		port;
+	uint32_t			AF;	
+	uint32_t			timChannel;
+	uint32_t			timCCR;
+} motor_type;
 
 
 
@@ -275,8 +291,12 @@ typedef struct {
 	spi_pin_defs	spi_pins[3];
 
 	gyro_type	gyros[3];
+	
+	motor_type motors[4];
 
 	board_serial serials[6];
+
+	
 } board_type;
 
 
@@ -319,6 +339,37 @@ typedef struct {
 #define USART5_DMA_RX_IRQn         DMA1_Stream0_IRQn
 #define USART5_DMA_TX_IRQHandler   DMA1_Stream7_IRQHandler
 #define USART5_DMA_RX_IRQHandler   DMA1_Stream0_IRQHandler
+
+
+//Motor defines
+//motor Assignments
+#define MOTOR1_TIM					TIM3
+#define MOTOR1_PIN					GPIO_PIN_1
+#define MOTOR1_GPIO					GPIOB
+#define MOTOR1_ALTERNATE			GPIO_AF2_TIM3
+#define MOTOR1_TIM_CH				TIM_CHANNEL_4
+#define MOTOR1_TIM_CCR				MOTOR1_TIM->CCR4
+
+#define MOTOR2_TIM					TIM3
+#define MOTOR2_PIN					GPIO_PIN_0
+#define MOTOR2_GPIO					GPIOB
+#define MOTOR2_ALTERNATE			GPIO_AF2_TIM3
+#define MOTOR2_TIM_CH				TIM_CHANNEL_3
+#define MOTOR2_TIM_CCR				MOTOR2_TIM->CCR3
+
+#define MOTOR3_TIM					TIM3
+#define MOTOR3_PIN					GPIO_PIN_5
+#define MOTOR3_GPIO					GPIOB
+#define MOTOR3_ALTERNATE			GPIO_AF2_TIM3
+#define MOTOR3_TIM_CH				TIM_CHANNEL_2
+#define MOTOR3_TIM_CCR				MOTOR3_TIM->CCR2
+
+#define MOTOR4_TIM					TIM3
+#define MOTOR4_PIN					GPIO_PIN_4
+#define MOTOR4_GPIO					GPIOB
+#define MOTOR4_ALTERNATE			GPIO_AF2_TIM3
+#define MOTOR4_TIM_CH				TIM_CHANNEL_1
+#define MOTOR4_TIM_CCR				MOTOR4_TIM->CCR1
 
 /* Definition for USARTx's DMA */
 
@@ -368,4 +419,4 @@ extern board_type board;
 extern GPIO_TypeDef *ports[];
 
 extern int InitializeMCUSettings();
-
+void getBoardHardwareDefs();

@@ -66,44 +66,13 @@ int InitializeMCUSettings() {
 	timers[12]=_TIM13;
 	timers[13]=_TIM14;
 
-
-
-	bzero(&board, sizeof(board));
-
-	//board.internalLeds[0].enabled=1;
-	//board.internalLeds[0].pin=GPIO_PIN_4; this seems to be the buzzer pin
-	//board.internalLeds[0].port=1;
-	//board.internalLeds[0].pin=GPIO_PIN_1;
-    //board.internalLeds[0].port=2;
-
-	//REVOLT / REVO
-	board.internalLeds[0].enabled=1;
-	board.internalLeds[0].pin=GPIO_PIN_15;
-	board.internalLeds[0].port=0;
-
-	//REVO
-	board.internalLeds[1].enabled=1;
-	board.internalLeds[1].pin=GPIO_PIN_8;
-	board.internalLeds[1].port=2;
-
-	board.internalLeds[1].enabled=0;
-	board.internalLeds[1].pin=GPIO_PIN_1;
-	board.internalLeds[1].port=_PORTA;
-
-	board.buzzerPort=1;
-	board.buzzerPin=GPIO_PIN_4;
-	board.buzzerPort=_PORTB;
-
-
-
-
-
-
 	return(1);
 }
 
 void getBoardHardwareDefs(void)
 {
+	bzero(&board, sizeof(board));
+
 	//PLL settings
 	board.fc_pllm = FC_PLLM;
 	board.fc_plln = FC_PLLN;
@@ -135,7 +104,34 @@ void getBoardHardwareDefs(void)
 	
 	//gyro settings
 
+	//Motor output assignments
+	board.motors[0].timer = MOTOR1_TIM;
+	board.motors[0].pin = MOTOR1_PIN;
+	board.motors[0].port = MOTOR1_GPIO;
+	board.motors[0].AF = MOTOR1_ALTERNATE;
+	board.motors[0].timChannel = MOTOR1_TIM_CH;
+	board.motors[0].timCCR = MOTOR1_TIM_CCR;
 
+	board.motors[1].timer = MOTOR2_TIM;
+	board.motors[1].pin = MOTOR2_PIN;
+	board.motors[1].port = MOTOR2_GPIO;
+	board.motors[1].AF = MOTOR2_ALTERNATE;
+	board.motors[1].timChannel = MOTOR2_TIM_CH;
+	board.motors[1].timCCR = MOTOR2_TIM_CCR;
+
+	board.motors[2].timer = MOTOR3_TIM;
+	board.motors[2].pin = MOTOR3_PIN;
+	board.motors[2].port = MOTOR3_GPIO;
+	board.motors[2].AF = MOTOR3_ALTERNATE;
+	board.motors[2].timChannel = MOTOR3_TIM_CH;
+	board.motors[2].timCCR = MOTOR3_TIM_CCR;
+
+	board.motors[3].timer = MOTOR4_TIM;
+	board.motors[3].pin = MOTOR4_PIN;
+	board.motors[3].port = MOTOR4_GPIO;
+	board.motors[3].AF = MOTOR4_ALTERNATE;
+	board.motors[3].timChannel = MOTOR4_TIM_CH;
+	board.motors[3].timCCR = MOTOR4_TIM_CCR;
 
 	//Uart settings
 	board.serials[4].PinMode = GPIO_MODE_AF_PP;
@@ -158,6 +154,8 @@ void getBoardHardwareDefs(void)
 	board.serials[4].HwFlowCtl = UART_HWCONTROL_NONE;
 	board.serials[4].Mode = UART_MODE_TX_RX;
 
+	board.serials[4].USART_IRQn = USART5_IRQn;
+
 	board.serials[4].TXDMAStream = USART5_TX_DMA_STREAM; // looked up from array
 	board.serials[4].TXDMAChannel = USART5_TX_DMA_CHANNEL;
 	board.serials[4].TXDMADirection = DMA_MEMORY_TO_PERIPH;
@@ -179,4 +177,7 @@ void getBoardHardwareDefs(void)
 	board.serials[4].RXDMAMode = DMA_CIRCULAR;
 	board.serials[4].RXDMAPriority = DMA_PRIORITY_HIGH;
 	board.serials[4].RXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
+
+	board.serials[4].TXDMA_IRQn = USART5_DMA_TX_IRQn;
+	board.serials[4].RXDMA_IRQn = USART5_DMA_RX_IRQn;
 }

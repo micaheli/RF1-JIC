@@ -31,7 +31,7 @@ int main(void)
     VectorIrqInit(ADDRESS_RFFW_START);
 
 	//TODO Needs to pull parameters from flash here. For now we use defines
-	//getBoardHardwareDefs();
+	getBoardHardwareDefs();
 
     BoardInit();
 
