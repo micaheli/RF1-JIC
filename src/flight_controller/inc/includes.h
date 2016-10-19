@@ -29,6 +29,7 @@
 #include "usb_device.h"
 
 //all drivers
+#include "drivers/spektrumTelemetry.h"
 #include "drivers/serial.h"
 #include "drivers/leds.h"
 #include "drivers/buzzer.h"
@@ -38,6 +39,9 @@
 #include "drivers/invensense_bus.h"
 #include "drivers/invensense_device.h"
 #include "drivers/invensense_register_map.h"
+
+
+
 
 //config
 #include "config.h"

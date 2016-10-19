@@ -154,6 +154,12 @@ void ProcessSpektrumPacket(void)
 	}
 	spekPhase = copiedBufferData[2] & 0x80;
 
+#ifdef SPEKTRUM_TELEM
+	if (!spekPhase)
+	{
+		sendSpektrumTelem();
+	}
+#endif
 	InlineCollectRcCommand();
 	RxUpdate();
 }

@@ -152,7 +152,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	dmaUartTx.Init.Priority            = board.serials[RECEIVER_UART].TXDMAPriority;
 	dmaUartTx.Init.FIFOMode            = board.serials[RECEIVER_UART].TXDMAFIFOMode;
 
-	//HAL_DMA_Init(&dmaUartTx);
+	HAL_DMA_Init(&dmaUartTx);
 
 	/* Associate the initialized DMA handle to the UART handle */
 	__HAL_LINKDMA(huart, hdmatx, dmaUartTx);
