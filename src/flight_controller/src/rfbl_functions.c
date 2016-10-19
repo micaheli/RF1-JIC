@@ -12,6 +12,20 @@ void HandleRfbl (void) {
 	WriteRfblBkRegs();
 }
 
+void HandleFcStartupReg(void) {
+    if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight.
+    	//crashed FC startup
+    } else if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM9) {
+    	SpektrumBind ((uint32_t)9U);
+    	rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_STARTUP);
+    } else if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM5) {
+    	SpektrumBind ((uint32_t)5U);
+    	rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_STARTUP);
+    } else {
+    	rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_STARTUP);
+    }
+}
+
 void WriteRfblBkRegs (void) {
 	rtc_write_backup_reg(RFBL_BKR_RFBL_VERSION_REG,   rfblVersion);
 	rtc_write_backup_reg(RFBL_BKR_CFG1_VERSION_REG,   cfg1Version);

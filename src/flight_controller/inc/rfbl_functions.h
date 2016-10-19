@@ -56,7 +56,7 @@
 #define RFBL_BKR_BOOT_ADDRESSS_REG		RTC_BKP_DR5
 #define FC_STATUS_REG					RTC_BKP_DR6
 
-enum{FC_STATUS_INFLIGHT=100,FC_STATUS_IDLE,FC_STATUS_CONFIG,};
+enum{FC_STATUS_INFLIGHT=100,FC_STATUS_IDLE,FC_STATUS_CONFIG,FC_STATUS_STARTUP};
 
 #define RFBL1	0x631e47d9
 #define RFBL2	0x8ef26ec3
@@ -78,4 +78,5 @@ void ReadRfblBkRegs (void);
 
 void upgradeRfbl(void);
 void eraseRfbl(uint32_t firmwareSize);
-void HandleRfbl(void);
+extern void HandleRfbl(void);
+extern void HandleFcStartupReg(void);

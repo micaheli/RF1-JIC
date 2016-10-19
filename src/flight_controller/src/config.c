@@ -458,7 +458,6 @@ void RfCustomReply(char *rf_custom_out_buffer) {
 	}
 	hidToPcReady = 0;
 	USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
-	DelayMs(16); //this makes me a sad pands. :(
 
 }
 
@@ -570,6 +569,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("bind", inString))
 	{
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
+		rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 		memcpy(rf_custom_out_buffer, "binding9", sizeof("binding9"));
 		RfCustomReply(rf_custom_out_buffer);
@@ -577,6 +577,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("bind9", inString))
 	{
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
+		rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 		memcpy(rf_custom_out_buffer, "binding9", sizeof("binding9"));
 		RfCustomReply(rf_custom_out_buffer);

@@ -38,18 +38,7 @@ int main(void)
 
     InitializeMCUSettings();
 
-
-    if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight.
-    	//crashed FC startup
-    } else if (rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG) == BOOT_TO_SPEKTRUM9) {
-    	SpektrumBind ((uint32_t)9U);
-    } else if (rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG) == BOOT_TO_SPEKTRUM5) {
-    	SpektrumBind ((uint32_t)5U);
-    } else {
-    	//normal FC startup
-    }
-
-    debugU32[5]=7;
+    HandleFcStartupReg();
 
     InitBuzzer();
     InitLeds();
@@ -76,49 +65,10 @@ int main(void)
 
     while (1) {
 
-
     	scheduler(count--);
-    	if (count == -1) {
+
+    	if (count == -1)
     		count = 16;
-/*
-    		if(uartHandle.gState != HAL_UART_STATE_BUSY_TX)
-    		{
-				aTxBuffer[0]=1;
-				aTxBuffer[1]=2;
-				aTxBuffer[2]=3;
-				aTxBuffer[3]=4;
-				aTxBuffer[4]=5;
-				aTxBuffer[5]=6;
-				aTxBuffer[6]=7;
-				aTxBuffer[7]=8;
-				aTxBuffer[8]=9;
-				aTxBuffer[9]=10;
-
-				if(HAL_UART_Transmit_DMA(&uartHandle, (uint8_t*)aTxBuffer, TXBUFFERSIZE)!= HAL_OK)
-				{
-					ErrorHandler();
-				}
-    		}
-*/
-/*
-    		if(uartHandle.RxState != HAL_UART_STATE_BUSY_RX)
-    		{
-
-				// ##-2- Put UART peripheral in reception process ###########################
-				if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
-				{
-					ErrorHandler();
-				}
-				for (unsigned char i=0;i<63;i++) {
-					tInBuffer[i] = aRxBuffer[i];
-				}
-				tInBuffer[0] = 1;
-
-			    USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
-    		}
-*/
-    	}
-
 
     }
 
