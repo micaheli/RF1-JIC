@@ -135,6 +135,17 @@ void getBoardHardwareDefs(void)
 	board.motors[3].timChannel = MOTOR4_TIM_CH;
 	board.motors[3].timCCR = MOTOR4_TIM_CCR;
 
+	//GYRO connection settings	------------------------------------------------------------------------------------------------------------------------------------------------------------
+	board.gyro_pins.SPIInstance = GYRO_SPI;	//use this to determine spi irqn and irq handlers to use. No need to re define them here
+	board.gyro_pins.SPINumber = GYRO_SPI_NUMBER;		
+	board.gyro_pins.csPin = GYRO_SPI_CS_GPIO_Pin;
+	board.gyro_pins.csPort = GYRO_SPI_CS_GPIO_Port;
+	board.gyro_pins.extiPin = GYRO_EXTI_GPIO_Pin;
+	board.gyro_pins.extiPort = GYRO_EXTI_GPIO_Port;
+	board.gyro_pins.extiIRQn = GYRO_EXTI_IRQn;
+	board.gyro_pins.spiFastBaud = GYRO_SPI_FAST_BAUD;
+	board.gyro_pins.spiSlowBaud = GYRO_SPI_SLOW_BAUD;
+
 
 	//SPI settings ------------------------------------------------------------------------------------------------------------------------------------------------------------
 	board.spis[0].enabled = SPI1_ENABLE;
@@ -228,8 +239,8 @@ void getBoardHardwareDefs(void)
 	board.spis[1].TXDMA_IRQn = SPI2_TX_DMA_IRQn;
 	board.spis[1].RXDMA_IRQn = SPI2_RX_DMA_IRQn;
 
-
-
+	//board.spis[1].TXDMA_IRQ_Handler = SPI2_TX_DMA_IRQHandler;
+	//board.spis[1].RXDMA_IRQ_Handler = SPI2_RX_DMA_IRQHandler;
 
 	board.spis[2].enabled = SPI3_ENABLE;
 

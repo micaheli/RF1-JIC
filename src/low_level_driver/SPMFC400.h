@@ -42,6 +42,7 @@
 
 //Gyro Config
 #define GYRO_SPI                SPI2
+#define GYRO_SPI_NUMBER			1		//starting from 0. 1 = SPI2
 #define GYRO_SPI_CS_GPIO_Port   GPIOB
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_12
 

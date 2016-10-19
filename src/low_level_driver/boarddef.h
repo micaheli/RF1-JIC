@@ -113,6 +113,9 @@ typedef struct {
 
 	uint32_t				TXDMA_IRQn;
 	uint32_t				RXDMA_IRQn;
+
+	//uint32_t				TXDMA_IRQ_Handler;
+	//uint32_t				RXDMA_IRQ_Handler;
 } board_spi;
 
 typedef struct {
@@ -174,12 +177,23 @@ typedef struct {
 } internal_led_type;
 
 typedef struct {
-	uint32_t				nssPort;	//for spi only
-	uint32_t				nssPin;		//for spi only
-	uint32_t				intPort;	//for spi only
-	uint32_t				intPin;		//for spi only
+	uint32_t				port;
+	uint32_t				pin;
 	uint32_t				enabled;
 } gyro_type;
+
+typedef struct {
+	SPI_TypeDef *			SPIInstance;	//use this to determine spi irqn and irq handlers to use. No need to re define them here
+	uint32_t				SPINumber;		
+	uint32_t				csPin;
+	GPIO_TypeDef *			csPort;
+	uint32_t				extiPin;
+	GPIO_TypeDef *			extiPort;
+	uint32_t				extiIRQn;
+	uint32_t				spiFastBaud;
+	uint32_t				spiSlowBaud;
+	//i2c stuff here?
+} board_gyro;
 
 typedef struct {
 	TIM_TypeDef *			timer;
@@ -208,6 +222,8 @@ typedef struct {
 	gyro_type				gyros[3];
 	
 	motor_type				motors[4];
+
+	board_gyro				gyro_pins;
 
 	board_spi				spis[3];
 
