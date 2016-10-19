@@ -340,7 +340,8 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//output to actuators
 	OutputActuators(motorOutput, servoOutput);
 
-	ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
+	if (!boardArmed)
+		ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
 
 	DoLed(0, 1);

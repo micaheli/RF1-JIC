@@ -38,11 +38,15 @@ int main(void)
 
     InitializeMCUSettings();
 
+
     if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight.
-    	debugU32[7]=6;
-    	//boot_to_app();
+    	//crashed FC startup
+    } else if (rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG) == BOOT_TO_SPEKTRUM9) {
+    	SpektrumBind ((uint32_t)9U);
+    } else if (rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG) == BOOT_TO_SPEKTRUM5) {
+    	SpektrumBind ((uint32_t)5U);
     } else {
-    	debugU32[7]=7;
+    	//normal FC startup
     }
 
     debugU32[5]=7;

@@ -45,26 +45,27 @@ inline void CheckFailsafe(void) {
 inline void RxUpdate(void) // hook for when rx updates
 {
 
-
-	//todo: MOVE!!! - uglied up Preston's code.
 	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
 		latchFirstArm = 1;
 	} else if ( (latchFirstArm == 2) && (!boardArmed) && (rxData[4] > 1500) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < 0.1) ) { //TODO: make uncalibrated board buzz
 
 		latchFirstArm = 0;
 		disarmCount = 0;
-		if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) {
+
+		if ( !(rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) ) {
 			//fc crashed during flight
-			debugU32[6]=6;
-		} else {
 			ResetGyroCalibration();
 			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
-			debugU32[6]=7;
 		}
+
 		boardArmed = 1;
-		mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
-		mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
-		mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
+
+		if ( ABS(rxData[PITCH] - mainConfig.rcControlsConfig.midRc[PITCH]) < 20 )
+			mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
+		if ( ABS(rxData[ROLL] - mainConfig.rcControlsConfig.midRc[ROLL]) < 20 )
+			mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
+		if ( ABS(rxData[YAW] - mainConfig.rcControlsConfig.midRc[YAW]) < 20 )
+			mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
 
 	} else if (rxData[4] < 400) {
 
@@ -80,6 +81,7 @@ inline void RxUpdate(void) // hook for when rx updates
 
 
 }
+
 inline uint32_t SpektrumChannelMap(uint32_t inChannel) {
 	if (inChannel == 3)
 		return(0);
@@ -88,6 +90,31 @@ inline uint32_t SpektrumChannelMap(uint32_t inChannel) {
 		return(3);
 
 	return(inChannel);
+}
+
+void SpektrumBind (uint32_t bindNumber) {
+
+	uint32_t i;
+
+	//todo: init all RX ports and ping each one as a spektrum port, maybe check each one to see if it allows spektrum binding
+	InitializeLed(GPIOB, GPIO_PIN_11); //spektrum binding is just like flashing an led
+	DelayMs(1);
+
+	inlineDigitalHi(GPIOB, GPIO_PIN_11);
+	DelayMs(70);
+
+	if (!bindNumber)
+		bindNumber = 9;
+
+	for (i=0; i < bindNumber; i++) {
+
+		inlineDigitalLo(GPIOB, GPIO_PIN_11);
+		DelayMs(2);
+
+		inlineDigitalHi(GPIOB, GPIO_PIN_11);
+		DelayMs(2);
+
+	}
 }
 
 inline uint32_t ChannelMap(uint32_t inChannel)
