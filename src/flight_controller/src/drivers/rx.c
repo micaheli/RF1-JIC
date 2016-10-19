@@ -28,6 +28,7 @@ spektrumChannelMask = 0x03;
 unsigned char copiedBufferData[16];
 
 volatile uint32_t rx_timeout=0;
+uint32_t spekPhase=1;
 
 inline void CheckFailsafe(void) {
 
@@ -151,6 +152,7 @@ void ProcessSpektrumPacket(void)
 			rxData[ChannelMap(spektrumChannel)] = value & 0x7FF;
 		}
 	}
+	spekPhase = copiedBufferData[2] & 0x80;
 
 	InlineCollectRcCommand();
 	RxUpdate();

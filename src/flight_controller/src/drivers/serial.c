@@ -247,7 +247,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
             the HAL_UART_RxCpltCallback can be implemented in the user file.
    */
 
-void USARTx_DMA_RX_IRQHandler(void)
+void USARTx_RX_DMA_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&dmaUartRx);
 //  typedef enum
@@ -267,7 +267,7 @@ void USARTx_DMA_RX_IRQHandler(void)
 
 }
 
-void USARTx_DMA_TX_IRQHandler(void)
+void USARTx_TX_DMA_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&dmaUartTx);
 
