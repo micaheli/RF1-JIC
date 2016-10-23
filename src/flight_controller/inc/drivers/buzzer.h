@@ -12,7 +12,7 @@ enum
     STATE_BUZZER_ON,
     STATE_BUZZER_ERROR,
 	STATE_BUZZER_LOST,
-	STATE_BUZZER_SIMPLE,
+	STATE_BUZZER_STARTUP,
 };
 
 typedef struct buzzerStatus_t
@@ -31,3 +31,5 @@ void InitBuzzer(void);
 void InitializeBuzzerPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2);
 void UpdateBuzzer(void);
+void BuzzTest(void);
+

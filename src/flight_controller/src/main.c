@@ -28,6 +28,7 @@ int main(void)
 
     int32_t count = 16;
 
+
     VectorIrqInit(ADDRESS_FLASH_START);
 
     BoardInit();
@@ -64,6 +65,7 @@ int main(void)
     bzero(serialTxBuffer, sizeof(serialTxBuffer));
 
     while (1) {
+
 
     	scheduler(count--);
 

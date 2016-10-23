@@ -63,11 +63,13 @@ void UpdateBuzzer(void)
     	DoBuzz(1);
     	break;
     case STATE_BUZZER_LOST:
-    	Buzz(timeNow,40, 500);
+    	Buzz(timeNow,100, 150);
     	break;
-    case STATE_BUZZER_SIMPLE:
-    	Buzz(timeNow,300,400);
+    case STATE_BUZZER_STARTUP:
+    	Buzz(timeNow,40,80);
     	break;
+    case STATE_BUZZER_ERROR:
+    	Buzz(timeNow,20,40);
 
      }
 
@@ -94,3 +96,10 @@ void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2) {
 		buzzerStatus.timeStart = timeNow;
 	}
 }
+void BuzzTest()
+{
+	UpdateBuzzer();
+	buzzerStatus.status = STATE_BUZZER_ERROR;
+}
+
+
