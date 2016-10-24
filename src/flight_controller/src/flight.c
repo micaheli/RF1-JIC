@@ -14,6 +14,7 @@ uint32_t flightcodeTimeStart;
 float flightcodeTime;
 float pitchAttitude = 0, rollAttitude = 0, yawAttitude = 0;
 uint32_t boardOrientation1 = 0;
+uint32_t RfblDisasterPreventionCheck = 1;
 
 uint32_t counterFish = 0;
 uint32_t loopCounter = 429496729U;
@@ -297,6 +298,12 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 		flightcodeTimeStart = Micros();
 		debugU32[0] = flightcodeTime;
 
+		if (RfblDisasterPreventionCheck) {
+			if (InlineMillis() > 5000) {
+				RfblDisasterPreventionCheck = 0;
+				HandleRfblDisasterPrevention();
+			}
+		}
 
 	}
 

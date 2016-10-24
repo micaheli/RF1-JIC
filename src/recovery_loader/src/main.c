@@ -12,8 +12,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
-uint32_t toggle_led = 0;
-int usbStarted = 0;
+uint32_t usbStarted = 0;
+
 uint32_t ApplicationAddress = 0x08008000;
 uint8_t bindSpektrum = 0;
 char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
@@ -26,13 +26,74 @@ cfg1_t cfg1;
 
 /* Private functions ---------------------------------------------------------*/
 
+int CheckRfblPinsAttatched(void) {
+
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+    simpleDelay_ASM(10); //let pin status stabilize
+	int rfbl_plug_attatched = 1;
+
+	//RX
+    HAL_GPIO_DeInit(RFBL_GPIO1, RFBL_PIN1);
+    GPIO_InitStructure.Pin   = RFBL_PIN1;
+    GPIO_InitStructure.Mode  = GPIO_MODE_INPUT;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+    HAL_GPIO_Init(RFBL_GPIO1, &GPIO_InitStructure);
+
+    //TX
+    HAL_GPIO_DeInit(RFBL_GPIO2, RFBL_PIN2);
+    GPIO_InitStructure.Pin   = RFBL_PIN2;
+    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_NOPULL;
+    HAL_GPIO_Init(RFBL_GPIO2, &GPIO_InitStructure);
+
+    inlineDigitalHi(RFBL_GPIO2, RFBL_PIN2);
+	simpleDelay_ASM(1); //let pin status stabilize
+    if ((inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX hi
+    	rfbl_plug_attatched = 0;
+    }
+	inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
+	simpleDelay_ASM(1); //let pin status stabilize
+    if (!(inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX low
+    	rfbl_plug_attatched = 0;
+    }
+    inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
+
+	if (rfbl_plug_attatched) {
+		startupBlink (150, 25);
+		//pins attached, let's wait 4 seconds and see if they're still attached
+		rfbl_plug_attatched = 1;
+	    inlineDigitalHi(RFBL_GPIO2, RFBL_PIN2);
+		simpleDelay_ASM(1); //let pin status stabilize
+	    if ((inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX hi
+	    	rfbl_plug_attatched = 0;
+	    }
+		inlineDigitalLo(RFBL_GPIO2, RFBL_PIN2);
+		simpleDelay_ASM(1); //let pin status stabilize
+	    if (!(inlineIsPinStatusHi(RFBL_GPIO1, RFBL_PIN1))) { //is RX low
+	    	rfbl_plug_attatched = 0;
+	    }
+	    if (rfbl_plug_attatched) {
+	    	//pin still attached, let's go to RECOVERY LOADER
+	    	return (1);
+	    } else {
+	    	//pin not attached, let's go into RFBL
+	    	//rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_RFBL_COMMAND);
+	    	return (0);
+	    }
+	}
+
+	return(0);
+}
+
 int main(void)
 {
 
-	uint32_t rebootAddress, bootDirection, bootCycles, rebootPending, toggleLedOn;
+	uint32_t rebootAddress, bootDirection, bootCycles, rebootPending, ledTime = 0;
 
 	__enable_irq();
-
 	HAL_RCC_DeInit();
     HAL_DeInit();
     BoardInit();
@@ -49,7 +110,7 @@ int main(void)
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
-	if (bootCycles > 1) { //we've restarted for some reason, check restart register and clear it
+	if (bootCycles > 5) { //we've restarted for some reason, check restart register and clear it
 		//Let's clear the registers and go into Recovery mode.
 		if (!rebootPending) {
 			//a reboot failed.
@@ -64,7 +125,9 @@ int main(void)
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND); //default is always boot to app
 	}
 
-	boot_to_app();
+	if (CheckRfblPinsAttatched())
+		bootDirection = BOOT_TO_RECOVERY_COMMAND;
+
 	//serial number check here:
 	//if (SERIALNUMBER != readSerialNumber) {
 	//	bootDirection = BOOT_TO_RECOVERY_COMMAND;
@@ -85,13 +148,12 @@ int main(void)
 			boot_to_app();  //jump to application
 			break;
 		case BOOT_TO_RECOVERY_COMMAND: //go into recovery mode
-			startupBlink(20, 20);
+			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_RECV_COMMAND); //force boot to app for crappy firmware now that we've entered recovery command
 			break;
 	}
 
-	InitializeMCUSettings();
-
 	InitLeds();
+	startupBlink(20, 20);
     usbStarted=1;
     USB_DEVICE_Init(); //start USB
 
@@ -115,30 +177,13 @@ int main(void)
 				boot_to_app();  //jump to application
 				break;
 
+			case RFBLS_LAST:
 			case RFBLS_ERROR:
 				//blink a bunch of times and restart
 				//TODO: Add reason blinks
 				errorBlink();
 				__disable_irq();
 				NVIC_SystemReset();
-				break;
-
-			case RFBLS_TOGGLE_LEDS:
-				if (toggleLedOn) {
-					toggleLedOn = 0;
-					DoLed(0, 0);
-					DoLed(1, 0);
-					DoLed(2, 0);
-				} else {
-					toggleLedOn = 1;
-					DoLed(0, 1);
-					DoLed(1, 1);
-					DoLed(2, 1);
-				}
-
-				rfbl_report_state(&RfblState);
-				RfblState = RFBLS_IDLE;
-
 				break;
 
 			case RFBLS_REBOOT_TO_DFU:
@@ -199,55 +244,25 @@ int main(void)
 			case RFBLS_LOAD_FROM_BL:
 			case RFBLS_ERASE_CFG1_FLASH:
 			case RFBLS_ERASE_CFG2_FLASH:
-				rfbl_report_state(&RfblState);
-				RfblState = RFBLS_IDLE;
-				break;
-
+			case RFBLS_TOGGLE_LEDS:
 			case RFBLS_ERASE_ALL_FLASH:
-				//erase_all_flash();
-				RfblState = RFBLS_IDLE;
-				rfbl_report_state(&RfblState);
-				break;
-
-			case RFBLS_LAST:
 				rfbl_report_state(&RfblState);
 				RfblState = RFBLS_IDLE;
 				break;
 
 			case RFBLS_IDLE:
 			default:
-				if (toggle_led < 1000000) {
-					DoLed(1, 0);;
-					if (toggle_led % 8 == 0) {
-						DoLed(0, 1);;
-					} else {
-						DoLed(0, 0);;
-					}
-				} else if (toggle_led < 2000000) {
-					DoLed(0, 0);;
-					if (toggle_led % 6 == 0) {
-						DoLed(0, 1);;
-					} else {
-						DoLed(0, 0);;
-					}
-				} else if (toggle_led < 3000000) {
-					DoLed(0, 0);;
-					if (toggle_led % 4 == 0) {
-						DoLed(0, 1);;
-					} else {
-						DoLed(0, 0);;
-					}
-				} else if (toggle_led < 4000000) {
-					DoLed(0, 0);;
-					if (toggle_led % 2 == 0) {
-						DoLed(1, 1);;
-					} else {
-						DoLed(1, 0);;
-					}
+				if ( (InlineMillis() - ledTime) <250) {
+					DoLed(0, 1);
+				} else if ( (InlineMillis() - ledTime) < 1000) {
+					DoLed(0, 0);
+				} else if ( (InlineMillis() - ledTime) < 1750) {
+					DoLed(0, 1);
+				} else if ( (InlineMillis() - ledTime) < 2000) {
+					DoLed(0, 0);
 				} else {
-					toggle_led = 0;
+					ledTime = InlineMillis();
 				}
-				toggle_led++;
 				check_rfbl_command(&RfblCommand, &RfblState);
 				break;
 
@@ -283,7 +298,7 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 
 void boot_to_app (void) {
 
-	DelayMs(250); //quarter second delay before booting into app to allow PDB power to stabilize
+	//DelayMs(250); //quarter second delay before booting into app to allow PDB power to stabilize
 
 	if (usbStarted) {
 		USB_DEVICE_DeInit();
@@ -343,7 +358,7 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 				*RfblState = RFBLS_DONE_UPGRADING; //yes
 				DoLed(0, 0);;
 				DoLed(1, 0);;
-			} else if ((FwInfo.wordOffset + (FwInfo.skipTo - ADDRESS_RFBL_START)) == FwInfo.size)  {
+			} else if ((FwInfo.wordOffset + (FwInfo.skipTo - 0)) == FwInfo.size)  {
 				*RfblState = RFBLS_DONE_UPGRADING; //yes
 				DoLed(0, 0);;
 				DoLed(1, 0);;
@@ -369,10 +384,6 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 
 			case RFBLC_NONE:
 				*RfblState = RFBLS_IDLE;
-				break;
-
-			case RFBLC_TOGGLE_LEDS:
-				*RfblState = RFBLS_TOGGLE_LEDS;
 				break;
 
 			case RFBLC_REBOOT_TO_DFU:
@@ -411,6 +422,10 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 				*RfblState = RFBLS_ERASE_ALL_FLASH;
 				break;
 
+			case RFBLC_TOGGLE_LEDS:
+				*RfblState = RFBLS_TOGGLE_LEDS;
+				break;
+
 			case RFBLC_VERSION:
 				*RfblState = RFBLS_VERSION;
 				break;
@@ -435,6 +450,25 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 
 void rfbl_execute_load_command(void) {
 
+	DoLed(0, 0);
+
+	if (FwInfo.mode == MANU) {
+		//nothing special needed for manual mode other than sanity checks
+		FwInfo.expected_packets = ceil(FwInfo.size / FwInfo.packet_size);
+		DoLed(0, 1);
+		if ( (FwInfo.erase > FwInfo.address) && (FwInfo.address >= ADDRESS_RFBL_START) ) {
+			EraseFlash(FwInfo.address, FwInfo.erase);
+	    	PrepareFlash();
+		}
+		DoLed(0, 0);
+	} else {
+		FwInfo.expected_packets = 0;
+	}
+
+}
+/*
+void rfbl_execute_load_command(void) {
+
 	DoLed(0, 0);;
 	DoLed(1, 0);;
 	DoLed(2, 0);;
@@ -457,7 +491,7 @@ void rfbl_execute_load_command(void) {
 	if ( (FwInfo.type == RFFW) && (FwInfo.size) ) { //Does the firmware have size? //TODO: Verify size is sane
 		FwInfo.expected_packets = ceil(FwInfo.size / FwInfo.packet_size);
 		DoLed(0, 1);
-		EraseFlash(ADDRESS_FLASH_START, ADDRESS_FLASH_START)
+		EraseFlash(ADDRESS_FLASH_START, ADDRESS_FLASH_START);
 	    PrepareFlash();
 		DoLed(0, 0);
 	}
@@ -470,10 +504,10 @@ void rfbl_execute_load_command(void) {
 	}
 
 }
-
+*/
 void rfbl_write_packet(void) {
 
-	uint32_t data32;
+	volatile uint32_t data32;
 
 	for (uint32_t wordoffsetter = 0; wordoffsetter < (floor((HID_EPOUT_SIZE-1) / 4) * 4); wordoffsetter += 4) { //for each packet
 
@@ -569,6 +603,18 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 	if (*RfblState == RFBLS_VERSION) {
 		tInBuffer[7]=RFBL_VERSION;
 		tInBuffer[8]=CFG1_VERSION;
+		tInBuffer[9]=uid0_1;
+		tInBuffer[10]=uid0_2;
+		tInBuffer[11]=uid0_3;
+		tInBuffer[12]=uid0_4;
+		tInBuffer[13]=uid1_1;
+		tInBuffer[14]=uid1_2;
+		tInBuffer[15]=uid1_3;
+		tInBuffer[16]=uid1_4;
+		tInBuffer[17]=uid2_1;
+		tInBuffer[18]=uid2_2;
+		tInBuffer[19]=uid2_3;
+		tInBuffer[20]=uid2_4;
 	}
 
 	USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
@@ -587,6 +633,9 @@ void ErrorHandler(void)
     }
 }
 
+void ZeroActuators(void) {
+	return;
+}
 /* RFBL description
 
 RaceFlight Bootloader Updater (RFBU) is small and fits into a single 16 KB sector (2nd one).
@@ -678,5 +727,24 @@ RFBL Commands:
     RFBLS_VERSION,                  //RFBL is reporting FW version
     RFBLS_ERROR,                    //RFBL is in error mode
     RFBLS_LAST,                     //RFBL is in error mode Last enumeration is same as error mode
+
+
+
+RECV -> RFBL -> FIRM
+
+If RFBL corrupt we look for a pin to get to RECV
+
+
+
+
+08000000 - 08008000 //RECV
+08008000 - 08010000 //RFBL
+08010000 - 08020000 //CNFG
+08020000 - 080FFFFF //RFFW
+
+
+
+
+
 
  */

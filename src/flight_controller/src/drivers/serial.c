@@ -196,6 +196,9 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 
 void BoardUsartInit () {
 
+    bzero(serialRxBuffer, sizeof(serialRxBuffer));
+    bzero(serialTxBuffer, sizeof(serialTxBuffer));
+
 	lastRXPacket = InlineMillis();
 
     HAL_NVIC_DisableIRQ(USARTx_DMA_TX_IRQn);

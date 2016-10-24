@@ -21,6 +21,7 @@ int usbStarted = 0;
 uint32_t ApplicationAddress = 0x08020000;
 uint8_t bindSpektrum = 0;
 char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
+uint32_t skipDelay=0;
 
 FwInfo_t FwInfo;
 cfg1_t cfg1;
@@ -33,35 +34,30 @@ cfg1_t cfg1;
 int main(void)
 {
 
-	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress, toggleLedOn;
+	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress, toggleLedOn, ledTime=0;
 
 	VectorIrqInit(0x08008000);
 	__enable_irq();
-
 	HAL_RCC_DeInit();
     HAL_DeInit();
     BoardInit();
 
+
     if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight. Imediately jump into program
+    	skipDelay = 1;
     	boot_to_app();
     }
 
-    usbStarted=1;
-    USB_DEVICE_Init(); //start USB
-    boot_to_app();
-    InitializeMCUSettings();
-    InitLeds();
 
-    rfblVersion = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
-    cfg1Version = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
+    bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
+    if (!(bootDirection))
+    	rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,   BOOT_TO_APP_COMMAND);
 
-    if ((rfblVersion != RFBL_VERSION) || (cfg1Version != CFG1_VERSION)) { //no data or wrong version, let's put defaults
-		rtc_write_backup_reg(RFBL_BKR_RFBL_VERSION_REG,   RFBL_VERSION);
-		rtc_write_backup_reg(RFBL_BKR_CFG1_VERSION_REG,   CFG1_VERSION);
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
-		rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG,    (uint32_t)0x00000000);
-		rtc_write_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG,  APP_ADDRESS);
-    }
+	rtc_write_backup_reg(RFBL_BKR_RFBL_VERSION_REG,   RFBL_VERSION);
+	rtc_write_backup_reg(RFBL_BKR_CFG1_VERSION_REG,   CFG1_VERSION);
+
+	rfblVersion = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
+	cfg1Version = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
 
     //get config data from backup registers
 	rfblVersion   = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
@@ -70,11 +66,24 @@ int main(void)
 	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
 
-	//if (bootDirection == BOOT_TO_APP_AFTER_SPEK_COMMAND) {
-	//	rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
-	//	boot_to_app();
-	//}
-	//bootDirection = BOOT_TO_RFBL_COMMAND;
+	if (bootDirection == BOOT_TO_APP_AFTER_RECV_COMMAND) {
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+		boot_to_app();
+	}
+
+	bootDirection = checkOldConfigDirection (bootDirection, bootCycles);
+
+
+	if (bootDirection == BOOT_TO_RECOVERY_COMMAND) {
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_RECOVERY_COMMAND);
+		SystemReset();
+	}
+
+	if (bootDirection == BOOT_TO_APP_AFTER_SPEK_COMMAND) {
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+		boot_to_app();
+	}
+
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
@@ -85,15 +94,14 @@ int main(void)
 		switch (bootDirection) {
 			case BOOT_TO_SPEKTRUM5:
 			case BOOT_TO_SPEKTRUM9:
+				skipDelay = 1;
 			case BOOT_TO_APP_COMMAND:
 				//simpleDelay_ASM(100000);
-				startupBlink(20, 20);
 				boot_to_app();  //jump to application
 				break;
 			case BOOT_TO_ADDRESS:
 				//simpleDelay_ASM(100000);
 				ApplicationAddress = rebootAddress;
-				startupBlink(20, 20);
 				boot_to_app();  //jump to application
 				break;
 			case BOOT_TO_DFU_COMMAND:
@@ -101,6 +109,9 @@ int main(void)
 				break;
 			case BOOT_TO_RFBL_COMMAND:
 			default:
+			    usbStarted=1;
+			    USB_DEVICE_Init(); //start USB
+			    InitLeds();
 				startupBlink(20, 20);
 				//simpleDelay_ASM(100000);
 				//default is to do nothing, continue to RFBL
@@ -230,38 +241,17 @@ int main(void)
 
 			case RFBLS_IDLE:
 			default:
-				if (toggle_led < 1000000) {
-					DoLed(1, 0);
-					if (toggle_led % 8 == 0) {
-						DoLed(0, 1);
-					} else {
-						DoLed(0, 0);
-					}
-				} else if (toggle_led < 2000000) {
+				if ( (InlineMillis() - ledTime) <100) {
+					DoLed(0, 1);
+				} else if ( (InlineMillis() - ledTime) < 200) {
 					DoLed(0, 0);
-					if (toggle_led % 6 == 0) {
-						DoLed(0, 1);
-					} else {
-						DoLed(0, 0);
-					}
-				} else if (toggle_led < 3000000) {
+				} else if ( (InlineMillis() - ledTime) < 400) {
+					DoLed(0, 1);
+				} else if ( (InlineMillis() - ledTime) < 800) {
 					DoLed(0, 0);
-					if (toggle_led % 4 == 0) {
-						DoLed(0, 1);
-					} else {
-						DoLed(0, 0);
-					}
-				} else if (toggle_led < 4000000) {
-					DoLed(0, 0);
-					if (toggle_led % 2 == 0) {
-						DoLed(1, 1);
-					} else {
-						DoLed(1, 0);
-					}
 				} else {
-					toggle_led = 0;
+					ledTime = InlineMillis();
 				}
-				toggle_led++;
 				check_rfbl_command(&RfblCommand, &RfblState);
 				break;
 
@@ -276,19 +266,22 @@ uint32_t checkOldConfigDirection (uint32_t bootDirection, uint32_t bootCycles) {
 	uint32_t firmwareFinderData[5];
 
 	uint32_t addressStart = ADDRESS_CONFIG_START;
-	uint32_t addressEnd   = ADDRESS_FLASH_START;
+	uint32_t addressEnd   = ADDRESS_RFFW_START;
 
 	for (volatile uint32_t byteOffset = addressStart; byteOffset < addressEnd; byteOffset += 1) {
 
 		memcpy( &firmwareFinderData, (char *) byteOffset, sizeof(firmwareFinderData) );
 
 		if ( (firmwareFinderData[0] == RFBL1) && (firmwareFinderData[1] == RFBL2) && (firmwareFinderData[2] == RFBL3) && (firmwareFinderData[3] == RFBL4) ) {
+
 			if (bootCycles < 3) {
 				bootDirection = firmwareFinderData[4];
 			} else {
 				bootDirection = firmwareFinderData[4];
 				//rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, 0x00000000);
 				//rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+				//old crappy firmware
+				//rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG,    (uint32_t)0x00000000);
 				//bootDirection = BOOT_TO_APP_COMMAND;
 			}
 			break;
@@ -323,7 +316,8 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 
 void boot_to_app (void) {
 
-	DelayMs(250); //quarter second delay before booting into app to allow PDB power to stabilize
+	if (!(skipDelay))
+		DelayMs(600); //600 ms delay before booting into app to allow PDB power to stabilize
 
 	if (usbStarted) {
 		USB_DEVICE_DeInit();
@@ -476,37 +470,18 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState) {
 void rfbl_execute_load_command(void) {
 
 	DoLed(0, 0);
-	DoLed(1, 0);
-	DoLed(2, 0);
-	//TODO: Add some sanity checks
-	if ( (FwInfo.type == RFFW) && (FwInfo.mode == AUTO) ) { //Auto load RFFW, RaceFlight FW
-		FwInfo.address = ADDRESS_FLASH_START;
-	} else
-	if ( (FwInfo.type == RFBU) && (FwInfo.mode == AUTO) ) { //Auto load RFBU, RaceFlight Bootloader Uploader
-		FwInfo.address = ADDRESS_FLASH_START;
-	} else
+
 	if (FwInfo.mode == MANU) {
 		//nothing special needed for manual mode other than sanity checks
-	}
-
-	//RFBL can only do FW or FWCF, RFBU can do ALL, FWCG, or RFFW
-	if ( (FwInfo.type == RFBU) && (FwInfo.erase != RFFW) ) {
-		FwInfo.erase = FWCF;
-	}
-
-	if ( (FwInfo.type == RFFW) && (FwInfo.size) ) { //Does the firmware have size? //TODO: Verify size is sane
 		FwInfo.expected_packets = ceil(FwInfo.size / FwInfo.packet_size);
 		DoLed(0, 1);
-		EraseFlash(ADDRESS_FLASH_START, ADDRESS_FLASH_START)
-	    PrepareFlash();
+		if ( (FwInfo.erase > FwInfo.address) && (FwInfo.address >= ADDRESS_RFBL_START) ) {
+			EraseFlash(FwInfo.address, FwInfo.erase);
+	    	PrepareFlash();
+		}
 		DoLed(0, 0);
-	}
-
-	if (FwInfo.size >= (uint32_t)( (float)(ADDRESS_FLASH_END - ADDRESS_FLASH_START) * 0.94f ) ) {
-		FwInfo.skipTo = ADDRESS_FLASH_START;
-		FwInfo.address = ADDRESS_RFBL_START;
 	} else {
-		FwInfo.skipTo = ADDRESS_RFBL_START;
+		FwInfo.expected_packets = 0;
 	}
 
 }
@@ -520,7 +495,7 @@ void rfbl_write_packet(void) {
 
 		if ( (FwInfo.address + FwInfo.wordOffset) >= FwInfo.skipTo  ) { //only write to FW at this point
 
-			uint32_t data32 = (uint32_t) ( (FwInfo.data[wordoffsetter+1] << 0) | (FwInfo.data[wordoffsetter+2] << 8) | (FwInfo.data[wordoffsetter+3] << 16) | (FwInfo.data[wordoffsetter+4] << 24));
+			data32 = (uint32_t) ( (FwInfo.data[wordoffsetter+1] << 0) | (FwInfo.data[wordoffsetter+2] << 8) | (FwInfo.data[wordoffsetter+3] << 16) | (FwInfo.data[wordoffsetter+4] << 24));
 
 			WriteFlash(data32, FwInfo.address + FwInfo.wordOffset );
 
@@ -605,6 +580,18 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 	if (*RfblState == RFBLS_VERSION) {
 		tInBuffer[7]=RFBL_VERSION;
 		tInBuffer[8]=CFG1_VERSION;
+		tInBuffer[9]=uid0_1;
+		tInBuffer[10]=uid0_2;
+		tInBuffer[11]=uid0_3;
+		tInBuffer[12]=uid0_4;
+		tInBuffer[13]=uid1_1;
+		tInBuffer[14]=uid1_2;
+		tInBuffer[15]=uid1_3;
+		tInBuffer[16]=uid1_4;
+		tInBuffer[17]=uid2_1;
+		tInBuffer[18]=uid2_2;
+		tInBuffer[19]=uid2_3;
+		tInBuffer[20]=uid2_4;
 	}
 
 	USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
@@ -621,6 +608,10 @@ void ErrorHandler(void)
         DoLed(2, 1);
         DelayMs(40);
     }
+}
+
+void ZeroActuators(void) {
+	return;
 }
 
 /* RFBL description

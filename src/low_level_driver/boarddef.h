@@ -3,6 +3,19 @@
 #include "mcu_include.h"
 
 
+#define uid0_1 (*(uint8_t*)0x1fff7a10)
+#define uid0_2 (*(uint8_t*)0x1fff7a11)
+#define uid0_3 (*(uint8_t*)0x1fff7a12)
+#define uid0_4 (*(uint8_t*)0x1fff7a13)
+#define uid1_1 (*(uint8_t*)0x1fff7a14)
+#define uid1_2 (*(uint8_t*)0x1fff7a15)
+#define uid1_3 (*(uint8_t*)0x1fff7a16)
+#define uid1_4 (*(uint8_t*)0x1fff7a17)
+#define uid2_1 (*(uint8_t*)0x1fff7a18)
+#define uid2_2 (*(uint8_t*)0x1fff7a19)
+#define uid2_3 (*(uint8_t*)0x1fff7a1a)
+#define uid2_4 (*(uint8_t*)0x1fff7a1b)
+
 
 #define	REVO
 
@@ -34,6 +47,29 @@
 #define BUZZER_GPIO_Port        GPIOA
 #define BUZZER_GPIO_Pin         GPIO_PIN_0
 */
+
+
+//Flash Config
+#define FLASH_SPI					SPI3
+#define FLASH_SPI_CS_GPIO_Pin		GPIO_PIN_3
+#define FLASH_SPI_CS_GPIO_Port		GPIOB
+#define FLASH_SPI_SCK_PIN			GPIO_PIN_10
+#define FLASH_SPI_SCK_GPIO_PORT		GPIOC
+#define FLASH_SPI_SCK_AF			GPIO_AF6_SPI3
+#define FLASH_SPI_MISO_PIN			GPIO_PIN_11
+#define FLASH_SPI_MISO_GPIO_PORT	GPIOC
+#define FLASH_SPI_MISO_AF			GPIO_AF6_SPI3
+#define FLASH_SPI_MOSI_PIN			GPIO_PIN_12
+#define FLASH_SPI_MOSI_GPIO_PORT	GPIOC
+#define FLASH_SPI_MOSI_AF			GPIO_AF6_SPI3
+
+#define FLASH_SPI_BAUD				SPI_BAUDRATEPRESCALER_4
+
+#define FLASH_DMA_TX_IRQn			DMA1_Stream0_IRQn
+#define FLASH_DMA_TX_IRQHandler		DMA1_Stream0_IRQHandler
+#define FLASH_DMA_RX_IRQn			DMA1_Stream7_IRQn
+#define FLASH_DMA_RX_IRQHandler		DMA1_Stream7_IRQHandler
+
 
 //Gyro Config
 #define GYRO_SPI                SPI1

@@ -20,6 +20,7 @@
 #include "filter.h"
 #include "watchdog.h"
 #include "scheduler.h"
+#include "flight_logger.h"
 #include "rfbl_functions.h"
 
 //input
@@ -32,6 +33,7 @@
 #include "drivers/leds.h"
 #include "drivers/buzzer.h"
 #include "drivers/rx.h"
+#include "drivers/flash_chip.h"
 #include "drivers/actuator_output.h"
 #include "drivers/invensense_bus.h"
 #include "drivers/invensense_device.h"

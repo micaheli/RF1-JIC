@@ -15,15 +15,13 @@ typedef struct {
 
 
 
-#define typeINT		0
-#define typeUINT	1
-#define typeFLOAT	2
-#define typeSTRING	3
 
+enum {typeINT=0,typeUINT,typeFLOAT,typeSTRING,};
 
 typedef struct {
     const char *name;
     const uint32_t type;
+    const char *group;
     void *ptr;
     float Min;
     float Max;

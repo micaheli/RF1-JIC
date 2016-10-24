@@ -52,7 +52,7 @@
 #include "usbd_ctlreq.h"
 
 
-uint32_t hidToPcReady = 1;
+volatile uint32_t hidToPcReady = 1;
 
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{

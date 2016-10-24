@@ -28,7 +28,7 @@ int main(void)
 
     int32_t count = 16;
 
-    VectorIrqInit(ADDRESS_FLASH_START);
+    VectorIrqInit(ADDRESS_RFFW_START);
 
     BoardInit();
 
@@ -48,9 +48,11 @@ int main(void)
     InitFlightCode();
     InitPid();
     InitActuators();
+    InitFlashChip();
+    InitFlightLogger();
 
     if (!accgyroInit(mainConfig.gyroConfig.loopCtrl)) {
-        //ErrorHandler();
+        ErrorHandler();
     }
 
     InitWatchdog(WATCHDOG_TIMEOUT_1S);
@@ -59,9 +61,6 @@ int main(void)
     ledStatus.status = LEDS_SLOW_BLINK;
 
     BoardUsartInit();
-
-    bzero(serialRxBuffer, sizeof(serialRxBuffer));
-    bzero(serialTxBuffer, sizeof(serialTxBuffer));
 
     while (1) {
 

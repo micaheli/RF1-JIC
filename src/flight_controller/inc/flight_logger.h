@@ -1,1 +1,4 @@
-#pragma omnce
+#pragma once
+
+int InitFlightLogger(void);
+

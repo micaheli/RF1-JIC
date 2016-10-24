@@ -103,7 +103,7 @@ USBD_HID_HandleTypeDef;
   */ 
 
 
-extern uint32_t hidToPcReady;
+extern volatile uint32_t hidToPcReady;
 
 /** @defgroup USBD_CORE_Exported_Macros
   * @{

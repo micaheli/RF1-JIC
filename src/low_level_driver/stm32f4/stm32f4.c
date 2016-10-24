@@ -124,6 +124,10 @@ void BoardInit(void)
     __HAL_RCC_TIM10_CLK_ENABLE();
     __HAL_RCC_TIM11_CLK_ENABLE();
     __HAL_RCC_TIM12_CLK_ENABLE();
+
+    __HAL_RCC_SPI1_CLK_ENABLE();
+    __HAL_RCC_SPI2_CLK_ENABLE();
+	__HAL_RCC_SPI3_CLK_ENABLE();
 }
 
 void USBInit(void)

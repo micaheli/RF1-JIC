@@ -1,11 +1,21 @@
 #include "includes.h"
 
 
+uint32_t rfblVersion;
+uint32_t cfg1Version;
+uint32_t rebootAddress;
+uint32_t bootCycles;
+uint32_t bootDirection;
+
 void HandleRfbl (void) {
     ReadRfblBkRegs();
-	if (rfblVersion < RFBL_VERSION) {
-		upgradeRfbl();
-	}
+	//if (rfblVersion < RFBL_VERSION) {
+	//	upgradeRfbl();
+	//}
+}
+
+void HandleRfblDisasterPrevention (void) {
+	//flight code is working and has been running at least 5 seconds. Safe to reset RFBL/Recovery disaster counter.
 	bootDirection = BOOT_TO_APP_COMMAND;
 	bootCycles    = (uint32_t)0x00000000;
 	rebootAddress = ADDRESS_FLASH_START;

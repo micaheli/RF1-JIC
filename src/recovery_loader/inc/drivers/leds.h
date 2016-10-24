@@ -22,7 +22,4 @@ typedef struct ledStatus_t
 extern ledStatus_t ledStatus;
 
 extern void DoLed(uint32_t number, uint32_t on);
-extern void InitLeds (void);
-extern void InitializeLed(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-extern void UpdateLeds(void);
-extern void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2);
+extern void InitLeds(void);

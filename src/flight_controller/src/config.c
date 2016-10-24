@@ -30,119 +30,119 @@ main_config mainConfig;
 
 const config_variables_rec valueTable[] = {
 
-		{ "mixer_type", 		typeUINT,  &mainConfig.mixerConfig.mixerType,				0, MIXER_END, MIXER_X1234, "" },
+		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,				0, MIXER_END, MIXER_X1234, "" },
 
-		{ "gyro_rotation", 		typeUINT,  &mainConfig.gyroConfig.gyroRotation,				0, 12, CW0, "" },
-//		{ "board_calibrated", 	typeUINT,  &mainConfig.gyroConfig.boardCalibrated,			0, 1, 0, "" },
-		{ "sml_board_rot_x", 	typeINT,   &mainConfig.gyroConfig.minorBoardRotation[X],	0, 10, 0, "" },
-		{ "sml_board_rot_y", 	typeINT,   &mainConfig.gyroConfig.minorBoardRotation[Y],	0, 10, 0, "" },
-		{ "sml_board_rot_z", 	typeINT,   &mainConfig.gyroConfig.minorBoardRotation[Z], 	0, 10, 0, "" },
-		{ "rf_loop_ctrl", 		typeUINT,  &mainConfig.gyroConfig.loopCtrl, 				0, LOOP_UH32, LOOP_UH32, "" },
+		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,				0, 12, CW0, "" },
+//		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,			0, 1, 0, "" },
+		{ "sml_board_rot_x", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],	0, 10, 0, "" },
+		{ "sml_board_rot_y", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Y],	0, 10, 0, "" },
+		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 	0, 10, 0, "" },
+		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 				0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, &mainConfig.pidConfig[YAW].kp, 					0, 300, 180.00, "" }, //1000 18
-		{ "yaw_ki", 			typeFLOAT, &mainConfig.pidConfig[YAW].ki, 					0, 300, 140.00, "" }, //1000 14
-		{ "yaw_kd", 			typeFLOAT, &mainConfig.pidConfig[YAW].kd, 					0, 300, 114.00, "" }, //1000000 114
-		{ "yaw_wc", 			typeUINT,  &mainConfig.pidConfig[YAW].wc, 					0, 300, 16, "" },
-		{ "roll_kp", 			typeFLOAT, &mainConfig.pidConfig[ROLL].kp, 					0, 300, 180.00, "" },
-		{ "roll_ki", 			typeFLOAT, &mainConfig.pidConfig[ROLL].ki, 					0, 300, 140.00, "" },
-		{ "roll_kd", 			typeFLOAT, &mainConfig.pidConfig[ROLL].kd, 					0, 300, 114.00, "" },
-		{ "roll_wc", 			typeUINT,  &mainConfig.pidConfig[ROLL].wc, 					0, 300, 8, "" },
-		{ "pitch_kp", 			typeFLOAT, &mainConfig.pidConfig[PITCH].kp, 				0, 300, 180.00, "" },
-		{ "pitch_ki", 			typeFLOAT, &mainConfig.pidConfig[PITCH].ki, 				0, 300, 140.00, "" },
-		{ "pitch_kd", 			typeFLOAT, &mainConfig.pidConfig[PITCH].kd, 				0, 300, 114.00, "" },
-		{ "pitch_wc", 			typeUINT,  &mainConfig.pidConfig[PITCH].wc, 				0, 300, 8, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 					0, 300, 180.00, "" }, //1000 18
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 					0, 300, 140.00, "" }, //1000 14
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 					0, 300, 114.00, "" }, //1000000 114
+		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 					0, 300, 16, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 					0, 300, 180.00, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 					0, 300, 140.00, "" },
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 					0, 300, 114.00, "" },
+		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 					0, 300, 8, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 				0, 300, 180.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 				0, 300, 140.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 				0, 300, 114.00, "" },
+		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 				0, 300, 8, "" },
 
-		{ "yaw_quick", 			typeFLOAT, &mainConfig.filterConfig[YAW].gyro.q, 			0, 10, 0.00100, "" },
-		{ "yaw_rap", 			typeFLOAT, &mainConfig.filterConfig[YAW].gyro.r, 			0, 10, 3.00000, "" },
-		{ "yaw_press", 			typeFLOAT, &mainConfig.filterConfig[YAW].gyro.p, 			0, 10, 0.00150, "" },
-		{ "roll_quick", 		typeFLOAT, &mainConfig.filterConfig[ROLL].gyro.q, 			0, 10, 0.00100, "" },
-		{ "roll_rap", 			typeFLOAT, &mainConfig.filterConfig[ROLL].gyro.r, 			0, 10, 2.50000, "" },
-		{ "roll_press", 		typeFLOAT, &mainConfig.filterConfig[ROLL].gyro.p, 			0, 10, 0.00150, "" },
-		{ "pitch_quick", 		typeFLOAT, &mainConfig.filterConfig[PITCH].gyro.q, 			0, 10, 0.00100, "" },
-		{ "pitch_rap", 			typeFLOAT, &mainConfig.filterConfig[PITCH].gyro.r, 			0, 10, 2.50000, "" },
-		{ "pitch_press", 		typeFLOAT, &mainConfig.filterConfig[PITCH].gyro.p, 			0, 10, 0.00150, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 			0, 10, 0.00100, "" },
+		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 			0, 10, 3.00000, "" },
+		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 			0, 10, 0.00150, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 			0, 10, 0.00100, "" },
+		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 			0, 10, 2.50000, "" },
+		{ "roll_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.p, 			0, 10, 0.00150, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 			0, 10, 0.00100, "" },
+		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 			0, 10, 2.50000, "" },
+		{ "pitch_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.p, 			0, 10, 0.00150, "" },
 
-		{ "yaw_kd_quick", 		typeFLOAT, &mainConfig.filterConfig[YAW].kd.q, 				0, 10, 0, "" },
-		{ "yaw_kd_rap", 		typeFLOAT, &mainConfig.filterConfig[YAW].kd.r, 				0, 10, 0, "" },
-		{ "yaw_kd_press", 		typeFLOAT, &mainConfig.filterConfig[YAW].kd.p, 				0, 10, 0, "" },
-		{ "roll_kd_quick", 		typeFLOAT, &mainConfig.filterConfig[ROLL].kd.q, 			0, 10, 0, "" },
-		{ "roll_kd_rap", 		typeFLOAT, &mainConfig.filterConfig[ROLL].kd.r, 			0, 10, 0, "" },
-		{ "roll_kd_pres", 		typeFLOAT, &mainConfig.filterConfig[ROLL].kd.p, 			0, 10, 0, "" },
-		{ "pitch_kd_quick", 	typeFLOAT, &mainConfig.filterConfig[PITCH].kd.q, 			0, 10, 0, "" },
-		{ "pitch_kd_rap", 		typeFLOAT, &mainConfig.filterConfig[PITCH].kd.r, 			0, 10, 0, "" },
-		{ "pitch_kd_press", 	typeFLOAT, &mainConfig.filterConfig[PITCH].kd.p, 			0, 10, 0, "" },
+		{ "yaw_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.q, 				0, 10, 0, "" },
+		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 				0, 10, 0, "" },
+		{ "yaw_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.p, 				0, 10, 0, "" },
+		{ "roll_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.q, 			0, 10, 0, "" },
+		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 			0, 10, 0, "" },
+		{ "roll_kd_pres", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.p, 			0, 10, 0, "" },
+		{ "pitch_kd_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.q, 			0, 10, 0, "" },
+		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 			0, 10, 0, "" },
+		{ "pitch_kd_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.p, 			0, 10, 0, "" },
 
-		{ "x_vector_quick", 	typeFLOAT, &mainConfig.filterConfig[ACCX].acc.q, 			0, 10, 0.00100, "" },
-		{ "x_vector_rap", 		typeFLOAT, &mainConfig.filterConfig[ACCX].acc.r, 			0, 10, 3.00000, "" },
-		{ "x_vector_press", 	typeFLOAT, &mainConfig.filterConfig[ACCX].acc.p, 			0, 10, 0.00150, "" },
-		{ "y_vector_quick", 	typeFLOAT, &mainConfig.filterConfig[ACCY].acc.q, 			0, 10, 0.00100, "" },
-		{ "y_vector_rap", 		typeFLOAT, &mainConfig.filterConfig[ACCY].acc.r, 			0, 10, 3.00000, "" },
-		{ "y_vector_press", 	typeFLOAT, &mainConfig.filterConfig[ACCY].acc.p, 			0, 10, 0.00150, "" },
-		{ "z_vector_quick", 	typeFLOAT, &mainConfig.filterConfig[ACCZ].acc.q, 			0, 10, 0.00100, "" },
-		{ "z_vector_rap", 		typeFLOAT, &mainConfig.filterConfig[ACCZ].acc.r, 			0, 10, 3.00000, "" },
-		{ "z_vector_press", 	typeFLOAT, &mainConfig.filterConfig[ACCZ].acc.p, 			0, 10, 0.00150, "" },
+		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 			0, 10, 0.00100, "" },
+		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 			0, 10, 3.00000, "" },
+		{ "x_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.p, 			0, 10, 0.00150, "" },
+		{ "y_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.q, 			0, 10, 0.00100, "" },
+		{ "y_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.r, 			0, 10, 3.00000, "" },
+		{ "y_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.p, 			0, 10, 0.00150, "" },
+		{ "z_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.q, 			0, 10, 0.00100, "" },
+		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 			0, 10, 3.00000, "" },
+		{ "z_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.p, 			0, 10, 0.00150, "" },
 
-		{ "pitch_deadband", 	typeFLOAT, &mainConfig.rcControlsConfig.deadBand[PITCH], 	0, 0.1, 0.015, "" },
-		{ "roll_deadband", 		typeFLOAT, &mainConfig.rcControlsConfig.deadBand[ROLL], 	0, 0.1, 0.015, "" },
-		{ "yaw_deadband", 		typeFLOAT, &mainConfig.rcControlsConfig.deadBand[YAW], 		0, 0.1, 0.015, "" },
-		{ "throttle_deadband", 	typeFLOAT, &mainConfig.rcControlsConfig.deadBand[THROTTLE], 0, 0.1, 0, "" },
-		{ "aux1_deadband", 		typeFLOAT, &mainConfig.rcControlsConfig.deadBand[AUX1], 	0, 0.1, 0, "" },
-		{ "aux2_deadband", 		typeFLOAT, &mainConfig.rcControlsConfig.deadBand[AUX2], 	0, 0.1, 0, "" },
-		{ "aux3_deadband", 		typeFLOAT, &mainConfig.rcControlsConfig.deadBand[AUX3], 	0, 0.1, 0, "" },
-		{ "aux4_deadband", 		typeFLOAT, &mainConfig.rcControlsConfig.deadBand[AUX4], 	0, 0.1, 0, "" },
+		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 	0, 0.1, 0.015, "" },
+		{ "roll_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[ROLL], 	0, 0.1, 0.015, "" },
+		{ "yaw_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[YAW], 		0, 0.1, 0.015, "" },
+		{ "throttle_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[THROTTLE], 0, 0.1, 0, "" },
+		{ "aux1_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX1], 	0, 0.1, 0, "" },
+		{ "aux2_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX2], 	0, 0.1, 0, "" },
+		{ "aux3_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX3], 	0, 0.1, 0, "" },
+		{ "aux4_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX4], 	0, 0.1, 0, "" },
 
-		{ "pitch_midRc",		typeUINT,  &mainConfig.rcControlsConfig.midRc[PITCH], 		0, 2148, 1024, "" },
-		{ "roll_midRc", 		typeUINT,  &mainConfig.rcControlsConfig.midRc[ROLL], 		0, 2148, 1024, "" },
-		{ "yaw_midRc", 			typeUINT,  &mainConfig.rcControlsConfig.midRc[YAW], 		0, 2148, 1024, "" },
-		{ "throttle_midRc", 	typeUINT,  &mainConfig.rcControlsConfig.midRc[THROTTLE],	0, 2148, 1024, "" },
-		{ "aux1_midRc", 		typeUINT,  &mainConfig.rcControlsConfig.midRc[AUX1], 		0, 2148, 1024, "" },
-		{ "aux2_midRc", 		typeUINT,  &mainConfig.rcControlsConfig.midRc[AUX2], 		0, 2148, 1024, "" },
-		{ "aux3_midRc", 		typeUINT,  &mainConfig.rcControlsConfig.midRc[AUX3], 		0, 2148, 1024, "" },
-		{ "aux4_midRc", 		typeUINT,  &mainConfig.rcControlsConfig.midRc[AUX4], 		0, 2148, 1024, "" },
+		{ "pitch_midRc",		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[PITCH], 		0, 2148, 1024, "" },
+		{ "roll_midRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[ROLL], 		0, 2148, 1024, "" },
+		{ "yaw_midRc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[YAW], 		0, 2148, 1024, "" },
+		{ "throttle_midRc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[THROTTLE],	0, 2148, 1024, "" },
+		{ "aux1_midRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX1], 		0, 2148, 1024, "" },
+		{ "aux2_midRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX2], 		0, 2148, 1024, "" },
+		{ "aux3_midRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX3], 		0, 2148, 1024, "" },
+		{ "aux4_midRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX4], 		0, 2148, 1024, "" },
 
-		{ "pitch_minRc", 		typeUINT,  &mainConfig.rcControlsConfig.minRc[PITCH], 		0, 2148, 0, "" },
-		{ "roll_minRc", 		typeUINT,  &mainConfig.rcControlsConfig.minRc[ROLL], 		0, 2148, 0, "" },
-		{ "yaw_minRc", 			typeUINT,  &mainConfig.rcControlsConfig.minRc[YAW], 		0, 2148, 2048, "" },
-		{ "throttle_minRc", 	typeUINT,  &mainConfig.rcControlsConfig.minRc[THROTTLE], 	0, 2148, 0, "" },
-		{ "aux1_minRc", 		typeUINT,  &mainConfig.rcControlsConfig.minRc[AUX1], 		0, 2148, 0, "" },
-		{ "aux2_minRc", 		typeUINT,  &mainConfig.rcControlsConfig.minRc[AUX2], 		0, 2148, 0, "" },
-		{ "aux3_minRc", 		typeUINT,  &mainConfig.rcControlsConfig.minRc[AUX3], 		0, 2148, 0, "" },
-		{ "aux4_minRc", 		typeUINT,  &mainConfig.rcControlsConfig.minRc[AUX4], 		0, 2148, 0, "" },
+		{ "pitch_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[PITCH], 		0, 2148, 0, "" },
+		{ "roll_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[ROLL], 		0, 2148, 0, "" },
+		{ "yaw_minRc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[YAW], 		0, 2148, 2048, "" },
+		{ "throttle_minRc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[THROTTLE], 	0, 2148, 0, "" },
+		{ "aux1_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX1], 		0, 2148, 0, "" },
+		{ "aux2_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX2], 		0, 2148, 0, "" },
+		{ "aux3_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX3], 		0, 2148, 0, "" },
+		{ "aux4_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX4], 		0, 2148, 0, "" },
 
-		{ "pitch_maxRc", 		typeUINT,  &mainConfig.rcControlsConfig.maxRc[PITCH], 		0, 2148, 2048, "" },
-		{ "roll_maxRc", 		typeUINT,  &mainConfig.rcControlsConfig.maxRc[ROLL], 		0, 2148, 2048, "" },
-		{ "yaw_maxRc", 			typeUINT,  &mainConfig.rcControlsConfig.maxRc[YAW], 		0, 2148, 0, "" },
-		{ "throttle_maxRc", 	typeUINT,  &mainConfig.rcControlsConfig.maxRc[THROTTLE], 	0, 2148, 2048, "" },
-		{ "aux1_maxRc", 		typeUINT,  &mainConfig.rcControlsConfig.maxRc[AUX1], 		0, 2148, 2048, "" },
-		{ "aux2_maxRc", 		typeUINT,  &mainConfig.rcControlsConfig.maxRc[AUX2], 		0, 2148, 2048, "" },
-		{ "aux3_maxRc", 		typeUINT,  &mainConfig.rcControlsConfig.maxRc[AUX3], 		0, 2148, 2048, "" },
-		{ "aux4_maxRc", 		typeUINT,  &mainConfig.rcControlsConfig.maxRc[AUX4], 		0, 2148, 2048, "" },
+		{ "pitch_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[PITCH], 		0, 2148, 2048, "" },
+		{ "roll_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[ROLL], 		0, 2148, 2048, "" },
+		{ "yaw_maxRc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[YAW], 		0, 2148, 0, "" },
+		{ "throttle_maxRc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[THROTTLE], 	0, 2148, 2048, "" },
+		{ "aux1_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX1], 		0, 2148, 2048, "" },
+		{ "aux2_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX2], 		0, 2148, 2048, "" },
+		{ "aux3_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX3], 		0, 2148, 2048, "" },
+		{ "aux4_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX4], 		0, 2148, 2048, "" },
 
-		{ "pitch_curve", 		typeUINT,  &mainConfig.rcControlsConfig.useCurve[PITCH], 	0, EXPO_CURVE_END, SKITZO_EXPO, "" },
-		{ "roll_curve", 		typeUINT,  &mainConfig.rcControlsConfig.useCurve[ROLL], 	0, EXPO_CURVE_END, SKITZO_EXPO, "" },
-		{ "yaw_curve", 			typeUINT,  &mainConfig.rcControlsConfig.useCurve[YAW], 		0, EXPO_CURVE_END, SKITZO_EXPO, "" },
-		{ "throttle_curve", 	typeUINT,  &mainConfig.rcControlsConfig.useCurve[THROTTLE], 0, EXPO_CURVE_END, NO_EXPO, "" },
-		{ "aux1_curve", 		typeUINT,  &mainConfig.rcControlsConfig.useCurve[AUX1], 	0, EXPO_CURVE_END, NO_EXPO, "" },
-		{ "aux2_curve", 		typeUINT,  &mainConfig.rcControlsConfig.useCurve[AUX2], 	0, EXPO_CURVE_END, NO_EXPO, "" },
-		{ "aux3_curve", 		typeUINT,  &mainConfig.rcControlsConfig.useCurve[AUX3], 	0, EXPO_CURVE_END, NO_EXPO, "" },
-		{ "aux4_curve", 		typeUINT,  &mainConfig.rcControlsConfig.useCurve[AUX4], 	0, EXPO_CURVE_END, NO_EXPO, "" },
+		{ "pitch_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[PITCH], 	0, EXPO_CURVE_END, SKITZO_EXPO, "" },
+		{ "roll_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[ROLL], 	0, EXPO_CURVE_END, SKITZO_EXPO, "" },
+		{ "yaw_curve", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[YAW], 		0, EXPO_CURVE_END, SKITZO_EXPO, "" },
+		{ "throttle_curve", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[THROTTLE], 0, EXPO_CURVE_END, NO_EXPO, "" },
+		{ "aux1_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX1], 	0, EXPO_CURVE_END, NO_EXPO, "" },
+		{ "aux2_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX2], 	0, EXPO_CURVE_END, NO_EXPO, "" },
+		{ "aux3_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX3], 	0, EXPO_CURVE_END, NO_EXPO, "" },
+		{ "aux4_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX4], 	0, EXPO_CURVE_END, NO_EXPO, "" },
 
-		{ "pitch_expo", 		typeFLOAT, &mainConfig.rcControlsConfig.curveExpo[PITCH],	0, 100, 50, "" },
-		{ "roll_expo", 			typeFLOAT, &mainConfig.rcControlsConfig.curveExpo[ROLL],	0, 100, 50, "" },
-		{ "yaw_expo", 			typeFLOAT, &mainConfig.rcControlsConfig.curveExpo[YAW],		0, 100, 50, "" },
-		{ "throttle_expo", 		typeFLOAT, &mainConfig.rcControlsConfig.curveExpo[THROTTLE],0, 100, 0, "" },
-		{ "aux1_expo", 			typeFLOAT, &mainConfig.rcControlsConfig.curveExpo[AUX1],	0, 100, 0, "" },
-		{ "aux2_expo", 			typeFLOAT, &mainConfig.rcControlsConfig.curveExpo[AUX2],	0, 100, 0, "" },
-		{ "aux3_expo", 			typeFLOAT, &mainConfig.rcControlsConfig.curveExpo[AUX3],	0, 100, 0, "" },
-		{ "aux4_expo", 			typeFLOAT, &mainConfig.rcControlsConfig.curveExpo[AUX4],	0, 100, 0, "" },
+		{ "pitch_expo", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[PITCH],	0, 100, 50, "" },
+		{ "roll_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[ROLL],	0, 100, 50, "" },
+		{ "yaw_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[YAW],		0, 100, 50, "" },
+		{ "throttle_expo", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[THROTTLE],0, 100, 0, "" },
+		{ "aux1_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX1],	0, 100, 0, "" },
+		{ "aux2_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX2],	0, 100, 0, "" },
+		{ "aux3_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX3],	0, 100, 0, "" },
+		{ "aux4_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX4],	0, 100, 0, "" },
 
-		{ "pitch_rate", 		typeFLOAT, &mainConfig.rcControlsConfig.rates[PITCH],		0, 1400, 400, "" },
-		{ "roll_rate", 			typeFLOAT, &mainConfig.rcControlsConfig.rates[ROLL],		0, 1400, 400, "" },
-		{ "yaw_rate", 			typeFLOAT, &mainConfig.rcControlsConfig.rates[YAW],			0, 1400, 400, "" },
+		{ "pitch_rate", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.rates[PITCH],		0, 1400, 400, "" },
+		{ "roll_rate", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.rates[ROLL],		0, 1400, 400, "" },
+		{ "yaw_rate", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.rates[YAW],			0, 1400, 400, "" },
 
-		{ "pitch_acrop", 		typeFLOAT, &mainConfig.rcControlsConfig.acroPlus[PITCH],	0, 4, 1.4, "" },
-		{ "roll_acrop", 		typeFLOAT, &mainConfig.rcControlsConfig.acroPlus[ROLL],		0, 4, 1.4, "" },
-		{ "yaw_acrop", 			typeFLOAT, &mainConfig.rcControlsConfig.acroPlus[YAW],		0, 4, 1.4, "" }
+		{ "pitch_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[PITCH],	0, 4, 1.4, "" },
+		{ "roll_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[ROLL],		0, 4, 1.4, "" },
+		{ "yaw_acrop", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[YAW],		0, 4, 1.4, "" }
 
 };
 
@@ -458,6 +458,7 @@ void RfCustomReply(char *rf_custom_out_buffer) {
 	}
 	hidToPcReady = 0;
 	USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
+	//DelayMs(1);
 
 }
 
@@ -498,14 +499,25 @@ void ProcessCommand(char *inString)
 	}
 	else if (!strcmp("dump", inString))
 	{
+
 		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 		memcpy(rf_custom_out_buffer, "dumpstarted", sizeof("dumpstarted"));
 		RfCustomReply(rf_custom_out_buffer);
 
-		for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
-		{
-			OutputVar(x);
+		args = StripSpaces(args);
+		if ( (!strcmp("", args)) || (!strcmp("all", args)) ) {
+			for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+			{
+				OutputVar(x);
+			}
+		} else {
+			for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+			{
+				if (!strcmp(valueTable[x].group, args))
+					OutputVar(x);
+			}
 		}
+
 		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 		memcpy(rf_custom_out_buffer, "dumpcomplete", sizeof("dumpcomplete"));
 		RfCustomReply(rf_custom_out_buffer);
@@ -588,6 +600,22 @@ void ProcessCommand(char *inString)
 		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 		memcpy(rf_custom_out_buffer, "binding5", sizeof("binding5"));
 		RfCustomReply(rf_custom_out_buffer);
+	}
+	else if (!strcmp("rebootrfbl", inString))
+	{
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "rebootrfbl", sizeof("rebootrfbl"));
+		RfCustomReply(rf_custom_out_buffer);
+		SystemReset();
+	}
+	else if (!strcmp("rebootrecovery", inString))
+	{
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		memcpy(rf_custom_out_buffer, "rebootrecovery", sizeof("rebootrecovery"));
+		RfCustomReply(rf_custom_out_buffer);
+		SystemReset();
 	}
 	else
 	{

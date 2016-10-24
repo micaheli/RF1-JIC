@@ -84,11 +84,11 @@ void inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
 	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
 }
 
-inline bool inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
+inline int inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
 	if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) != (uint32_t)GPIO_PIN_RESET) {
-		return false; //pin is set, so it is not reset, which means it is off, so the statement is false
+		return 0; //pin is set, so it is not reset, which means it is off, so the statement is false
 	}
-	return true; //pin is reset, so it is not set, which means it is on, so the statement is true
+	return 1; //pin is reset, so it is not set, which means it is on, so the statement is true
 }
 
 void VectorIrqInit(uint32_t address) {
@@ -98,4 +98,24 @@ void VectorIrqInit(uint32_t address) {
 	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 	DWT->CYCCNT = 0;
 	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
+void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on)
+{
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    HAL_GPIO_DeInit(GPIOx, GPIO_Pin);
+
+    GPIO_InitStructure.Pin = GPIO_Pin;
+
+    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
+
+    if (on) {
+    	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
+    } else {
+    	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
+    }
 }
