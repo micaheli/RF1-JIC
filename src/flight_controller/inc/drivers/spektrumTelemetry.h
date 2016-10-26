@@ -148,5 +148,6 @@ struct
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize);
 void sendSpektrumTelem(void);
 void sendSpektrumBind(void);
+void textMenuUpdate(void);
 uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly);
 

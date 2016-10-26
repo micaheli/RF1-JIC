@@ -15,7 +15,10 @@ TELEMETRY_STATE telemetryState = TELEM_START;
 UN_TELEMETRY sensorData;
 
 #define UINT16_ENDIAN(a)  (((a) >> 8) | ((a) << 8) )
-
+uint32_t blank = 0;
+uint32_t vertPos = 0;
+uint32_t toggleTime;
+uint32_t currentTime;
 void sendSpektrumTelem(void)
 {
 	if (telemetryState >= NUM_TELEM_STATES)
@@ -111,16 +114,7 @@ void sendSpektrumTelem(void)
 					}
 				case 2:
 					{
-						sensorData.user_text.identifier = TELE_DEVICE_TEXTGEN;
-						sensorData.user_text.sID = 0x00;
-						sensorData.user_text.lineNumber = xbus.textLine;
-						char *tempString[9] = { "SPEKTRUM", "Miguels FC", "", "", "","" ,"" ,"",""  };
-						memcpy(sensorData.user_text.text, tempString[xbus.textLine], 13);
-						xbus.textLine++;
-						if (xbus.textLine > 9)
-						{
-							xbus.textLine = 0;
-						}
+						textMenuUpdate();
 						//sensorData.user_text.text = tempString;
 						/*
 						sensorData.user_16SU32U.identifier = TELE_DEVICE_USER_16SU32U;
@@ -163,7 +157,7 @@ void sendSpektrumTelem(void)
 				memcpy(&telemetry.packet.data, &sensorData, 16);
 
 				// Advanced and wrap sensor index
-				xbus.sensorPosition++;
+				xbus.sensorPosition=2;
 				xbus.sensorPosition = xbus.sensorPosition % xbus.sensorCount;
 			}
 
@@ -206,7 +200,7 @@ void sendSpektrumBind()
 
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 {
-
+	HAL_UART_Transmit_DMA(&uartHandle, (uint8_t *)baseAddress, packetSize);
 }
 
 uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly)
@@ -220,6 +214,96 @@ uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly)
 			crc = crc << 1;
 	}
 	return crc;
+}
+
+
+int32_t row;
+int32_t column;
+int32_t dataInc;
+#define ROW_MAX 8
+#define COLUMN_MAX 1
+void textMenuUpdate(void)
+{
+	sensorData.user_text.identifier = TELE_DEVICE_TEXTGEN;
+	sensorData.user_text.sID = 0x00;
+	sensorData.user_text.lineNumber = xbus.textLine;
+	currentTime = InlineMillis();
+	/*
+	if (currentTime - toggleTime > 500)
+	{
+		if (rxData[2] > 1200)
+		{
+			if (column == 0)
+				row--;
+			else
+				dataInc = 1;
+			toggleTime = currentTime;
+		}
+		else if (rxData[2] < 900)
+		{
+			if (column == 0)
+				row++;
+			else 
+				dataInc = -1;
+			toggleTime = currentTime;
+		}	
+		if (rxData[1] > 1200)
+		{
+			column--;
+			toggleTime = currentTime;
+		}
+		else if (rxData[1] < 900)
+		{
+			column++;
+			toggleTime = currentTime;
+		}	
+	}
+						
+
+	if (row >= ROW_MAX)
+		row = ROW_MAX;
+	else if (row < 0)
+		row = 0;
+
+	if (column >= COLUMN_MAX)
+		column = COLUMN_MAX;
+	else if (row < 0)
+		column = 0;
+
+	static char rollP[12] = "P: ";
+	static char rollI[12] = "I: ";
+	static char rollD[12] = "D: ";
+	static char configVersion[12] = "Ver: ";
+
+	if(row == 6)
+		mainConfig.pidConfig[ROLL].kp += dataInc;
+	if (row == 7)
+		mainConfig.pidConfig[ROLL].ki += dataInc;
+	if (row == 8)
+		mainConfig.pidConfig[ROLL].kd += dataInc;
+
+	itoa(mainConfig.version, &configVersion[5], 10);
+	itoa(mainConfig.pidConfig[ROLL].kp, &rollP[3], 10);
+	itoa(mainConfig.pidConfig[ROLL].ki, &rollI[3], 10);
+	itoa(mainConfig.pidConfig[ROLL].kd, &rollD[3], 10);
+
+	char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", configVersion, "ROLL", rollP, rollI, rollD };
+	if (blank > 10)
+	{
+		tempString[row] = "";
+	}
+
+	blank++;
+	blank = blank % 20;
+	*/
+	char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", "TWO", "THREE", "FOUR", "TEST", "TEST" };
+	memcpy(sensorData.user_text.text, tempString[xbus.textLine], 13);
+	xbus.textLine++;
+	if (xbus.textLine > 9)
+	{
+		xbus.textLine = 0;
+	}
+	dataInc = 0;
 }
 /*
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)

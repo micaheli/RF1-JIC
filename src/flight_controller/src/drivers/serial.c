@@ -176,28 +176,33 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	
 	/*##-4- Configure the NVIC for DMA #########################################*/
 	/* NVIC configuration for DMA transfer complete interrupt (USART6_TX) */
-	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].TXDMA_IRQn, 0, 1);
-	HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].TXDMA_IRQn);
+	//HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].TXDMA_IRQn, 0, 1);
+	//HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].TXDMA_IRQn);
 
 	/* NVIC configuration for DMA transfer complete interrupt (USART6_RX) */
-	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].RXDMA_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].RXDMA_IRQn);
+	//HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].RXDMA_IRQn, 0, 0);
+	//HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].RXDMA_IRQn);
 
 	/* NVIC for USART, to catch the TX complete */
-	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].USART_IRQn, 0, 1);
+	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].USART_IRQn, 8, 8);
 	HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].USART_IRQn);
 
     /* DMA interrupt init */
-	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].TXDMA_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].TXDMA_IRQn);
-	HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].RXDMA_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].RXDMA_IRQn);
+	//HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].TXDMA_IRQn, 1, 0);
+	//HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].TXDMA_IRQn);
+	//HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].RXDMA_IRQn, 1, 0);
+	//HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].RXDMA_IRQn);
 	
     __HAL_UART_FLUSH_DRREGISTER(huart);
 
+	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, 16) == HAL_OK)
+	{
+		
+	}
+
     for (x=0;x<100;x++)
     {
-    	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, 16) == HAL_OK)
+    	//if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, 16) == HAL_OK)
     		break;
     }
 
@@ -222,26 +227,45 @@ void BoardUsartInit () {
 
 }
 
-
+extern uint32_t ignoreEcho;
+extern uint32_t spekPhase;
 //Interrupt callback routine
+/*
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
 	// ##-2- Put UART peripheral in reception process ###########################
-	__HAL_UART_FLUSH_DRREGISTER(huart);
+	__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
+	
+		ProcessSpektrumPacket();
 
-	ProcessSpektrumPacket();
+		lastRXPacket = InlineMillis();
 
-	lastRXPacket = InlineMillis();
-
-	if(HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
+	if (!ignoreEcho)
 	{
-		//ErrorHandler();
+		if(HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
+		{
+			//ErrorHandler();
+		}
 	}
+	uartHandle.Instance->SR;
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+	__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
+	if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
+	{
+		
+	}
+	ignoreEcho = 0;
+
+	uartHandle.Instance->SR;
 }
 	//Preston, look at this
 	//http://electronics.stackexchange.com/questions/173025/stm32f0-uart-dma-interrupt-with-stm32cubemx-hal-1-2-1-problem
-
+	*/
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_UART_RxCpltCallback can be implemented in the user file.
@@ -250,52 +274,77 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void USARTx_RX_DMA_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&dmaUartRx);
-//  typedef enum
-//  {
-//    HAL_DMA_STATE_RESET             = 0x00U,  /*!< DMA not yet initialized or disabled */
-//    HAL_DMA_STATE_READY             = 0x01U,  /*!< DMA initialized and ready for use   */
-//    HAL_DMA_STATE_BUSY              = 0x02U,  /*!< DMA process is ongoing              */
-//    HAL_DMA_STATE_TIMEOUT           = 0x03U,  /*!< DMA timeout state                   */
-//    HAL_DMA_STATE_ERROR             = 0x04U,  /*!< DMA error state                     */
-//    HAL_DMA_STATE_ABORT             = 0x05U,  /*!< DMA Abort state                     */
-//  }HAL_DMA_StateTypeDef;
-
-//  if (HAL_DMA_GetState(&dmaUartRx) == HAL_DMA_STATE_READY) {
-//      // RX is done. Call whatever function you want to happen here.
-//
-//  }
 
 }
 
 void USARTx_TX_DMA_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&dmaUartTx);
-
+	
 }
 
+uint32_t minDMA = 16;
+uint32_t rxDMA;
+uint32_t txDMA;
 void USARTx_IRQHandler(void)
 {
 
 //	if(uartHandle.RxState != HAL_UART_STATE_BUSY_RX)
 //	{
+	while (__HAL_DMA_GET_COUNTER(&dmaUartTx) != 0)
+	{
+		minDMA = __HAL_DMA_GET_COUNTER(&dmaUartTx);
+	}
+	HAL_UART_IRQHandler(&uartHandle);
+	HAL_DMA_IRQHandler(&dmaUartRx);
+	HAL_DMA_IRQHandler(&dmaUartTx);
+	
+	// ##-2- Put UART peripheral in reception process ###########################
+	__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
 
-		HAL_UART_IRQHandler(&uartHandle);
-
-		// ##-2- Put UART peripheral in reception process ###########################
-		__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
+	
 		
-		//check that DMA counter reached 0
-		if ((uint16_t)(board.serials[RECEIVER_UART].RXDMAStream->NDTR) == 0)
+	if (__HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_IDLE))
+	{
+		HAL_UART_DMAStop(&uartHandle);	
+		rxDMA = DMA1_Stream0->NDTR;
+		txDMA = DMA1_Stream7->NDTR;
+		if ((uint16_t)(board.serials[RECEIVER_UART].RXDMAStream->NDTR) == 0 && !ignoreEcho)
 		{
 			ProcessSpektrumPacket();
+			lastRXPacket = InlineMillis();
+#ifdef SPEKTRUM_TELEM
+			if (!spekPhase)
+			{
+				ignoreEcho = 1;
+				sendSpektrumTelem();
+			}
+#endif
 		}
-		
-		//USARTx_RX_DMA_STREAM->NDTR = 16;
-		lastRXPacket = InlineMillis();
-		if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
+		else
 		{
-			//ErrorHandler();
+			ignoreEcho = 0;
 		}
+
+		if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
+		{
+			minDMA = 0;
+		}
+	}
+
+	//if ((uint16_t)(board.serials[RECEIVER_UART].RXDMAStream->NDTR) == 0)
+	//{
+	//	ProcessSpektrumPacket();
+	//}
+	//else
+	//	ignoreEcho = 0;
+		
+		
+		//lastRXPacket = InlineMillis();
+		//if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
+		//{
+			//ErrorHandler();
+		//}
 
 //	}
 //	if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)

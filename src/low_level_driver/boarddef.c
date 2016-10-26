@@ -331,7 +331,7 @@ void getBoardHardwareDefs(void)
 	board.serials[4].RXDMAMemInc = DMA_MINC_ENABLE;
 	board.serials[4].RXDMAPeriphDataAlignment = DMA_PDATAALIGN_BYTE;
 	board.serials[4].RXDMAMemDataAlignment = DMA_MDATAALIGN_BYTE;
-	board.serials[4].RXDMAMode = DMA_CIRCULAR;
+	board.serials[4].RXDMAMode = DMA_NORMAL;
 	board.serials[4].RXDMAPriority = DMA_PRIORITY_HIGH;
 	board.serials[4].RXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
 

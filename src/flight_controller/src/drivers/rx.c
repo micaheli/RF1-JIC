@@ -29,6 +29,7 @@ unsigned char copiedBufferData[16];
 
 volatile uint32_t rx_timeout=0;
 uint32_t spekPhase=1;
+uint32_t ignoreEcho = 0;
 
 inline void CheckFailsafe(void) {
 
@@ -154,12 +155,6 @@ void ProcessSpektrumPacket(void)
 	}
 	spekPhase = copiedBufferData[2] & 0x80;
 
-#ifdef SPEKTRUM_TELEM
-	if (!spekPhase)
-	{
-		sendSpektrumTelem();
-	}
-#endif
 	InlineCollectRcCommand();
 	RxUpdate();
 }
