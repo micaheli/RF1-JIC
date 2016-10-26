@@ -65,10 +65,10 @@
 
 #define FLASH_SPI_BAUD				SPI_BAUDRATEPRESCALER_4
 
-#define FLASH_DMA_TX_IRQn			DMA1_Stream0_IRQn
-#define FLASH_DMA_TX_IRQHandler		DMA1_Stream0_IRQHandler
-#define FLASH_DMA_RX_IRQn			DMA1_Stream7_IRQn
-#define FLASH_DMA_RX_IRQHandler		DMA1_Stream7_IRQHandler
+#define FLASH_DMA_TX_IRQn			DMA1_Stream2_IRQn
+#define FLASH_DMA_TX_IRQHandler		DMA1_Stream2_IRQHandler
+#define FLASH_DMA_RX_IRQn			DMA1_Stream5_IRQn
+#define FLASH_DMA_RX_IRQHandler		DMA1_Stream5_IRQHandler
 
 
 //Gyro Config
