@@ -15,10 +15,7 @@ TELEMETRY_STATE telemetryState = TELEM_START;
 UN_TELEMETRY sensorData;
 
 #define UINT16_ENDIAN(a)  (((a) >> 8) | ((a) << 8) )
-uint32_t blank = 0;
-uint32_t vertPos = 0;
-uint32_t toggleTime;
-uint32_t currentTime;
+
 void sendSpektrumTelem(void)
 {
 	if (telemetryState >= NUM_TELEM_STATES)
@@ -219,17 +216,31 @@ uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly)
 
 int32_t row;
 int32_t column;
-int32_t dataInc;
+float dataInc;
 #define ROW_MAX 8
 #define COLUMN_MAX 1
+
+uint32_t toggleTime;
+uint32_t blinkTime;
+uint32_t currentTime;
+
+char stringArray[9][12];
+
+char row1[12];
+char row2[12];
+char row3[12];
+char row4[12];
+char row5[12];
+char row6[12];
+char row7[12];
+char row8[12];
+char row9[12];
+
 void textMenuUpdate(void)
 {
-	sensorData.user_text.identifier = TELE_DEVICE_TEXTGEN;
-	sensorData.user_text.sID = 0x00;
-	sensorData.user_text.lineNumber = xbus.textLine;
 	currentTime = InlineMillis();
-	/*
-	if (currentTime - toggleTime > 500)
+
+	if (currentTime - toggleTime > 300)
 	{
 		if (rxData[2] > 1200)
 		{
@@ -249,12 +260,12 @@ void textMenuUpdate(void)
 		}	
 		if (rxData[1] > 1200)
 		{
-			column--;
+			column++;
 			toggleTime = currentTime;
 		}
 		else if (rxData[1] < 900)
 		{
-			column++;
+			column--;
 			toggleTime = currentTime;
 		}	
 	}
@@ -267,39 +278,63 @@ void textMenuUpdate(void)
 
 	if (column >= COLUMN_MAX)
 		column = COLUMN_MAX;
-	else if (row < 0)
+	else if (column < 0)
 		column = 0;
 
-	static char rollP[12] = "P: ";
-	static char rollI[12] = "I: ";
-	static char rollD[12] = "D: ";
-	static char configVersion[12] = "Ver: ";
-
-	if(row == 6)
-		mainConfig.pidConfig[ROLL].kp += dataInc;
-	if (row == 7)
-		mainConfig.pidConfig[ROLL].ki += dataInc;
-	if (row == 8)
-		mainConfig.pidConfig[ROLL].kd += dataInc;
-
-	itoa(mainConfig.version, &configVersion[5], 10);
-	itoa(mainConfig.pidConfig[ROLL].kp, &rollP[3], 10);
-	itoa(mainConfig.pidConfig[ROLL].ki, &rollI[3], 10);
-	itoa(mainConfig.pidConfig[ROLL].kd, &rollD[3], 10);
-
-	char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", configVersion, "ROLL", rollP, rollI, rollD };
-	if (blank > 10)
+	strcpy(stringArray[0], "SPEKTRUM");
+	strcpy(stringArray[1], "Calibrate 1");
+	strcpy(stringArray[2], "Calibrate 2");
+	strcpy(stringArray[3], "Ver: ");
+	strcpy(stringArray[4], "");
+	strcpy(stringArray[5], "ROLL");
+	strcpy(stringArray[6], "P: ");
+	strcpy(stringArray[7], "I: ");
+	strcpy(stringArray[8], "D: ");
+	
+	if(row == 1 && dataInc)
+		SetCalibrate1();
+	if (row == 2 && dataInc)
 	{
-		tempString[row] = "";
+		if(SetCalibrate2())
+			SaveConfig(ADDRESS_CONFIG_START);
 	}
+		
+	if(row == 6)
+		mainConfig.pidConfig[ROLL].kp += dataInc*1;
+	if (row == 7)
+		mainConfig.pidConfig[ROLL].ki += dataInc*1;
+	if (row == 8)
+		mainConfig.pidConfig[ROLL].kd += dataInc*1;
 
-	blank++;
-	blank = blank % 20;
-	*/
-	char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", "TWO", "THREE", "FOUR", "TEST", "TEST" };
-	memcpy(sensorData.user_text.text, tempString[xbus.textLine], 13);
+	itoa(mainConfig.version, &stringArray[3][5], 10);
+	itoa(mainConfig.pidConfig[ROLL].kp, &stringArray[6][3], 10);
+	itoa(mainConfig.pidConfig[ROLL].ki, &stringArray[7][3], 10);
+	itoa(mainConfig.pidConfig[ROLL].kd, &stringArray[8][3], 10);
+
+	//char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", row5, "ROLL", row7, row8, row9 };
+	if (currentTime - blinkTime > 100)
+	{	
+		blinkTime = currentTime;
+	}
+	else if (currentTime - blinkTime > 50)
+	{
+		if (column == 0)
+			strcpy(stringArray[row], "");
+		else if (column == 1)
+			strcpy(&stringArray[row][3], "");
+	}
+	//blank++;
+	//blank = blank % 20;
+	
+	//char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", "TWO", "THREE", "FOUR", "TEST", "TEST" };
+	//xbus.textLine = row;
+	sensorData.user_text.identifier = TELE_DEVICE_TEXTGEN;
+	sensorData.user_text.sID = 0x00;
+	sensorData.user_text.lineNumber = xbus.textLine;
+	
+	memcpy(sensorData.user_text.text, stringArray[xbus.textLine], 13);
 	xbus.textLine++;
-	if (xbus.textLine > 9)
+	if (xbus.textLine > 8)
 	{
 		xbus.textLine = 0;
 	}

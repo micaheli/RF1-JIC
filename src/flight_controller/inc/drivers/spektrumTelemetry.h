@@ -145,6 +145,60 @@ struct
 	uint8_t sensorAddress[MAX_SENSORS];
 } xbus;
 
+
+//VTX enums and struct
+typedef enum
+{
+	FATSHARK,
+	RACEBAND,
+	E,
+	B,
+	A
+} VTX_BAND;
+
+typedef enum
+{
+	POWER_25MW,
+	POWER_250MW,
+	POWER_500MW
+} VTX_POWER;
+
+typedef enum
+{
+	US,
+	EU
+} VTX_REGION;
+
+typedef enum
+{
+	
+	ACTIVE,		//turn on power
+	PIT			//low power mode while in pit
+} VTX_PIT;
+
+typedef struct
+{
+	uint8_t vtxChannel;
+	VTX_BAND vtxBand;
+	VTX_POWER vtxPower;
+	VTX_REGION vtxRegion;
+	VTX_PIT vtxPit;
+} SPM_VTX_DATA;
+
+
+
+//TEXT GEN interface table
+typedef struct {
+	const char *name;
+	const uint32_t type;
+	const char *group;
+	void *ptr;
+	float Min;
+	float Max;
+	float Default;
+	const char *strDefault;
+} interface_table;
+
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize);
 void sendSpektrumTelem(void);
 void sendSpektrumBind(void);

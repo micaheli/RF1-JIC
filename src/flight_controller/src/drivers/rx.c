@@ -22,6 +22,7 @@ spektrumChannelShift = 2;
 spektrumChannelMask = 0x03;
 */
 
+SPM_VTX_DATA vtxData;
 
 //uint32_t tempData[MAXCHANNELS];
 
@@ -154,6 +155,19 @@ void ProcessSpektrumPacket(void)
 		}
 	}
 	spekPhase = copiedBufferData[2] & 0x80;
+
+	//Check for vtx data
+	if (copiedBufferData[12] == 0xE0) { 
+		vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
+		vtxData.vtxBand = (copiedBufferData[13] >> 5) & 0x07;
+	}
+      
+	      //Check channel slot 7 for vtx power, pit, and region data
+	if (copiedBufferData[14] == 0xE0) { 
+		vtxData.vtxPower = copiedBufferData[15] & 0x03;
+		vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
+		vtxData.vtxPit = (copiedBufferData[15] >> 4) & 0x01;
+	}
 
 	InlineCollectRcCommand();
 	RxUpdate();
