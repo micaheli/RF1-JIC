@@ -9,6 +9,8 @@ uint32_t disarmCount = 0, latchFirstArm = 0;
 
 uint32_t rxData[MAXCHANNELS];
 
+uint32_t progMode = 0;
+uint32_t progTimer = 0;
 
 
 // 2048 resolution
@@ -50,7 +52,7 @@ inline void RxUpdate(void) // hook for when rx updates
 
 	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
 		latchFirstArm = 1;
-	} else if ( (latchFirstArm == 2) && (!boardArmed) && (rxData[4] > 1500) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < 0.1) ) { //TODO: make uncalibrated board buzz
+	} else if ( (latchFirstArm == 2) && (!boardArmed) && (rxData[4] > 1500) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < 0.1)  && !progMode) { //TODO: make uncalibrated board buzz
 
 		latchFirstArm = 0;
 		disarmCount = 0;
@@ -82,6 +84,15 @@ inline void RxUpdate(void) // hook for when rx updates
 
 	}
 
+	if (!boardArmed && rxData[0] > 1800 && rxData[1] < 200 && rxData[2] < 200 && rxData[3] < 200)
+	{
+		if (InlineMillis() - progTimer > 2000)
+			progMode = 1;
+	}
+	else
+	{
+		progTimer = InlineMillis();
+	}
 
 
 }

@@ -13,6 +13,7 @@ DMA_InitTypeDef DMA_InitStructure;
 uint8_t dma_count;
 TELEMETRY_STATE telemetryState = TELEM_START;
 UN_TELEMETRY sensorData;
+extern uint32_t progMode;
 
 #define UINT16_ENDIAN(a)  (((a) >> 8) | ((a) << 8) )
 
@@ -154,7 +155,11 @@ void sendSpektrumTelem(void)
 				memcpy(&telemetry.packet.data, &sensorData, 16);
 
 				// Advanced and wrap sensor index
-				xbus.sensorPosition=2;
+				if (progMode)
+					xbus.sensorPosition = 2;
+				else
+					xbus.sensorPosition++;
+
 				xbus.sensorPosition = xbus.sensorPosition % xbus.sensorCount;
 			}
 
@@ -216,6 +221,9 @@ uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly)
 
 int32_t row;
 int32_t column;
+int32_t columnAxis;
+int32_t vStickStatus;
+int32_t hStickStatus;
 float dataInc;
 #define ROW_MAX 8
 #define COLUMN_MAX 1
@@ -225,6 +233,7 @@ uint32_t blinkTime;
 uint32_t currentTime;
 
 char stringArray[9][12];
+char axisTable[3][12] = { "Yaw", "Roll", "Pitch" };
 
 char row1[12];
 char row2[12];
@@ -238,94 +247,136 @@ char row9[12];
 
 void textMenuUpdate(void)
 {
-	currentTime = InlineMillis();
-
-	if (currentTime - toggleTime > 300)
 	{
-		if (rxData[2] > 1200)
-		{
-			if (column == 0)
-				row--;
-			else
-				dataInc = 1;
-			toggleTime = currentTime;
-		}
-		else if (rxData[2] < 900)
-		{
-			if (column == 0)
-				row++;
-			else 
-				dataInc = -1;
-			toggleTime = currentTime;
-		}	
-		if (rxData[1] > 1200)
-		{
-			column++;
-			toggleTime = currentTime;
-		}
-		else if (rxData[1] < 900)
-		{
-			column--;
-			toggleTime = currentTime;
-		}	
-	}
+		currentTime = InlineMillis();
+
+		//if (currentTime - toggleTime > 300)
+		//{
+			//vertical stick
+			if (rxData[2] > 1224 && vStickStatus != 1)
+			{
+				if (column == 0)
+					row--;
+				else
+					dataInc = 1;
+				//toggleTime = currentTime;
+
+				vStickStatus = 1;
+			}
+			else if (rxData[2] < 824 && vStickStatus != -1)
+			{
+				if (column == 0)
+					row++;
+				else 
+					dataInc = -1;
+				//toggleTime = currentTime;
+				vStickStatus = -1;
+			}
+			else if (rxData[2] > 924 && rxData[2] < 1124)
+			{
+				vStickStatus = 0;
+			}
+
+			//horizontal stick
+			if (rxData[1] > 1224 && hStickStatus != 1)
+			{
+				column++;
+				//toggleTime = currentTime;
+
+				hStickStatus = 1;
+			}
+			else if (rxData[1] < 824 && hStickStatus != -1)
+			{
+				column--;
+				//toggleTime = currentTime;
+
+				hStickStatus = -1;
+			}	
+			else if (rxData[1] > 924 && rxData[1] < 1124)
+			{
+				hStickStatus = 0;
+			}
+		//}
 						
 
-	if (row >= ROW_MAX)
-		row = ROW_MAX;
-	else if (row < 0)
-		row = 0;
+		if (row >= ROW_MAX)
+			row = ROW_MAX;
+		else if (row < 0)
+			row = 0;
 
-	if (column >= COLUMN_MAX)
-		column = COLUMN_MAX;
-	else if (column < 0)
-		column = 0;
+		if (column >= COLUMN_MAX)
+			column = COLUMN_MAX;
+		else if (column < 0)
+		{
+			row = 0;
+			column = 0;
+			columnAxis = 0;
+			progMode = 0;
+		}
+			
 
-	strcpy(stringArray[0], "SPEKTRUM");
-	strcpy(stringArray[1], "Calibrate 1");
-	strcpy(stringArray[2], "Calibrate 2");
-	strcpy(stringArray[3], "Ver: ");
-	strcpy(stringArray[4], "");
-	strcpy(stringArray[5], "ROLL");
-	strcpy(stringArray[6], "P: ");
-	strcpy(stringArray[7], "I: ");
-	strcpy(stringArray[8], "D: ");
-	
-	if(row == 1 && dataInc)
-		SetCalibrate1();
-	if (row == 2 && dataInc)
-	{
-		if(SetCalibrate2())
-			SaveConfig(ADDRESS_CONFIG_START);
-	}
+		strcpy(stringArray[0], "PID TUNING");
+		strcpy(stringArray[1], "Calibrate 1");
+		strcpy(stringArray[2], "Calibrate 2");
+		strcpy(stringArray[3], axisTable[columnAxis]);
+		strcpy(stringArray[4], "P: ");
+		strcpy(stringArray[5], "I: ");
+		strcpy(stringArray[6], "D: ");
+		strcpy(stringArray[7], "C: ");
+		strcpy(stringArray[8], "SAVE");
+
+		if (row == 1 && dataInc)
+			SetCalibrate1();
+		if (row == 2 && dataInc)
+		{
+			if (SetCalibrate2())
+				SaveConfig(ADDRESS_CONFIG_START);
+		}
+
+		if (row == 3)
+		{
+			columnAxis += dataInc;
+			if (columnAxis > 2)
+				columnAxis = 2;
+			if (columnAxis < 0)
+				columnAxis = 0;
+		}
 		
-	if(row == 6)
-		mainConfig.pidConfig[ROLL].kp += dataInc*1;
-	if (row == 7)
-		mainConfig.pidConfig[ROLL].ki += dataInc*1;
-	if (row == 8)
-		mainConfig.pidConfig[ROLL].kd += dataInc*1;
+		if (row == 4)
+			mainConfig.pidConfig[columnAxis].kp += dataInc * 1;
+		if (row == 5)
+			mainConfig.pidConfig[columnAxis].ki += dataInc * 1;
+		if (row == 6)
+			mainConfig.pidConfig[columnAxis].kd += dataInc * 1;
+		if (row == 7)
+			mainConfig.filterConfig[columnAxis].gyro.r += dataInc * 1;
+		if (row == 8 && column == 1)
+		{
+			SaveConfig(ADDRESS_CONFIG_START);
+			column = 0;
+		}
 
-	itoa(mainConfig.version, &stringArray[3][5], 10);
-	itoa(mainConfig.pidConfig[ROLL].kp, &stringArray[6][3], 10);
-	itoa(mainConfig.pidConfig[ROLL].ki, &stringArray[7][3], 10);
-	itoa(mainConfig.pidConfig[ROLL].kd, &stringArray[8][3], 10);
+		//itoa(mainConfig.version, &stringArray[3][5], 10);
+		itoa(mainConfig.pidConfig[columnAxis].kp, &stringArray[4][3], 10);
+		itoa(mainConfig.pidConfig[columnAxis].ki, &stringArray[5][3], 10);
+		itoa(mainConfig.pidConfig[columnAxis].kd, &stringArray[6][3], 10);
+		itoa(mainConfig.filterConfig[columnAxis].gyro.r, &stringArray[7][3], 10);
 
-	//char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", row5, "ROLL", row7, row8, row9 };
-	if (currentTime - blinkTime > 100)
-	{	
-		blinkTime = currentTime;
+		//char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", row5, "ROLL", row7, row8, row9 };
+		if (currentTime - blinkTime > 100)
+		{	
+			blinkTime = currentTime;
+		}
+		else if (currentTime - blinkTime > 50)
+		{
+			if (column == 0)
+				strcpy(stringArray[row], "");
+			else if (column == 1)
+				strcpy(&stringArray[row][3], "");
+		}
+		//blank++;
+		//blank = blank % 20;
 	}
-	else if (currentTime - blinkTime > 50)
-	{
-		if (column == 0)
-			strcpy(stringArray[row], "");
-		else if (column == 1)
-			strcpy(&stringArray[row][3], "");
-	}
-	//blank++;
-	//blank = blank % 20;
-	
 	//char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", "TWO", "THREE", "FOUR", "TEST", "TEST" };
 	//xbus.textLine = row;
 	sensorData.user_text.identifier = TELE_DEVICE_TEXTGEN;
