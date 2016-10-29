@@ -34,7 +34,6 @@ int EraseFlash(uint32_t flashStart, uint32_t flashEnd) {
 	EraseInitStruct.Sector = GetFlashSector(flashStart);
 	EraseInitStruct.NbSectors = GetFlashSector(flashEnd) - GetFlashSector(flashStart) + 1; //sectors are ordered in order from 0 to 11, so NbSectors is just the difference plus 1
 
-
 	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
 	{
 		//todo: return error code.

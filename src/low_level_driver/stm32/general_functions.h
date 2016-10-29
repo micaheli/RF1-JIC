@@ -14,7 +14,7 @@ void InitUsb(void);
 
 void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 void inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-bool inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+int inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 void InlineUpdateMillisClock (void);
 
@@ -23,6 +23,8 @@ void VectorIrqInit(uint32_t address);
 void SystemReset(void);
 void SystemResetToDfuBootloader(void);
 
+void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on);
+void InitializeGpioInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 
 
@@ -41,16 +43,18 @@ void SystemResetToDfuBootloader(void);
 #define RFPM					0x5246504D
 #define PL						0x504C
 
-#define RECOVERY_VERSION		01
-#define RFBL_VERSION			13
-#define CFG1_VERSION			13
-#define RFBL_TAG				"RFBLVERSION#00130013" //must be 20 bytes max
+#define RECOVERY_VERSION		1414
+#define RFBL_VERSION			14
+#define CFG1_VERSION			14
+#define RCVR_TAG				"RCVRVERSION#00140014" //must be 20 bytes max
+#define RFBL_TAG				"RFBLVERSION#00140014" //must be 20 bytes max
 
-#define APP_ADDRESS						0x08020000
+#define APP_ADDRESS						0x08008000
 #define BOOT_TO_RECOVERY_COMMAND		0xCA77F154
 #define BOOT_TO_RFBL_COMMAND			0xDEADFEAD
 #define BOOT_TO_APP_COMMAND				0xB01DFEED
 #define BOOT_TO_APP_AFTER_SPEK_COMMAND	0xCA7F157
+#define BOOT_TO_APP_AFTER_RECV_COMMAND	0xDEADF157
 #define BOOT_TO_DFU_COMMAND				0xB01DCA77
 #define BOOT_TO_ADDRESS					0xDEFEC7ED
 #define BOOT_TO_SPEKTRUM5				0x0005B14D
@@ -65,8 +69,15 @@ void SystemResetToDfuBootloader(void);
 #define RFBL_BKR_BOOT_CYCLES_REG		RTC_BKP_DR4
 #define RFBL_BKR_BOOT_ADDRESSS_REG		RTC_BKP_DR5
 #define RFBL_BKR_REBOOT_PENDING_REG		RTC_BKP_DR6
+#define FC_STATUS_REG					RTC_BKP_DR7
 
 #define RFBL1	0x631e47d9
 #define RFBL2	0x8ef26ec3
 #define RFBL3	0x3516864e
 #define RFBL4	0x461085c1
+#define RFBLM1	0xfade43f4
+#define RFBLM2	0xa62fe81a
+#define RFBLMR1	0xF443DEFA
+#define RFBLMR2	0x1AE82FA6
+
+enum{FC_STATUS_INFLIGHT=100,FC_STATUS_IDLE,FC_STATUS_CONFIG,FC_STATUS_STARTUP};

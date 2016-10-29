@@ -89,20 +89,27 @@ void InitPid (void) {
 			break;
 	}
 
+	//0.00   (x / 10000) * 1 = .00140000
+	//0.00   (x / 10000) * 0.00003125 = .00140000
+	//0.00   (x * 100) * 0.00003125 = .00000280
+
+	//140
+	//140
+	//200
 
 	pidsUsed[0].kp = mainConfig.pidConfig[0].kp / 100000;
-	pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 100000) * dT;
-	pidsUsed[0].kd = (mainConfig.pidConfig[0].kd * 100) * dT;
+	pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 5) * dT;
+	pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 250) * dT;
 	pidsUsed[0].wc = mainConfig.pidConfig[0].wc;
 
 	pidsUsed[1].kp = mainConfig.pidConfig[1].kp / 100000;
-	pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 100000) * dT;
-	pidsUsed[1].kd = (mainConfig.pidConfig[1].kd * 100) * dT;
+	pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 5) * dT;
+	pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 250) * dT;
 	pidsUsed[1].wc = mainConfig.pidConfig[1].wc;
 
 	pidsUsed[2].kp = mainConfig.pidConfig[2].kp / 100000;
-	pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 100000) * dT;
-	pidsUsed[2].kd = (mainConfig.pidConfig[2].kd * 100) * dT;
+	pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 5) * dT;
+	pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 250) * dT;
 	pidsUsed[2].wc = mainConfig.pidConfig[2].wc;
 
 }
@@ -154,12 +161,15 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 		usedFlightSetPoints[2] = flightSetPoints[2];
 	}
 
-
+	usedFlightSetPoints[0] = flightSetPoints[0];
+	usedFlightSetPoints[1] = flightSetPoints[1];
+	usedFlightSetPoints[2] = flightSetPoints[2];
 	for (axis = 2; axis >= 0; --axis) {
 
 		pidError = usedFlightSetPoints[axis] - filteredGyroData[axis];
 
-	    if ( SpinStopper(axis, pidError) ) {
+	    //if ( SpinStopper(axis, pidError) ) {
+		if ( 0 ) {
 
 	    	flightPids[axis].kp = 0;
 	    	flightPids[axis].ki = 0;

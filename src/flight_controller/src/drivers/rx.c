@@ -60,11 +60,11 @@ inline void RxUpdate(void) // hook for when rx updates
 
 		boardArmed = 1;
 
-		if ( ABS(rxData[PITCH] - mainConfig.rcControlsConfig.midRc[PITCH]) < 20 )
+		//if ( ABS(rxData[PITCH] - mainConfig.rcControlsConfig.midRc[PITCH]) < 200 )
 			mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
-		if ( ABS(rxData[ROLL] - mainConfig.rcControlsConfig.midRc[ROLL]) < 20 )
+		//if ( ABS(rxData[ROLL] - mainConfig.rcControlsConfig.midRc[ROLL]) < 200 )
 			mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
-		if ( ABS(rxData[YAW] - mainConfig.rcControlsConfig.midRc[YAW]) < 20 )
+		//if ( ABS(rxData[YAW] - mainConfig.rcControlsConfig.midRc[YAW]) < 200 )
 			mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
 
 	} else if (rxData[4] < 400) {
@@ -74,6 +74,7 @@ inline void RxUpdate(void) // hook for when rx updates
 				latchFirstArm = 2;
 			}
 			boardArmed = 0;
+			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_IDLE);
 		}
 
 	}
@@ -97,10 +98,8 @@ void SpektrumBind (uint32_t bindNumber) {
 	uint32_t i;
 
 	//todo: init all RX ports and ping each one as a spektrum port, maybe check each one to see if it allows spektrum binding
-	InitializeLed(GPIOB, GPIO_PIN_11); //spektrum binding is just like flashing an led
-	DelayMs(1);
+	InitializeGpio(GPIOB, GPIO_PIN_11, 1);
 
-	inlineDigitalHi(GPIOB, GPIO_PIN_11);
 	DelayMs(70);
 
 	if (!bindNumber)

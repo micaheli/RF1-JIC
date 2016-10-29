@@ -139,7 +139,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
+        OPTIMIZE_FLAGS = "-Og"
 
     elif TARGET == "stm32f405xx_rfbll":
         PROJECT = "recovery_loader"
@@ -147,7 +147,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
+        OPTIMIZE_FLAGS = "-Og"
 
     elif TARGET == "stm32f411xe":
         PROJECT = "flight_controller"
@@ -533,7 +533,7 @@ def configure_target(TARGET):
     INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
     LTO_FLAGS = "-flto -fuse-linker-plugin"
-    DEBUG_FLAGS = "-ggdb3 -DDEBUG -O0"
+    DEBUG_FLAGS = "-ggdb3 -DDEBUG -Og"
 
     CFLAGS = " ".join([
         ARCH_FLAGS,

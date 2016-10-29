@@ -3,10 +3,6 @@
 #include <stdbool.h>
 #include "usbd_hid.h" //needed for HID_EPIN_SIZE delcaration
 
-#define FC_STATUS_REG					RTC_BKP_DR6
-
-enum{FC_STATUS_INFLIGHT=100,FC_STATUS_IDLE,FC_STATUS_CONFIG,};
-
 typedef enum {
 	RFBLS_IDLE,
 	RFBLS_REBOOT_TO_DFU,
@@ -82,6 +78,7 @@ void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState);
 void rfbl_report_state (RfblState_e *RfblState);
 void boot_to_app (void);
 uint32_t checkOldConfigDirection (uint32_t bootDirection, uint32_t bootCycles);
+extern void ZeroActuators(void);
 
 void rfbl_parse_load_command(void);
 void rfbl_execute_load_command(void);
@@ -90,6 +87,7 @@ void rfbl_write_packet(void);
 void rfbl_finish_flash(void);
 void errorBlink(void);
 void erase_all_flash (void);
+void ZeroActuators(void);
 
 typedef void (*pFunction)(void);
 pFunction JumpToApplication;

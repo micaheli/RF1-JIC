@@ -4,26 +4,6 @@
 
 ledStatus_t ledStatus;
 
-
-void InitializeLed(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-    HAL_GPIO_DeInit(GPIOx, GPIO_Pin);
-
-    GPIO_InitStructure.Pin = GPIO_Pin;
-
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
-
-    HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
-
-    ledStatus.status = LEDS_OFF;
-}
-
-
 //todo: Do we want to init LEDs like this? Maybe an array is a better method
 void InitLeds (void)
 {
@@ -33,9 +13,10 @@ void InitLeds (void)
 	{
 		if (board.internalLeds[x].enabled)
 		{
-			InitializeLed(ports[board.internalLeds[x].port], board.internalLeds[x].pin);
+			InitializeGpio(ports[board.internalLeds[x].port], board.internalLeds[x].pin, 0);
 		}
 	}
+	ledStatus.status = LEDS_OFF;
 }
 
 

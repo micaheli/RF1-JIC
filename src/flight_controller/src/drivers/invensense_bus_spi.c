@@ -1,8 +1,4 @@
-#include <stdbool.h>
-
 #include "includes.h"
-
-#include "input/gyro.h"
 
 #ifdef GYRO_EXTI
 #include "exti.h"
