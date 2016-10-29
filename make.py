@@ -90,7 +90,7 @@ if os.path.exists(OUTPUT_PATH):
 TargetConfig = namedtuple('TargetConfig', [
     'target',
     'sourcefiles', 'sourcedirs',
-    'cflags', 'asmflags', 'ldflags'
+    'cflags', 'asmflags', 'ldflags', 'useColor'
 ])
 
 def configure_target(TARGET):
@@ -567,6 +567,12 @@ def configure_target(TARGET):
         "-T" + ldScript
     ])
 
+    # if we're at a tty, then tell gcc to use colors
+    if sys.stdout.isatty():
+        colorFlag = "-fdiagnostics-color"
+    else:
+        colorFlag = ""
+
     ################################################################################
     # build return object with all needed parameters
 
@@ -577,17 +583,18 @@ def configure_target(TARGET):
         cflags=CFLAGS,
         asmflags=ASMFLAGS,
         ldflags=LDFLAGS,
+        useColor=colorFlag,
     )
 
     return target_config
 
 
 
-asm_command = "arm-none-eabi-gcc -c  -o output/{OUTPUT_FILE} {ASMFLAGS} {INPUT_FILE}"
+asm_command = "arm-none-eabi-gcc -c {USECOLOR} -o output/{OUTPUT_FILE} {ASMFLAGS} {INPUT_FILE}"
 
-compile_command = "arm-none-eabi-gcc -c  -o output/{OUTPUT_FILE} {CFLAGS} {INPUT_FILE}"
+compile_command = "arm-none-eabi-gcc -c {USECOLOR} -o output/{OUTPUT_FILE} {CFLAGS} {INPUT_FILE}"
 
-link_command = "arm-none-eabi-gcc  -o output/{OUTPUT_NAME}.elf {OBJS} {LDFLAGS}"
+link_command = "arm-none-eabi-gcc {USECOLOR} -o output/{OUTPUT_NAME}.elf {OBJS} {LDFLAGS}"
 
 size_command = "arm-none-eabi-size output/{OUTPUT_NAME}.elf"
 
@@ -793,13 +800,15 @@ def ProcessList(fileNames, target_config):
                 commands.append(asm_command.format(
                     INPUT_FILE=fileName.path,
                     OUTPUT_FILE=makeObject(fileName.path, target_config.target),
-                    ASMFLAGS=target_config.asmflags
+                    ASMFLAGS=target_config.asmflags,
+                    USECOLOR=target_config.useColor,
                 ))
             elif fileName[-2:] == ".c":
                 commands.append(compile_command.format(
                     INPUT_FILE=fileName.path,
                     OUTPUT_FILE=makeObject(fileName.path, target_config.target),
-                    CFLAGS=target_config.cflags
+                    CFLAGS=target_config.cflags,
+                    USECOLOR=target_config.useColor,
                 ))
             else:
                 raise Exception("Bad file type:", fileName)
@@ -852,6 +861,7 @@ def main():
             OUTPUT_NAME=target_config.target,
             OBJS=" ".join(linkerObjs),
             LDFLAGS=target_config.ldflags,
+            USECOLOR=target_config.useColor,
         )
         linkOutput = "output/{OUTPUT_NAME}.elf".format(OUTPUT_NAME=target_config.target)
         linkThread = CommandRunnerThread(command=linkTarget, output=linkOutput, target=target_config.target, queue=thread_queue, dependencies=linkerThreads)

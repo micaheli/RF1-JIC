@@ -28,12 +28,7 @@ int main(void)
 
     int32_t count = 16;
 
-<<<<<<< HEAD
-
     VectorIrqInit(ADDRESS_FLASH_START);
-=======
-    VectorIrqInit(ADDRESS_RFFW_START);
->>>>>>> 0fea4f7fd07b3ca936550251b67cdae1084aa59a
 
     BoardInit();
 
