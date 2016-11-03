@@ -18,6 +18,7 @@ uint32_t RfblDisasterPreventionCheck = 1;
 
 uint32_t counterFish = 0;
 uint32_t loopCounter = 429496729U;
+float accCompAccTrust, accCompGyroTrust;
 
 int SetCalibrate1(void) {
 
@@ -182,6 +183,8 @@ inline void InlineInitAccFilters(void)  {
 
 	}
 
+	accCompAccTrust = 0.1;
+	accCompGyroTrust = 0.9;
 }
 
 
@@ -213,11 +216,11 @@ void ComplementaryFilterUpdateAttitude(void)
     {
 	// Turning around the X axis results in a vector on the Y-axis
     	pitchAcc = atan2f( (float)filteredAccData[ACCY], (float)filteredAccData[ACCZ]) * 180 * IPIf; //multiplying by the inverse of Pi is faster than dividing by Pi
-    	pitchAttitude = pitchAttitude * 0.98 + pitchAcc * 0.02;
+    	pitchAttitude = pitchAttitude * accCompGyroTrust + pitchAcc * accCompAccTrust;
 
 	// Turning around the Y axis results in a vector on the X-axis
         rollAcc = atan2f((float)filteredAccData[ACCX], (float)filteredAccData[ACCZ]) * 180 * IPIf;
-        rollAttitude = rollAttitude * 0.98 + rollAcc * 0.02;
+        rollAttitude = rollAttitude * accCompGyroTrust + rollAcc * accCompAccTrust;
     }
 }
 
@@ -238,23 +241,6 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
-	DoLed(0, 0);
-	DoLed(1, 0);
-	DoLed(2, 0);
-
-
-	float catt = pitchAttitude;
-	if (catt == 9) {
-		DoLed(0, 1);
-		DoLed(1, 1);
-		DoLed(2, 1);
-	}
-	float dogg = rollAttitude;
-	if (dogg == 9) {
-		DoLed(0, 1);
-		DoLed(1, 1);
-		DoLed(2, 1);
-	}
 
 	if (loopCounter-- & khzDivider ) { //this code runs at 1 KHz by checking the loop counter against the khzDivider bit set in InitPid();
 
@@ -285,11 +271,11 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 			InlineInitAccFilters();
 		}
 
-		//update blackbox here
-
+		//update blackbox here   //void UpdateBlackbox(pid_output *flightPids)
+		UpdateBlackbox(flightPids);
 
 		//check for fullKiLatched here
-		if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > 0.15) ) {
+		if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) ) {
 			fullKiLatched = 1;
 		}
 
@@ -350,10 +336,6 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	if (!boardArmed)
 		ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
-
-	DoLed(0, 1);
-	DoLed(1, 1);
-	DoLed(2, 1);
 
 }
 

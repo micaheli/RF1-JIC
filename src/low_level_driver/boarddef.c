@@ -70,22 +70,25 @@ int InitializeMCUSettings() {
 
 	bzero(&board, sizeof(board));
 
-	board.internalLeds[0].enabled=1;
+	//board.internalLeds[0].enabled=1;
 	//board.internalLeds[0].pin=GPIO_PIN_4; this seems to be the buzzer pin
 	//board.internalLeds[0].port=1;
 	//board.internalLeds[0].pin=GPIO_PIN_1;
     //board.internalLeds[0].port=2;
 
-	board.internalLeds[1].enabled=1;
-	board.internalLeds[1].pin=GPIO_PIN_5;
-	board.internalLeds[1].port=1;
+	//REVOLT / REVO
+	board.internalLeds[0].enabled=1;
+	board.internalLeds[0].pin=GPIO_PIN_5;
+	board.internalLeds[0].port=_PORTB;
 
+	//REVO
 	board.internalLeds[1].enabled=1;
 	board.internalLeds[1].pin=GPIO_PIN_1;
-	board.internalLeds[1].port=0;
+	board.internalLeds[1].port=_PORTA;
 
 	board.buzzerPort=1;
 	board.buzzerPin=GPIO_PIN_4;
+	board.buzzerPort=_PORTB;
 
 
 

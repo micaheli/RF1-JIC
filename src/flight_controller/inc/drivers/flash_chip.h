@@ -13,8 +13,15 @@ enum {
 	DMA_DATA_WRITE_IN_PROGRESS = (1 << 9),
 };
 
-//data in read buffer goes from 5 to 260
-#define FLASH_CHIP_BUFFER_SIZE 261
+//data in read buffer goes from 5 to 260. the first
+//data in write buffer goes from 4 to 259. the first
+#define FLASH_CHIP_BUFFER_WRITE_DATA_SIZE  255
+#define FLASH_CHIP_BUFFER_WRITE_DATA_START 4
+#define FLASH_CHIP_BUFFER_WRITE_DATA_END   259
+#define FLASH_CHIP_BUFFER_READ_DATA_SIZE   255
+#define FLASH_CHIP_BUFFER_READ_DATA_START  5
+#define FLASH_CHIP_BUFFER_READ_DATA_END    260
+#define FLASH_CHIP_BUFFER_SIZE             261
 #define BUFFER_STATUS_FILLING_A 1
 #define BUFFER_STATUS_FILLING_B 2
 
@@ -34,6 +41,11 @@ typedef struct {
 	uint8_t rxBufferA[FLASH_CHIP_BUFFER_SIZE]; //rx buffer from chip. Should be 256 + 5 bytes since we use it for command and dummy bytes while reading a page
 	uint8_t txBufferB[FLASH_CHIP_BUFFER_SIZE]; //double buffer. While one write, one is filled
 	uint8_t rxBufferB[FLASH_CHIP_BUFFER_SIZE]; //double buffer. While one write, one is filled
+	uint32_t txBufferAPtr;
+	uint32_t rxBufferAPtr;
+	uint32_t txBufferBPtr;
+	uint32_t rxBufferBPtr;
+	uint32_t currentWriteAddress;
 } flash_info_record;
 
 extern DMA_HandleTypeDef dma_flash_rx;
@@ -46,3 +58,6 @@ extern int FlashChipWriteData(uint8_t *data, uint8_t length);
 extern int FlashChipReadData(uint32_t address, uint8_t *buffer, int length);
 extern void DataFlashProgramPage(uint32_t address, uint8_t *data, uint16_t length);
 extern void WriteEnableDataFlash(void);
+extern int MassEraseDataFlash(int blocking);
+extern void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
+extern int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);

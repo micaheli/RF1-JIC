@@ -28,7 +28,7 @@ int main(void)
 
     int32_t count = 16;
 
-    VectorIrqInit(ADDRESS_FLASH_START);
+    VectorIrqInit(ADDRESS_RFFW_START);
 
     BoardInit();
 
@@ -43,13 +43,13 @@ int main(void)
     InitBuzzer();
     InitLeds();
     InitUsb();
+    InitFlashChip();
+    InitFlightLogger();
     InitRcData();
     InitMixer();
     InitFlightCode();
     InitPid();
     InitActuators();
-    InitFlashChip();
-    InitFlightLogger();
 
     if (!accgyroInit(mainConfig.gyroConfig.loopCtrl)) {
         ErrorHandler();

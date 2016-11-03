@@ -36,15 +36,14 @@ flash_info_record flashInfo;
 static void SpiInit(uint32_t baudRatePrescaler);
 static void DmaInit(void);
 static int M25p16ReadIdSetFlashRecord(void);
-static int M25p16ReadIdSetFlashRecordDma(void);
+static unsigned int M25p16ReadIdSetFlashRecordDma(void);
 static uint8_t M25p16ReadStatus(void);
-static int FlashChipReadWriteDataSpiDma(uint8_t *txData, uint8_t *rxData, uint8_t length);
-static int MassEraseDataFlash(void);
+static int FlashChipReadWriteDataSpiDma(uint8_t *txData, uint8_t *rxData, uint16_t length);
 static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
-static int M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
+extern void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 
 
-static int M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) {
+void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) {
 
 	//write data from txBuffer into flash chip using DMA.
 	//command and dummy bytes are in rxBuffer
@@ -57,8 +56,8 @@ static int M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBu
 	//12 floats per cycle at 1 KHz is about 48  KB per second. 48  KB per seconds will last 341 seconds (5.68 minutes of flight time).
 	//72 floats per cycle at 1 KHz is about 288 KB per second. 288 KB per seconds will last 56 seconds (a bit under 1 minute of flight time).
 
-  	bzero(txBuffer, sizeof(txBuffer));
-  	bzero(rxBuffer, sizeof(rxBuffer));
+	//rx buffer is just used as a dummy, we can completely ignore it
+
   	txBuffer[0] = M25P16_PAGE_PROGRAM;
   	txBuffer[1] = ((address >> 16) & 0xFF);
   	txBuffer[2] = ((address >> 8) & 0xFF);
@@ -77,19 +76,51 @@ static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuf
 	//address need to be aligned with the pages. We won't check since this is C!! Woohoo!
     //set up non blocking READ of data
 
-  	bzero(txBuffer, sizeof(txBuffer));
-  	bzero(rxBuffer, sizeof(rxBuffer));
+  	bzero(txBuffer, FLASH_CHIP_BUFFER_SIZE);
+  	bzero(rxBuffer, FLASH_CHIP_BUFFER_SIZE);
   	txBuffer[0] = M25P16_READ_BYTES_FAST;
   	txBuffer[1] = ((address >> 16) & 0xFF);
   	txBuffer[2] = ((address >> 8) & 0xFF);
   	txBuffer[3] = (address & 0xFF);
+  	txBuffer[4] = 0; //dummy byte
 
   	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 	flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
 
 	if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
 		FlashChipReadWriteDataSpiDma(txBuffer, rxBuffer, FLASH_CHIP_BUFFER_SIZE);
+		return(1);
 	}
+	return(0);
+
+}
+
+int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) {
+	//address need to be aligned with the pages. We won't check since this is C!! Woohoo!
+    //set up non blocking READ of data
+
+  	bzero(txBuffer, FLASH_CHIP_BUFFER_SIZE);
+  	bzero(rxBuffer, FLASH_CHIP_BUFFER_SIZE);
+  	txBuffer[0] = M25P16_READ_BYTES_FAST;
+  	txBuffer[1] = ((address >> 16) & 0xFF);
+  	txBuffer[2] = ((address >> 8) & 0xFF);
+  	txBuffer[3] = (address & 0xFF);
+  	txBuffer[4] = 0; //dummy byte
+
+  	if (txBuffer[5] == 77) { //won't happen. just removing compiler warning
+  		M25p16DmaReadPage(address, txBuffer, rxBuffer);
+  	}
+  	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
+	flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
+
+	if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
+
+		if (HAL_SPI_TransmitReceive(&flash_spi, txBuffer, rxBuffer, FLASH_CHIP_BUFFER_SIZE, 100) == HAL_OK)
+			return 1;
+
+	}
+
+	return 0;
 
 }
 
@@ -100,6 +131,7 @@ static int M25p16ReadIdSetFlashRecord(void)
 
     bzero(reply,sizeof(reply));
 
+    flashInfo.currentWriteAddress = 0; //todo in future, read flash and determin where we need to begin.
     flashInfo.enabled = 0;
     flashInfo.chipId = 0;
     flashInfo.flashSectors = 0;
@@ -115,7 +147,13 @@ static int M25p16ReadIdSetFlashRecord(void)
 	bzero(flashInfo.txBufferB,sizeof(flashInfo.txBufferB));
 	bzero(flashInfo.rxBufferB,sizeof(flashInfo.rxBufferB));
 
-    flashInfo.pageSize = M25P16_PAGESIZE;
+	flashInfo.bufferStatus = BUFFER_STATUS_FILLING_A;
+	flashInfo.txBufferAPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
+	flashInfo.txBufferBPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
+	flashInfo.rxBufferAPtr = 0;
+	flashInfo.rxBufferBPtr = 0;
+
+    flashInfo.pageSize     = M25P16_PAGESIZE;
 
     inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
     HAL_SPI_TransmitReceive(&flash_spi, command, reply, sizeof(command), 100);
@@ -153,7 +191,7 @@ static int M25p16ReadIdSetFlashRecord(void)
     return flashInfo.chipId;
 }
 
-static int M25p16ReadIdSetFlashRecordDma(void)
+static unsigned int M25p16ReadIdSetFlashRecordDma(void)
 {
 
     uint32_t x;
@@ -166,14 +204,14 @@ static int M25p16ReadIdSetFlashRecordDma(void)
   	FlashChipReadWriteDataSpiDma(flashInfo.commandTxBuffer, flashInfo.commandRxBuffer, 4);
 
   	//give the DMA test 100 ms to complete. If it passes then we return 1.
-  	for (x=0;x<100;x++) {
-  		if (flashInfo.status == DMA_READ_ID_IN_PROGRESS)
+  	for (x=0;x<10000;x++) {
+  		if (flashInfo.status != DMA_READ_COMPLETE)
   			DelayMs(1);
   		else
   			break;
   	}
 
-  	if (x>99)
+  	if (x>98)
   		return 0;
 
   	return ( (uint32_t)( (flashInfo.commandRxBuffer[1] << 16) | (flashInfo.commandRxBuffer[2] << 8) | (flashInfo.commandRxBuffer[3]) ) );
@@ -182,7 +220,7 @@ static int M25p16ReadIdSetFlashRecordDma(void)
 
 static void SpiInit(uint32_t baudRatePrescaler)
 {
-	GPIO_InitTypeDef  GPIO_InitStruct;
+	//GPIO_InitTypeDef  GPIO_InitStruct;
 
 	//this is all handled in stm32f4xx_spi_msp.c
 	///*##-2- Configure peripheral GPIO ##########################################*/
@@ -246,7 +284,7 @@ int CheckIfFlashBusy(void) {
 int InitFlashChip(void)
 {
 
-	uint32_t x;
+	//uint32_t x;
 
     HAL_NVIC_DisableIRQ(FLASH_DMA_TX_IRQn);
     HAL_NVIC_DisableIRQ(FLASH_DMA_RX_IRQn);
@@ -264,7 +302,7 @@ int InitFlashChip(void)
     if (M25p16ReadIdSetFlashRecordDma() == flashInfo.chipId) {
         if ( flashInfo.chipId ) {
         	flashInfo.enabled = 1;
-        	return 1;
+        	return 1; //flash chip is good!
         }
 
     }
@@ -362,7 +400,7 @@ void WriteEnableDataFlash(void) {
 
 }
 
-int MassEraseDataFlash(void) {
+int MassEraseDataFlash(int blocking) {
 
 	uint8_t c[1] = {M25P16_BULK_ERASE};
 
@@ -373,8 +411,19 @@ int MassEraseDataFlash(void) {
 		HAL_SPI_Transmit(&flash_spi, c, 1, 100);
 		inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 
-		if ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
+		if (blocking) {
+			blocking = 0;
+			while ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
+				DelayMs(1);
+				blocking++;
+				if (blocking == 40000)
+					return 0;
+			}
 			return 1;
+		} else {
+			if ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
+				return 1;
+			}
 		}
 
 	}
@@ -434,14 +483,14 @@ int FlashChipReadData(uint32_t address, uint8_t *buffer, int length)
     return length;
 }
 
-static int FlashChipReadWriteDataSpiDma(uint8_t *txData, uint8_t *rxData, uint8_t length)
+static int FlashChipReadWriteDataSpiDma(uint8_t *txData, uint8_t *rxData, uint16_t length)
 {
     // ensure that both SPI and DMA resources are available, but don't block if they are not
 
     if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
 
     	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
-        flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
+        //flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
         HAL_SPI_TransmitReceive_DMA(&flash_spi, txData, rxData, length);
 
         return (1);

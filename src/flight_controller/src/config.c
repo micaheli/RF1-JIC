@@ -39,21 +39,21 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 	0, 10, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 				0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 					0, 300, 180.00, "" }, //1000 18
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 					0, 300, 140.00, "" }, //1000 14
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 					0, 300, 114.00, "" }, //1000000 114
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 					0, 300, 110.00, "" }, //1000 18
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 					0, 300, 080.00, "" }, //1000 14
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 					0, 300, 170.00, "" }, //1000000 114
 		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 					0, 300, 16, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 					0, 300, 180.00, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 					0, 300, 140.00, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 					0, 300, 114.00, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 					0, 300, 110.00, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 					0, 300, 100.00, "" },
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 					0, 300, 170.00, "" },
 		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 					0, 300, 8, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 				0, 300, 180.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 				0, 300, 140.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 				0, 300, 114.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 				0, 300, 120.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 				0, 300, 120.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 				0, 300, 180.00, "" },
 		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 				0, 300, 8, "" },
 
 		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 			0, 10, 0.00100, "" },
-		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 			0, 10, 3.00000, "" },
+		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 			0, 10, 4.00000, "" },
 		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 			0, 10, 0.00150, "" },
 		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 			0, 10, 0.00100, "" },
 		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 			0, 10, 2.50000, "" },
@@ -82,9 +82,9 @@ const config_variables_rec valueTable[] = {
 		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 			0, 10, 3.00000, "" },
 		{ "z_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.p, 			0, 10, 0.00150, "" },
 
-		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 	0, 0.1, 0.015, "" },
-		{ "roll_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[ROLL], 	0, 0.1, 0.015, "" },
-		{ "yaw_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[YAW], 		0, 0.1, 0.015, "" },
+		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 	0, 0.1, 0.01, "" },
+		{ "roll_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[ROLL], 	0, 0.1, 0.01, "" },
+		{ "yaw_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[YAW], 		0, 0.1, 0.01, "" },
 		{ "throttle_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[THROTTLE], 0, 0.1, 0, "" },
 		{ "aux1_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX1], 	0, 0.1, 0, "" },
 		{ "aux2_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX2], 	0, 0.1, 0, "" },
@@ -439,27 +439,25 @@ void OutputVar(uint32_t position)
 /**********************************************************************************************************************/
 
 
-void RfCustomReply(char *rf_custom_out_buffer) {
+int RfCustomReply(char *rf_custom_out_buffer) {
 
 	uint32_t forCounter;
 
 	unsigned char rfReplyBuffer[RF_BUFFER_SIZE];
 
-	bzero(rfReplyBuffer, sizeof(rfReplyBuffer));
+	bzero((rfReplyBuffer+1), (sizeof(rfReplyBuffer)-1));
 
 	rfReplyBuffer[0]=1;
 	memcpy((char *)(rfReplyBuffer+1), rf_custom_out_buffer, RF_BUFFER_SIZE);
-	//volatile uint32_t cat = &hUsbDeviceFS.dev_state;
-	//volatile uint32_t dog = &hUsbDeviceFS.pClass->EP0_RxReady;
 
 	for (forCounter = 0; forCounter < 40000; forCounter++) {
-		if (hidToPcReady)
-			break;
+		if (hidToPcReady) {
+			USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
+			hidToPcReady = 0;
+			return(1);
+		}
 	}
-	hidToPcReady = 0;
-	USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
-	//DelayMs(1);
-
+	return(0);
 }
 
 void ProcessCommand(char *inString)
@@ -487,142 +485,361 @@ void ProcessCommand(char *inString)
 		inString[x] = tolower((unsigned char)inString[x]);
 
 	if (!strcmp("set", inString))
-	{
-		SetVariable(args);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "variableset", sizeof("variableset"));
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, args, inStringLength);
-		RfCustomReply(rf_custom_out_buffer);
-
-	}
-	else if (!strcmp("dump", inString))
-	{
-
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "dumpstarted", sizeof("dumpstarted"));
-		RfCustomReply(rf_custom_out_buffer);
-
-		args = StripSpaces(args);
-		if ( (!strcmp("", args)) || (!strcmp("all", args)) ) {
-			for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
-			{
-				OutputVar(x);
-			}
-		} else {
-			for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
-			{
-				if (!strcmp(valueTable[x].group, args))
-					OutputVar(x);
-			}
-		}
-
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "dumpcomplete", sizeof("dumpcomplete"));
-		RfCustomReply(rf_custom_out_buffer);
-
-	}
-	else if (!strcmp("calibratea", inString))
-	{
-		mainConfig.gyroConfig.boardCalibrated = 0;
-		mainConfig.gyroConfig.gyroRotation = CW0;
-		DelayMs(200); //need to reset calibration and give ACC data time to refresh
-		if (SetCalibrate1()) {
+		{
+			SetVariable(args);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrate1finished", sizeof("calibrate1finished"));
+			memcpy(rf_custom_out_buffer, "variableset", sizeof("variableset"));
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, args, inStringLength);
+			RfCustomReply(rf_custom_out_buffer);
+
+		}
+	else if (!strcmp("calibratem1", inString))
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "calibratingmotors", sizeof("calibratingmotors"));
+			RfCustomReply(rf_custom_out_buffer);
+
+			calibrateMotors = 1;
+			motorOutput[0] = 1;
+			motorOutput[1] = 1;
+			motorOutput[2] = 1;
+			motorOutput[3] = 1;
+			motorOutput[4] = 1;
+			motorOutput[5] = 1;
+			motorOutput[6] = 1;
+			motorOutput[7] = 1;
+			motorOutput[8] = 1;
+			OutputActuators(motorOutput, servoOutput);
+		}
+	else if (!strcmp("calibratem2", inString))
+		{
+
+			motorOutput[0] = 0;
+			motorOutput[1] = 0;
+			motorOutput[2] = 0;
+			motorOutput[3] = 0;
+			motorOutput[4] = 0;
+			motorOutput[5] = 0;
+			motorOutput[6] = 0;
+			motorOutput[7] = 0;
+			motorOutput[8] = 0;
+			OutputActuators(motorOutput, servoOutput);
+			calibrateMotors = 0;
+
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "motorscalibrated", sizeof("motorscalibrated"));
+			RfCustomReply(rf_custom_out_buffer);
+
+		}
+	else if (!strcmp("calibratema", inString))
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "calibratingmotors", sizeof("calibratingmotors"));
+			RfCustomReply(rf_custom_out_buffer);
+
+			calibrateMotors = 1;
+			motorOutput[0] = 1;
+			motorOutput[1] = 1;
+			motorOutput[2] = 1;
+			motorOutput[3] = 1;
+			motorOutput[4] = 1;
+			motorOutput[5] = 1;
+			motorOutput[6] = 1;
+			motorOutput[7] = 1;
+			motorOutput[8] = 1;
+			OutputActuators(motorOutput, servoOutput);
+			DelayMs(10000);
+			motorOutput[0] = 0;
+			motorOutput[1] = 0;
+			motorOutput[2] = 0;
+			motorOutput[3] = 0;
+			motorOutput[4] = 0;
+			motorOutput[5] = 0;
+			motorOutput[6] = 0;
+			motorOutput[7] = 0;
+			motorOutput[8] = 0;
+			OutputActuators(motorOutput, servoOutput);
+			calibrateMotors = 0;
+
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "motorscalibrated", sizeof("motorscalibrated"));
+			RfCustomReply(rf_custom_out_buffer);
+
+		}
+	else if (!strcmp("dump", inString))
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "dumpstarted", sizeof("dumpstarted"));
+			RfCustomReply(rf_custom_out_buffer);
+
+			args = StripSpaces(args);
+			if ( (!strcmp("", args)) || (!strcmp("all", args)) ) {
+				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+				{
+					OutputVar(x);
+				}
+			} else {
+				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+				{
+					if (!strcmp(valueTable[x].group, args))
+						OutputVar(x);
+				}
+			}
+
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "dumpcomplete", sizeof("dumpcomplete"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
-	}
+	else if (!strcmp("eraseflash", inString))
+		{
+			if (flashInfo.enabled) {
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "erasingflash", sizeof("erasingflash"));
+				RfCustomReply(rf_custom_out_buffer);
+				if (MassEraseDataFlash(1)) {
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, "flasherasecomplete", sizeof("flasherasecomplete"));
+					RfCustomReply(rf_custom_out_buffer);
+				} else {
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, "flasherasefailed", sizeof("flasherasefailed"));
+					RfCustomReply(rf_custom_out_buffer);
+				}
+
+			} else {
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
+				RfCustomReply(rf_custom_out_buffer);
+			}
+		}
+	else if (!strcmp("startlog", inString))
+		{
+			if (flashInfo.enabled) {
+				EnableLogging();
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "loggingstarted", sizeof("loggingstarted"));
+				RfCustomReply(rf_custom_out_buffer);
+
+			} else {
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
+				RfCustomReply(rf_custom_out_buffer);
+			}
+		}
+	else if (!strcmp("endlog", inString))
+		{
+			if (flashInfo.enabled) {
+				DisableLogging();
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "loggingended", sizeof("loggingended"));
+				RfCustomReply(rf_custom_out_buffer);
+
+			} else {
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
+				RfCustomReply(rf_custom_out_buffer);
+			}
+		}
+	else if (!strcmp("downloadflightlog", inString))
+		{
+			if (flashInfo.enabled) {
+
+				args = StripSpaces(args);
+
+				if ( M25p16ReadPage( 0, flashInfo.txBufferA, flashInfo.rxBufferA) ) {
+
+					memcpy(rf_custom_out_buffer, "downloadflightlogstarted\0", sizeof("downloadflightlogstarted\0"));
+					RfCustomReply(rf_custom_out_buffer);
+
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+0], 63);
+					RfCustomReply(rf_custom_out_buffer);
+
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+63], 63);
+					RfCustomReply(rf_custom_out_buffer);
+
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+126], 63);
+					RfCustomReply(rf_custom_out_buffer);
+
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+189], 63);
+					RfCustomReply(rf_custom_out_buffer);
+
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+252], 4);
+					RfCustomReply(rf_custom_out_buffer);
+
+					memcpy(rf_custom_out_buffer, "downloadflightlogfinished\0", sizeof("downloadflightlogfinished\0"));
+					RfCustomReply(rf_custom_out_buffer);
+
+
+				} else {
+
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, "flashreadfailed", sizeof("flashreadfailed"));
+					RfCustomReply(rf_custom_out_buffer);
+
+				}
+
+			} else {
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
+				RfCustomReply(rf_custom_out_buffer);
+
+			}
+
+		}
+	else if (!strcmp("readflash", inString))
+		{
+			if (flashInfo.enabled) {
+
+				args = StripSpaces(args);
+
+				if ( M25p16ReadPage( atoi(args), flashInfo.txBufferA, flashInfo.rxBufferA) ) {
+
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+0], 32);
+					RfCustomReply(rf_custom_out_buffer);
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+32], 32);
+					RfCustomReply(rf_custom_out_buffer);
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+64], 32);
+					RfCustomReply(rf_custom_out_buffer);
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+96], 32);
+					RfCustomReply(rf_custom_out_buffer);
+
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+128], 32);
+					RfCustomReply(rf_custom_out_buffer);
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+160], 32);
+					RfCustomReply(rf_custom_out_buffer);
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+192], 32);
+					RfCustomReply(rf_custom_out_buffer);
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+224], 32);
+					RfCustomReply(rf_custom_out_buffer);
+
+				} else {
+
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, "flashreadfailed", sizeof("flashreadfailed"));
+					RfCustomReply(rf_custom_out_buffer);
+
+				}
+
+			} else {
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
+				RfCustomReply(rf_custom_out_buffer);
+
+			}
+
+		}
+	else if (!strcmp("calibratea", inString))
+		{
+			mainConfig.gyroConfig.boardCalibrated = 0;
+			mainConfig.gyroConfig.gyroRotation = CW0;
+			DelayMs(200); //need to reset calibration and give ACC data time to refresh
+			if (SetCalibrate1()) {
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "calibrate1finished", sizeof("calibrate1finished"));
+				RfCustomReply(rf_custom_out_buffer);
+			}
+		}
 	else if (!strcmp("calibrateb", inString))
-	{
-		if (SetCalibrate2()) {
+		{
+			if (SetCalibrate2()) {
+				SaveConfig(ADDRESS_CONFIG_START);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "calibrate2finished", sizeof("calibrate2finished"));
+				RfCustomReply(rf_custom_out_buffer);
+			}
+		}
+	else if (!strcmp("save", inString))
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
+			RfCustomReply(rf_custom_out_buffer);
 			SaveConfig(ADDRESS_CONFIG_START);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrate2finished", sizeof("calibrate2finished"));
+			memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
-	}
-	else if (!strcmp("save", inString))
-	{
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
-		RfCustomReply(rf_custom_out_buffer);
-		SaveConfig(ADDRESS_CONFIG_START);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
-		RfCustomReply(rf_custom_out_buffer);
-	}
 	else if (!strcmp("reboot", inString))
-	{
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "rebooting", sizeof("rebooting"));
-		RfCustomReply(rf_custom_out_buffer);
-		SystemReset();
-	}
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "rebooting", sizeof("rebooting"));
+			RfCustomReply(rf_custom_out_buffer);
+			SystemReset();
+		}
 	else if (!strcmp("resetdfu", inString))
-	{
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "rebootingdfu", sizeof("rebootingdfu"));
-		RfCustomReply(rf_custom_out_buffer);
-		SystemResetToDfuBootloader();
-	}
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "rebootingdfu", sizeof("rebootingdfu"));
+			RfCustomReply(rf_custom_out_buffer);
+			SystemResetToDfuBootloader();
+		}
 	else if (!strcmp("resetconfig", inString))
-	{
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "resettingconfig", sizeof("resettingconfig"));
-		RfCustomReply(rf_custom_out_buffer);
-		GenerateConfig();
-		SaveConfig(ADDRESS_CONFIG_START);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "configreset", sizeof("configreset"));
-		RfCustomReply(rf_custom_out_buffer);
-	}
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "resettingconfig", sizeof("resettingconfig"));
+			RfCustomReply(rf_custom_out_buffer);
+			GenerateConfig();
+			SaveConfig(ADDRESS_CONFIG_START);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "configreset", sizeof("configreset"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
 	else if (!strcmp("bind", inString))
-	{
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
-		rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "binding9", sizeof("binding9"));
-		RfCustomReply(rf_custom_out_buffer);
-	}
+		{
+			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
+			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "binding9", sizeof("binding9"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
 	else if (!strcmp("bind9", inString))
-	{
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
-		rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "binding9", sizeof("binding9"));
-		RfCustomReply(rf_custom_out_buffer);
-	}
+		{
+			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
+			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "binding9", sizeof("binding9"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
 	else if (!strcmp("bind5", inString))
-	{
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM5);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "binding5", sizeof("binding5"));
-		RfCustomReply(rf_custom_out_buffer);
-	}
+		{
+			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM5);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "binding5", sizeof("binding5"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
 	else if (!strcmp("rebootrfbl", inString))
-	{
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "rebootrfbl", sizeof("rebootrfbl"));
-		RfCustomReply(rf_custom_out_buffer);
-		SystemReset();
-	}
+		{
+			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "rebootrfbl", sizeof("rebootrfbl"));
+			RfCustomReply(rf_custom_out_buffer);
+			SystemReset();
+		}
 	else if (!strcmp("rebootrecovery", inString))
-	{
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "rebootrecovery", sizeof("rebootrecovery"));
-		RfCustomReply(rf_custom_out_buffer);
-		SystemReset();
-	}
+		{
+			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "rebootrecovery", sizeof("rebootrecovery"));
+			RfCustomReply(rf_custom_out_buffer);
+			SystemReset();
+		}
 	else
-	{
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "unknowncommand", sizeof("unknowncommand"));
-		RfCustomReply(rf_custom_out_buffer);
-	}
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "unknowncommand", sizeof("unknowncommand"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
 /*
 	else if (!strcmp("1wire", inString))
 	{

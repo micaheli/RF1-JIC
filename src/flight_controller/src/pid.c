@@ -98,18 +98,18 @@ void InitPid (void) {
 	//200
 
 	pidsUsed[0].kp = mainConfig.pidConfig[0].kp / 100000;
-	pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 5) * dT;
-	pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 250) * dT;
+	pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 50000) * dT;
+	pidsUsed[0].kd = (mainConfig.pidConfig[0].kd * 12 )  * dT;
 	pidsUsed[0].wc = mainConfig.pidConfig[0].wc;
 
 	pidsUsed[1].kp = mainConfig.pidConfig[1].kp / 100000;
-	pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 5) * dT;
-	pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 250) * dT;
+	pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 50000) * dT;
+	pidsUsed[1].kd = (mainConfig.pidConfig[1].kd * 12 )  * dT;
 	pidsUsed[1].wc = mainConfig.pidConfig[1].wc;
 
 	pidsUsed[2].kp = mainConfig.pidConfig[2].kp / 100000;
-	pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 5) * dT;
-	pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 250) * dT;
+	pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 50000) * dT;
+	pidsUsed[2].kd = (mainConfig.pidConfig[2].kd * 12 )  * dT;
 	pidsUsed[2].wc = mainConfig.pidConfig[2].wc;
 
 }
@@ -135,7 +135,9 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 	float pidError;
 	static float lastfilteredGyroData[AXIS_NUMBER];
 	static float usedFlightSetPoints[AXIS_NUMBER];
-	float kiErrorLimit[AXIS_NUMBER];
+	static float kiErrorLimit[AXIS_NUMBER];
+
+	(void)(pidConfig);
 
 	//set point limiter.
 	if ( actuatorRange >= 0.90 ) {
@@ -161,15 +163,16 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 		usedFlightSetPoints[2] = flightSetPoints[2];
 	}
 
-	usedFlightSetPoints[0] = flightSetPoints[0];
-	usedFlightSetPoints[1] = flightSetPoints[1];
-	usedFlightSetPoints[2] = flightSetPoints[2];
+	//usedFlightSetPoints[0] = flightSetPoints[0];
+	//usedFlightSetPoints[1] = flightSetPoints[1];
+	//usedFlightSetPoints[2] = flightSetPoints[2];
+
 	for (axis = 2; axis >= 0; --axis) {
 
 		pidError = usedFlightSetPoints[axis] - filteredGyroData[axis];
 
-	    //if ( SpinStopper(axis, pidError) ) {
-		if ( 0 ) {
+	    if ( SpinStopper(axis, pidError) ) {
+		//if ( 0 ) {
 
 	    	flightPids[axis].kp = 0;
 	    	flightPids[axis].ki = 0;
@@ -185,7 +188,7 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 
 				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * pidsUsed[axis].ki, -0.212121f, 0.212121f); //prevent insane windup
 
-				if ( actuatorRange == 1 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+				if ( actuatorRange > .95 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
 					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
 				} else {
 					kiErrorLimit[axis] = ABS(kiErrorLimit[axis]);
@@ -202,8 +205,10 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 			lastfilteredGyroData[axis] = filteredGyroData[axis];
 
 			//updated Kd filter
-			PafUpdate(&kdFilterState[axis], kdDelta[axis]);
-			//kdDelta[axis] = kdFilterState[axis].x * (1.0f / dT);
+			if (mainConfig.filterConfig[axis].kd.r) {
+				PafUpdate(&kdFilterState[axis], kdDelta[axis]);
+				kdDelta[axis] = kdFilterState[axis].x;
+			}
 
 			InlineUpdateWitchcraft(pidsUsed);
 

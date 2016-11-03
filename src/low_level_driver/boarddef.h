@@ -121,8 +121,15 @@
 #define USART6_TX_GPIO				GPIOC
 #define USART6_TX_PIN				GPIO_PIN_6
 
-
-
+#define _PORTA 0
+#define _PORTB 1
+#define _PORTC 2
+#define _PORTD 3
+#define _PORTE 4
+#define _PORTF 5
+#define _PORTG 6
+#define _PORTH 7
+#define _PORTI 8
 
 /*
 UART_HandleTypeDef uartHandle1;
