@@ -241,60 +241,6 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
-
-	if (loopCounter-- & khzDivider ) { //this code runs at 1 KHz by checking the loop counter against the khzDivider bit set in InitPid();
-
-		CheckFailsafe();
-
-		//every 32 cycles we check if the filter needs an update.
-		if (
-				(currentGyroFilterConfig[YAW] != mainConfig.filterConfig[YAW].gyro.r) ||
-				(currentGyroFilterConfig[ROLL] != mainConfig.filterConfig[ROLL].gyro.r) ||
-				(currentGyroFilterConfig[PITCH] != mainConfig.filterConfig[PITCH].gyro.r)
-		) {
-			InlineInitGyroFilters();
-		}
-
-		if (
-				(currentKdFilterConfig[YAW] != mainConfig.filterConfig[YAW].kd.r) ||
-				(currentKdFilterConfig[ROLL] != mainConfig.filterConfig[ROLL].kd.r) ||
-				(currentKdFilterConfig[PITCH] != mainConfig.filterConfig[PITCH].kd.r)
-		) {
-			InlineInitPidFilters();
-		}
-
-		if (
-				(currentAccFilterConfig[ACCX] != mainConfig.filterConfig[ACCX].acc.r) ||
-				(currentAccFilterConfig[ACCY] != mainConfig.filterConfig[ACCY].acc.r) ||
-				(currentAccFilterConfig[ACCZ] != mainConfig.filterConfig[ACCZ].acc.r)
-		) {
-			InlineInitAccFilters();
-		}
-
-		//update blackbox here   //void UpdateBlackbox(pid_output *flightPids)
-		UpdateBlackbox(flightPids);
-
-		//check for fullKiLatched here
-		if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) ) {
-			fullKiLatched = 1;
-		}
-
-		//cycle time averaged
-		flightcodeTime = ( (float)Micros() - (float)flightcodeTimeStart ) * 0.03125; // 1/32 as a multiplier
-		flightcodeTimeStart = Micros();
-		debugU32[0] = flightcodeTime;
-
-		if (RfblDisasterPreventionCheck) {
-			if (InlineMillis() > 5000) {
-				RfblDisasterPreventionCheck = 0;
-				HandleRfblDisasterPrevention();
-			}
-		}
-
-	}
-
-
-
 	//update gyro filter
 	PafUpdate(&pafGyroStates[YAW], dpsGyroArray[YAW]);
 	PafUpdate(&pafGyroStates[ROLL], dpsGyroArray[ROLL]);
@@ -330,12 +276,67 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 		fullKiLatched = 0;
 	}
 
-	//output to actuators
+	//output to actuators. This is the end of the flight code for this iteration.
 	OutputActuators(motorOutput, servoOutput);
+
+
+	//this code is less important that stabilization, so it happens AFTER stabilization.
+	//Anything changed here can happen after the next iteration without any drawbacks. Stabilization above all else!
 
 	if (!boardArmed)
 		ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
+
+	if (loopCounter-- & khzDivider ) { //this code runs at 1 KHz by checking the loop counter against the khzDivider bit set in InitPid();
+
+		CheckFailsafe();
+
+		//every 32 cycles we check if the filter needs an update.
+		if (
+				(currentGyroFilterConfig[YAW] != mainConfig.filterConfig[YAW].gyro.r) ||
+				(currentGyroFilterConfig[ROLL] != mainConfig.filterConfig[ROLL].gyro.r) ||
+				(currentGyroFilterConfig[PITCH] != mainConfig.filterConfig[PITCH].gyro.r)
+		) {
+			InlineInitGyroFilters();
+		}
+
+		if (
+				(currentKdFilterConfig[YAW] != mainConfig.filterConfig[YAW].kd.r) ||
+				(currentKdFilterConfig[ROLL] != mainConfig.filterConfig[ROLL].kd.r) ||
+				(currentKdFilterConfig[PITCH] != mainConfig.filterConfig[PITCH].kd.r)
+		) {
+			InlineInitPidFilters();
+		}
+
+		if (
+				(currentAccFilterConfig[ACCX] != mainConfig.filterConfig[ACCX].acc.r) ||
+				(currentAccFilterConfig[ACCY] != mainConfig.filterConfig[ACCY].acc.r) ||
+				(currentAccFilterConfig[ACCZ] != mainConfig.filterConfig[ACCZ].acc.r)
+		) {
+			InlineInitAccFilters();
+		}
+
+		//update blackbox here   //void UpdateBlackbox(pid_output *flightPids)
+		UpdateBlackbox(flightPids, flightSetPoints);
+
+		//check for fullKiLatched here
+		if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) ) {
+			fullKiLatched = 1;
+		}
+
+		//cycle time averaged
+		flightcodeTime = ( (float)Micros() - (float)flightcodeTimeStart ) * 0.03125; // 1/32 as a multiplier
+		flightcodeTimeStart = Micros();
+		debugU32[0] = flightcodeTime;
+
+		if (RfblDisasterPreventionCheck) {
+			if (InlineMillis() > 5000) {
+				RfblDisasterPreventionCheck = 0;
+				HandleRfblDisasterPrevention();
+			}
+		}
+
+	}
 
 }
 

@@ -52,12 +52,13 @@ extern DMA_HandleTypeDef dma_flash_rx;
 extern DMA_HandleTypeDef dma_flash_tx;
 extern flash_info_record flashInfo;
 
-extern int InitFlashChip(void);
+extern int  InitFlashChip(void);
 extern void DataFlashBeginProgram(uint32_t address);
-extern int FlashChipWriteData(uint8_t *data, uint8_t length);
-extern int FlashChipReadData(uint32_t address, uint8_t *buffer, int length);
+extern int  FlashChipWriteData(uint8_t *data, uint8_t length);
+extern int  FlashChipReadData(uint32_t address, uint8_t *buffer, int length);
 extern void DataFlashProgramPage(uint32_t address, uint8_t *data, uint16_t length);
 extern void WriteEnableDataFlash(void);
-extern int MassEraseDataFlash(int blocking);
+extern int  MassEraseDataFlash(int blocking);
 extern void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
-extern int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
+extern int  M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
+extern int  WriteEnableDataFlashDma(void);

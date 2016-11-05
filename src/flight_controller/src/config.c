@@ -648,27 +648,39 @@ void ProcessCommand(char *inString)
 
 				args = StripSpaces(args);
 
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "downloadflightlogstarted", sizeof("downloadflightlogstarted"));
+				RfCustomReply(rf_custom_out_buffer);
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, 63, "%d", flashInfo.totalSize);
+				RfCustomReply(rf_custom_out_buffer);
+
 				if ( M25p16ReadPage( 0, flashInfo.txBufferA, flashInfo.rxBufferA) ) {
 
-					memcpy(rf_custom_out_buffer, "downloadflightlogstarted\0", sizeof("downloadflightlogstarted\0"));
-					RfCustomReply(rf_custom_out_buffer);
-
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+0], 63);
 					RfCustomReply(rf_custom_out_buffer);
 
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+63], 63);
 					RfCustomReply(rf_custom_out_buffer);
 
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+126], 63);
 					RfCustomReply(rf_custom_out_buffer);
 
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+189], 63);
 					RfCustomReply(rf_custom_out_buffer);
 
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+252], 4);
 					RfCustomReply(rf_custom_out_buffer);
 
-					memcpy(rf_custom_out_buffer, "downloadflightlogfinished\0", sizeof("downloadflightlogfinished\0"));
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, "downloadflightlogfinished", sizeof("downloadflightlogfinished"));
 					RfCustomReply(rf_custom_out_buffer);
 
 
@@ -837,7 +849,9 @@ void ProcessCommand(char *inString)
 	else
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "unknowncommand", sizeof("unknowncommand"));
+			//memcpy(rf_custom_out_buffer, "unknowncommand", sizeof("unknowncommand"));
+			//RfCustomReply(rf_custom_out_buffer);
+			memcpy(rf_custom_out_buffer, inString, 63);
 			RfCustomReply(rf_custom_out_buffer);
 		}
 /*

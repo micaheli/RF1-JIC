@@ -58,6 +58,8 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) 
 
 	//rx buffer is just used as a dummy, we can completely ignore it
 
+	WriteEnableDataFlash();
+
   	txBuffer[0] = M25P16_PAGE_PROGRAM;
   	txBuffer[1] = ((address >> 16) & 0xFF);
   	txBuffer[2] = ((address >> 8) & 0xFF);
@@ -116,10 +118,12 @@ int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) {
 	if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
 
 		if (HAL_SPI_TransmitReceive(&flash_spi, txBuffer, rxBuffer, FLASH_CHIP_BUFFER_SIZE, 100) == HAL_OK)
+			inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 			return 1;
 
 	}
 
+	inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 	return 0;
 
 }
@@ -281,6 +285,43 @@ int CheckIfFlashBusy(void) {
 	return(0);
 }
 
+int FindFirstEmptyPage(void) {
+
+	uint32_t x;
+	uint32_t y;
+	uint32_t allFFs;
+
+	for (x = 0;x < flashInfo.totalSize;x = x + flashInfo.pageSize) {
+
+		if ( M25p16ReadPage( x, flashInfo.txBufferA, flashInfo.rxBufferA) ) {
+
+			allFFs = 1;
+
+			for (y=0;y<flashInfo.pageSize;y++) { //check if page is empty, all 0xFF's
+				if (flashInfo.rxBufferA[y] != 0xFF)
+					allFFs = 0; //any non FF's will set this to 0.
+			}
+
+			if (allFFs) { //this page is empty since
+				flashInfo.enabled = 1;
+				flashInfo.currentWriteAddress = x;
+				return 1;
+			}
+
+		} else {
+
+			flashInfo.enabled = 0;
+			return 0;
+
+		}
+
+	}
+
+	flashInfo.enabled = 0;
+	return 0;
+
+}
+
 int InitFlashChip(void)
 {
 
@@ -292,8 +333,13 @@ int InitFlashChip(void)
     SpiInit(FLASH_SPI_BAUD);
 
     //check Read ID in blocking mode
+
+
     if (!M25p16ReadIdSetFlashRecord()) {
-        return 0;
+    	DelayMs(30);
+    	if (!M25p16ReadIdSetFlashRecord()) {
+    		return 0;
+    	}
     }
 
     DmaInit();
@@ -302,11 +348,11 @@ int InitFlashChip(void)
     if (M25p16ReadIdSetFlashRecordDma() == flashInfo.chipId) {
         if ( flashInfo.chipId ) {
         	flashInfo.enabled = 1;
-        	return 1; //flash chip is good!
+        	//flash chip is good! Let's check if we can write to it and where we can write to
+        	return ( FindFirstEmptyPage() );
         }
 
     }
-
 
     return 0;
 }
@@ -397,6 +443,24 @@ void WriteEnableDataFlash(void) {
 	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 	HAL_SPI_Transmit(&flash_spi, c, 1, 100);
 	inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
+
+}
+
+int WriteEnableDataFlashDma(void) {
+
+	uint8_t c[1] = {M25P16_WRITE_ENABLE};
+
+    if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
+
+    	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
+        //flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
+        HAL_SPI_Transmit_DMA(&flash_spi, c, 1);
+
+        return (1);
+
+    } else {
+        return (0);
+    }
 
 }
 
