@@ -131,7 +131,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O3"
+        OPTIMIZE_FLAGS = "-O2"
 
     elif TARGET == "stm32f405xx_rfbl":
         PROJECT = "boot_loader"

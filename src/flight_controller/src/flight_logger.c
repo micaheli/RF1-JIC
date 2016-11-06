@@ -32,6 +32,7 @@ inline void DumbWriteToFlash (uint8_t data) {
 
 		//check if buffer is full
 		if (flashInfo.txBufferAPtr > FLASH_CHIP_BUFFER_WRITE_DATA_END) { //filled buffer
+			bzero(flashInfo.rxBufferA, FLASH_CHIP_BUFFER_SIZE);
 			M25p16DmaWritePage(flashInfo.currentWriteAddress, flashInfo.txBufferA, flashInfo.rxBufferA); //write buffer to flash using DMA
 			flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
 			flashInfo.txBufferAPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
@@ -46,6 +47,7 @@ inline void DumbWriteToFlash (uint8_t data) {
 
 		//check if buffer is full
 		if (flashInfo.txBufferBPtr > FLASH_CHIP_BUFFER_WRITE_DATA_END) { //filled buffer
+			bzero(flashInfo.rxBufferB, FLASH_CHIP_BUFFER_SIZE);
 			M25p16DmaWritePage(flashInfo.currentWriteAddress, flashInfo.txBufferB, flashInfo.rxBufferB); //write buffer to flash using DMA
 			flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
 			flashInfo.txBufferBPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
@@ -63,10 +65,10 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
 
 	static uint16_t iteration = 0;
 
-	if (curvedRcCommandF[AUX2] > 1500) {
+	if (curvedRcCommandF[AUX2] < 0) {
 		ledStatus.status = LEDS_FAST_BLINK;
 		LoggingEnabled = 1;
-	} else if (curvedRcCommandF[AUX2] > 1000) {
+	} else if (curvedRcCommandF[AUX2] >= 0) {
 		ledStatus.status = LEDS_SLOW_BLINK;
 		LoggingEnabled = 0;
 		firstLogging = 1;
@@ -86,59 +88,122 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
 			flashInfo.rxBufferBPtr=0;
 			flashInfo.bufferStatus = BUFFER_STATUS_FILLING_A;
 			bzero(flashInfo.txBufferA, FLASH_CHIP_BUFFER_SIZE);
+			bzero(flashInfo.txBufferB, FLASH_CHIP_BUFFER_SIZE);
+
+			//name,
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
 
 			DumbWriteToFlash(  'i' );
+			DumbWriteToFlash(  't' );
+			DumbWriteToFlash(  'u' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 
 			DumbWriteToFlash(  'y' );
 			DumbWriteToFlash(  'p' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'y' );
 			DumbWriteToFlash(  'i' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'y' );
 			DumbWriteToFlash(  'd' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'p' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'i' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'd' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 
 			DumbWriteToFlash(  'p' );
 			DumbWriteToFlash(  'p' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'p' );
 			DumbWriteToFlash(  'i' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'p' );
 			DumbWriteToFlash(  'd' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
+			DumbWriteToFlash(  ';' );
 
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'y' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'r' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'p' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  't' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 
 			DumbWriteToFlash(  's' );
 			DumbWriteToFlash(  'y' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  's' );
 			DumbWriteToFlash(  'r' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  's' );
 			DumbWriteToFlash(  'p' );
+			DumbWriteToFlash(  's' );
+			DumbWriteToFlash(  'w' );
 			DumbWriteToFlash(  ';' );
+
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+			DumbWriteToFlash(  ';' );
+
 
 
 		} else {

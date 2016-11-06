@@ -166,13 +166,14 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 		//(1 / highestMotor); //this give us the multiplier we apply to each motor
 
 		for (i = activeMotorCounter; i >= 0; i--) { //throttle is not zero, so we can add throttle.
-			motorOutput[i] *= (actuatorRange * 0.5); //this squashes the mixer to fit within range.
+			motorOutput[i] *= (1 / actuatorRange); //this squashes the mixer to fit within range.
 			//this is a horrible way to do it though, so we need to make sure the PIDC doesn't allow this to happen.
 			//we do this by communicating the actuator condition back to the PIDC
 		}
 		throttle=0;
 
 	} else {
+
 		throttle=InlineConstrainf( throttle, 0, (1-(actuatorRange * 0.5))); //constrain throttle to maximum amount of throttle we can apply.
 		//throttle can't make actuator go out of bounds at this point since actuator range is between 0 and 1.
 		//throttle needs to shift actuators up to the point they at least hit 0.
@@ -183,7 +184,7 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 
 	for(x=7; x>=0; x--)
 	{
-		motorOutput[x] = InlineConstrainf(motorOutput[x]+throttle,0.0,1.0);
+		motorOutput[x] = InlineConstrainf(motorOutput[x]+throttle,0.0f,1.0f);
 	}
 
 	return actuatorRange;

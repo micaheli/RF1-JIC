@@ -69,7 +69,7 @@ inline void RxUpdate(void) // hook for when rx updates
 
 	} else if (rxData[4] < 400) {
 
-		if (disarmCount++ > 10) {
+		if (disarmCount++ > 3) {
 			if (latchFirstArm==1) {
 				latchFirstArm = 2;
 			}

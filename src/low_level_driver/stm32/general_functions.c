@@ -2,7 +2,7 @@
 
 static volatile uint32_t micros;
 static volatile uint32_t millisClock;
-uint32_t systemUsTicks;
+volatile uint32_t systemUsTicks;
 
 inline uint32_t InlineMillis(void) {
 	return HAL_GetTick();

@@ -628,7 +628,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("startlog", inString))
 		{
 			if (flashInfo.enabled) {
-				curvedRcCommandF[AUX2] = 1600;
+				curvedRcCommandF[AUX2] = -0.6;
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				memcpy(rf_custom_out_buffer, "loggingstarted", sizeof("loggingstarted"));
 				RfCustomReply(rf_custom_out_buffer);
@@ -642,7 +642,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("endlog", inString))
 		{
 			if (flashInfo.enabled) {
-				curvedRcCommandF[AUX2] = 1200;
+				curvedRcCommandF[AUX2] = 0.6;
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				memcpy(rf_custom_out_buffer, "loggingended", sizeof("loggingended"));
 				RfCustomReply(rf_custom_out_buffer);
@@ -736,6 +736,43 @@ void ProcessCommand(char *inString)
 					RfCustomReply(rf_custom_out_buffer);
 				}
 			} else {
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "downloadflightlogstarted", sizeof("downloadflightlogstarted"));
+				RfCustomReply(rf_custom_out_buffer);
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, 63, "%u", (unsigned int)378);
+				RfCustomReply(rf_custom_out_buffer);
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				for (uint32_t fft=0;fft<63;fft++)
+					rf_custom_out_buffer[fft]=45;
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				for (uint32_t fft=0;fft<63;fft++)
+					rf_custom_out_buffer[fft]=11;
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				for (uint32_t fft=0;fft<63;fft++)
+					rf_custom_out_buffer[fft]=22;
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				for (uint32_t fft=0;fft<63;fft++)
+					rf_custom_out_buffer[fft]=55;
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				for (uint32_t fft=0;fft<63;fft++)
+					rf_custom_out_buffer[fft]=33;
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				for (uint32_t fft=0;fft<63;fft++)
+					rf_custom_out_buffer[fft]=21;
+				RfCustomReply(rf_custom_out_buffer);
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "downloadflightlogfinished", sizeof("downloadflightlogfinished"));
+				RfCustomReply(rf_custom_out_buffer);
 
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
@@ -892,9 +929,10 @@ void ProcessCommand(char *inString)
 	else
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			//memcpy(rf_custom_out_buffer, "unknowncommand", sizeof("unknowncommand"));
-			//RfCustomReply(rf_custom_out_buffer);
 			memcpy(rf_custom_out_buffer, inString, 63);
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "unknowncommand", sizeof("unknowncommand"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
 /*

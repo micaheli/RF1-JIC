@@ -15,37 +15,37 @@ enum {
 
 //data in read buffer goes from 5 to 260. the first
 //data in write buffer goes from 4 to 259. the first
-#define FLASH_CHIP_BUFFER_WRITE_DATA_SIZE  255
+#define FLASH_CHIP_BUFFER_WRITE_DATA_SIZE  256
 #define FLASH_CHIP_BUFFER_WRITE_DATA_START 4
 #define FLASH_CHIP_BUFFER_WRITE_DATA_END   259
-#define FLASH_CHIP_BUFFER_READ_DATA_SIZE   255
-#define FLASH_CHIP_BUFFER_READ_DATA_START  5
-#define FLASH_CHIP_BUFFER_READ_DATA_END    260
-#define FLASH_CHIP_BUFFER_SIZE             261
+#define FLASH_CHIP_BUFFER_READ_DATA_SIZE   256
+#define FLASH_CHIP_BUFFER_READ_DATA_START  4
+#define FLASH_CHIP_BUFFER_READ_DATA_END    259
+#define FLASH_CHIP_BUFFER_SIZE             260
 #define BUFFER_STATUS_FILLING_A 1
 #define BUFFER_STATUS_FILLING_B 2
 
 typedef struct {
-	uint32_t enabled;
-	uint32_t chipId;
-	uint32_t flashSectors;
-	uint32_t pagesPerSector;
-	uint32_t sectorSize;
-	uint32_t totalSize;
-	uint32_t pageSize;
-	uint32_t status;
-	uint32_t bufferStatus;
+	volatile uint32_t enabled;
+	volatile uint32_t chipId;
+	volatile uint32_t flashSectors;
+	volatile uint32_t pagesPerSector;
+	volatile uint32_t sectorSize;
+	volatile uint32_t totalSize;
+	volatile uint32_t pageSize;
+	volatile uint32_t status;
+	volatile uint32_t bufferStatus;
 	uint8_t commandRxBuffer[4]; //used for replies of commands
 	uint8_t commandTxBuffer[4]; //used for sending chip commands. Needs to be separate of data buffer since both can be in use at once
 	uint8_t txBufferA[FLASH_CHIP_BUFFER_SIZE]; //tx buffer to chip. Should be 256 + 5 bytes since that's the page size.
 	uint8_t rxBufferA[FLASH_CHIP_BUFFER_SIZE]; //rx buffer from chip. Should be 256 + 5 bytes since we use it for command and dummy bytes while reading a page
 	uint8_t txBufferB[FLASH_CHIP_BUFFER_SIZE]; //double buffer. While one write, one is filled
 	uint8_t rxBufferB[FLASH_CHIP_BUFFER_SIZE]; //double buffer. While one write, one is filled
-	uint32_t txBufferAPtr;
-	uint32_t rxBufferAPtr;
-	uint32_t txBufferBPtr;
-	uint32_t rxBufferBPtr;
-	uint32_t currentWriteAddress;
+	volatile uint32_t txBufferAPtr;
+	volatile uint32_t rxBufferAPtr;
+	volatile uint32_t txBufferBPtr;
+	volatile uint32_t rxBufferBPtr;
+	volatile uint32_t currentWriteAddress;
 } flash_info_record;
 
 extern DMA_HandleTypeDef dma_flash_rx;

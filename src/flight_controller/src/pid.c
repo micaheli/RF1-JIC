@@ -163,9 +163,9 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 		usedFlightSetPoints[2] = flightSetPoints[2];
 	}
 
-	//usedFlightSetPoints[0] = flightSetPoints[0];
-	//usedFlightSetPoints[1] = flightSetPoints[1];
-	//usedFlightSetPoints[2] = flightSetPoints[2];
+//	usedFlightSetPoints[0] = flightSetPoints[0];
+//	usedFlightSetPoints[1] = flightSetPoints[1];
+//	usedFlightSetPoints[2] = flightSetPoints[2];
 
 	for (axis = 2; axis >= 0; --axis) {
 
@@ -186,7 +186,7 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 			// calculate Ki
 			if ( fullKiLatched ) {
 
-				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * pidsUsed[axis].ki, -0.212121f, 0.212121f); //prevent insane windup
+				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * pidsUsed[axis].ki, -0.312121f, 0.312121f); //prevent insane windup
 
 				if ( actuatorRange > .95 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
 					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
@@ -212,7 +212,7 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 
 			InlineUpdateWitchcraft(pidsUsed);
 
-			flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -0.3510f, 0.3510f);
+			flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -0.312121f, 0.312121f);
 			// calculate Kd ////////////////////////// ^
 
 	    }

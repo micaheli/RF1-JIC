@@ -1,6 +1,6 @@
 #pragma once
 
-extern uint32_t systemUsTicks;
+extern volatile uint32_t systemUsTicks;
 
 uint32_t InlineMillis(void);
 uint32_t Micros(void);
