@@ -287,7 +287,7 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
 	//modulus work, &ing doesn't
-	if (--loopCounter == 0) {
+	if (loopCounter-- == 0) {
 		loopCounter=khzDivider;
 	//if ( (loopCounter-- % khzDivider)  == 0 ) { //this code runs at 1 KHz by checking the loop counter against the khzDivider bit set in InitPid();
 		//if ( loopCounter-- & khzDivider ) { //this code runs at 1 KHz by checking the loop counter against the khzDivider bit set in InitPid();

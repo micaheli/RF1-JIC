@@ -84,7 +84,7 @@ bool accgyroInit(loopCtrl_e loopCtrl)
 void GYRO_EXTI_IRQHandler(void)
 {
 
-	static uint32_t loopCounter = 429496729U;
+	static uint32_t gyroLoopCounter = 0;
     HAL_GPIO_EXTI_IRQHandler(GYRO_EXTI_GPIO_Pin);
 
     if (!skipGyro)
@@ -92,8 +92,10 @@ void GYRO_EXTI_IRQHandler(void)
 
     	//update ACC after the rest of the flight code upon the proper denom
     	//modulus works, &ing doesn't
-    	if ( (loopCounter-- % gyroConfig.accDenom) == 0 ) {
+//    	if ( (loopCounter-- % gyroConfig.accDenom) == 0 ) {
         //if (loopCounter-- & gyroConfig.accDenom) {
+    	if (gyroLoopCounter--==0)
+    		gyroLoopCounter = gyroConfig.accDenom;
         	accgyroDeviceReadAccGyro();
         } else {
         	accgyroDeviceReadGyro();
