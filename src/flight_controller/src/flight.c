@@ -17,7 +17,7 @@ uint32_t boardOrientation1 = 0;
 uint32_t RfblDisasterPreventionCheck = 1;
 
 uint32_t counterFish = 0;
-volatile uint32_t loopCounter = 429496729U;
+uint32_t loopCounter = 0;
 float accCompAccTrust, accCompGyroTrust;
 
 int SetCalibrate1(void) {
@@ -287,7 +287,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
 	//modulus work, &ing doesn't
-	if ( (loopCounter-- % khzDivider)  == 0 ) { //this code runs at 1 KHz by checking the loop counter against the khzDivider bit set in InitPid();
+	if (--loopCounter == 0) {
+		loopCounter=khzDivider;
+	//if ( (loopCounter-- % khzDivider)  == 0 ) { //this code runs at 1 KHz by checking the loop counter against the khzDivider bit set in InitPid();
 		//if ( loopCounter-- & khzDivider ) { //this code runs at 1 KHz by checking the loop counter against the khzDivider bit set in InitPid();
 
 		CheckFailsafe();
