@@ -20,11 +20,11 @@ void DisableLogging(void) {
 }
 
 inline void InlineWrite16To8 (int16_t data) {
-	DumbWriteToFlash(  (int8_t)( (data & 0xff00) >>  8) );
-	DumbWriteToFlash(  (int8_t)(data & 0x00ff) );
+	DumbWriteToFlash(  (uint8_t)( (data & 0xff00) >>  8) );
+	DumbWriteToFlash(  (uint8_t)(data & 0x00ff) );
 }
 
-inline void DumbWriteToFlash (int8_t data) {
+inline void DumbWriteToFlash (uint8_t data) {
 
 	if (flashInfo.bufferStatus == BUFFER_STATUS_FILLING_A) {
 
@@ -46,7 +46,7 @@ inline void DumbWriteToFlash (int8_t data) {
 
 		//check if buffer is full
 		if (flashInfo.txBufferBPtr > FLASH_CHIP_BUFFER_WRITE_DATA_END) { //filled buffer
-			M25p16DmaWritePage(flashInfo.currentWriteAddress, flashInfo.txBufferA, flashInfo.rxBufferA); //write buffer to flash using DMA
+			M25p16DmaWritePage(flashInfo.currentWriteAddress, flashInfo.txBufferB, flashInfo.rxBufferB); //write buffer to flash using DMA
 			flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
 			flashInfo.txBufferBPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 			flashInfo.bufferStatus = BUFFER_STATUS_FILLING_A;
@@ -61,33 +61,54 @@ inline void DumbWriteToFlash (int8_t data) {
 
 void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
 
+	static uint16_t iteration = 0;
+
 	if (curvedRcCommandF[AUX2] > 1500) {
 		ledStatus.status = LEDS_FAST_BLINK;
 		LoggingEnabled = 1;
-	} else {
+	} else if (curvedRcCommandF[AUX2] > 1000) {
 		ledStatus.status = LEDS_SLOW_BLINK;
 		LoggingEnabled = 0;
+		firstLogging = 1;
 	}
+
 
 	if ( (LoggingEnabled) && (flashInfo.enabled) ) {
 
+		ledStatus.status = LEDS_FAST_BLINK;
 		if (firstLogging) {
 
 			firstLogging = 0;
 
+			flashInfo.txBufferAPtr=0;
+			flashInfo.rxBufferAPtr=0;
+			flashInfo.txBufferBPtr=0;
+			flashInfo.rxBufferBPtr=0;
+			flashInfo.bufferStatus = BUFFER_STATUS_FILLING_A;
+			bzero(flashInfo.txBufferA, FLASH_CHIP_BUFFER_SIZE);
+
+			DumbWriteToFlash(  'i' );
+			DumbWriteToFlash(  ';' );
+
 			DumbWriteToFlash(  'y' );
 			DumbWriteToFlash(  'p' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'y' );
 			DumbWriteToFlash(  'i' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'y' );
 			DumbWriteToFlash(  'd' );
+			DumbWriteToFlash(  ';' );
 
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'p' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'i' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'd' );
+			DumbWriteToFlash(  ';' );
 
 			DumbWriteToFlash(  'p' );
 			DumbWriteToFlash(  'p' );
@@ -98,21 +119,32 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
 
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'y' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'r' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  'p' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  'r' );
 			DumbWriteToFlash(  't' );
+			DumbWriteToFlash(  ';' );
 
 			DumbWriteToFlash(  's' );
 			DumbWriteToFlash(  'y' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  's' );
 			DumbWriteToFlash(  'r' );
+			DumbWriteToFlash(  ';' );
 			DumbWriteToFlash(  's' );
 			DumbWriteToFlash(  'p' );
+			DumbWriteToFlash(  ';' );
+
 
 		} else {
+
+
+			DumbWriteToFlash(  iteration++ );
 
 			InlineWrite16To8(  (int16_t)(flightPids[YAW].kp   * 10000) );
 			InlineWrite16To8(  (int16_t)(flightPids[YAW].ki   * 10000) );
@@ -123,15 +155,19 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
 			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kp * 10000) );
 			InlineWrite16To8(  (int16_t)(flightPids[PITCH].ki * 10000) );
 			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kd * 10000) );
+
 			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[YAW] * 10000) );
 			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[ROLL] * 10000) );
 			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[PITCH] * 10000) );
 			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[THROTTLE] * 10000) );
+
 			InlineWrite16To8(  (int16_t)(flightSetPoints[YAW] * 10000) );
 			InlineWrite16To8(  (int16_t)(flightSetPoints[ROLL] * 10000) );
 			InlineWrite16To8(  (int16_t)(flightSetPoints[PITCH] * 10000) );
 
 		}
 
+	} else {
+		ledStatus.status = LEDS_SLOW_BLINK;
 	}
 }

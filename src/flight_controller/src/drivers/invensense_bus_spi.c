@@ -91,7 +91,9 @@ void GYRO_EXTI_IRQHandler(void)
     {
 
     	//update ACC after the rest of the flight code upon the proper denom
-        if (loopCounter-- & gyroConfig.accDenom) {
+    	//modulus works, &ing doesn't
+    	if ( (loopCounter-- % gyroConfig.accDenom) == 0 ) {
+        //if (loopCounter-- & gyroConfig.accDenom) {
         	accgyroDeviceReadAccGyro();
         } else {
         	accgyroDeviceReadGyro();

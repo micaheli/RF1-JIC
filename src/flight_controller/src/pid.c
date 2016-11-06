@@ -13,7 +13,7 @@ pid_terms  pidsUsed[AXIS_NUMBER];
 float dT; //8KHz
 uint32_t uhohNumber = 4000;
 uint32_t uhOhRecover = 0;
-uint32_t khzDivider = 0;
+volatile uint32_t khzDivider = 0;
 
 /*
  *     LOOP_L1,

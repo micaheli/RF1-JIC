@@ -58,17 +58,15 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) 
 
 	//rx buffer is just used as a dummy, we can completely ignore it
 
-	WriteEnableDataFlash();
-
   	txBuffer[0] = M25P16_PAGE_PROGRAM;
   	txBuffer[1] = ((address >> 16) & 0xFF);
   	txBuffer[2] = ((address >> 8) & 0xFF);
   	txBuffer[3] = (address & 0xFF);
 
-  	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
-	flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
-
 	if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
+		WriteEnableDataFlash();
+		inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
+		flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
 		FlashChipReadWriteDataSpiDma(txBuffer, rxBuffer, FLASH_CHIP_BUFFER_SIZE);
 	}
 
@@ -298,7 +296,7 @@ int FindFirstEmptyPage(void) {
 			allFFs = 1;
 
 			for (y=0;y<flashInfo.pageSize;y++) { //check if page is empty, all 0xFF's
-				if (flashInfo.rxBufferA[y] != 0xFF)
+				if (flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+y] != 0xFF)
 					allFFs = 0; //any non FF's will set this to 0.
 			}
 
@@ -475,17 +473,20 @@ int MassEraseDataFlash(int blocking) {
 		HAL_SPI_Transmit(&flash_spi, c, 1, 100);
 		inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 
+		flashInfo.currentWriteAddress = 0;
 		if (blocking) {
 			blocking = 0;
 			while ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
 				DelayMs(1);
 				blocking++;
-				if (blocking == 40000)
+				if (blocking == 80000)
 					return 0;
 			}
+			flashInfo.currentWriteAddress = 0;
 			return 1;
 		} else {
 			if ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
+				flashInfo.currentWriteAddress = 0;
 				return 1;
 			}
 		}

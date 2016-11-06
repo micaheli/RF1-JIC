@@ -28,6 +28,17 @@ void AddVariable(char *variableName, void *VariableLocation, uint32_t variableTy
 main_config mainConfig;
 //airbot revolt is CW0, dji revolt and revo is CW270
 
+static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+static void EncodeBlock( unsigned char *in, unsigned char *out, int len )
+{
+   out[0] = (unsigned char) cb64[ (int)(in[0] >> 2) ];
+   out[1] = (unsigned char) cb64[ (int)(((in[0] & 0x03) << 4) | ((in[1] & 0xf0) >> 4)) ];
+   out[2] = (unsigned char) (len > 1 ? cb64[ (int)(((in[1] & 0x0f) << 2) | ((in[2] & 0xc0) >> 6)) ] : '=');
+   out[3] = (unsigned char) (len > 2 ? cb64[ (int)(in[2] & 0x3f) ] : '=');
+}
+
+
 const config_variables_rec valueTable[] = {
 
 		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,				0, MIXER_END, MIXER_X1234, "" },
@@ -617,7 +628,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("startlog", inString))
 		{
 			if (flashInfo.enabled) {
-				EnableLogging();
+				curvedRcCommandF[AUX2] = 1600;
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				memcpy(rf_custom_out_buffer, "loggingstarted", sizeof("loggingstarted"));
 				RfCustomReply(rf_custom_out_buffer);
@@ -631,7 +642,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("endlog", inString))
 		{
 			if (flashInfo.enabled) {
-				DisableLogging();
+				curvedRcCommandF[AUX2] = 1200;
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				memcpy(rf_custom_out_buffer, "loggingended", sizeof("loggingended"));
 				RfCustomReply(rf_custom_out_buffer);
@@ -642,56 +653,88 @@ void ProcessCommand(char *inString)
 				RfCustomReply(rf_custom_out_buffer);
 			}
 		}
-	else if (!strcmp("downloadflightlog", inString))
+	else if ( (!strcmp("downloadflightlog", inString)) || (!strcmp("dlb", inString)) || (!strcmp("dl", inString)) )
 		{
+			int base64Encode = 0;
+
+			args = StripSpaces(args);
+			if (!strcmp("b64", args))
+				base64Encode = 1;
+
+			if (!strcmp("dlb", inString))
+				base64Encode = 1;
+
 			if (flashInfo.enabled) {
 
-				args = StripSpaces(args);
-
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "downloadflightlogstarted", sizeof("downloadflightlogstarted"));
-				RfCustomReply(rf_custom_out_buffer);
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, 63, "%d", flashInfo.totalSize);
-				RfCustomReply(rf_custom_out_buffer);
-
-				if ( M25p16ReadPage( 0, flashInfo.txBufferA, flashInfo.rxBufferA) ) {
+				if(flashInfo.currentWriteAddress < 256) {
 
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+0], 63);
+					memcpy(rf_custom_out_buffer, "flightlogempty", sizeof("flightlogempty"));
 					RfCustomReply(rf_custom_out_buffer);
-
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+63], 63);
-					RfCustomReply(rf_custom_out_buffer);
-
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+126], 63);
-					RfCustomReply(rf_custom_out_buffer);
-
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+189], 63);
-					RfCustomReply(rf_custom_out_buffer);
-
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+252], 4);
-					RfCustomReply(rf_custom_out_buffer);
-
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "downloadflightlogfinished", sizeof("downloadflightlogfinished"));
-					RfCustomReply(rf_custom_out_buffer);
-
 
 				} else {
 
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "flashreadfailed", sizeof("flashreadfailed"));
+					memcpy(rf_custom_out_buffer, "downloadflightlogstarted", sizeof("downloadflightlogstarted"));
 					RfCustomReply(rf_custom_out_buffer);
 
-				}
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					snprintf(rf_custom_out_buffer, 63, "%u", (unsigned int)flashInfo.currentWriteAddress);
+					RfCustomReply(rf_custom_out_buffer);
 
+					uint8_t dataArray[45];
+					uint32_t smallerPointer = 0;
+					uint32_t pagesToSend = (flashInfo.currentWriteAddress / flashInfo.pageSize) + 1;
+
+					for (uint32_t y = 0;y<pagesToSend;y++) {
+
+						if ( M25p16ReadPage( (y * flashInfo.pageSize), flashInfo.txBufferA, flashInfo.rxBufferA) ) {
+
+							for (uint32_t x=0;x<256;x++) {
+
+								if (base64Encode) {
+
+									dataArray[smallerPointer++] = flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+x];
+									if (smallerPointer > 44) {
+
+										//base64 encode
+										for (smallerPointer = 0; smallerPointer < 15; smallerPointer++) {
+											EncodeBlock( (unsigned char *)( dataArray + (smallerPointer*3) ), (unsigned char *)( rf_custom_out_buffer + (smallerPointer*4) ), 4);
+										}
+
+										RfCustomReply(rf_custom_out_buffer);
+										smallerPointer = 0;
+										bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+										bzero(dataArray,sizeof(dataArray));
+									}
+
+								} else {
+
+									rf_custom_out_buffer[smallerPointer++] = flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+x];
+									if (smallerPointer > 63) {
+										RfCustomReply(rf_custom_out_buffer);
+										smallerPointer = 0;
+										bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+									}
+
+								}
+
+							}
+
+						} else {
+
+							bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+							memcpy(rf_custom_out_buffer, "flashreadfailed", sizeof("flashreadfailed"));
+							RfCustomReply(rf_custom_out_buffer);
+
+						}
+
+					}
+
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					memcpy(rf_custom_out_buffer, "downloadflightlogfinished", sizeof("downloadflightlogfinished"));
+					RfCustomReply(rf_custom_out_buffer);
+				}
 			} else {
 
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
