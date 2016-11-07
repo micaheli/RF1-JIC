@@ -24,9 +24,9 @@
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
-#ifdef stm32f405xx
+#ifdef STM32F405xx
 	#include "REVOLT"
-#elif defined(stm32f446xx)
+#elif defined(STM32F446xx)
 	#include "SPMFC400.h"
 #endif
 

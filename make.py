@@ -176,10 +176,18 @@ def configure_target(TARGET):
     elif TARGET == "stm32f446xx_rfbl":
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F446xx"
-        TARGET_SCRIPT = "stm32_flash_f446.ld"
+        TARGET_SCRIPT = "stm32_flash_f446_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Os"
+
+    elif TARGET == "stm32f446xx_rfbll":
+        PROJECT = "recovery_loader"
+        TARGET_DEVICE = "STM32F446xx"
+        TARGET_SCRIPT = "stm32_flash_f446_recovery.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Og"
     
     else:
         print("ERROR: NOT VALID TARGET: ", TARGET, file=sys.stderr)

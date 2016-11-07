@@ -12,37 +12,37 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
         /* Peripheral clock enable */
         __HAL_RCC_SPI1_CLK_ENABLE();
 
-	    HAL_GPIO_DeInit(board.spis[0].NSSPort, board.spis[0].NSSPin);
-	    HAL_GPIO_DeInit(board.spis[0].SCKPort, board.spis[0].SCKPin);
-	    HAL_GPIO_DeInit(board.spis[0].MISOPort, board.spis[0].MISOPin);
-	    HAL_GPIO_DeInit(board.spis[0].MOSIPort, board.spis[0].MOSIPin);
+	    HAL_GPIO_DeInit(SPI1_NSS_GPIO_PORT, SPI1_NSS_PIN);
+	    HAL_GPIO_DeInit(SPI1_SCK_GPIO_PORT, SPI1_SCK_PIN);
+	    HAL_GPIO_DeInit(SPI1_MISO_GPIO_PORT, SPI1_MISO_PIN);
+	    HAL_GPIO_DeInit(SPI1_MOSI_GPIO_PORT, SPI1_MOSI_PIN);
 
-	    GPIO_InitStruct.Pin = board.spis[0].NSSPin;
+	    GPIO_InitStruct.Pin = SPI1_NSS_PIN;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-	    HAL_GPIO_Init(board.spis[0].NSSPort, &GPIO_InitStruct);
+	    HAL_GPIO_Init(SPI1_NSS_GPIO_PORT, &GPIO_InitStruct);
 
-	    GPIO_InitStruct.Pin = board.spis[0].SCKPin;
+	    GPIO_InitStruct.Pin = SPI1_SCK_PIN;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_PULLDOWN;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-	    GPIO_InitStruct.Alternate = board.spis[0].SCKAlternate;
-	    HAL_GPIO_Init(board.spis[0].SCKPort, &GPIO_InitStruct);
+	    GPIO_InitStruct.Alternate = SPI1_SCK_AF;
+	    HAL_GPIO_Init(SPI1_SCK_GPIO_PORT, &GPIO_InitStruct);
 
-	    GPIO_InitStruct.Pin = board.spis[0].MISOPin;
+	    GPIO_InitStruct.Pin = SPI1_MISO_PIN;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-	    GPIO_InitStruct.Alternate = board.spis[0].MISOAlternate;
-	    HAL_GPIO_Init(board.spis[0].MISOPort, &GPIO_InitStruct);
+	    GPIO_InitStruct.Alternate = SPI1_MISO_AF;
+	    HAL_GPIO_Init(SPI1_MISO_GPIO_PORT, &GPIO_InitStruct);
 
-	    GPIO_InitStruct.Pin = board.spis[0].MOSIPin;
+	    GPIO_InitStruct.Pin = SPI1_MOSI_PIN;
 	    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 	    GPIO_InitStruct.Pull = GPIO_NOPULL;
 	    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-	    GPIO_InitStruct.Alternate = board.spis[0].MOSIAlternate;
-	    HAL_GPIO_Init(board.spis[0].MOSIPort, &GPIO_InitStruct);
+	    GPIO_InitStruct.Alternate = SPI1_MOSI_AF;
+	    HAL_GPIO_Init(SPI1_MOSI_GPIO_PORT, &GPIO_InitStruct);
 
         /* Peripheral DMA init*/
 
@@ -62,10 +62,10 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
         __HAL_LINKDMA(hspi, hdmarx, dma_gyro_rx);
 
-	    dma_gyro_tx.Instance = board.spis[0].TXDMAStream;
-	    dma_gyro_tx.Init.Channel = board.spis[0].TXDMAChannel;
-	    dma_gyro_tx.Init.Direction = board.spis[0].TXDMADirection;
-	    dma_gyro_tx.Init.PeriphInc = board.spis[0].TXDMAPeriphInc;
+	    dma_gyro_tx.Instance = SPI1_TX_DMA_STREAM;
+	    dma_gyro_tx.Init.Channel = SPI1_TX_DMA_CHANNEL;
+	    dma_gyro_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+	    dma_gyro_tx.Init.PeriphInc = DMA_PINC_DISABLE;
 	    dma_gyro_tx.Init.MemInc = board.spis[0].TXDMAMemInc;
 	    dma_gyro_tx.Init.PeriphDataAlignment = board.spis[0].TXDMAPeriphDataAlignment;
 	    dma_gyro_tx.Init.MemDataAlignment = board.spis[0].TXDMAMemDataAlignment;
@@ -239,10 +239,10 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
         /* Peripheral clock disable */
         __HAL_RCC_SPI1_CLK_DISABLE();
 
-	    HAL_GPIO_DeInit(board.spis[0].NSSPort, board.spis[0].NSSPin);
-	    HAL_GPIO_DeInit(board.spis[0].SCKPort, board.spis[0].SCKPin);
-	    HAL_GPIO_DeInit(board.spis[0].MISOPort, board.spis[0].MISOPin);
-	    HAL_GPIO_DeInit(board.spis[0].MOSIPort, board.spis[0].MOSIPin);
+	    HAL_GPIO_DeInit(SPI1_NSS_GPIO_PORT, SPI1_NSS_PIN);
+	    HAL_GPIO_DeInit(SPI1_SCK_GPIO_PORT, SPI1_SCK_PIN);
+	    HAL_GPIO_DeInit(SPI1_MISO_GPIO_PORT, SPI1_MISO_PIN);
+	    HAL_GPIO_DeInit(SPI1_MOSI_GPIO_PORT, SPI1_MOSI_PIN);
 
         /* Peripheral DMA DeInit*/
         HAL_DMA_DeInit(hspi->hdmarx);

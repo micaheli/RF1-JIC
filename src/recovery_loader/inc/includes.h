@@ -25,9 +25,18 @@ void ErrorHandler(void);
 
 
 //revolt and revo hard code
+#ifdef STM32F405xx
 #define RFBL_GPIO1				GPIOC
 #define RFBL_PIN1				GPIO_PIN_7
 #define RFBL_GPIO2				GPIOC
 #define RFBL_PIN2				GPIO_PIN_6
 #define LED1_GPIO_Port          GPIOB
 #define LED1_GPIO_Pin           GPIO_PIN_5
+#endif#ifdef STM32F446xx
+#define RFBL_GPIO1				GPIOC
+#define RFBL_PIN1				GPIO_PIN_7
+#define RFBL_GPIO2				GPIOC
+#define RFBL_PIN2				GPIO_PIN_6
+#define LED1_GPIO_Port          GPIOA
+#define LED1_GPIO_Pin           GPIO_PIN_15
+#endif
