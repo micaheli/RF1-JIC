@@ -37,10 +37,10 @@ void SystemClock_Config(void)
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLM = board.fc_pllm;
-	RCC_OscInitStruct.PLL.PLLN = board.fc_plln;
-	RCC_OscInitStruct.PLL.PLLP = board.fc_pllp;
-	RCC_OscInitStruct.PLL.PLLQ = board.fc_pllq;
+	RCC_OscInitStruct.PLL.PLLM = FC_PLLM;
+	RCC_OscInitStruct.PLL.PLLN = FC_PLLN;
+	RCC_OscInitStruct.PLL.PLLP = FC_PLLP;
+	RCC_OscInitStruct.PLL.PLLQ = FC_PLLQ;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         while(1);
     }
