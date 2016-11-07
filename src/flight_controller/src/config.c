@@ -653,7 +653,23 @@ void ProcessCommand(char *inString)
 				RfCustomReply(rf_custom_out_buffer);
 			}
 		}
-	else if ( (!strcmp("downloadflightlog", inString)) || (!strcmp("dlb", inString)) || (!strcmp("dl", inString)) )
+	else if (!strcmp("dlflsize", inString))
+		{
+			if (flashInfo.enabled) {
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, 63, "%u", (unsigned int)flashInfo.currentWriteAddress);
+				RfCustomReply(rf_custom_out_buffer);
+
+			} else {
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, 63, "%u", (unsigned int)0);
+				RfCustomReply(rf_custom_out_buffer);
+
+			}
+		}
+	else if ( (!strcmp("downloadflightlog", inString)) || (!strcmp("dlb", inString)) || (!strcmp("dlfl", inString)) )
 		{
 			int base64Encode = 0;
 
@@ -673,14 +689,6 @@ void ProcessCommand(char *inString)
 					RfCustomReply(rf_custom_out_buffer);
 
 				} else {
-
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "downloadflightlogstarted", sizeof("downloadflightlogstarted"));
-					RfCustomReply(rf_custom_out_buffer);
-
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					snprintf(rf_custom_out_buffer, 63, "%u", (unsigned int)flashInfo.currentWriteAddress);
-					RfCustomReply(rf_custom_out_buffer);
 
 					uint8_t dataArray[45];
 					uint32_t smallerPointer = 0;
@@ -731,9 +739,6 @@ void ProcessCommand(char *inString)
 
 					}
 
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "downloadflightlogfinished", sizeof("downloadflightlogfinished"));
-					RfCustomReply(rf_custom_out_buffer);
 				}
 			} else {
 

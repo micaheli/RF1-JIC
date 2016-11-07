@@ -94,7 +94,7 @@ void GYRO_EXTI_IRQHandler(void)
     	//modulus works, &ing doesn't
 //    	if ( (loopCounter-- % gyroConfig.accDenom) == 0 ) {
         //if (loopCounter-- & gyroConfig.accDenom) {
-    	if (gyroLoopCounter--==0)
+    	if (gyroLoopCounter--==0) {
     		gyroLoopCounter = gyroConfig.accDenom;
         	accgyroDeviceReadAccGyro();
         } else {
