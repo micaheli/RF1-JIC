@@ -46,9 +46,9 @@ void InitActuators(void) {
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
 	InitActuatorTimer(board.motors[0].port, board.motors[0].pin, board.motors[0].timer, board.motors[0].timChannel, board.motors[0].AF, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
-	InitActuatorTimer(board.motors[2].port, board.motors[1].pin, board.motors[1].timer, board.motors[1].timChannel, board.motors[1].AF, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
-	InitActuatorTimer(board.motors[3].port, board.motors[2].pin, board.motors[2].timer, board.motors[2].timChannel, board.motors[2].AF, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
-	InitActuatorTimer(board.motors[4].port, board.motors[3].pin, board.motors[3].timer, board.motors[3].timChannel, board.motors[3].AF, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
+	InitActuatorTimer(board.motors[1].port, board.motors[1].pin, board.motors[1].timer, board.motors[1].timChannel, board.motors[1].AF, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
+	InitActuatorTimer(board.motors[2].port, board.motors[2].pin, board.motors[2].timer, board.motors[2].timChannel, board.motors[2].AF, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
+	InitActuatorTimer(board.motors[3].port, board.motors[3].pin, board.motors[3].timer, board.motors[3].timChannel, board.motors[3].AF, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
 
 
 }
@@ -127,17 +127,25 @@ inline void OutputActuators(float motorOutput[], float servoOutput[]) {
 			pulseValue = idlePulseValue;
 		}
 
-		board.motors[0].timCCR = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + pulseValue;
-		board.motors[1].timCCR = (uint32_t)((float)motorOutput[1] * (float)pulseValueRange) + pulseValue;
-		board.motors[2].timCCR = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + pulseValue;
-		board.motors[3].timCCR = (uint32_t)((float)motorOutput[3] * (float)pulseValueRange) + pulseValue;
+		//board.motors[0].timCCR = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + pulseValue;
+		//board.motors[1].timCCR = (uint32_t)((float)motorOutput[1] * (float)pulseValueRange) + pulseValue;
+		//board.motors[2].timCCR = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + pulseValue;
+		//board.motors[3].timCCR = (uint32_t)((float)motorOutput[3] * (float)pulseValueRange) + pulseValue;
+		MOTOR1_TIM_CCR = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + pulseValue;
+		MOTOR2_TIM_CCR = (uint32_t)((float)motorOutput[1] * (float)pulseValueRange) + pulseValue;
+		MOTOR3_TIM_CCR = (uint32_t)((float)motorOutput[3] * (float)pulseValueRange) + pulseValue;
+		MOTOR4_TIM_CCR = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + pulseValue;
 
 	} else {
 
-		board.motors[0].timCCR = disarmPulseValue;
-		board.motors[1].timCCR = disarmPulseValue;
-		board.motors[2].timCCR = disarmPulseValue;
-		board.motors[3].timCCR = disarmPulseValue;
+		//board.motors[0].timCCR = disarmPulseValue;
+		//board.motors[1].timCCR = disarmPulseValue;
+		//board.motors[2].timCCR = disarmPulseValue;
+		//board.motors[3].timCCR = disarmPulseValue;
+		MOTOR1_TIM_CCR = disarmPulseValue;
+		MOTOR2_TIM_CCR = disarmPulseValue;
+		MOTOR3_TIM_CCR = disarmPulseValue;
+		MOTOR4_TIM_CCR = disarmPulseValue;
 
 	}
 
@@ -145,8 +153,13 @@ inline void OutputActuators(float motorOutput[], float servoOutput[]) {
 }
 
 void ZeroActuators(void) {
-	board.motors[0].timCCR = disarmPulseValue;
-	board.motors[1].timCCR = disarmPulseValue;
-	board.motors[2].timCCR = disarmPulseValue;
-	board.motors[3].timCCR = disarmPulseValue;
+	//board.motors[0].timCCR = disarmPulseValue;
+	//board.motors[1].timCCR = disarmPulseValue;
+	//board.motors[2].timCCR = disarmPulseValue;
+	//board.motors[3].timCCR = disarmPulseValue;
+
+	MOTOR1_TIM_CCR = disarmPulseValue;
+	MOTOR2_TIM_CCR = disarmPulseValue;
+	MOTOR3_TIM_CCR = disarmPulseValue;
+	MOTOR4_TIM_CCR = disarmPulseValue;
 }
