@@ -45,10 +45,11 @@ void InitActuators(void) {
 	walledPulseValue = (uint32_t) (walledUs/pwmUsPerTimerStep);
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
-	InitActuatorTimer(GPIOB, GPIO_PIN_0, TIM3, TIM_CHANNEL_3, GPIO_AF2_TIM3, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz );
-	InitActuatorTimer(GPIOB, GPIO_PIN_1, TIM3, TIM_CHANNEL_4, GPIO_AF2_TIM3, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz );
-	InitActuatorTimer(GPIOA, GPIO_PIN_3, TIM9, TIM_CHANNEL_2, GPIO_AF3_TIM9, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz );
-	InitActuatorTimer(GPIOA, GPIO_PIN_2, TIM2, TIM_CHANNEL_3, GPIO_AF1_TIM2, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz );
+	InitActuatorTimer(GPIOB, GPIO_PIN_0, TIM3, TIM_CHANNEL_3, GPIO_AF2_TIM3, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz ); //DMA1 Ch5, St7
+	InitActuatorTimer(GPIOB, GPIO_PIN_1, TIM3, TIM_CHANNEL_4, GPIO_AF2_TIM3, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz ); //DMA1 Ch5, St2
+	InitActuatorTimer(GPIOA, GPIO_PIN_3, TIM2, TIM_CHANNEL_4, GPIO_AF1_TIM2, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz ); //DMA1 Ch3, St6
+	InitActuatorTimer(GPIOA, GPIO_PIN_2, TIM2, TIM_CHANNEL_3, GPIO_AF1_TIM2, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz ); //DMA1 Ch3, St1
+
 
 }
 
