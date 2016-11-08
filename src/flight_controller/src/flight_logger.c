@@ -1,12 +1,22 @@
 #include "includes.h"
 
+
+#define UPDATE_BB_CHAR_STRING_SIZE 10 //good for 100 days of logging
+#define UPDATE_BB_TOTAL_HEADER_SIZE 256 //good for 100 days of logging
+#define UPDATE_BB_DATA_SIZE 32 //good for 100 days of logging
+#define HEADER "STARTLOG\n" \
+		"VER=001\n\0"
+
+
 uint32_t LoggingEnabled;
 uint32_t firstLogging;
+uint32_t flashAlign;
 
 int InitFlightLogger(void) {
 
 	LoggingEnabled = 0;
 	firstLogging = 1;
+	flashAlign = 0;
 	return 1;
 
 }
@@ -60,10 +70,31 @@ inline void DumbWriteToFlash (uint8_t data) {
 
 }
 
+inline int DumbWriteString(char *string, int sizeOfString) {
+
+	static int x;
+
+	for (x=0; x < sizeOfString; x++)
+		DumbWriteToFlash( string[x] );
+
+	return sizeOfString;
+}
+
+#define STARTLOG "STARTLOG"
+#define ITERATION "iteration"
+
+inline int () {
+	if ((UPDATE_BB_TOTAL_HEADER_SIZE - ( flashInfo.currentWriteAddress % UPDATE_BB_TOTAL_HEADER_SIZE)) < UPDATE_BB_TOTAL_HEADER_SIZE)
+		flashInfo.currentWriteAddress += UPDATE_BB_TOTAL_HEADER_SIZE - ( flashInfo.currentWriteAddress % UPDATE_BB_TOTAL_HEADER_SIZE);
+
+	return
+}
 
 void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
 
 	static uint16_t iteration = 0;
+	int bytesSent, finishX;
+	char charString[UPDATE_BB_CHAR_STRING_SIZE];
 
 	if (curvedRcCommandF[AUX2] < 0) {
 		ledStatus.status = LEDS_FAST_BLINK;
@@ -80,155 +111,66 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
 		ledStatus.status = LEDS_FAST_BLINK;
 		if (firstLogging) {
 
+			//make sure flashInfo.currentWriteAddress is aligned to a page (multiple of 256)
+
+			if ((UPDATE_BB_TOTAL_HEADER_SIZE - ( flashInfo.currentWriteAddress % UPDATE_BB_TOTAL_HEADER_SIZE)) < UPDATE_BB_TOTAL_HEADER_SIZE)
+				flashInfo.currentWriteAddress += UPDATE_BB_TOTAL_HEADER_SIZE - ( flashInfo.currentWriteAddress % UPDATE_BB_TOTAL_HEADER_SIZE);
+
+
 			firstLogging = 0;
 
-			flashInfo.txBufferAPtr=0;
-			flashInfo.rxBufferAPtr=0;
-			flashInfo.txBufferBPtr=0;
-			flashInfo.rxBufferBPtr=0;
+			flashInfo.txBufferAPtr=FLASH_CHIP_BUFFER_WRITE_DATA_START;
+			flashInfo.rxBufferAPtr=FLASH_CHIP_BUFFER_READ_DATA_START;
+			flashInfo.txBufferBPtr=FLASH_CHIP_BUFFER_WRITE_DATA_START;
+			flashInfo.rxBufferBPtr=FLASH_CHIP_BUFFER_READ_DATA_START;
 			flashInfo.bufferStatus = BUFFER_STATUS_FILLING_A;
 			bzero(flashInfo.txBufferA, FLASH_CHIP_BUFFER_SIZE);
 			bzero(flashInfo.txBufferB, FLASH_CHIP_BUFFER_SIZE);
 
-			//name,
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
 
-			DumbWriteToFlash(  'i' );
-			DumbWriteToFlash(  't' );
-			DumbWriteToFlash(  'u' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
+			bytesSent = 0;
 
-			DumbWriteToFlash(  'y' );
-			DumbWriteToFlash(  'p' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  'y' );
-			DumbWriteToFlash(  'i' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  'y' );
-			DumbWriteToFlash(  'd' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-
-			DumbWriteToFlash(  'r' );
-			DumbWriteToFlash(  'p' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  'r' );
-			DumbWriteToFlash(  'i' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  'r' );
-			DumbWriteToFlash(  'd' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-
-			DumbWriteToFlash(  'p' );
-			DumbWriteToFlash(  'p' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  'p' );
-			DumbWriteToFlash(  'i' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  'p' );
-			DumbWriteToFlash(  'd' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-
-			DumbWriteToFlash(  'r' );
-			DumbWriteToFlash(  'y' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  'r' );
-			DumbWriteToFlash(  'r' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  'r' );
-			DumbWriteToFlash(  'p' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  'r' );
-			DumbWriteToFlash(  't' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'y' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'r' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'p' );
-			DumbWriteToFlash(  's' );
-			DumbWriteToFlash(  'w' );
-			DumbWriteToFlash(  ';' );
-
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
-			DumbWriteToFlash(  ';' );
+			//start of header
 
 
+
+
+			bytesSent += DumbWriteString(HEADER, strlen(HEADER)+1);
+			//BYTE 256 is a null character
+			//pages are aligned with data at all times if we keep this at 256
+
+			flashInfo.currentWriteAddress += ( UPDATE_BB_TOTAL_HEADER_SIZE - (strlen(HEADER)+1) );
 
 		} else {
 
+			//align data to flash
+			finishX = (flashInfo.currentWriteAddress % UPDATE_BB_DATA_SIZE);
+			if (finishX != 0) {
+				flashInfo.currentWriteAddress += finishX;
+			}
 
-			DumbWriteToFlash(  iteration++ );
+			//pages are aligned with data at all times if we keep this at 256
+			InlineWrite16To8(  (int16_t)(flightPids[YAW].kp   * 10000) ); //2
+			InlineWrite16To8(  (int16_t)(flightPids[YAW].ki   * 10000) ); //4
+			InlineWrite16To8(  (int16_t)(flightPids[YAW].kd   * 10000) ); //6
 
-			InlineWrite16To8(  (int16_t)(flightPids[YAW].kp   * 10000) );
-			InlineWrite16To8(  (int16_t)(flightPids[YAW].ki   * 10000) );
-			InlineWrite16To8(  (int16_t)(flightPids[YAW].kd   * 10000) );
-			InlineWrite16To8(  (int16_t)(flightPids[ROLL].kp  * 10000) );
-			InlineWrite16To8(  (int16_t)(flightPids[ROLL].ki  * 10000) );
-			InlineWrite16To8(  (int16_t)(flightPids[ROLL].kd  * 10000) );
-			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kp * 10000) );
-			InlineWrite16To8(  (int16_t)(flightPids[PITCH].ki * 10000) );
-			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kd * 10000) );
+			InlineWrite16To8(  (int16_t)(flightPids[ROLL].kp  * 10000) ); //8
+			InlineWrite16To8(  (int16_t)(flightPids[ROLL].ki  * 10000) ); //10
+			InlineWrite16To8(  (int16_t)(flightPids[ROLL].kd  * 10000) ); //12
 
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[YAW] * 10000) );
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[ROLL] * 10000) );
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[PITCH] * 10000) );
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[THROTTLE] * 10000) );
+			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kp * 10000) ); //14
+			InlineWrite16To8(  (int16_t)(flightPids[PITCH].ki * 10000) ); //16
+			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kd * 10000) ); //18
 
-			InlineWrite16To8(  (int16_t)(flightSetPoints[YAW] * 10000) );
-			InlineWrite16To8(  (int16_t)(flightSetPoints[ROLL] * 10000) );
-			InlineWrite16To8(  (int16_t)(flightSetPoints[PITCH] * 10000) );
+			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[YAW] * 10000) ); //20
+			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[ROLL] * 10000) ); //22
+			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[PITCH] * 10000) ); //24
+			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[THROTTLE] * 10000) ); //26
+
+			InlineWrite16To8(  (int16_t)(flightSetPoints[YAW] * 10000) ); //28
+			InlineWrite16To8(  (int16_t)(flightSetPoints[ROLL] * 10000) ); //30
+			InlineWrite16To8(  (int16_t)(flightSetPoints[PITCH] * 10000) ); //32
+			//32
 
 		}
 

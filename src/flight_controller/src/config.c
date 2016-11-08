@@ -692,7 +692,7 @@ void ProcessCommand(char *inString)
 
 					uint8_t dataArray[45];
 					uint32_t smallerPointer = 0;
-					uint32_t pagesToSend = (flashInfo.currentWriteAddress / flashInfo.pageSize) + 1;
+					uint32_t pagesToSend = (flashInfo.currentWriteAddress / flashInfo.pageSize);
 
 					for (uint32_t y = 0;y<pagesToSend;y++) {
 
@@ -719,7 +719,7 @@ void ProcessCommand(char *inString)
 								} else {
 
 									rf_custom_out_buffer[smallerPointer++] = flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+x];
-									if (smallerPointer > 63) {
+									if (smallerPointer > 62) {
 										RfCustomReply(rf_custom_out_buffer);
 										smallerPointer = 0;
 										bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
