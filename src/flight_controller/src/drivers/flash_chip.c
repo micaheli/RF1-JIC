@@ -139,18 +139,43 @@ static int M25p16ReadIdSetFlashRecord(void)
 	flashInfo.totalSize = 0;
 	flashInfo.pageSize = 0;
 	flashInfo.status = 0;
+
 	bzero(flashInfo.commandRxBuffer,sizeof(flashInfo.commandRxBuffer));
 	bzero(flashInfo.commandTxBuffer,sizeof(flashInfo.commandTxBuffer));
+/*
 	bzero(flashInfo.txBufferA,sizeof(flashInfo.txBufferA));
 	bzero(flashInfo.rxBufferA,sizeof(flashInfo.rxBufferA));
 	bzero(flashInfo.txBufferB,sizeof(flashInfo.txBufferB));
 	bzero(flashInfo.rxBufferB,sizeof(flashInfo.rxBufferB));
+*/
 
+	/*
+	bzero(flashInfo.txBuffer,sizeof(flashInfo.txBuffer));
+	bzero(flashInfo.rxBuffer,sizeof(flashInfo.rxBuffer));
+*/
+
+	/*
 	flashInfo.bufferStatus = BUFFER_STATUS_FILLING_A;
+
 	flashInfo.txBufferAPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 	flashInfo.txBufferBPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 	flashInfo.rxBufferAPtr = 0;
 	flashInfo.rxBufferBPtr = 0;
+*/
+	for (uint32_t x;x<2;x++)
+	{
+		flashInfo.buffer[x].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
+		flashInfo.buffer[x].rxBufferPtr = 0;
+
+	}
+
+	flashInfo.bufferNum = 0;
+	for (int x=0;x<2;x++)
+	{
+		flashInfo.buffer[x].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
+		flashInfo.buffer[x].rxBufferPtr = 0;
+	}
+
 
     flashInfo.pageSize     = M25P16_PAGESIZE;
 
@@ -281,6 +306,7 @@ int CheckIfFlashBusy(void) {
 }
 
 int FindFirstEmptyPage(void) {
+	buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
 
 	uint32_t x;
 	uint32_t y;
@@ -288,12 +314,12 @@ int FindFirstEmptyPage(void) {
 
 	for (x = 0;x < flashInfo.totalSize;x = x + flashInfo.pageSize) {
 
-		if ( M25p16ReadPage( x, flashInfo.txBufferA, flashInfo.rxBufferA) ) {
+		if ( M25p16ReadPage( x, buffer->txBuffer, buffer->rxBuffer) ) {
 
 			allFFs = 1;
 
 			for (y=0;y<flashInfo.pageSize;y++) { //check if page is empty, all 0xFF's
-				if (flashInfo.rxBufferA[FLASH_CHIP_BUFFER_READ_DATA_START+y] != 0xFF)
+				if (buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+y] != 0xFF)
 					allFFs = 0; //any non FF's will set this to 0.
 			}
 
