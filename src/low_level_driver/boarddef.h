@@ -84,32 +84,8 @@ typedef struct {
 	uint32_t				RXDMAPriority;
 	uint32_t				RXDMAFIFOMode;
 
-//Flash Config
-#define FLASH_SPI					SPI3
-#define FLASH_SPI_CS_GPIO_Pin		GPIO_PIN_3
-#define FLASH_SPI_CS_GPIO_Port		GPIOB
-#define FLASH_SPI_SCK_PIN			GPIO_PIN_10
-#define FLASH_SPI_SCK_GPIO_PORT		GPIOC
-#define FLASH_SPI_SCK_AF			GPIO_AF6_SPI3
-#define FLASH_SPI_MISO_PIN			GPIO_PIN_11
-#define FLASH_SPI_MISO_GPIO_PORT	GPIOC
-#define FLASH_SPI_MISO_AF			GPIO_AF6_SPI3
-#define FLASH_SPI_MOSI_PIN			GPIO_PIN_12
-#define FLASH_SPI_MOSI_GPIO_PORT	GPIOC
-#define FLASH_SPI_MOSI_AF			GPIO_AF6_SPI3
-
-#define FLASH_SPI_BAUD				SPI_BAUDRATEPRESCALER_2
-
-#define FLASH_DMA_TX_IRQn			DMA1_Stream2_IRQn
-#define FLASH_DMA_TX_IRQHandler		DMA1_Stream2_IRQHandler
-#define FLASH_DMA_RX_IRQn			DMA1_Stream5_IRQn
-#define FLASH_DMA_RX_IRQHandler		DMA1_Stream5_IRQHandler
 
 
-//Gyro Config
-#define GYRO_SPI                SPI2
-#define GYRO_SPI_CS_GPIO_Port   GPIOB
-#define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_12
 
 	uint32_t				TXDMA_IRQn;
 	uint32_t				RXDMA_IRQn;
