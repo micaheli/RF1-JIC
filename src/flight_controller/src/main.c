@@ -28,7 +28,8 @@ int main(void)
 
     int32_t count = 16;
 
-	VectorIrqInit(ADDRESS_RFFW_START);
+	//VectorIrqInit(ADDRESS_RFFW_START);
+	VectorIrqInit(ADDRESS_RECOVERY_START);
 
 	//TODO Needs to pull parameters from flash here. For now we use defines
 	getBoardHardwareDefs();
@@ -46,7 +47,7 @@ int main(void)
     InitBuzzer();
     InitLeds();
     InitUsb();
-    InitFlashChip();
+    //InitFlashChip();
     InitFlightLogger();
     InitRcData();
     InitMixer();
@@ -77,19 +78,6 @@ int main(void)
 
     	if (count == -1)
     		count = 16;
-			/*
-	    	if (InlineMillis() > 2000 && calibrated1==0)
-	    	{
-		    	SetCalibrate1();
-		    	calibrated1 = 1;
-	    	}
-	    	if (InlineMillis() > 4000 && calibrated2 == 0)
-	    	{
-		    	if(SetCalibrate2())
-		    		SaveConfig(ADDRESS_CONFIG_START);
-		    	calibrated2 = 1;
-	    	}
-			*/
 
     }
 

@@ -250,8 +250,8 @@ void textMenuUpdate(void)
 	{
 		currentTime = InlineMillis();
 
-		//if (currentTime - toggleTime > 300)
-		//{
+		if (progMode != 0)
+		{
 			//vertical stick
 			if (rxData[2] > 1224 && vStickStatus != 1)
 			{
@@ -296,7 +296,13 @@ void textMenuUpdate(void)
 			{
 				hStickStatus = 0;
 			}
-		//}
+		}
+		else
+		{
+			//have these initialized so nothing happens when entering prog mode for the first time
+			vStickStatus = -1;
+			hStickStatus = -1;
+		}
 						
 
 		if (row >= ROW_MAX)
@@ -306,12 +312,13 @@ void textMenuUpdate(void)
 
 		if (column >= COLUMN_MAX)
 			column = COLUMN_MAX;
-		else if (column < 0)
+		else if (column < 0 )
 		{
 			row = 0;
 			column = 0;
 			columnAxis = 0;
 			progMode = 0;
+			InitPid(); //Set PID's with new config PID's
 		}
 			
 
@@ -343,11 +350,11 @@ void textMenuUpdate(void)
 		}
 		
 		if (row == 4)
-			mainConfig.pidConfig[columnAxis].kp += dataInc * 1;
+			mainConfig.pidConfig[columnAxis].kp += dataInc * 10;
 		if (row == 5)
-			mainConfig.pidConfig[columnAxis].ki += dataInc * 1;
+			mainConfig.pidConfig[columnAxis].ki += dataInc * 10;
 		if (row == 6)
-			mainConfig.pidConfig[columnAxis].kd += dataInc * 1;
+			mainConfig.pidConfig[columnAxis].kd += dataInc * 10;
 		if (row == 7)
 			mainConfig.filterConfig[columnAxis].gyro.r += dataInc * 1;
 		if (row == 8 && column == 1)
