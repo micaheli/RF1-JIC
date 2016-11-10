@@ -25,11 +25,15 @@ enum {
 #define BUFFER_STATUS_FILLING_A 1
 #define BUFFER_STATUS_FILLING_B 2
 
+#define FLASH_DISABLED 0
+#define FLASH_ENABLED 1
+#define FLASH_FULL 2
+
 typedef struct {
 	uint8_t rxBuffer[FLASH_CHIP_BUFFER_SIZE];
 	uint8_t txBuffer[FLASH_CHIP_BUFFER_SIZE];
-	uint32_t txBufferPtr;
-	uint32_t rxBufferPtr;
+	volatile uint32_t txBufferPtr;
+	volatile uint32_t rxBufferPtr;
 } buffer_record;
 
 typedef struct {

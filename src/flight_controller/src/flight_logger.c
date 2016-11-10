@@ -30,31 +30,38 @@ void DisableLogging(void) {
 }
 
 
-inline void FinishPage(void) {
-	for (uint32_t x=0;x<(flashInfo.pageSize - flashInfo.buffer[flashInfo.bufferNum].txBufferPtr);x++)
+ void FinishPage(void) {
+	volatile uint32_t d = 0;
+	uint32_t remaingBytes = (flashInfo.pageSize - (flashInfo.buffer[flashInfo.bufferNum].txBufferPtr - FLASH_CHIP_BUFFER_WRITE_DATA_START) );
+	for (uint32_t x=0;x<remaingBytes;x++)
 	{
 		WriteByteToFlash('\0');
+		d++;
 	}
 }
 
-inline void FinishBlock(uint32_t count) {
-	for (uint32_t x=0;x<count;x++)
-	{
-		WriteByteToFlash('\0');
+ void FinishBlock(uint32_t count) {
+	uint32_t finishY = (flashInfo.currentWriteAddress % count);
+	if (finishY != 0) {
+		for (uint32_t x=0;x<(count - finishY);x++)
+		{
+			WriteByteToFlash('\0');
+		}
 	}
 }
 
 inline void InlineWrite16To8 (int16_t data) {
-	WriteByteToFlash(  (uint8_t)( (data & 0xff00) >>  8) );
-	WriteByteToFlash(  (uint8_t)(data & 0x00ff) );
+	WriteByteToFlash(  (uint8_t)( data >> 8 ) );
+	WriteByteToFlash(  (uint8_t)(data & 0xff) );
 }
 
-inline void WriteByteToFlash (uint8_t data) {
+ void WriteByteToFlash (uint8_t data) {
+
 	buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
 
 	buffer->txBuffer[buffer->txBufferPtr++] = data;
 
-	if (buffer->txBufferPtr == FLASH_CHIP_BUFFER_WRITE_DATA_END) {
+	if (buffer->txBufferPtr > FLASH_CHIP_BUFFER_WRITE_DATA_END) {
 		if (flashInfo.bufferNum == 0)
 		{
 			flashInfo.bufferNum = 1;
@@ -63,14 +70,15 @@ inline void WriteByteToFlash (uint8_t data) {
 		{
 			flashInfo.bufferNum = 0;
 		}
+		flashInfo.buffer[flashInfo.bufferNum].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 
 		M25p16DmaWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer); //write buffer to flash using DMA
 		flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
-		buffer->txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 		if (flashInfo.currentWriteAddress >= flashInfo.totalSize)
-			flashInfo.enabled = 0; //check if flash is full. Disable flash if it is full
+			flashInfo.enabled = FLASH_FULL; //check if flash is full. Disable flash if it is full
 
 	}
+
 }
 
 inline int DumbWriteString(char *string, int sizeOfString) {
@@ -87,44 +95,43 @@ inline int DumbWriteString(char *string, int sizeOfString) {
 void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
 
 	int finishX;
+	static int loggingStartedLatch = 0;
 
-	if (curvedRcCommandF[AUX2] < 0) {
+	if ( (curvedRcCommandF[AUX2] < 0) && (flashInfo.enabled == FLASH_ENABLED) ) {
 		ledStatus.status = LEDS_FAST_BLINK;
 		LoggingEnabled = 1;
+		loggingStartedLatch = 1;
 	} else if (curvedRcCommandF[AUX2] >= 0) {
 		ledStatus.status = LEDS_SLOW_BLINK;
 		LoggingEnabled = 0;
 		firstLogging = 1;
+		if (loggingStartedLatch) {
+			loggingStartedLatch = 0;
+			FinishPage();
+		}
 	}
 
 
-	if ( (LoggingEnabled) && (flashInfo.enabled) ) {
+	if ( (LoggingEnabled) && (flashInfo.enabled == FLASH_ENABLED) ) {
 
-		ledStatus.status = LEDS_FAST_BLINK;
 		if (firstLogging) {
 
-			//make sure flashInfo.currentWriteAddress is aligned to a page (multiple of 256)
+			flashInfo.buffer[0].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
+			flashInfo.buffer[1].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
+			flashInfo.buffer[0].rxBufferPtr = 0;
+			flashInfo.buffer[1].rxBufferPtr = 0;
+			flashInfo.bufferNum = 0;
+
+			finishX = (flashInfo.currentWriteAddress % UPDATE_BB_DATA_SIZE);
+			if (finishX != 0) {
+				flashInfo.currentWriteAddress += (UPDATE_BB_DATA_SIZE - finishX);
+			}
 
 			DumbWriteString(HEADER, strlen(HEADER)+1);
 			FinishPage();
 			firstLogging = 0;
-			//start of header
-
-
-
-
-			//BYTE 256 is a null character
-			//pages are aligned with data at all times if we keep this at 256
-
-			flashInfo.currentWriteAddress += ( UPDATE_BB_TOTAL_HEADER_SIZE - (strlen(HEADER)+1) );
 
 		} else {
-
-			//align data to flash
-			finishX = (flashInfo.currentWriteAddress % UPDATE_BB_DATA_SIZE);
-			if (finishX != 0) {
-				flashInfo.currentWriteAddress += finishX;
-			}
 
 			//pages are aligned with data at all times if we keep this at 256
 			InlineWrite16To8(  (int16_t)(flightPids[YAW].kp   * 10000) ); //2
@@ -139,14 +146,15 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
 			InlineWrite16To8(  (int16_t)(flightPids[PITCH].ki * 10000) ); //16
 			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kd * 10000) ); //18
 
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[YAW] * 10000) ); //20
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[ROLL] * 10000) ); //22
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[PITCH] * 10000) ); //24
+			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[YAW]      * 10000) ); //20
+			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[ROLL]     * 10000) ); //22
+			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[PITCH]    * 10000) ); //24
 			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[THROTTLE] * 10000) ); //26
 
 			InlineWrite16To8(  (int16_t)(flightSetPoints[YAW] * 10000) ); //28
 			InlineWrite16To8(  (int16_t)(flightSetPoints[ROLL] * 10000) ); //30
 			InlineWrite16To8(  (int16_t)(flightSetPoints[PITCH] * 10000) ); //32
+
 			FinishBlock(32);
 
 		}

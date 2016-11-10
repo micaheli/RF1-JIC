@@ -6,6 +6,9 @@ float kdRingBuffer[AXIS_NUMBER][KD_RING_BUFFER_SIZE];
 float kdRingBufferSum[AXIS_NUMBER];
 uint32_t kdRingBufferPoint[AXIS_NUMBER];
 float kdDelta[AXIS_NUMBER];
+float kiError[AXIS_NUMBER];
+float kiErrorLimit[AXIS_NUMBER];
+
 
 //1000000 114
 pid_terms  pidsUsed[AXIS_NUMBER];
@@ -36,6 +39,8 @@ volatile uint32_t khzDivider = 0;
  */
 void InitPid (void) {
 
+	bzero(kiError,sizeof(kiError));
+	bzero(kiErrorLimit,sizeof(kiErrorLimit));
 	bzero(kdDelta, sizeof(kdDelta));
 	bzero(kdRingBuffer, sizeof(kdRingBuffer));
 	bzero(kdRingBufferSum, sizeof(kdRingBufferSum));
@@ -135,7 +140,6 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 	float pidError;
 	static float lastfilteredGyroData[AXIS_NUMBER];
 	static float usedFlightSetPoints[AXIS_NUMBER];
-	static float kiErrorLimit[AXIS_NUMBER];
 
 	(void)(pidConfig);
 
@@ -147,7 +151,7 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 				usedFlightSetPoints[axis] = flightSetPoints[axis];
 			}
 		}
-	} else if ( actuatorRange >= 0.70 ) {
+	} else if ( actuatorRange >= 0.80 ) {
 		//if actuator is near max, we limit the change of the setpoint unless the setpoint is shrinking
 		for (axis = 2; axis >= 0; --axis) {
 			if ( abs(usedFlightSetPoints[axis]) > abs(flightSetPoints[axis]) ) {
@@ -180,25 +184,31 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 
 	    } else {
 
+
 			// calculate Kp
 			flightPids[axis].kp = (pidError * pidsUsed[axis].kp);
 
-			// calculate Ki
+
+			// calculate Ki ////////////////////////// V
 			if ( fullKiLatched ) {
 
-				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * pidsUsed[axis].ki, -0.312121f, 0.312121f); //prevent insane windup
+				kiError[axis] = InlineConstrainf(kiError[axis] + pidError * pidsUsed[axis].ki, -0.312121f, 0.312121f); //prevent insane windup
 
 				if ( actuatorRange > .95 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
-					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
+					kiError[axis] = InlineConstrainf(kiError[axis], -kiErrorLimit[axis], kiErrorLimit[axis]);
 				} else {
-					kiErrorLimit[axis] = ABS(kiErrorLimit[axis]);
+					kiErrorLimit[axis] = ABS(kiError[axis]);
 				}
 
 			} else {
 
-				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidError * pidsUsed[axis].ki, -0.02121f, 0.02121f); //limit Ki when fullKiLatched is false
+				kiError[axis] = InlineConstrainf(kiError[axis] + pidError * pidsUsed[axis].ki, -0.02121f, 0.02121f); //limit Ki when fullKiLatched is false
 
 			}
+
+			flightPids[axis].ki = kiError[axis];
+			// calculate Ki ////////////////////////// ^
+
 
 			// calculate Kd ////////////////////////// V
 			kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);

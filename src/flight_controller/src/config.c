@@ -473,7 +473,7 @@ int RfCustomReply(char *rf_custom_out_buffer) {
 
 void ProcessCommand(char *inString)
 {
-	buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
+	//buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
 	uint32_t inStringLength;
 	char *args = NULL;
 	uint32_t x;
@@ -697,13 +697,12 @@ void ProcessCommand(char *inString)
 
 					for (uint32_t y = 0;y<pagesToSend;y++) {
 
-						if ( M25p16ReadPage( (y * flashInfo.pageSize), buffer->txBuffer, buffer->rxBuffer) ) {
+						if ( M25p16ReadPage( (y * flashInfo.pageSize), flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer) ) {
 
 							for (uint32_t x=0;x<256;x++) {
 
 								if (base64Encode) {
-
-									dataArray[smallerPointer++] = buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
+									dataArray[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
 									if (smallerPointer > 44) {
 
 										//base64 encode
@@ -719,7 +718,7 @@ void ProcessCommand(char *inString)
 
 								} else {
 
-									rf_custom_out_buffer[smallerPointer++] = buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
+									rf_custom_out_buffer[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
 									if (smallerPointer > 62) {
 										RfCustomReply(rf_custom_out_buffer);
 										smallerPointer = 0;
@@ -793,32 +792,10 @@ void ProcessCommand(char *inString)
 
 				args = StripSpaces(args);
 
-				if ( M25p16ReadPage( atoi(args), buffer->txBuffer, buffer->rxBuffer) ) {
+				if ( M25p16ReadPage( atoi(args), flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer) ) {
 
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+0], 32);
-					RfCustomReply(rf_custom_out_buffer);
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+32], 32);
-					RfCustomReply(rf_custom_out_buffer);
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+64], 32);
-					RfCustomReply(rf_custom_out_buffer);
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+96], 32);
-					RfCustomReply(rf_custom_out_buffer);
-
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+128], 32);
-					RfCustomReply(rf_custom_out_buffer);
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+160], 32);
-					RfCustomReply(rf_custom_out_buffer);
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+192], 32);
-					RfCustomReply(rf_custom_out_buffer);
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+224], 32);
+					memcpy(rf_custom_out_buffer, &flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+0], 32);
 					RfCustomReply(rf_custom_out_buffer);
 
 				} else {

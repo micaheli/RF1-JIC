@@ -273,7 +273,7 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 		flightPids[YAW].ki = 0;
 		flightPids[ROLL].ki = 0;
 		flightPids[PITCH].ki = 0;
-		fullKiLatched = 0;
+		fullKiLatched = 1;
 	}
 
 	//output to actuators. This is the end of the flight code for this iteration.

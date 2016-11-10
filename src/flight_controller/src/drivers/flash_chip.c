@@ -107,7 +107,6 @@ int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) {
   	txBuffer[3] = (address & 0xFF);
 
   	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
-	flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
 
 	if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
 
@@ -131,7 +130,7 @@ static int M25p16ReadIdSetFlashRecord(void)
     bzero(reply,sizeof(reply));
 
     flashInfo.currentWriteAddress = 0; //todo in future, read flash and determin where we need to begin.
-    flashInfo.enabled = 0;
+    flashInfo.enabled = FLASH_DISABLED;
     flashInfo.chipId = 0;
     flashInfo.flashSectors = 0;
 	flashInfo.pagesPerSector = 0;
@@ -142,26 +141,7 @@ static int M25p16ReadIdSetFlashRecord(void)
 
 	bzero(flashInfo.commandRxBuffer,sizeof(flashInfo.commandRxBuffer));
 	bzero(flashInfo.commandTxBuffer,sizeof(flashInfo.commandTxBuffer));
-/*
-	bzero(flashInfo.txBufferA,sizeof(flashInfo.txBufferA));
-	bzero(flashInfo.rxBufferA,sizeof(flashInfo.rxBufferA));
-	bzero(flashInfo.txBufferB,sizeof(flashInfo.txBufferB));
-	bzero(flashInfo.rxBufferB,sizeof(flashInfo.rxBufferB));
-*/
 
-	/*
-	bzero(flashInfo.txBuffer,sizeof(flashInfo.txBuffer));
-	bzero(flashInfo.rxBuffer,sizeof(flashInfo.rxBuffer));
-*/
-
-	/*
-	flashInfo.bufferStatus = BUFFER_STATUS_FILLING_A;
-
-	flashInfo.txBufferAPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
-	flashInfo.txBufferBPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
-	flashInfo.rxBufferAPtr = 0;
-	flashInfo.rxBufferBPtr = 0;
-*/
 	for (uint32_t x;x<2;x++)
 	{
 		flashInfo.buffer[x].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
@@ -170,11 +150,6 @@ static int M25p16ReadIdSetFlashRecord(void)
 	}
 
 	flashInfo.bufferNum = 0;
-	for (int x=0;x<2;x++)
-	{
-		flashInfo.buffer[x].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
-		flashInfo.buffer[x].rxBufferPtr = 0;
-	}
 
 
     flashInfo.pageSize     = M25P16_PAGESIZE;
@@ -311,8 +286,10 @@ int FindFirstEmptyPage(void) {
 	uint32_t x;
 	uint32_t y;
 	uint32_t allFFs;
+	uint32_t firstEmptySector;
 
-	for (x = 0;x < flashInfo.totalSize;x = x + flashInfo.pageSize) {
+	//find first empty sector
+	for (x = 0; x < flashInfo.totalSize; x = x + (flashInfo.pageSize * flashInfo.pagesPerSector) ) {
 
 		if ( M25p16ReadPage( x, buffer->txBuffer, buffer->rxBuffer) ) {
 
@@ -323,22 +300,52 @@ int FindFirstEmptyPage(void) {
 					allFFs = 0; //any non FF's will set this to 0.
 			}
 
-			if (allFFs) { //this page is empty since
-				flashInfo.enabled = 1;
+			firstEmptySector = x*(flashInfo.pageSize * flashInfo.pagesPerSector);
+
+			if (allFFs && (x == 0) )
+				firstEmptySector = 0;
+
+			if (allFFs)
+				break;
+
+		} else {
+			flashInfo.currentWriteAddress = x;
+			flashInfo.enabled = FLASH_FULL;
+			return 0;
+		}
+
+	}
+
+	//find first empty page in sector
+	for (x = firstEmptySector;x < (firstEmptySector + (flashInfo.pageSize * flashInfo.pagesPerSector * 2 ) );x = x + flashInfo.pageSize) {
+
+		if ( M25p16ReadPage( x, buffer->txBuffer, buffer->rxBuffer) ) {
+
+			allFFs = 1;
+
+			for (y=0;y<flashInfo.pageSize;y++) { //check if page is empty, all 0xFF's
+				if (buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+y] != 0xFF)
+					allFFs = 0; //any non FF's will set this to 0.
+			}
+
+			if (allFFs) { //this page is empty since all FF's is an empty page
+				flashInfo.enabled = FLASH_ENABLED;
 				flashInfo.currentWriteAddress = x;
 				return 1;
 			}
 
 		} else {
 
-			flashInfo.enabled = 1;
+			flashInfo.currentWriteAddress = x;
+			flashInfo.enabled = FLASH_FULL;
 			return 0;
 
 		}
 
 	}
 
-	flashInfo.enabled = 0;
+	flashInfo.currentWriteAddress = x;
+	flashInfo.enabled = FLASH_FULL;
 	return 0;
 
 }
@@ -364,12 +371,10 @@ int InitFlashChip(void)
     }
 
     DmaInit();
-    flashInfo.enabled = 1;
     return ( FindFirstEmptyPage() );
     //check Read ID in nonblocking mode, this function blocks, but it's used to test the non blocking functionality of the chip
     if (M25p16ReadIdSetFlashRecordDma() == flashInfo.chipId) {
         if ( flashInfo.chipId ) {
-        	flashInfo.enabled = 1;
         	//flash chip is good! Let's check if we can write to it and where we can write to
         	return ( FindFirstEmptyPage() );
         }
@@ -429,7 +434,6 @@ void DataFlashProgramPage(uint32_t address, uint8_t *data, uint16_t length)
     HAL_SPI_Transmit(&flash_spi, command, sizeof(command), 100);
     HAL_SPI_Transmit(&flash_spi, data, length, 100);
 	inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
-
 }
 
 static uint8_t M25p16ReadStatus(void)
@@ -465,7 +469,7 @@ inline void WriteEnableDataFlash(void) {
 	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 	HAL_SPI_Transmit(&flash_spi, c, 1, 100);
 	inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
-	simpleDelay_ASM(1);
+	simpleDelay_ASM(3);
 
 }
 
@@ -498,7 +502,6 @@ int MassEraseDataFlash(int blocking) {
 		HAL_SPI_Transmit(&flash_spi, c, 1, 100);
 		inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 
-		flashInfo.currentWriteAddress = 0;
 		if (blocking) {
 			blocking = 0;
 			while ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
@@ -508,10 +511,12 @@ int MassEraseDataFlash(int blocking) {
 					return 0;
 			}
 			flashInfo.currentWriteAddress = 0;
+			flashInfo.enabled = FLASH_ENABLED;
 			return 1;
 		} else {
 			if ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
 				flashInfo.currentWriteAddress = 0;
+				flashInfo.enabled = FLASH_ENABLED;
 				return 1;
 			}
 		}

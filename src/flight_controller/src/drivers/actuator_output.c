@@ -129,14 +129,14 @@ inline void OutputActuators(float motorOutput[], float servoOutput[]) {
 
 		TIM3->CCR3 = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + pulseValue;
 		TIM3->CCR4 = (uint32_t)((float)motorOutput[1] * (float)pulseValueRange) + pulseValue;
-		TIM9->CCR2 = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + pulseValue;
+		TIM2->CCR4 = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + pulseValue;
 		TIM2->CCR3 = (uint32_t)((float)motorOutput[3] * (float)pulseValueRange) + pulseValue;
 
 	} else {
 
 		TIM3->CCR3 = disarmPulseValue;
 		TIM3->CCR4 = disarmPulseValue;
-		TIM9->CCR2 = disarmPulseValue;
+		TIM2->CCR4 = disarmPulseValue;
 		TIM2->CCR3 = disarmPulseValue;
 
 	}
@@ -147,6 +147,6 @@ inline void OutputActuators(float motorOutput[], float servoOutput[]) {
 void ZeroActuators(void) {
 	TIM3->CCR3 = disarmPulseValue;
 	TIM3->CCR4 = disarmPulseValue;
-	TIM9->CCR2 = disarmPulseValue;
+	TIM2->CCR4 = disarmPulseValue;
 	TIM2->CCR3 = disarmPulseValue;
 }
