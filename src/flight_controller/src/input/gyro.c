@@ -9,7 +9,7 @@ float dpsGyroArray[3] = {0.0f, 0.0f, 0.0f};
 float geeForceAccArray[3] = {0.0f, 0.0f, 0.0f};
 static int32_t gyroSum[3] = {0, 0, 0};
 
-uint32_t gyroCalibrationCycles = GYRO_CALIBRATION_CYCLES * 1;
+volatile uint32_t gyroCalibrationCycles = GYRO_CALIBRATION_CYCLES * 1;
 
 void ResetGyroCalibration(void) {
 

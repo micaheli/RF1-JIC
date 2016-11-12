@@ -31,17 +31,15 @@ void DisableLogging(void) {
 
 
  void FinishPage(void) {
-	volatile uint32_t d = 0;
 	uint32_t remaingBytes = (flashInfo.pageSize - (flashInfo.buffer[flashInfo.bufferNum].txBufferPtr - FLASH_CHIP_BUFFER_WRITE_DATA_START) );
 	for (uint32_t x=0;x<remaingBytes;x++)
 	{
 		WriteByteToFlash('\0');
-		d++;
 	}
 }
 
  void FinishBlock(uint32_t count) {
-	uint32_t finishY = (flashInfo.currentWriteAddress % count);
+	uint32_t finishY = ((flashInfo.currentWriteAddress + (flashInfo.buffer[flashInfo.bufferNum].txBufferPtr - FLASH_CHIP_BUFFER_WRITE_DATA_START)) % count);
 	if (finishY != 0) {
 		for (uint32_t x=0;x<(count - finishY);x++)
 		{
@@ -92,7 +90,7 @@ inline int DumbWriteString(char *string, int sizeOfString) {
 #define ITERATION "iteration"
 
 
-void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
+void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[], float dpsGyroArray[], float filteredGyroData[], float filteredAccData[] ) {
 
 	int finishX;
 	static int loggingStartedLatch = 0;
@@ -134,28 +132,50 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[] ) {
 		} else {
 
 			//pages are aligned with data at all times if we keep this at 256
-			InlineWrite16To8(  (int16_t)(flightPids[YAW].kp   * 10000) ); //2
-			InlineWrite16To8(  (int16_t)(flightPids[YAW].ki   * 10000) ); //4
-			InlineWrite16To8(  (int16_t)(flightPids[YAW].kd   * 10000) ); //6
+			InlineWrite16To8(  (int16_t)(flightPids[YAW].kp           * 10000) ); //2
+			InlineWrite16To8(  (int16_t)(flightPids[YAW].ki           * 10000) ); //4
+			InlineWrite16To8(  (int16_t)(flightPids[YAW].kd           * 10000) ); //6
 
-			InlineWrite16To8(  (int16_t)(flightPids[ROLL].kp  * 10000) ); //8
-			InlineWrite16To8(  (int16_t)(flightPids[ROLL].ki  * 10000) ); //10
-			InlineWrite16To8(  (int16_t)(flightPids[ROLL].kd  * 10000) ); //12
+			InlineWrite16To8(  (int16_t)(flightPids[ROLL].kp          * 10000) ); //8
+			InlineWrite16To8(  (int16_t)(flightPids[ROLL].ki          * 10000) ); //10
+			InlineWrite16To8(  (int16_t)(flightPids[ROLL].kd          * 10000) ); //12
 
-			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kp * 10000) ); //14
-			InlineWrite16To8(  (int16_t)(flightPids[PITCH].ki * 10000) ); //16
-			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kd * 10000) ); //18
+			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kp         * 10000) ); //14
+			InlineWrite16To8(  (int16_t)(flightPids[PITCH].ki         * 10000) ); //16
+			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kd         * 10000) ); //18
 
 			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[YAW]      * 10000) ); //20
 			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[ROLL]     * 10000) ); //22
 			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[PITCH]    * 10000) ); //24
 			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[THROTTLE] * 10000) ); //26
 
-			InlineWrite16To8(  (int16_t)(flightSetPoints[YAW] * 10000) ); //28
-			InlineWrite16To8(  (int16_t)(flightSetPoints[ROLL] * 10000) ); //30
-			InlineWrite16To8(  (int16_t)(flightSetPoints[PITCH] * 10000) ); //32
+			//-2000.0 to 2000.0 DPS
+			InlineWrite16To8(  (int16_t)(flightSetPoints[YAW]    * 10) ); //28
+			InlineWrite16To8(  (int16_t)(flightSetPoints[ROLL]   * 10) ); //30
+			InlineWrite16To8(  (int16_t)(flightSetPoints[PITCH]  * 10) ); //32
 
-			FinishBlock(32);
+			//-2000.0 to 2000.0 DPS
+			InlineWrite16To8(  (int16_t)(dpsGyroArray[YAW]       * 10) ); //34
+			InlineWrite16To8(  (int16_t)(dpsGyroArray[ROLL]      * 10) ); //36
+			InlineWrite16To8(  (int16_t)(dpsGyroArray[PITCH]     * 10) ); //38
+
+			//-2000.0 to 2000.0 DPS
+			InlineWrite16To8(  (int16_t)(filteredGyroData[YAW]   * 10) ); //40
+			InlineWrite16To8(  (int16_t)(filteredGyroData[ROLL]  * 10) ); //42
+			InlineWrite16To8(  (int16_t)(filteredGyroData[PITCH] * 10) ); //44
+
+			//-16 to 16 DPS
+			InlineWrite16To8(  (int16_t)(filteredAccData[ACCX]   * 1000) ); //46
+			InlineWrite16To8(  (int16_t)(filteredAccData[ACCY]   * 1000) ); //48
+			InlineWrite16To8(  (int16_t)(filteredAccData[ACCZ]   * 1000) ); //50
+
+			//0 TO 1
+			InlineWrite16To8(  (int16_t)(motorOutput[0]          * 10000) ); //52
+			InlineWrite16To8(  (int16_t)(motorOutput[1]          * 10000) ); //54
+			InlineWrite16To8(  (int16_t)(motorOutput[2]          * 10000) ); //56
+			InlineWrite16To8(  (int16_t)(motorOutput[3]          * 10000) ); //58
+
+			FinishBlock(64);
 
 		}
 

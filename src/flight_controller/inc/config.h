@@ -1,6 +1,6 @@
 #pragma once
 
-#define CONFIG_VERSION (uint8_t)(2U)
+#define CONFIG_VERSION (uint8_t)(3U)
 
 typedef struct {
 	rc_control_config rcControlsConfig;

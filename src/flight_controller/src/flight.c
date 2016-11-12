@@ -7,7 +7,7 @@ paf_state pafGyroStates[AXIS_NUMBER];
 paf_state pafAccStates[AXIS_NUMBER];
 float actuatorRange;
 float flightSetPoints[AXIS_NUMBER];
-uint32_t boardArmed, calibrateMotors, fullKiLatched;
+volatile uint32_t boardArmed, calibrateMotors, fullKiLatched;
 float currentGyroFilterConfig[AXIS_NUMBER];
 float currentAccFilterConfig[AXIS_NUMBER];
 uint32_t flightcodeTimeStart;
@@ -163,9 +163,9 @@ inline void InlineInitGyroFilters(void)  {
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].acc.q, mainConfig.filterConfig[axis].acc.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
+		pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
 
-		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].acc.r;
+		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].gyro.r;
 
 	}
 
@@ -264,12 +264,13 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	if (boardArmed) {
 	   if (gyroCalibrationCycles != 0) {
-			return;
+		   return;
 		}
 		//only run mixer if armed
 		actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
 	} else {
 		//otherwise we keep Ki zeroed.
+
 		flightPids[YAW].ki = 0;
 		flightPids[ROLL].ki = 0;
 		flightPids[PITCH].ki = 0;
@@ -320,7 +321,7 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 		}
 
 		//update blackbox here   //void UpdateBlackbox(pid_output *flightPids)
-		UpdateBlackbox(flightPids, flightSetPoints);
+		UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, filteredAccData);
 
 		//check for fullKiLatched here
 		if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) ) {

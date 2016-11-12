@@ -298,7 +298,7 @@ void USARTx_IRQHandler(void)
 		{
 			ErrorHandler();
 		}
-		for (unsigned char i=0;i<63;i++) {
+		for (unsigned char i=0;i<RF_BUFFER_SIZE;i++) {
 			tInBuffer[i] = aRxBuffer[i];
 		}
 		tInBuffer[0] = 1;

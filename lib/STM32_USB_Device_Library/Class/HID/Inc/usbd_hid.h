@@ -51,6 +51,7 @@
   */ 
 #define HID_EPIN_ADDR                 0x81
 #define HID_EPIN_SIZE                 0x40
+//#define HID_EPIN_SIZE                 0x41
 
 #define HID_EPOUT_ADDR                0x01
 #define HID_EPOUT_SIZE                0x40

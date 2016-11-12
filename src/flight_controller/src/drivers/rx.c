@@ -27,7 +27,7 @@ spektrumChannelMask = 0x03;
 
 unsigned char copiedBufferData[16];
 
-uint32_t rx_timeout=0;
+volatile uint32_t rx_timeout=0;
 
 inline void CheckFailsafe(void) {
 

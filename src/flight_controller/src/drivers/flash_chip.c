@@ -286,6 +286,7 @@ int FindFirstEmptyPage(void) {
 	uint32_t x;
 	uint32_t y;
 	uint32_t allFFs;
+	uint32_t allFFsTotal = 0;
 	uint32_t firstEmptySector;
 
 	//find first empty sector
@@ -302,11 +303,13 @@ int FindFirstEmptyPage(void) {
 
 			firstEmptySector = x*(flashInfo.pageSize * flashInfo.pagesPerSector);
 
-			if (allFFs && (x == 0) )
+			if (allFFs && (x == 0) ) {
 				firstEmptySector = 0;
-
-			if (allFFs)
 				break;
+			} else if (allFFs) {
+				firstEmptySector=x;
+				break;
+			}
 
 		} else {
 			flashInfo.currentWriteAddress = x;
@@ -329,8 +332,12 @@ int FindFirstEmptyPage(void) {
 			}
 
 			if (allFFs) { //this page is empty since all FF's is an empty page
+				allFFsTotal++;
+			}
+
+			if (allFFsTotal == 4) {
 				flashInfo.enabled = FLASH_ENABLED;
-				flashInfo.currentWriteAddress = x;
+				flashInfo.currentWriteAddress = (x - ( flashInfo.pageSize  * 3 ) );
 				return 1;
 			}
 
@@ -489,6 +496,42 @@ int WriteEnableDataFlashDma(void) {
         return (0);
     }
 
+}
+
+int MassEraseDataFlashByPage(int blocking) {
+	uint8_t command[4];
+	uint32_t sectorsToErase = 0;
+	uint32_t x;
+	uint32_t addressToErase;
+
+	(void)(blocking);
+
+	sectorsToErase = ceil((float)flashInfo.currentWriteAddress / ((float)flashInfo.pageSize * (float)flashInfo.pagesPerSector));
+
+	for (x = 0;x<sectorsToErase;x++) { //for each sector
+
+		WriteEnableDataFlash();
+
+		addressToErase = ( x * (flashInfo.pageSize * flashInfo.pagesPerSector) );
+		command[0] = M25P16_SECTOR_ERASE;
+		command[1] = ((addressToErase >> 16) & 0xFF);
+		command[2] = ((addressToErase >> 8) & 0xFF);
+		command[3] = (addressToErase & 0xFF);
+
+		inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
+		HAL_SPI_Transmit(&flash_spi, command, 4, 100);
+		inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
+
+		blocking = 0;
+		while ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
+			DelayMs(1);
+			blocking++;
+			if (blocking == 4000) //four seconds max time
+				return 0;
+		}
+	}
+	flashInfo.currentWriteAddress = 0;
+	return 1;
 }
 
 int MassEraseDataFlash(int blocking) {

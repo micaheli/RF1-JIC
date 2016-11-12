@@ -117,7 +117,7 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 
 
 inline void OutputActuators(float motorOutput[], float servoOutput[]) {
-	uint32_t pulseValue;
+	volatile uint32_t pulseValue;
 
 	if (boardArmed || calibrateMotors) {
 

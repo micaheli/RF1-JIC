@@ -77,6 +77,7 @@ extern int  FlashChipWriteData(uint8_t *data, uint8_t length);
 extern int  FlashChipReadData(uint32_t address, uint8_t *buffer, int length);
 extern void DataFlashProgramPage(uint32_t address, uint8_t *data, uint16_t length);
 extern void WriteEnableDataFlash(void);
+extern int  MassEraseDataFlashByPage(int blocking);
 extern int  MassEraseDataFlash(int blocking);
 extern void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 extern int  M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);

@@ -2,7 +2,7 @@
 
 #define GYRO_CALIBRATION_CYCLES 1000
 
-extern uint32_t gyroCalibrationCycles;
+extern volatile uint32_t gyroCalibrationCycles;
 
 //config structure which is loaded by config
 typedef struct {

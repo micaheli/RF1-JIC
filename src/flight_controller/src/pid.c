@@ -1,6 +1,7 @@
 #include "includes.h"
 
 paf_state kdFilterState[AXIS_NUMBER];
+biquad_state kdBqFilterState[AXIS_NUMBER];
 float currentKdFilterConfig[AXIS_NUMBER];
 float kdRingBuffer[AXIS_NUMBER][KD_RING_BUFFER_SIZE];
 float kdRingBufferSum[AXIS_NUMBER];
@@ -45,7 +46,6 @@ void InitPid (void) {
 	bzero(kdRingBuffer, sizeof(kdRingBuffer));
 	bzero(kdRingBufferSum, sizeof(kdRingBufferSum));
 	bzero(kdRingBufferPoint, sizeof(kdRingBufferPoint));
-	InlineInitPidFilters();
 
 	uhOhRecover = 0; //unset recover mode
 
@@ -94,6 +94,8 @@ void InitPid (void) {
 			break;
 	}
 
+	InlineInitPidFilters();
+
 	//0.00   (x / 10000) * 1 = .00140000
 	//0.00   (x / 10000) * 0.00003125 = .00140000
 	//0.00   (x * 100) * 0.00003125 = .00000280
@@ -121,25 +123,36 @@ void InitPid (void) {
 
 inline void InlineInitPidFilters (void) {
 
+	static int onlyOnce = 1;
 	int32_t axis;
 
 	for (axis = 2; axis >= 0; --axis) {
 
 		kdFilterState[axis] = InitPaf( mainConfig.filterConfig[axis].kd.q, mainConfig.filterConfig[axis].kd.r, mainConfig.filterConfig[axis].kd.p, kdDelta[axis]);
-
 		currentKdFilterConfig[axis] = mainConfig.filterConfig[axis].kd.r;
 
+		if (onlyOnce) { //biquad can't be reinitialized.
+			InitBiquad(mainConfig.filterConfig[axis].kdBq.lpfHz, &kdBqFilterState[axis], dT);
+		}
+
 	}
+
+	onlyOnce = 0;
 
 }
 
 inline void InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[]) {
 
 	int32_t axis;
-
+	static int everyOther = 0;
 	float pidError;
 	static float lastfilteredGyroData[AXIS_NUMBER];
 	static float usedFlightSetPoints[AXIS_NUMBER];
+
+	static float kiPidError[AXIS_NUMBER];
+	if (everyOther == 0) {
+		bzero(kiPidError,sizeof(kiPidError));
+	}
 
 	(void)(pidConfig);
 
@@ -167,9 +180,9 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 		usedFlightSetPoints[2] = flightSetPoints[2];
 	}
 
-//	usedFlightSetPoints[0] = flightSetPoints[0];
-//	usedFlightSetPoints[1] = flightSetPoints[1];
-//	usedFlightSetPoints[2] = flightSetPoints[2];
+	usedFlightSetPoints[0] = flightSetPoints[0];
+	usedFlightSetPoints[1] = flightSetPoints[1];
+	usedFlightSetPoints[2] = flightSetPoints[2];
 
 	for (axis = 2; axis >= 0; --axis) {
 
@@ -189,40 +202,42 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 			flightPids[axis].kp = (pidError * pidsUsed[axis].kp);
 
 
+			kiPidError[axis] = pidError;
 			// calculate Ki ////////////////////////// V
 			if ( fullKiLatched ) {
 
-				kiError[axis] = InlineConstrainf(kiError[axis] + pidError * pidsUsed[axis].ki, -0.312121f, 0.312121f); //prevent insane windup
+				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * kiPidError[axis], -0.312121f, 0.312121f); //prevent insane windup
 
-				if ( actuatorRange > .95 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
-					kiError[axis] = InlineConstrainf(kiError[axis], -kiErrorLimit[axis], kiErrorLimit[axis]);
+				if ( actuatorRange > .9999 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
 				} else {
-					kiErrorLimit[axis] = ABS(kiError[axis]);
+					kiErrorLimit[axis] = ABS(flightPids[axis].ki);
 				}
 
 			} else {
 
-				kiError[axis] = InlineConstrainf(kiError[axis] + pidError * pidsUsed[axis].ki, -0.02121f, 0.02121f); //limit Ki when fullKiLatched is false
+				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * kiPidError[axis], -0.0521f, 0.0521f); //limit Ki when fullKiLatched is false
 
 			}
-
-			flightPids[axis].ki = kiError[axis];
-			// calculate Ki ////////////////////////// ^
 
 
 			// calculate Kd ////////////////////////// V
 			kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);
 			lastfilteredGyroData[axis] = filteredGyroData[axis];
 
-			//updated Kd filter
-			if (mainConfig.filterConfig[axis].kd.r) {
-				PafUpdate(&kdFilterState[axis], kdDelta[axis]);
-				kdDelta[axis] = kdFilterState[axis].x;
-			}
-
 			InlineUpdateWitchcraft(pidsUsed);
 
+			//updated Kd filter(s)
+			if (mainConfig.filterConfig[axis].kdBq.lpfHz > 50.0) {
+				kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
+			}
+//			if (mainConfig.filterConfig[axis].kd.r > 0) {
+//				PafUpdate(&kdFilterState[axis], kdDelta[axis]);
+//				kdDelta[axis] = kdFilterState[axis].x;
+//			}
+
 			flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -0.312121f, 0.312121f);
+
 			// calculate Kd ////////////////////////// ^
 
 	    }
