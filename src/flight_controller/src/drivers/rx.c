@@ -65,11 +65,11 @@ inline void RxUpdate(void) // hook for when rx updates
 
 		boardArmed = 1;
 
-		//if ( ABS(rxData[PITCH] - mainConfig.rcControlsConfig.midRc[PITCH]) < 200 )
+		if ( ABS(rxData[PITCH] - mainConfig.rcControlsConfig.midRc[PITCH]) < 50 )
 			mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
-		//if ( ABS(rxData[ROLL] - mainConfig.rcControlsConfig.midRc[ROLL]) < 200 )
+		if ( ABS(rxData[ROLL] - mainConfig.rcControlsConfig.midRc[ROLL]) < 50 )
 			mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
-		//if ( ABS(rxData[YAW] - mainConfig.rcControlsConfig.midRc[YAW]) < 200 )
+		if ( ABS(rxData[YAW] - mainConfig.rcControlsConfig.midRc[YAW]) < 50 )
 			mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
 
 	} else if (rxData[4] < 400) {
