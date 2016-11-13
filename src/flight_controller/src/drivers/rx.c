@@ -132,7 +132,7 @@ void SpektrumBind (uint32_t bindNumber) {
 
 inline uint32_t ChannelMap(uint32_t inChannel)
 {
-	uint32_t channel = 0;
+	volatile uint32_t channel = 0;
 
 	if (1) // here is where we check which rx we are using probably use case
 	{
@@ -154,9 +154,6 @@ void ProcessSpektrumPacket(void)
 															   // Make sure this is very first thing done in function, and its called first on interrupt
 	memcpy(copiedBufferData, serialRxBuffer, sizeof(copiedBufferData));    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
-
-	lastRXPacket = InlineMillis();  // why are we doing this, for failsafe?   this would have caused issues, possibly if we didn't copy buffer first
-									// kalyn why are we doing this, and not just basing it on packet count?
 
 	for (x = 2; x < 16; x += 2) {
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);

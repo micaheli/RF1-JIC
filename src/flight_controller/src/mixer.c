@@ -126,9 +126,6 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 
 	uint32_t threeDeeMode = 0;
 
-	if (!boardArmed) {
-		return 0;
-	}
 	if (!threeDeeMode) {
 		throttle = (throttle+1) * 0.5; //0 to +1
 	}

@@ -247,6 +247,7 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//output to motors
 
 	if (SKIP_GYRO) {
+		CheckFailsafe();
 		ledStatus.status = LEDS_FAST_BLINK;
 		return;
 	}
@@ -293,7 +294,6 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//this code is less important that stabilization, so it happens AFTER stabilization.
 	//Anything changed here can happen after the next iteration without any drawbacks. Stabilization above all else!
 
-	//if (!boardArmed)
 	ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
 	//modulus work, &ing doesn't

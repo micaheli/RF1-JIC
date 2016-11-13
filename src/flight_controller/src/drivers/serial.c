@@ -184,7 +184,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	//HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].RXDMA_IRQn);
 
 	/* NVIC for USART, to catch the TX complete */
-	HAL_NVIC_SetPriority(USARTx_IRQn, 8, 8);
+	HAL_NVIC_SetPriority(USARTx_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(USARTx_IRQn);
 
     /* DMA interrupt init */

@@ -96,7 +96,7 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[], float dpsGy
 	static int loggingStartedLatch = 0;
 
 	if ( (curvedRcCommandF[AUX2] < 0) && (flashInfo.enabled == FLASH_ENABLED) ) {
-		ledStatus.status = LEDS_FAST_BLINK;
+		ledStatus.status = LEDS_FASTER_BLINK;
 		LoggingEnabled = 1;
 		loggingStartedLatch = 1;
 	} else if (curvedRcCommandF[AUX2] >= 0) {
