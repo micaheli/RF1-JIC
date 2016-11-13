@@ -100,7 +100,11 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[], float dpsGy
 		LoggingEnabled = 1;
 		loggingStartedLatch = 1;
 	} else if (curvedRcCommandF[AUX2] >= 0) {
-		ledStatus.status = LEDS_SLOW_BLINK;
+		if (boardArmed)
+			ledStatus.status = LEDS_MED_BLINK;
+		else
+			ledStatus.status = LEDS_SLOW_BLINK;
+
 		LoggingEnabled = 0;
 		firstLogging = 1;
 		if (loggingStartedLatch) {

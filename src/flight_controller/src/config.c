@@ -511,6 +511,14 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 
 		}
+	else if (!strcmp("rcdata", inString))
+		{
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++) {
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(rxData[xx]));
+				RfCustomReply(rf_custom_out_buffer);
+			}
+		}
 	else if (!strcmp("calibratem1", inString))
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
