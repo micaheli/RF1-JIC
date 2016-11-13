@@ -117,7 +117,7 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 
 
 
-inline void OutputActuators(float motorOutput[], float servoOutput[]) {
+inline void OutputActuators(volatile float motorOutputHere[], volatile float servoOutput[]) {
 	volatile uint32_t pulseValue;
 
 	if (boardArmed || calibrateMotors) {
@@ -128,10 +128,10 @@ inline void OutputActuators(float motorOutput[], float servoOutput[]) {
 			pulseValue = idlePulseValue;
 		}
 
-		MOTOR1_TIM_CCR = (uint32_t)((float)motorOutput[0] * (float)pulseValueRange) + pulseValue;
-		MOTOR2_TIM_CCR = (uint32_t)((float)motorOutput[1] * (float)pulseValueRange) + pulseValue;
-		MOTOR3_TIM_CCR = (uint32_t)((float)motorOutput[2] * (float)pulseValueRange) + pulseValue;
-		MOTOR4_TIM_CCR = (uint32_t)((float)motorOutput[3] * (float)pulseValueRange) + pulseValue;
+ 		MOTOR1_TIM_CCR = (uint32_t)((float)motorOutputHere[0] * (float)pulseValueRange) + pulseValue;
+ 		MOTOR2_TIM_CCR = (uint32_t)((float)motorOutputHere[1] * (float)pulseValueRange) + pulseValue;
+ 		MOTOR3_TIM_CCR = (uint32_t)((float)motorOutputHere[2] * (float)pulseValueRange) + pulseValue;
+ 		MOTOR4_TIM_CCR = (uint32_t)((float)motorOutputHere[3] * (float)pulseValueRange) + pulseValue;
 
 	} else {
 

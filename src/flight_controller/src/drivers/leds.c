@@ -65,6 +65,12 @@ void UpdateLeds(void)
 		case LEDS_FAST_BLINK:
 			BlinkAllLeds(timeNow, 100, 200);
 			break;
+		case LEDS_FASTER_BLINK:
+			BlinkAllLeds(timeNow, 25, 50);
+			break;
+		case LEDS_FASTEST_BLINK:
+			BlinkAllLeds(timeNow, 10, 20);
+			break;
 		default:
 			DoLed(0, 0);
 			DoLed(1, 0);

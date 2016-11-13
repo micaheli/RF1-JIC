@@ -30,6 +30,7 @@
 
 //all drivers
 #include "drivers/spektrumTelemetry.h"
+#include "drivers/leds.h"
 #include "drivers/serial.h"
 #include "drivers/leds.h"
 #include "drivers/buzzer.h"

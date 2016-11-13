@@ -270,7 +270,7 @@ void SaveConfig (uint32_t addresConfigStart)
 		WriteFlash(*(uint32_t *) ((char *) &mainConfig + addressOffset), addresConfigStart+addressOffset );
 	}
 	FinishFlash();
-	InitWatchdog(WATCHDOG_TIMEOUT_1S);
+	InitWatchdog(WATCHDOG_TIMEOUT_2S);
 }
 
 uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length)
@@ -518,6 +518,7 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 
 			calibrateMotors = 1;
+			SKIP_GYRO=1;
 			motorOutput[0] = 1;
 			motorOutput[1] = 1;
 			motorOutput[2] = 1;
@@ -531,7 +532,7 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("calibratem2", inString))
 		{
-
+			SKIP_GYRO=0;
 			motorOutput[0] = 0;
 			motorOutput[1] = 0;
 			motorOutput[2] = 0;
@@ -556,6 +557,7 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 
 			calibrateMotors = 1;
+			SKIP_GYRO=1;
 			boardArmed=0;
 			motorOutput[0] = 1.0;
 			motorOutput[1] = 1.0;
@@ -567,19 +569,22 @@ void ProcessCommand(char *inString)
 			motorOutput[7] = 1.0;
 			motorOutput[8] = 1.0;
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)(motorOutput[0] * 1000));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(motorOutput[0] * 1000));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)(motorOutput[1] * 1000));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(motorOutput[1] * 1000));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)(motorOutput[2] * 1000));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(motorOutput[2] * 1000));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)(motorOutput[3] * 1000));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(motorOutput[3] * 1000));
 			RfCustomReply(rf_custom_out_buffer);
 			OutputActuators(motorOutput, servoOutput);
+			InitWatchdog(WATCHDOG_TIMEOUT_16S);
 			DelayMs(10000);
+			InitWatchdog(WATCHDOG_TIMEOUT_2S);
+			SKIP_GYRO=0;
 			motorOutput[0] = 0;
 			motorOutput[1] = 0;
 			motorOutput[2] = 0;

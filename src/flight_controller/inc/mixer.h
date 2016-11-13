@@ -29,13 +29,13 @@ enum {MIXER_X1234=0,MIXER_X1234_REVERSE_YAW,MIXER_CUSTOM,MIXER_END};
 
 extern int motorNumber;
 extern int servoNumber;
-extern float motorOutput[];
-extern float servoOutput[];
+extern volatile float motorOutput[];
+extern volatile float servoOutput[];
 extern actuator_mixer servoMixer[];
 extern actuator_mixer motorMixer[];
 
 
 void InitMixer(void);
-float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], float motorOutput[]);
+float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], volatile float motorOutput[]);
 void InlineApplyMixer(pid_output pids[], float curvedRcCommandF[]);
 float ApplyAttenuationCurve (float input, float curve[], int curveSize);

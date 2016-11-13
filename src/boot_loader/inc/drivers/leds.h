@@ -1,14 +1,14 @@
 #pragma once
 
-enum
-{
-    LEDS_OFF,
-    LEDS_ON,
-    LEDS_SLOW_BLINK,
-    LEDS_MED_BLINK,
-    LEDS_FAST_BLINK,
-    LEDS_ERROR,
-};
+#define LEDS_OFF			0
+#define LEDS_ON				1
+#define LEDS_SLOW_BLINK		2
+#define LEDS_MED_BLINK		3
+#define LEDS_FAST_BLINK		4
+#define LEDS_FASTER_BLINK	5
+#define LEDS_FASTEST_BLINK	6
+#define LEDS_ERROR			7
+
 
 typedef struct ledStatus_t
 {

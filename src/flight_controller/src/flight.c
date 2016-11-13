@@ -20,6 +20,7 @@ uint32_t RfblDisasterPreventionCheck = 1;
 uint32_t counterFish = 0;
 uint32_t loopCounter = 0;
 float accCompAccTrust, accCompGyroTrust;
+volatile uint32_t SKIP_GYRO = 0;
 
 int SetCalibrate1(void) {
 
@@ -244,6 +245,11 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//pid controller is run using setpoint and smoothed gyro data
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
+
+	if (SKIP_GYRO) {
+		ledStatus.status = LEDS_FASTEST_BLINK;
+		return;
+	}
 
 	//update gyro filter
 	for (axis = 2; axis >= 0; --axis) {
