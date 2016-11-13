@@ -1,14 +1,16 @@
 #pragma once
 
-#define LEDS_OFF			0
-#define LEDS_ON				1
-#define LEDS_SLOW_BLINK		2
-#define LEDS_MED_BLINK		3
-#define LEDS_FAST_BLINK		4
-#define LEDS_FASTER_BLINK	5
-#define LEDS_FASTEST_BLINK	6
-#define LEDS_ERROR			7
-
+enum
+{
+    LEDS_OFF=0,
+    LEDS_ON,
+    LEDS_SLOW_BLINK,
+    LEDS_MED_BLINK,
+    LEDS_FAST_BLINK,
+    LEDS_FASTER_BLINK,
+    LEDS_FASTEST_BLINK,
+    LEDS_ERROR,
+};
 
 typedef struct ledStatus_t
 {
@@ -22,4 +24,6 @@ typedef struct ledStatus_t
 extern ledStatus_t ledStatus;
 
 extern void DoLed(uint32_t number, uint32_t on);
-extern void InitLeds(void);
+extern void InitLeds (void);
+extern void UpdateLeds(void);
+extern void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2);

@@ -247,7 +247,7 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//output to motors
 
 	if (SKIP_GYRO) {
-		ledStatus.status = LEDS_FASTEST_BLINK;
+		ledStatus.status = LEDS_FAST_BLINK;
 		return;
 	}
 
