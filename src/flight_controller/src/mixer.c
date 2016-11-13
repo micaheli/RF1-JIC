@@ -56,8 +56,8 @@ float motorOutput[MAX_MOTOR_NUMBER];
 float servoOutput[MAX_SERVO_NUMBER];
 int32_t activeMotorCounter = -1; //number of active motors minus 1
 float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.15, 1.05, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.15, 1.0, 1.0, 1.0, .95, .85, 1.0, .80, .85};
-float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {.85, .98, 1.0, 1.0, .95, .85, 1.0, .80, .85};
+float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.15, 1.1, 1.0, .90, .85, .90, 1.0, .80, .95};
+float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {.85, .98, 1.0, 1.0, .95, .95, 1.0, .80, .85};
 
 void InitMixer(void) {
 	int32_t i;
