@@ -93,7 +93,7 @@ void InitMixer(void) {
 }
 
 inline float ApplyAttenuationCurve (float inputAttn, float curve[], int curveSize) {
-	return(1.0f);
+
     uint32_t indexAttn;
     float remainderAttn;
 

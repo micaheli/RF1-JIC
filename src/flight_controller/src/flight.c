@@ -1,6 +1,7 @@
 #include "includes.h"
 
 pid_output flightPids[AXIS_NUMBER];
+float averagedGyroData[AXIS_NUMBER][3];
 float filteredGyroData[AXIS_NUMBER];
 float filteredAccData[VECTOR_NUMBER];
 paf_state pafGyroStates[AXIS_NUMBER];
@@ -143,6 +144,7 @@ int SetCalibrate2(void) {
 
 void InitFlightCode(void) {
 
+	bzero(averagedGyroData,sizeof(averagedGyroData));
 	bzero(filteredGyroData,sizeof(filteredGyroData));
 	bzero(&flightPids,sizeof(flightPids));
 	actuatorRange = 0;
@@ -227,6 +229,8 @@ void ComplementaryFilterUpdateAttitude(void)
 
 inline void InlineFlightCode(float dpsGyroArray[]) {
 
+	int32_t axis;
+
 	//Gyro routine:
 	//gyro interrupts
 	//gyro read using DMA
@@ -242,14 +246,13 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//output to motors
 
 	//update gyro filter
-	PafUpdate(&pafGyroStates[YAW], dpsGyroArray[YAW]);
-	PafUpdate(&pafGyroStates[ROLL], dpsGyroArray[ROLL]);
-	PafUpdate(&pafGyroStates[PITCH], dpsGyroArray[PITCH]);
-
-	filteredGyroData[YAW]   = pafGyroStates[YAW].x;
-	filteredGyroData[ROLL]  = pafGyroStates[ROLL].x;
-	filteredGyroData[PITCH] = pafGyroStates[PITCH].x;
-
+	for (axis = 2; axis >= 0; --axis) {
+		averagedGyroData[axis][0] = averagedGyroData[axis][1];
+		averagedGyroData[axis][1] = averagedGyroData[axis][2];
+		averagedGyroData[axis][2] = dpsGyroArray[axis];
+		PafUpdate(&pafGyroStates[axis], ( (averagedGyroData[axis][0] + averagedGyroData[axis][1] + averagedGyroData[axis][2]) / 3 ) );
+		filteredGyroData[axis]    = pafGyroStates[axis].x;
+	}
 
 	//smooth the rx data between rx signals
 	InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
