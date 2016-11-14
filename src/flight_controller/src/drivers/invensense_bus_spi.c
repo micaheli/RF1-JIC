@@ -7,8 +7,8 @@
 bool skipGyro = true;
 
 SPI_HandleTypeDef gyro_spi;
-DMA_HandleTypeDef dma_gyro_rx;
-DMA_HandleTypeDef dma_gyro_tx;
+DMA_HandleTypeDef *dma_gyro_rx;
+DMA_HandleTypeDef *dma_gyro_tx;
 
 static void SPI_Init(uint32_t baudRatePrescaler)
 {
@@ -106,14 +106,14 @@ void GYRO_EXTI_IRQHandler(void)
 
 void GYRO_TX_DMA_IRQHandler(void)
 {
-    HAL_DMA_IRQHandler(&dma_gyro_tx);
+    HAL_DMA_IRQHandler(dma_gyro_tx);
 }
 
 void GYRO_RX_DMA_IRQHandler(void)
 {
-    HAL_DMA_IRQHandler(&dma_gyro_rx);
+    HAL_DMA_IRQHandler(dma_gyro_rx);
 
-    if (HAL_DMA_GetState(&dma_gyro_rx) == HAL_DMA_STATE_READY) {
+    if (HAL_DMA_GetState(dma_gyro_rx) == HAL_DMA_STATE_READY) {
         // reset chip select line
 	    HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
 
@@ -213,8 +213,8 @@ bool accgyroSlowReadData(uint8_t reg, uint8_t *data, uint8_t length)
 bool accgyroDMAReadWriteData(uint8_t *txData, uint8_t *rxData, uint8_t length)
 {
     // ensure that both SPI and DMA resources are available, but don't block if they are not
-	//while (HAL_DMA_GetState(&dma_gyro_rx) != HAL_DMA_STATE_READY && HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
-    if (HAL_DMA_GetState(&dma_gyro_rx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&gyro_spi) == HAL_SPI_STATE_READY) {
+	//while (HAL_DMA_GetState(dma_gyro_rx) != HAL_DMA_STATE_READY && HAL_SPI_GetState(&gyro_spi) != HAL_SPI_STATE_READY);
+    if (HAL_DMA_GetState(dma_gyro_rx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&gyro_spi) == HAL_SPI_STATE_READY) {
         HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_RESET);
 
         HAL_SPI_TransmitReceive_DMA(&gyro_spi, txData, rxData, length);

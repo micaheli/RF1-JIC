@@ -46,9 +46,10 @@ int main(void)
     InitBuzzer();
     InitLeds();
     InitUsb();
-#ifndef STM32F446xx
+//#ifndef STM32F446xx
+	InitFlashChip();
     InitFlightLogger();
-#endif
+//#endif
     InitRcData();
     InitMixer();
     InitFlightCode();

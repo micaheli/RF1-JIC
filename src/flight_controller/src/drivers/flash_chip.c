@@ -3,8 +3,8 @@
 
 
 SPI_HandleTypeDef flash_spi;
-DMA_HandleTypeDef dma_flash_rx;
-DMA_HandleTypeDef dma_flash_tx;
+DMA_HandleTypeDef *dma_flash_rx;
+DMA_HandleTypeDef *dma_flash_tx;
 flash_info_record flashInfo;
 
 
@@ -64,7 +64,7 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) 
   	txBuffer[3] = (address & 0xFF);
 
 	//while (HAL_DMA_GetState(&dma_flash_tx) != HAL_DMA_STATE_READY || HAL_SPI_GetState(&flash_spi) != HAL_SPI_STATE_READY);
-	if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
+	if (HAL_DMA_GetState(dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
 		WriteEnableDataFlash();
 		inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 		flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
@@ -87,7 +87,7 @@ static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuf
   	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 	flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
 
-	if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
+	if (HAL_DMA_GetState(dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
 		FlashChipReadWriteDataSpiDma(txBuffer, rxBuffer, FLASH_CHIP_BUFFER_SIZE);
 		return(1);
 	}
@@ -108,7 +108,7 @@ int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) {
 
   	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
 
-	if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
+	if (HAL_DMA_GetState(dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
 
 		if (HAL_SPI_TransmitReceive(&flash_spi, txBuffer, rxBuffer, FLASH_CHIP_BUFFER_SIZE, 1000) == HAL_OK) {
 			inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
@@ -484,7 +484,7 @@ int WriteEnableDataFlashDma(void) {
 
 	uint8_t c[1] = {M25P16_WRITE_ENABLE};
 
-    if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
+    if (HAL_DMA_GetState(dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
 
     	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
         //flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
@@ -625,7 +625,7 @@ static int FlashChipReadWriteDataSpiDma(uint8_t *txData, uint8_t *rxData, uint16
 {
     // ensure that both SPI and DMA resources are available, but don't block if they are not
 
-    if (HAL_DMA_GetState(&dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
+    if (HAL_DMA_GetState(dma_flash_tx) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&flash_spi) == HAL_SPI_STATE_READY) {
 
     	inlineDigitalLo(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
         //flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
@@ -641,14 +641,14 @@ static int FlashChipReadWriteDataSpiDma(uint8_t *txData, uint8_t *rxData, uint16
 
 void FLASH_DMA_TX_IRQHandler(void)
 {
-    HAL_DMA_IRQHandler(&dma_flash_tx);
+    HAL_DMA_IRQHandler(dma_flash_tx);
 }
 
 void FLASH_DMA_RX_IRQHandler(void)
 {
-    HAL_DMA_IRQHandler(&dma_flash_rx);
+    HAL_DMA_IRQHandler(dma_flash_rx);
 
-    if (HAL_DMA_GetState(&dma_flash_rx) == HAL_DMA_STATE_READY) {
+    if (HAL_DMA_GetState(dma_flash_rx) == HAL_DMA_STATE_READY) {
         // reset chip select line
     	inlineDigitalHi(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin);
     	bzero(flashInfo.commandTxBuffer, sizeof(flashInfo.commandTxBuffer));
