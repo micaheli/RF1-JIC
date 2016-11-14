@@ -1,6 +1,10 @@
 #pragma once
 
-#define CONFIG_VERSION (uint8_t)(3U)
+#define CONFIG_VERSION			(uint8_t)(4U)
+#define CONFIG_VERSION_STR		"4"
+#define FIRMWARE_VERSION		"0.002 ALPHA"
+#define FIRMWARE_NAME			"RaceFlight One"
+#define FULL_VERSION_STRING		"NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
 
 typedef struct {
 	rc_control_config rcControlsConfig;

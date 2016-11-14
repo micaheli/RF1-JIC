@@ -11,33 +11,58 @@ typedef struct {
 	uint32_t ccr;
 } motor_output_array;
 
-motor_output_array motorOutputArray[MAX_MOTOR_NUMBER];
+//motor_output_array motorOutputArray[MAX_MOTOR_NUMBER];
 
 void InitActuators(void) {
 
-	bzero(motorOutputArray, sizeof(motorOutputArray));
+	//bzero(motorOutputArray, sizeof(motorOutputArray));
 
-	motorOutputArray[0].active = 1;
-	motorOutputArray[1].active = 1;
-	motorOutputArray[2].active = 1;
-	motorOutputArray[3].active = 1;
+	//motorOutputArray[0].active = 1;
+	//motorOutputArray[1].active = 1;
+	//motorOutputArray[2].active = 1;
+	//motorOutputArray[3].active = 1;
 
-	//motorOutputArray[0].timer = _TIM3;
-	//motorOutputArray[1].timer = _TIM3;
-	//motorOutputArray[2].timer = _TIM9;
-	//motorOutputArray[3].timer = _TIM2;
-
-	//these calues come from config
+	//these values come from config
 	//this is for multishot at 32KHz on STM32F4 running at 192MHz
-	float disarmUs  = 5;
-	float idleUs  = 6.2;
-	//float idleUs  = 5.7;
-	float walledUs  = 20;
-	uint32_t pwmHz   = 32000;
-	uint32_t timerHz = 48000000;
+	float disarmUs;
+	float idleUs;
+	float walledUs;   //MAX PWM
+	uint32_t pwmHz;   //max pwmHz
+	uint32_t timerHz; //should be calculated based on CPU
 
 	uint32_t walledPulseValue;
 
+	switch (mainConfig.mixerConfig.escProtcol) {
+		case ESC_PWM:
+			disarmUs  = 1000;
+			walledUs  = 2000;
+			pwmHz     = 490;
+			timerHz   = 1000000;
+			break;
+		case ESC_ONESHOT:
+			disarmUs  = 125;
+			walledUs  = 250;
+			pwmHz     = 3900;
+			timerHz   = 8000000;
+			break;
+		case ESC_ONESHOT42:
+			disarmUs  = 41.66;
+			walledUs  = 83.333;
+			pwmHz     = 11500;
+			timerHz   = 24000000;
+			break;
+		case ESC_MULTISHOT:
+		default:
+			disarmUs  = 5;
+			walledUs  = 22;
+			pwmHz     = 32000;
+			timerHz   = 48000000;
+			break;
+	}
+
+	pwmHz = CONSTRAIN(mainConfig.mixerConfig.escUpdateFrequency,50,pwmHz); //constrain pwmHz between the config value and the max allowed for the ESC protocol.
+
+	idleUs = ((walledUs - disarmUs) * (mainConfig.mixerConfig.idlePercent * 0.01) ) + disarmUs;
 	float period = ((float)timerHz/(float)pwmHz);
 	float pwmUs = (1000000/(float)pwmHz); //31.25 / 1500
 	float pwmUsPerTimerStep = (pwmUs / (period-1)); //us per timer step, 0.02083333333333333
@@ -81,7 +106,7 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 
 	pwmTimer.Instance = timer;
 	pwmTimer.Init.Prescaler = timerPrescaler;
-	pwmTimer.Init.CounterMode = TIM_COUNTERMODE_UP;
+	pwmTimer.Init.CounterMode = TIM_COUNTERMODE_DOWN;
 	pwmTimer.Init.Period = (timerHz/pwmHz)-1;
 	pwmTimer.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	HAL_TIM_Base_Init(&pwmTimer);
@@ -118,20 +143,27 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 
 
 inline void OutputActuators(volatile float motorOutputHere[], volatile float servoOutput[]) {
-	volatile uint32_t pulseValue;
 
 	if (boardArmed || calibrateMotors) {
 
 		if (calibrateMotors) {
-			pulseValue = disarmPulseValue;
+			if (motorOutputHere[0] < 0.1) {
+				MOTOR1_TIM_CCR = disarmPulseValue;
+				MOTOR2_TIM_CCR = disarmPulseValue;
+				MOTOR3_TIM_CCR = disarmPulseValue;
+				MOTOR4_TIM_CCR = disarmPulseValue;
+			} else {
+				MOTOR1_TIM_CCR = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
+				MOTOR2_TIM_CCR = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
+				MOTOR3_TIM_CCR = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
+				MOTOR4_TIM_CCR = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
+			}
 		} else {
-			pulseValue = idlePulseValue;
+			MOTOR1_TIM_CCR = (uint32_t)((float)motorOutputHere[0] * (float)pulseValueRange) + idlePulseValue;
+			MOTOR2_TIM_CCR = (uint32_t)((float)motorOutputHere[1] * (float)pulseValueRange) + idlePulseValue;
+			MOTOR3_TIM_CCR = (uint32_t)((float)motorOutputHere[2] * (float)pulseValueRange) + idlePulseValue;
+			MOTOR4_TIM_CCR = (uint32_t)((float)motorOutputHere[3] * (float)pulseValueRange) + idlePulseValue;
 		}
-
- 		MOTOR1_TIM_CCR = (uint32_t)((float)motorOutputHere[0] * (float)pulseValueRange) + pulseValue;
- 		MOTOR2_TIM_CCR = (uint32_t)((float)motorOutputHere[1] * (float)pulseValueRange) + pulseValue;
- 		MOTOR3_TIM_CCR = (uint32_t)((float)motorOutputHere[2] * (float)pulseValueRange) + pulseValue;
- 		MOTOR4_TIM_CCR = (uint32_t)((float)motorOutputHere[3] * (float)pulseValueRange) + pulseValue;
 
 	} else {
 

@@ -42,9 +42,12 @@ static void EncodeBlock( unsigned char *in, unsigned char *out, int len )
 const config_variables_rec valueTable[] = {
 
 		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,				0, MIXER_END, MIXER_X1234, "" },
+		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtcol,				0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
+		{ "idle_percent", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,		0, 32000, 32000, "" },
+		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,				0, 15.0, 7.0, "" },
 
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,				0, 12, CW0, "" },
-//		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,			0, 1, 0, "" },
+		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,			0, 1, 0, "" },
 		{ "sml_board_rot_x", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],	0, 10, 0, "" },
 		{ "sml_board_rot_y", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Y],	0, 10, 0, "" },
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 	0, 10, 0, "" },
@@ -411,12 +414,26 @@ void SetVariable(char *inString) {
 	for (x = 0; x < strlen(inString); x++)
 		inString[x] = tolower((unsigned char)inString[x]);
 
+	if (!strcmp("board_calibrated", inString)) {
+		memcpy(rf_custom_out_buffer, "board_calibrated cannot be set manually. Please run the board calibration routine.\0", sizeof("board_calibrated cannot be set manually. Please run the board calibration routine.\0"));
+		RfCustomReply(rf_custom_out_buffer);
+		return;
+	}
+
+
 	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 	{
 		if (!strcmp(valueTable[x].name, inString))
 		{
 			SetValue(x, args);
-
+			autoSaveTimer = InlineMillis();
+			if ( (!strcmp(valueTable[x].group, "mixr")) || (!strcmp(valueTable[x].group, "gyro")) || (!strcmp(valueTable[x].group, "filt"))  || (!strcmp(valueTable[x].group, "rccf")) ) {
+				InitRcData();
+			    InitMixer();
+			    InitFlightCode();
+			    InitPid();
+			    InitActuators();
+			}
 		}
 	}
 }
@@ -855,6 +872,12 @@ void ProcessCommand(char *inString)
 
 			}
 
+		}
+	else if (!strcmp("version", inString))
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, FULL_VERSION_STRING "\0", sizeof(FULL_VERSION_STRING "\0"));
+			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("calibratea", inString))
 		{

@@ -317,7 +317,7 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 void boot_to_app (void) {
 
 	if (!(skipDelay))
-		DelayMs(600); //600 ms delay before booting into app to allow PDB power to stabilize
+		DelayMs(1000); //600 ms delay before booting into app to allow PDB power to stabilize
 
 	if (usbStarted) {
 		USB_DEVICE_DeInit();

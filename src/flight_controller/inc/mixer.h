@@ -16,11 +16,16 @@ typedef struct {
     float aux4;
 } actuator_mixer;
 
+
 typedef struct {
     uint32_t mixerType;
+    uint32_t escProtcol;
+    uint32_t escUpdateFrequency;
+    float idlePercent;
 } mixer_config;
 
 enum {MIXER_X1234=0,MIXER_X1234_REVERSE_YAW,MIXER_CUSTOM,MIXER_END};
+enum {ESC_MULTISHOT=0,ESC_ONESHOT,ESC_PWM,ESC_ONESHOT42,ESC_DSHOT,ESC_MEGAVOLT,ESC_PROTOCOL_END};
 
 #define MAX_MOTOR_NUMBER 8
 #define MAX_SERVO_NUMBER 8

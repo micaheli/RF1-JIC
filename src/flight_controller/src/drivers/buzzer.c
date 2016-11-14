@@ -29,16 +29,16 @@ void InitializeBuzzerPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
 void DoBuzz(int on)
 {
-	if (on)
+	if (!buzzerStatus.status && on)
 	{
+		buzzerStatus.status = 1;
     	HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_RESET);
 	}
-	else
+	else if (buzzerStatus.status && !on)
 	{
+		buzzerStatus.status = 0;
     	HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_SET);
 	}
-
-
 }
 
 void UpdateBuzzer(void)
@@ -54,26 +54,22 @@ void UpdateBuzzer(void)
 	//different states for buzzer
     switch(buzzerStatus.status)
     {
-
-    default:
-    case STATE_BUZZER_OFF:
-    	DoBuzz(0);
-    	break;
-    case STATE_BUZZER_ON:
-    	DoBuzz(1);
-    	break;
-    case STATE_BUZZER_LOST:
-    	Buzz(timeNow,100, 150);
-    	break;
-    case STATE_BUZZER_STARTUP:
-    	Buzz(timeNow,40,80);
-    	break;
-    case STATE_BUZZER_ERROR:
-    	Buzz(timeNow,20,40);
-
+		default:
+		case STATE_BUZZER_OFF:
+			DoBuzz(0);
+			break;
+		case STATE_BUZZER_ON:
+			DoBuzz(1);
+			break;
+		case STATE_BUZZER_LOST:
+			Buzz(timeNow,100, 150);
+			break;
+		case STATE_BUZZER_STARTUP:
+			Buzz(timeNow,40,80);
+			break;
+		case STATE_BUZZER_ERROR:
+			Buzz(timeNow,20,40);
      }
-
-    //Buzz(timeNow, 1, 1);
 
 }
 //function to make the buzzer buzz

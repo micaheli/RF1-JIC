@@ -39,7 +39,7 @@
 #define BUZZER_GPIO_Port        _PORTB
 #define BUZZER_GPIO_Pin         GPIO_PIN_4
 
-#define SPEKTRUM_TELEM
+//#define SPEKTRUM_TELEM
 
 //Gyro Config
 #define GYRO_SPI                SPI1

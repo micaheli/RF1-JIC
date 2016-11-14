@@ -3,6 +3,7 @@
 extern uint8_t tOutBuffer[];
 extern uint8_t tInBuffer[];
 uint32_t failsafeStage = 0;
+uint32_t autoSaveTimer = 0;
 
 void scheduler(int32_t count)
 {
@@ -19,6 +20,7 @@ void scheduler(int32_t count)
 			taskBuzzer();
 			break;
 		case 3:
+			taskAutoSaveConfig();
 			break;
 		case 4:
 			break;
@@ -43,6 +45,15 @@ void scheduler(int32_t count)
 
 	}
 
+}
+
+inline void taskAutoSaveConfig(void) {
+	if (!boardArmed) {
+		if ( autoSaveTimer && ( InlineMillis() - autoSaveTimer > 1000) ) {
+			autoSaveTimer = 0;
+			SaveConfig(ADDRESS_CONFIG_START);
+		}
+	}
 }
 
 inline void taskHandlePcComm(void)

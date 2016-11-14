@@ -16,5 +16,9 @@
   #define ABS(x) ((x) > 0 ? (x) : -(x))
 #endif
 
+#ifndef CONSTRAIN
+  #define CONSTRAIN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#endif
+
 float InlineConstrainf(float amt, float low, float high);
 float InlineChangeRangef(float oldValue, float oldMax, float oldMin, float newMax, float newMin);
