@@ -38,6 +38,16 @@
 #define _GPIOC GPIOC
 #define _GPIOD GPIOD
 
+#define _PORTA 0
+#define _PORTB 1
+#define _PORTC 2
+#define _PORTD 3
+#define _PORTE 4
+#define _PORTF 5
+#define _PORTG 6
+#define _PORTH 7
+#define _PORTI 8
+
 #if defined(stm32f405xx) || defined(STM32F405xx)
 
 #include <stm32f405xx.h>

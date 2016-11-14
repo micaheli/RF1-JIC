@@ -25,7 +25,7 @@
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
 #ifdef STM32F405xx
-	#include "REVOLT"
+	#include "REVOLT.h"
 #elif defined(STM32F446xx)
 	#include "SPMFC400.h"
 #endif

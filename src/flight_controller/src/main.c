@@ -28,8 +28,7 @@ int main(void)
 
     int32_t count = 16;
 
-	//VectorIrqInit(ADDRESS_RFFW_START);
-	VectorIrqInit(ADDRESS_RECOVERY_START);
+	VectorIrqInit(ADDRESS_RFFW_START);
 
 	//TODO Needs to pull parameters from flash here. For now we use defines
 	getBoardHardwareDefs();
@@ -47,8 +46,9 @@ int main(void)
     InitBuzzer();
     InitLeds();
     InitUsb();
-    //InitFlashChip();
+#ifndef STM32F446xx
     InitFlightLogger();
+#endif
     InitRcData();
     InitMixer();
     InitFlightCode();
