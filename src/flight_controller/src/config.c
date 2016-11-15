@@ -568,6 +568,9 @@ void ProcessCommand(char *inString)
 			motorOutput[7] = 0;
 			motorOutput[8] = 0;
 			OutputActuators(motorOutput, servoOutput);
+			InitWatchdog(WATCHDOG_TIMEOUT_16S);
+			DelayMs(5000);
+			InitWatchdog(WATCHDOG_TIMEOUT_2S);
 			calibrateMotors = 0;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -607,9 +610,8 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 			OutputActuators(motorOutput, servoOutput);
 			InitWatchdog(WATCHDOG_TIMEOUT_16S);
-			DelayMs(10000);
+			DelayMs(15000);
 			InitWatchdog(WATCHDOG_TIMEOUT_2S);
-			SKIP_GYRO=0;
 			motorOutput[0] = 0;
 			motorOutput[1] = 0;
 			motorOutput[2] = 0;
@@ -620,6 +622,10 @@ void ProcessCommand(char *inString)
 			motorOutput[7] = 0;
 			motorOutput[8] = 0;
 			OutputActuators(motorOutput, servoOutput);
+			InitWatchdog(WATCHDOG_TIMEOUT_16S);
+			DelayMs(5000);
+			InitWatchdog(WATCHDOG_TIMEOUT_2S);
+			SKIP_GYRO=0;
 			calibrateMotors = 0;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));

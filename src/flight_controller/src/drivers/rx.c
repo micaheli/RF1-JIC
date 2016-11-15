@@ -52,7 +52,7 @@ inline void RxUpdate(void) // hook for when rx updates
 
 	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
 		latchFirstArm = 1;
-	} else if ( (latchFirstArm == 2) && (!boardArmed) && (rxData[4] > 1500) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode) { //TODO: make uncalibrated board buzz
+	} else if ( (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (rxData[4] > 1500) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode) { //TODO: make uncalibrated board buzz
 
 		latchFirstArm = 0;
 		disarmCount = 0;

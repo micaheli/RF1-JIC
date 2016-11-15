@@ -6,11 +6,12 @@
 #include "../flight_controller/inc/rf_math.h"
 #include "includes.h"
 
-GPIO_TypeDef *ports[11];
-serial_type usarts[6];
-spi_type spis[5];
-TIM_TypeDef *timers[14];
-board_type board;
+GPIO_TypeDef      *ports[11];
+serial_type        usarts[6];
+spi_type           spis[5];
+TIM_TypeDef       *timers[14];
+volatile uint32_t *ccr[56];
+board_type         board;
 
 
 int InitializeMCUSettings() {
@@ -66,6 +67,64 @@ int InitializeMCUSettings() {
 	timers[12]=_TIM13;
 	timers[13]=_TIM14;
 
+	bzero(ccr, sizeof(ccr));
+	ccr[0] = &_TIM1->CCR1;
+	ccr[1] = &_TIM1->CCR2;
+	ccr[2] = &_TIM1->CCR3;
+	ccr[3] = &_TIM1->CCR4;
+	ccr[4] = &_TIM2->CCR1;
+	ccr[5] = &_TIM2->CCR2;
+	ccr[6] = &_TIM2->CCR3;
+	ccr[7] = &_TIM2->CCR4;
+	ccr[8] = &_TIM3->CCR1;
+	ccr[9] = &_TIM3->CCR2;
+	ccr[10] = &_TIM3->CCR3;
+	ccr[11] = &_TIM3->CCR4;
+	ccr[12] = &_TIM4->CCR1;
+	ccr[13] = &_TIM4->CCR2;
+	ccr[14] = &_TIM4->CCR3;
+	ccr[15] = &_TIM4->CCR4;
+	ccr[16] = &_TIM5->CCR1;
+	ccr[17] = &_TIM5->CCR2;
+	ccr[18] = &_TIM5->CCR3;
+	ccr[19] = &_TIM5->CCR4;
+	ccr[20] = &_TIM6->CCR1;
+	ccr[21] = &_TIM6->CCR2;
+	ccr[22] = &_TIM6->CCR3;
+	ccr[23] = &_TIM6->CCR4;
+	ccr[24] = &_TIM7->CCR1;
+	ccr[25] = &_TIM7->CCR2;
+	ccr[26] = &_TIM7->CCR3;
+	ccr[27] = &_TIM7->CCR4;
+	ccr[28] = &_TIM8->CCR1;
+	ccr[29] = &_TIM8->CCR2;
+	ccr[30] = &_TIM8->CCR3;
+	ccr[31] = &_TIM8->CCR4;
+	ccr[32] = &_TIM9->CCR1;
+	ccr[33] = &_TIM9->CCR2;
+	ccr[34] = &_TIM9->CCR3;
+	ccr[35] = &_TIM9->CCR4;
+	ccr[36] = &_TIM10->CCR1;
+	ccr[37] = &_TIM10->CCR2;
+	ccr[38] = &_TIM10->CCR3;
+	ccr[39] = &_TIM10->CCR4;
+	ccr[40] = &_TIM11->CCR1;
+	ccr[41] = &_TIM11->CCR2;
+	ccr[42] = &_TIM11->CCR3;
+	ccr[43] = &_TIM11->CCR4;
+	ccr[44] = &_TIM12->CCR1;
+	ccr[45] = &_TIM12->CCR2;
+	ccr[46] = &_TIM12->CCR3;
+	ccr[47] = &_TIM12->CCR4;
+	ccr[48] = &_TIM13->CCR1;
+	ccr[49] = &_TIM13->CCR2;
+	ccr[50] = &_TIM13->CCR3;
+	ccr[51] = &_TIM13->CCR4;
+	ccr[52] = &_TIM14->CCR1;
+	ccr[53] = &_TIM14->CCR2;
+	ccr[54] = &_TIM14->CCR3;
+	ccr[55] = &_TIM14->CCR4;
+
 	return(1);
 }
 
@@ -107,33 +166,41 @@ void getBoardHardwareDefs(void)
 	//gyro settings
 
 	//Motor output assignments
-	board.motors[0].timer = MOTOR1_TIM;
-	board.motors[0].pin = MOTOR1_PIN;
-	board.motors[0].port = MOTOR1_GPIO;
-	board.motors[0].AF = MOTOR1_ALTERNATE;
+	board.motors[0].enabled    = 1;
+	board.motors[0].timer      = MOTOR1_TIM;
+	board.motors[0].pin        = MOTOR1_PIN;
+	board.motors[0].port       = MOTOR1_GPIO;
+	board.motors[0].AF         = MOTOR1_ALTERNATE;
 	board.motors[0].timChannel = MOTOR1_TIM_CH;
-	board.motors[0].timCCR = MOTOR1_TIM_CCR;
+	board.motors[0].timCCR     = MOTOR1_TIM_CCR;
+	board.motors[0].polarity   = MOTOR2_POLARITY;
 
-	board.motors[1].timer = MOTOR2_TIM;
-	board.motors[1].pin = MOTOR2_PIN;
-	board.motors[1].port = MOTOR2_GPIO;
-	board.motors[1].AF = MOTOR2_ALTERNATE;
+	board.motors[1].enabled    = 1;
+	board.motors[1].timer      = MOTOR2_TIM;
+	board.motors[1].pin        = MOTOR2_PIN;
+	board.motors[1].port       = MOTOR2_GPIO;
+	board.motors[1].AF         = MOTOR2_ALTERNATE;
 	board.motors[1].timChannel = MOTOR2_TIM_CH;
-	board.motors[1].timCCR = MOTOR2_TIM_CCR;
+	board.motors[1].timCCR     = MOTOR2_TIM_CCR;
+	board.motors[1].polarity   = MOTOR2_POLARITY;
 
-	board.motors[2].timer = MOTOR3_TIM;
-	board.motors[2].pin = MOTOR3_PIN;
-	board.motors[2].port = MOTOR3_GPIO;
-	board.motors[2].AF = MOTOR3_ALTERNATE;
+	board.motors[2].enabled    = 1;
+	board.motors[2].timer      = MOTOR3_TIM;
+	board.motors[2].pin        = MOTOR3_PIN;
+	board.motors[2].port       = MOTOR3_GPIO;
+	board.motors[2].AF         = MOTOR3_ALTERNATE;
 	board.motors[2].timChannel = MOTOR3_TIM_CH;
-	board.motors[2].timCCR = MOTOR3_TIM_CCR;
+	board.motors[2].timCCR     = MOTOR3_TIM_CCR;
+	board.motors[2].polarity   = MOTOR3_POLARITY;
 
-	board.motors[3].timer = MOTOR4_TIM;
-	board.motors[3].pin = MOTOR4_PIN;
-	board.motors[3].port = MOTOR4_GPIO;
-	board.motors[3].AF = MOTOR4_ALTERNATE;
+	board.motors[3].enabled    = 1;
+	board.motors[3].timer      = MOTOR4_TIM;
+	board.motors[3].pin        = MOTOR4_PIN;
+	board.motors[3].port       = MOTOR4_GPIO;
+	board.motors[3].AF         = MOTOR4_ALTERNATE;
 	board.motors[3].timChannel = MOTOR4_TIM_CH;
-	board.motors[3].timCCR = MOTOR4_TIM_CCR;
+	board.motors[3].timCCR     = MOTOR4_TIM_CCR;
+	board.motors[3].polarity   = MOTOR4_POLARITY;
 
 	//GYRO connection settings	------------------------------------------------------------------------------------------------------------------------------------------------------------
 	board.gyro_pins.SPIInstance = GYRO_SPI;	//use this to determine spi irqn and irq handlers to use. No need to re define them here

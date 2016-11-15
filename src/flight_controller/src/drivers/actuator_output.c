@@ -15,15 +15,6 @@ typedef struct {
 
 void InitActuators(void) {
 
-	//bzero(motorOutputArray, sizeof(motorOutputArray));
-
-	//motorOutputArray[0].active = 1;
-	//motorOutputArray[1].active = 1;
-	//motorOutputArray[2].active = 1;
-	//motorOutputArray[3].active = 1;
-
-	//these values come from config
-	//this is for multishot at 32KHz on STM32F4 running at 192MHz
 	float disarmUs;
 	float idleUs;
 	float walledUs;   //MAX PWM
@@ -71,10 +62,9 @@ void InitActuators(void) {
 	walledPulseValue = (uint32_t) (walledUs/pwmUsPerTimerStep);
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
-	InitActuatorTimer(MOTOR1_GPIO, MOTOR1_PIN, MOTOR1_TIM, MOTOR1_TIM_CH, MOTOR1_ALTERNATE, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
-	InitActuatorTimer(MOTOR2_GPIO, MOTOR2_PIN, MOTOR2_TIM, MOTOR2_TIM_CH, MOTOR2_ALTERNATE, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
-	InitActuatorTimer(MOTOR3_GPIO, MOTOR3_PIN, MOTOR3_TIM, MOTOR3_TIM_CH, MOTOR3_ALTERNATE, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
-	InitActuatorTimer(MOTOR4_GPIO, MOTOR4_PIN, MOTOR4_TIM, MOTOR4_TIM_CH, MOTOR4_ALTERNATE, TIM_OCPOLARITY_LOW, disarmPulseValue, pwmHz, timerHz);
+	for (uint32_t motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
+		InitActuatorTimer(ports[board.motors[motorNum].port], board.motors[motorNum].pin, timers[board.motors[motorNum].timer], board.motors[motorNum].timChannel, board.motors[motorNum].AF, board.motors[motorNum].polarity, disarmPulseValue, pwmHz, timerHz);
+	}
 
 
 }
@@ -106,7 +96,7 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 
 	pwmTimer.Instance = timer;
 	pwmTimer.Init.Prescaler = timerPrescaler;
-	pwmTimer.Init.CounterMode = TIM_COUNTERMODE_DOWN;
+	pwmTimer.Init.CounterMode = TIM_COUNTERMODE_UP;
 	pwmTimer.Init.Period = (timerHz/pwmHz)-1;
 	pwmTimer.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	HAL_TIM_Base_Init(&pwmTimer);
@@ -142,44 +132,41 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 
 
 
-inline void OutputActuators(volatile float motorOutputHere[], volatile float servoOutput[]) {
+inline void OutputActuators(volatile float motorOutput[], volatile float servoOutput[]) {
+
+	uint32_t motorNum;
 
 	if (boardArmed || calibrateMotors) {
 
 		if (calibrateMotors) {
-			if (motorOutputHere[0] < 0.1) {
-				MOTOR1_TIM_CCR = disarmPulseValue;
-				MOTOR2_TIM_CCR = disarmPulseValue;
-				MOTOR3_TIM_CCR = disarmPulseValue;
-				MOTOR4_TIM_CCR = disarmPulseValue;
+			if (motorOutput[0] < 0.1) {
+				for (motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
+					*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
+				}
 			} else {
-				MOTOR1_TIM_CCR = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
-				MOTOR2_TIM_CCR = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
-				MOTOR3_TIM_CCR = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
-				MOTOR4_TIM_CCR = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
+				for (motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
+					*ccr[board.motors[motorNum].timCCR] = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
+				}
 			}
 		} else {
-			MOTOR1_TIM_CCR = (uint32_t)((float)motorOutputHere[0] * (float)pulseValueRange) + idlePulseValue;
-			MOTOR2_TIM_CCR = (uint32_t)((float)motorOutputHere[1] * (float)pulseValueRange) + idlePulseValue;
-			MOTOR3_TIM_CCR = (uint32_t)((float)motorOutputHere[2] * (float)pulseValueRange) + idlePulseValue;
-			MOTOR4_TIM_CCR = (uint32_t)((float)motorOutputHere[3] * (float)pulseValueRange) + idlePulseValue;
+			for (motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
+				*ccr[board.motors[motorNum].timCCR] = (uint32_t)((float)motorOutput[motorNum] * (float)pulseValueRange) + idlePulseValue;
+			}
 		}
 
 	} else {
-
-		MOTOR1_TIM_CCR = disarmPulseValue;
-		MOTOR2_TIM_CCR = disarmPulseValue;
-		MOTOR3_TIM_CCR = disarmPulseValue;
-		MOTOR4_TIM_CCR = disarmPulseValue;
-
+		for (motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
+			*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
+		}
 	}
 
 	(void)(servoOutput);
 }
 
 void ZeroActuators(void) {
-	MOTOR1_TIM_CCR = disarmPulseValue;
-	MOTOR2_TIM_CCR = disarmPulseValue;
-	MOTOR3_TIM_CCR = disarmPulseValue;
-	MOTOR4_TIM_CCR = disarmPulseValue;
+
+	for (uint32_t motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
+		*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
+	}
+
 }

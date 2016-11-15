@@ -2,6 +2,8 @@
 
 #include "mcu_include.h"
 
+#define MAX_MOTOR_NUMBER 8
+#define MAX_SERVO_NUMBER 8
 
 #define uid0_1 (*(uint8_t*)0x1fff7a10)
 #define uid0_2 (*(uint8_t*)0x1fff7a11)
@@ -17,18 +19,106 @@
 #define uid2_4 (*(uint8_t*)0x1fff7a1b)
 
 
+#define _PORTA 0
+#define _PORTB 1
+#define _PORTC 2
+#define _PORTD 3
+#define _PORTE 4
+#define _PORTF 5
+#define _PORTG 6
+#define _PORTH 7
+#define _PORTI 8
+
+
+#define ENUMTIM1	0
+#define ENUMTIM2	1
+#define ENUMTIM3	2
+#define ENUMTIM4	3
+#define ENUMTIM5	4
+#define ENUMTIM6	5
+#define ENUMTIM7	6
+#define ENUMTIM8	7
+#define ENUMTIM9	8
+#define ENUMTIM10	9
+#define ENUMTIM11	10
+#define ENUMTIM12	11
+#define ENUMTIM13	12
+#define ENUMTIM14	13
+
+
+#define	TIM1CCR1 0
+#define	TIM1CCR2 1
+#define	TIM1CCR3 2
+#define	TIM1CCR4 3
+#define	TIM2CCR1 4
+#define	TIM2CCR2 5
+#define	TIM2CCR3 6
+#define	TIM2CCR4 7
+#define	TIM3CCR1 8
+#define	TIM3CCR2 9
+#define	TIM3CCR3 10
+#define	TIM3CCR4 11
+#define	TIM4CCR1 12
+#define	TIM4CCR2 13
+#define	TIM4CCR3 14
+#define	TIM4CCR4 15
+#define	TIM5CCR1 16
+#define	TIM5CCR2 17
+#define	TIM5CCR3 18
+#define	TIM5CCR4 19
+#define	TIM6CCR1 20
+#define	TIM6CCR2 21
+#define	TIM6CCR3 22
+#define	TIM6CCR4 23
+#define	TIM7CCR1 24
+#define	TIM7CCR2 25
+#define	TIM7CCR3 26
+#define	TIM7CCR4 27
+#define	TIM8CCR1 28
+#define	TIM8CCR2 29
+#define	TIM8CCR3 30
+#define	TIM8CCR4 31
+#define	TIM9CCR1 32
+#define	TIM9CCR2 33
+#define	TIM9CCR3 34
+#define	TIM9CCR4 35
+#define	TIM10CCR1 36
+#define	TIM10CCR2 37
+#define	TIM10CCR3 38
+#define	TIM10CCR4 39
+#define	TIM11CCR1 40
+#define	TIM11CCR2 41
+#define	TIM11CCR3 42
+#define	TIM11CCR4 43
+#define	TIM12CCR1 44
+#define	TIM12CCR2 45
+#define	TIM12CCR3 46
+#define	TIM12CCR4 47
+#define	TIM13CCR1 48
+#define	TIM13CCR2 49
+#define	TIM13CCR3 50
+#define	TIM13CCR4 51
+#define	TIM14CCR1 52
+#define	TIM14CCR2 53
+#define	TIM14CCR3 54
+#define	TIM14CCR4 55
+
+
 #define	REVO
+
 
 //USB config
 #define RFFW_HID_PRODUCT_STRING "RaceFlight FC"
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
+
 #ifdef STM32F405xx
 	#include "REVOLT.h"
 #elif defined(STM32F446xx)
 	#include "SPMFC400.h"
 #endif
+
 
 typedef struct {
 	USART_TypeDef			*port;
@@ -172,12 +262,14 @@ typedef struct {
 } board_gyro;
 
 typedef struct {
-	TIM_TypeDef *			timer;
+	uint32_t				enabled;
+	uint32_t				timer;
 	uint32_t				pin;
-	GPIO_TypeDef *			port;
+	uint32_t				port;
 	uint32_t				AF;	
 	uint32_t				timChannel;
 	uint32_t				timCCR;
+	uint32_t				polarity;
 } motor_type;
 
 
@@ -197,7 +289,8 @@ typedef struct {
 
 	gyro_type				gyros[3];
 	
-	motor_type				motors[4];
+	motor_type				motors[MAX_MOTOR_NUMBER];
+	motor_type				servos[MAX_SERVO_NUMBER];
 
 	board_gyro				gyro_pins;
 
@@ -254,8 +347,10 @@ typedef struct
 
 */
 
-extern board_type board;
-extern GPIO_TypeDef *ports[];
+extern board_type         board;
+extern GPIO_TypeDef      *ports[];
+extern volatile uint32_t *ccr[];
+extern TIM_TypeDef       *timers[];
 
 extern int InitializeMCUSettings();
 void getBoardHardwareDefs();
