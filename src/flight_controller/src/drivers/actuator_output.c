@@ -63,7 +63,8 @@ void InitActuators(void) {
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
 	for (uint32_t motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
-		InitActuatorTimer(ports[board.motors[motorNum].port], board.motors[motorNum].pin, timers[board.motors[motorNum].timer], board.motors[motorNum].timChannel, board.motors[motorNum].AF, board.motors[motorNum].polarity, disarmPulseValue, pwmHz, timerHz);
+		if (board.motors[motorNum].enabled)
+			InitActuatorTimer(ports[board.motors[motorNum].port], board.motors[motorNum].pin, timers[board.motors[motorNum].timer], board.motors[motorNum].timChannel, board.motors[motorNum].AF, board.motors[motorNum].polarity, disarmPulseValue, pwmHz, timerHz);
 	}
 
 
@@ -141,22 +142,26 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 		if (calibrateMotors) {
 			if (motorOutput[0] < 0.1) {
 				for (motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
-					*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
+					if (board.motors[motorNum].enabled)
+						*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
 				}
 			} else {
 				for (motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
-					*ccr[board.motors[motorNum].timCCR] = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
+					if (board.motors[motorNum].enabled)
+						*ccr[board.motors[motorNum].timCCR] = (uint32_t)((float)1 * (float)pulseValueRange) + idlePulseValue;
 				}
 			}
 		} else {
 			for (motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
-				*ccr[board.motors[motorNum].timCCR] = (uint32_t)((float)motorOutput[motorNum] * (float)pulseValueRange) + idlePulseValue;
+				if (board.motors[motorNum].enabled)
+					*ccr[board.motors[motorNum].timCCR] = (uint32_t)((float)motorOutput[motorNum] * (float)pulseValueRange) + idlePulseValue;
 			}
 		}
 
 	} else {
 		for (motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
-			*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
+			if (board.motors[motorNum].enabled)
+				*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
 		}
 	}
 
@@ -166,7 +171,8 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 void ZeroActuators(void) {
 
 	for (uint32_t motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
-		*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
+		if (board.motors[motorNum].enabled)
+			*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
 	}
 
 }

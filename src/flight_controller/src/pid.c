@@ -180,9 +180,9 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 		usedFlightSetPoints[2] = flightSetPoints[2];
 	}
 
-	usedFlightSetPoints[0] = flightSetPoints[0];
-	usedFlightSetPoints[1] = flightSetPoints[1];
-	usedFlightSetPoints[2] = flightSetPoints[2];
+	//usedFlightSetPoints[0] = flightSetPoints[0];
+	//usedFlightSetPoints[1] = flightSetPoints[1];
+	//usedFlightSetPoints[2] = flightSetPoints[2];
 
 	for (axis = 2; axis >= 0; --axis) {
 
@@ -208,11 +208,11 @@ inline void InlinePidController (float filteredGyroData[], float flightSetPoints
 
 				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * kiPidError[axis], -0.312121f, 0.312121f); //prevent insane windup
 
-				//if ( actuatorRange > .9999 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
-				//	flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
-				//} else {
-				//	kiErrorLimit[axis] = ABS(flightPids[axis].ki);
-				//}
+				if ( actuatorRange > .9999 ) { //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
+				} else {
+					kiErrorLimit[axis] = ABS(flightPids[axis].ki);
+				}
 
 			} else {
 

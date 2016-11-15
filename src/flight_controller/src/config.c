@@ -557,7 +557,6 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("calibratem2", inString))
 		{
-			SKIP_GYRO=0;
 			motorOutput[0] = 0;
 			motorOutput[1] = 0;
 			motorOutput[2] = 0;
@@ -569,8 +568,11 @@ void ProcessCommand(char *inString)
 			motorOutput[8] = 0;
 			OutputActuators(motorOutput, servoOutput);
 			InitWatchdog(WATCHDOG_TIMEOUT_16S);
+			FeedTheDog();
 			DelayMs(5000);
+			FeedTheDog();
 			InitWatchdog(WATCHDOG_TIMEOUT_2S);
+			SKIP_GYRO=0;
 			calibrateMotors = 0;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -610,8 +612,9 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 			OutputActuators(motorOutput, servoOutput);
 			InitWatchdog(WATCHDOG_TIMEOUT_16S);
-			DelayMs(15000);
-			InitWatchdog(WATCHDOG_TIMEOUT_2S);
+			FeedTheDog();
+			DelayMs(14000);
+			FeedTheDog();
 			motorOutput[0] = 0;
 			motorOutput[1] = 0;
 			motorOutput[2] = 0;
@@ -622,8 +625,9 @@ void ProcessCommand(char *inString)
 			motorOutput[7] = 0;
 			motorOutput[8] = 0;
 			OutputActuators(motorOutput, servoOutput);
-			InitWatchdog(WATCHDOG_TIMEOUT_16S);
+			FeedTheDog();
 			DelayMs(5000);
+			FeedTheDog();
 			InitWatchdog(WATCHDOG_TIMEOUT_2S);
 			SKIP_GYRO=0;
 			calibrateMotors = 0;
