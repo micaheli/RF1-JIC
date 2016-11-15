@@ -47,6 +47,7 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 		- Hardware flow control disabled (RTS and CTS signals) */
 	uartHandle.Instance        = Usart;
 
+	// TODO: make this configurable, eg SBUS 2 stopbis, even parity
 	uartHandle.Init.BaudRate   = baudRate;
 	uartHandle.Init.WordLength = UART_WORDLENGTH_8B;
 	uartHandle.Init.StopBits   = UART_STOPBITS_1;
@@ -311,6 +312,7 @@ void USARTx_IRQHandler(void)
 		txDMA = DMA1_Stream7->NDTR;
 		if ((uint16_t)(USARTx_RX_DMA_STREAM->NDTR) == 0 && !ignoreEcho)
 		{
+			// TODO: dispatch configurable callback
 			ProcessSpektrumPacket();
 			lastRXPacket = InlineMillis();
 #ifdef SPEKTRUM_TELEM

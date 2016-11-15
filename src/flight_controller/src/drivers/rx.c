@@ -12,7 +12,6 @@ uint32_t rxData[MAXCHANNELS];
 uint32_t progMode = 0;
 uint32_t progTimer = 0;
 
-
 // 2048 resolution
 uint32_t spektrumChannelShift = 3;
 uint32_t spektrumChannelMask = 0x07;
@@ -26,9 +25,36 @@ spektrumChannelMask = 0x03;
 
 SPM_VTX_DATA vtxData;
 
+#define SBUS_FRAME_SIZE 25
+#define SBUS_FRAME_LOSS_FLAG (1 << 2)
+#define SBUS_FAILSAFE_FLAG (1 << 3)
+
+typedef struct {
+	uint8_t syncByte;
+	unsigned int chan0 : 11;
+	unsigned int chan1 : 11;
+	unsigned int chan2 : 11;
+	unsigned int chan3 : 11;
+	unsigned int chan4 : 11;
+	unsigned int chan5 : 11;
+	unsigned int chan6 : 11;
+	unsigned int chan7 : 11;
+	unsigned int chan8 : 11;
+	unsigned int chan9 : 11;
+	unsigned int chan10 : 11;
+	unsigned int chan11 : 11;
+	unsigned int chan12 : 11;
+	unsigned int chan13 : 11;
+	unsigned int chan14 : 11;
+	unsigned int chan15 : 11;
+	uint8_t flags;
+	uint8_t endByte;
+} __attribute__ ((__packed__)) sbusFrame_t;
+
+
 //uint32_t tempData[MAXCHANNELS];
 
-unsigned char copiedBufferData[16];
+unsigned char copiedBufferData[RXBUFFERSIZE];
 
 volatile uint32_t rx_timeout=0;
 uint32_t spekPhase=1;
@@ -42,7 +68,7 @@ inline void CheckFailsafe(void) {
 	if ((boardArmed) && (rx_timeout > 1000))
 	{
 		boardArmed = 0;
-		ZeroActuators(); //imediately set actuators to disarmed position.
+		ZeroActuators(); //immediately set actuators to disarmed position.
 	}
 
 }
@@ -140,7 +166,6 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 
 		if (channel == 3)
 			rx_timeout = 0;
-
 	}
 
 	return(channel);
@@ -152,7 +177,7 @@ void ProcessSpektrumPacket(void)
 	uint32_t x;
 	uint32_t value;
 															   // Make sure this is very first thing done in function, and its called first on interrupt
-	memcpy(copiedBufferData, serialRxBuffer, sizeof(copiedBufferData));    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+	memcpy(copiedBufferData, serialRxBuffer, SPEKTRUM_FRAME_SIZE);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
 
 	for (x = 2; x < 16; x += 2) {
@@ -181,6 +206,38 @@ void ProcessSpektrumPacket(void)
 	RxUpdate();
 }
 
+void ProcessSbusPacket(void)
+{
+	sbusFrame_t *frame = (sbusFrame_t*)copiedBufferData;
+
+	memcpy(copiedBufferData, serialRxBuffer, SBUS_FRAME_SIZE);
+
+	// do we need to hook these into rxData[ChannelMap(i)] ?
+	rxData[0] = frame->chan0;
+	rxData[1] = frame->chan1;
+	rxData[2] = frame->chan2;
+	rxData[3] = frame->chan3;
+	rxData[4] = frame->chan4;
+	rxData[5] = frame->chan5;
+	rxData[6] = frame->chan6;
+	rxData[7] = frame->chan7;
+	rxData[8] = frame->chan8;
+	rxData[9] = frame->chan9;
+	rxData[10] = frame->chan10;
+	rxData[11] = frame->chan11;
+	rxData[12] = frame->chan12;
+	rxData[13] = frame->chan13;
+	rxData[14] = frame->chan14;
+	rxData[15] = frame->chan15;
+
+	// TODO: is this best way to deal with failsafe stuff?
+	if (!(frame->flags & (SBUS_FRAME_LOSS_FLAG | SBUS_FAILSAFE_FLAG))) {
+		rx_timeout = 0;
+	}
+
+	InlineCollectRcCommand();
+	RxUpdate();
+}
 
 void InitRcData (void) {
 	bzero(trueRcCommandF, MAXCHANNELS);

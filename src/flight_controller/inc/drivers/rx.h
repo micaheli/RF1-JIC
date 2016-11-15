@@ -55,9 +55,11 @@ extern void InitRcData(void);
 extern void InlineCollectRcCommand (void);
 extern float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo);
 extern void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]);
+
 extern void ProcessSpektrumPacket(void);
+extern void ProcessSbusPacket(void);
+
 extern void RxUpdate(void);
 extern void CheckFailsafe(void);
 extern uint32_t SpektrumChannelMap(uint32_t inChannel);
 extern uint32_t ChannelMap(uint32_t inChannel);
-
