@@ -46,6 +46,9 @@ const config_variables_rec valueTable[] = {
 		{ "idle_percent", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,		0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,				0, 15.0, 7.0, "" },
 
+		{ "led_count",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledCount,					0, WS2812_MAX_LEDS, 1, "" },
+		{ "led_color",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledColor,					0, MAX_LED_COLORS, 1, "" },
+
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,				0, 12, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,			0, 1, 0, "" },
 		{ "sml_board_rot_x", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],	0, 10, 0, "" },

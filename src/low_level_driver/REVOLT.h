@@ -4,6 +4,39 @@
 
 
 
+//DMA1 St1  USART3 RX
+
+//DMA2 St0 PI1 RX
+//DMA2 St3 PI1 RX
+
+//DMA1 St0 M4/PA2
+//DMA1 St6 M3/PA3
+//DMA1 St M2/PA3
+
+
+
+
+
+//DMA1 Ch7, St4, USART3 TX
+//DMA1 Ch4, St1, USART3 RX
+
+//DMA2 Ch3, St0 GYRO SPI1 RX
+//DMA2 Ch3, St3 GYRO SPI1 TX
+
+//DMA1 Ch0, St3 ESC SPI2 RX
+//DMA1 Ch4, St5 ESC SPI2 TX
+
+//DMA1 Ch0, St0 FLASH SPI3 RX
+//DMA1 Ch0, St5 FLASH SPI3 TX
+
+//DMA1 Ch6, St4 LED
+
+//DMA1 Ch5, St7 M1
+//DMA1 Ch5, St2 M2
+//DMA1 Ch3, St6 M3
+//DMA1 Ch3, St1 M4
+
+
 //USB config
 #define RFFW_HID_PRODUCT_STRING "RaceFlight FC"
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
@@ -38,6 +71,11 @@
 //buzzer setup
 #define BUZZER_GPIO_Port        _PORTB
 #define BUZZER_GPIO_Pin         GPIO_PIN_4
+
+//ws2812
+//PB6
+#define WS2812_LED_Port			_PORTB
+#define WS2812_LED_Pin			GPIO_PIN_6
 
 //#define SPEKTRUM_TELEM
 
@@ -200,19 +238,19 @@
 #define USARTx_TX_PIN              GPIO_PIN_10
 #define USARTx_TX_GPIO_PORT        GPIOB
 #define USARTx_TX_AF               GPIO_AF7_USART3
-#define USARTx_RX_PIN              GPIO_PIN_11
+#define USARTx_RX_PIN              GPIO_PIN_10
 #define USARTx_RX_GPIO_PORT        GPIOB
 #define USARTx_RX_AF               GPIO_AF7_USART3
 #define USARTx_IRQHandler          USART3_IRQHandler
 #define USARTx_IRQn                USART3_IRQn
-#define USARTx_TX_DMA_STREAM       DMA1_Stream3
-#define USARTx_TX_DMA_CHANNEL      DMA_CHANNEL_4
-#define USARTx_TX_DMA_IRQn         DMA1_Stream3_IRQn
-#define USARTx_TX_DMA_IRQHandler   DMA1_Stream3_IRQHandler
-#define USARTx_RX_DMA_STREAM       DMA1_Stream1
-#define USARTx_RX_DMA_CHANNEL      DMA_CHANNEL_4
-#define USARTx_RX_DMA_IRQn         DMA1_Stream1_IRQn
-#define USARTx_RX_DMA_IRQHandler   DMA1_Stream1_IRQHandler
+#define USARTx_TX_DMA_STREAM       DMA1_Stream4
+#define USARTx_TX_DMA_CHANNEL      DMA_CHANNEL_7
+#define USARTx_TX_DMA_IRQn         DMA1_Stream4_IRQn
+#define USARTx_TX_DMA_IRQHandler   DMA1_Stream4_IRQHandler
+#define USARTx_RX_DMA_STREAM       DMA1_Stream4
+#define USARTx_RX_DMA_CHANNEL      DMA_CHANNEL_7
+#define USARTx_RX_DMA_IRQn         DMA1_Stream4_IRQn
+#define USARTx_RX_DMA_IRQHandler   DMA1_Stream4_IRQHandler
 
 /*
 #define USE_UART4

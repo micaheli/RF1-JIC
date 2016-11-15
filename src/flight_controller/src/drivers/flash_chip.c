@@ -388,6 +388,9 @@ int InitFlashChip(void)
 
     }
 
+    if (0){
+    	M25p16DmaReadPage(0, flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer);
+    }
     return 0;
 }
 

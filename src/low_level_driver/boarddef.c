@@ -193,7 +193,7 @@ void getBoardHardwareDefs(void)
 	board.motors[2].timCCR     = MOTOR3_TIM_CCR;
 	board.motors[2].polarity   = MOTOR3_POLARITY;
 
-	board.motors[3].enabled    = 1;
+	board.motors[3].enabled    = 0;
 	board.motors[3].timer      = MOTOR4_TIM;
 	board.motors[3].pin        = MOTOR4_PIN;
 	board.motors[3].port       = MOTOR4_GPIO;

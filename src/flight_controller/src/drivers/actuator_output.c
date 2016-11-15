@@ -72,12 +72,12 @@ void InitActuators(void) {
 
 void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *timer, uint32_t timerChannel, uint32_t alternateFunction, uint32_t polarity, uint32_t pulseValue, uint32_t pwmHz, uint32_t timerHz) {
 
-	uint32_t timerPrescaler = 0;
+	uint16_t timerPrescaler = 0;
 
 	if(timer == TIM1 || timer == TIM8 || timer == TIM9|| timer == TIM10|| timer == TIM11) {
-		timerPrescaler = (SystemCoreClock / timerHz) - 1;
+		timerPrescaler = (uint16_t)(SystemCoreClock / timerHz) - 1;
 	} else {
-		timerPrescaler = (SystemCoreClock / 2 / timerHz) - 1;
+		timerPrescaler = (uint16_t)(SystemCoreClock / 2 / timerHz) - 1;
 	}
 
 	GPIO_InitTypeDef GPIO_InitStruct;
@@ -120,10 +120,10 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
 	sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
 	 */
-	sConfigOC.OCMode = TIM_OCMODE_PWM2;
-	sConfigOC.Pulse = pulseValue;
-	sConfigOC.OCPolarity = polarity;
-	sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
+	sConfigOC.OCMode      = TIM_OCMODE_PWM2;
+	sConfigOC.Pulse       = pulseValue;
+	sConfigOC.OCPolarity  = polarity;
+	sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
 	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
 
 	HAL_TIM_OC_ConfigChannel(&pwmTimer, &sConfigOC, timerChannel);

@@ -271,11 +271,11 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
             the HAL_UART_RxCpltCallback can be implemented in the user file.
    */
 
-void USARTx_RX_DMA_IRQHandler(void)
-{
-  HAL_DMA_IRQHandler(&dmaUartRx);
-
-}
+//void USARTx_RX_DMA_IRQHandler(void)
+//{
+//  HAL_DMA_IRQHandler(&dmaUartRx);
+//HAL_DMA_IRQHandler(&ws2812_led);
+//}
 
 void USARTx_TX_DMA_IRQHandler(void)
 {

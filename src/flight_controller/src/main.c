@@ -54,7 +54,8 @@ int main(void)
     InitMixer();
     InitFlightCode();
     InitPid();
-    InitActuators();
+//    InitActuators();
+    Ws2812LedInit();
 
     if (!accgyroInit(mainConfig.gyroConfig.loopCtrl)) {
         ErrorHandler();

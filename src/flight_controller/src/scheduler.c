@@ -84,6 +84,7 @@ inline void taskHandlePcComm(void)
 inline void taskLed(void)
 {
 	UpdateLeds();
+	ws2812_led_update(mainConfig.ledConfig.ledCount);
 }
 
 inline void taskBuzzer(void)
