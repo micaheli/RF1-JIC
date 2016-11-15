@@ -15,7 +15,7 @@ void InitializeBuzzerPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
     GPIO_InitStructure.Pin = GPIO_Pin;
 
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
@@ -29,14 +29,12 @@ void InitializeBuzzerPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
 void DoBuzz(int on)
 {
-	if (!buzzerStatus.status && on)
+	if (on)
 	{
-		buzzerStatus.status = 1;
     	HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_RESET);
 	}
-	else if (buzzerStatus.status && !on)
+	else
 	{
-		buzzerStatus.status = 0;
     	HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_SET);
 	}
 }

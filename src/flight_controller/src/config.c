@@ -637,6 +637,20 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 
 		}
+	else if (!strcmp("buzzer", inString))
+		{
+			args = StripSpaces(args);
+			if (sizeof(atoi(args)) == sizeof(uint32_t)) {
+				buzzerStatus.status = atoi(args);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "buzzer goes BUZZZZZZ!\0", sizeof("buzzer goes BUZZZZZZ!\0"));
+				RfCustomReply(rf_custom_out_buffer);
+			} else {
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "buzzer needs a number to go BUZZZZZZ!\0", sizeof("buzzer needs a number to go BUZZZZZZ!\0"));
+				RfCustomReply(rf_custom_out_buffer);
+			}
+		}
 	else if (!strcmp("dump", inString))
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
