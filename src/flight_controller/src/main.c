@@ -70,8 +70,6 @@ int main(void)
     bzero(serialRxBuffer, sizeof(serialRxBuffer));
     bzero(serialTxBuffer, sizeof(serialTxBuffer));
 	
-	uint8_t calibrated1 = 0;
-	uint8_t calibrated2 = 0;
     while (1) {
 
 

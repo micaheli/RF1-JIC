@@ -21,12 +21,12 @@
 #define LEDn                    2
 
 #define LED1_ENABLED			1
-#define LED1_GPIO_Port          0
+#define LED1_GPIO_Port          _PORTA
 #define LED1_GPIO_Pin           GPIO_PIN_15
 #define LED1_INVERTED			1
 
 #define LED2_ENABLED			1
-#define LED2_GPIO_Port          2
+#define LED2_GPIO_Port          _PORTC
 #define LED2_GPIO_Pin           GPIO_PIN_8
 #define LED2_INVERTED			1
 
@@ -36,7 +36,7 @@
 #define LED3_INVERTED			0
 
 //buzzer setup
-#define BUZZER_GPIO_Port        2
+#define BUZZER_GPIO_Port        _PORTC
 #define BUZZER_GPIO_Pin         GPIO_PIN_2
 
 #define SPEKTRUM_TELEM
@@ -266,33 +266,37 @@
 
 //Motor defines
 //motor Assignments
-#define MOTOR3_TIM					TIM3
+#define MOTOR3_TIM					ENUMTIM3
 #define MOTOR3_PIN					GPIO_PIN_1
-#define MOTOR3_GPIO					GPIOB
+#define MOTOR3_GPIO					_PORTB
 #define MOTOR3_ALTERNATE			GPIO_AF2_TIM3
 #define MOTOR3_TIM_CH				TIM_CHANNEL_4
-#define MOTOR3_TIM_CCR				MOTOR1_TIM->CCR4
+#define MOTOR3_TIM_CCR				TIM3CCR4
+#define MOTOR3_POLARITY				TIM_OCPOLARITY_LOW
 
-#define MOTOR2_TIM					TIM3
+#define MOTOR2_TIM					ENUMTIM3
 #define MOTOR2_PIN					GPIO_PIN_0
-#define MOTOR2_GPIO					GPIOB
+#define MOTOR2_GPIO					_PORTB
 #define MOTOR2_ALTERNATE			GPIO_AF2_TIM3
 #define MOTOR2_TIM_CH				TIM_CHANNEL_3
-#define MOTOR2_TIM_CCR				MOTOR2_TIM->CCR3
+#define MOTOR2_TIM_CCR				TIM3CCR3
+#define MOTOR2_POLARITY				TIM_OCPOLARITY_LOW
 
-#define MOTOR4_TIM					TIM3
+#define MOTOR4_TIM					ENUMTIM3
 #define MOTOR4_PIN					GPIO_PIN_5
-#define MOTOR4_GPIO					GPIOB
+#define MOTOR4_GPIO					_PORTB
 #define MOTOR4_ALTERNATE			GPIO_AF2_TIM3
 #define MOTOR4_TIM_CH				TIM_CHANNEL_2
-#define MOTOR4_TIM_CCR				MOTOR3_TIM->CCR2
+#define MOTOR4_TIM_CCR				TIM3CCR2
+#define MOTOR4_POLARITY				TIM_OCPOLARITY_LOW
 
-#define MOTOR1_TIM					TIM3
+#define MOTOR1_TIM					ENUMTIM3
 #define MOTOR1_PIN					GPIO_PIN_4
-#define MOTOR1_GPIO					GPIOB
+#define MOTOR1_GPIO					_PORTB
 #define MOTOR1_ALTERNATE			GPIO_AF2_TIM3
 #define MOTOR1_TIM_CH				TIM_CHANNEL_1
-#define MOTOR1_TIM_CCR				MOTOR4_TIM->CCR1
+#define MOTOR1_TIM_CCR				TIM3CCR1
+#define MOTOR1_POLARITY				TIM_OCPOLARITY_LOW
 
 
 //Flash Config
