@@ -142,25 +142,25 @@ void getBoardHardwareDefs(void)
 
 
 	//LED Settings
-	board.internalLeds[0].enabled = LED1_ENABLED;
-	board.internalLeds[0].pin = LED1_GPIO_Pin;
-	board.internalLeds[0].port = LED1_GPIO_Port;
+	board.internalLeds[0].enabled  = LED1_ENABLED;
+	board.internalLeds[0].pin      = LED1_GPIO_Pin;
+	board.internalLeds[0].port     = LED1_GPIO_Port;
 	board.internalLeds[0].inverted = LED1_INVERTED;
 
-	board.internalLeds[1].enabled = LED2_ENABLED;
-	board.internalLeds[1].pin = LED2_GPIO_Pin;
-	board.internalLeds[1].port = LED2_GPIO_Port;
+	board.internalLeds[1].enabled  = LED2_ENABLED;
+	board.internalLeds[1].pin      = LED2_GPIO_Pin;
+	board.internalLeds[1].port     = LED2_GPIO_Port;
 	board.internalLeds[1].inverted = LED2_INVERTED;
 
-	board.internalLeds[2].enabled = LED3_ENABLED;
-	board.internalLeds[2].pin = LED3_GPIO_Pin;
-	board.internalLeds[2].port = LED3_GPIO_Port;
+	board.internalLeds[2].enabled  = LED3_ENABLED;
+	board.internalLeds[2].pin      = LED3_GPIO_Pin;
+	board.internalLeds[2].port     = LED3_GPIO_Port;
 	board.internalLeds[2].inverted = LED3_INVERTED;
 
 
 	//Buzzer Settings
 	board.buzzerPort = BUZZER_GPIO_Port;	//Port C
-	board.buzzerPin = BUZZER_GPIO_Pin;
+	board.buzzerPin  = BUZZER_GPIO_Pin;
 
 	
 	//gyro settings
@@ -215,36 +215,36 @@ void getBoardHardwareDefs(void)
 
 
 	//SPI settings ------------------------------------------------------------------------------------------------------------------------------------------------------------
-	board.spis[0].enabled = SPI1_ENABLE;
+	board.spis[0].enabled  = SPI1_ENABLE;
 
-	board.spis[0].NSSPin = SPI1_NSS_PIN;
-	board.spis[0].SCKPin = SPI1_SCK_PIN;
-	board.spis[0].MISOPin = SPI1_MISO_PIN;
-	board.spis[0].MOSIPin = SPI1_MOSI_PIN;
+	board.spis[0].NSSPin   = SPI1_NSS_PIN;
+	board.spis[0].SCKPin   = SPI1_SCK_PIN;
+	board.spis[0].MISOPin  = SPI1_MISO_PIN;
+	board.spis[0].MOSIPin  = SPI1_MOSI_PIN;
 
-	board.spis[0].NSSPort = SPI1_NSS_GPIO_PORT;
-	board.spis[0].SCKPort = SPI1_SCK_GPIO_PORT;
+	board.spis[0].NSSPort  = SPI1_NSS_GPIO_PORT;
+	board.spis[0].SCKPort  = SPI1_SCK_GPIO_PORT;
 	board.spis[0].MISOPort = SPI1_MISO_GPIO_PORT;
 	board.spis[0].MOSIPort = SPI1_MOSI_GPIO_PORT;
 	
 	//board.spis[0].NSSAlternate =;
-	board.spis[0].SCKAlternate = SPI1_SCK_AF;
+	board.spis[0].SCKAlternate =  SPI1_SCK_AF;
 	board.spis[0].MISOAlternate = SPI1_MISO_AF;
 	board.spis[0].MOSIAlternate = SPI1_MOSI_AF;
 	
 	//board.spis[0].GPIOSpeed =;
 	board.spis[0].SPI_IRQn = SPI1_IRQn;
 
-	board.spis[0].TXDMAStream = SPI1_TX_DMA_STREAM; // looked up from array
-	board.spis[0].TXDMAChannel = SPI1_TX_DMA_CHANNEL;
+	board.spis[0].TXDMAStream    = SPI1_TX_DMA_STREAM; // looked up from array
+	board.spis[0].TXDMAChannel   = SPI1_TX_DMA_CHANNEL;
 	board.spis[0].TXDMADirection = DMA_MEMORY_TO_PERIPH;
 	board.spis[0].TXDMAPeriphInc = DMA_PINC_DISABLE;
-	board.spis[0].TXDMAMemInc = DMA_MINC_ENABLE;
+	board.spis[0].TXDMAMemInc    = DMA_MINC_ENABLE;
 	board.spis[0].TXDMAPeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-	board.spis[0].TXDMAMemDataAlignment = DMA_MDATAALIGN_BYTE;
-	board.spis[0].TXDMAMode = DMA_NORMAL;
-	board.spis[0].TXDMAPriority = DMA_PRIORITY_HIGH;
-	board.spis[0].TXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
+	board.spis[0].TXDMAMemDataAlignment    = DMA_MDATAALIGN_BYTE;
+	board.spis[0].TXDMAMode                = DMA_NORMAL;
+	board.spis[0].TXDMAPriority            = DMA_PRIORITY_HIGH;
+	board.spis[0].TXDMAFIFOMode            = DMA_FIFOMODE_DISABLE;
 
 	board.spis[0].RXDMAStream = SPI1_RX_DMA_STREAM; // looked up from array
 	board.spis[0].RXDMAChannel = SPI1_RX_DMA_CHANNEL;

@@ -54,14 +54,15 @@ int main(void)
     InitMixer();
     InitFlightCode();
     InitPid();
-//    InitActuators();
-    Ws2812LedInit();
+    InitActuators();
+//    Ws2812LedInit();
+//    ZeroActuators(); //output actuators to idle after timers are stable;
 
-//    if (!accgyroInit(mainConfig.gyroConfig.loopCtrl)) {
-//        ErrorHandler();
-//    }
+    if (!accgyroInit(mainConfig.gyroConfig.loopCtrl)) {
+        ErrorHandler();
+    }
 
-    InitWatchdog(WATCHDOG_TIMEOUT_1S);
+    InitWatchdog(WATCHDOG_TIMEOUT_2S);
 
     buzzerStatus.status = STATE_BUZZER_OFF;
     ledStatus.status = LEDS_SLOW_BLINK;

@@ -26,6 +26,7 @@ cfg1_t cfg1;
 
 /* Private functions ---------------------------------------------------------*/
 
+/*
 int CheckRfblPinsAttatched(void) {
 
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -87,11 +88,12 @@ int CheckRfblPinsAttatched(void) {
 
 	return(0);
 }
+*/
 
 int main(void)
 {
 
-	uint32_t rebootAddress, bootDirection, bootCycles, rebootPending, ledTime = 0;
+	volatile uint32_t rebootAddress, bootDirection, bootCycles, rebootPending, ledTime = 0;
 
 	__enable_irq();
 	HAL_RCC_DeInit();
@@ -125,8 +127,8 @@ int main(void)
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND); //default is always boot to app
 	}
 
-	if (CheckRfblPinsAttatched())
-		bootDirection = BOOT_TO_RECOVERY_COMMAND;
+	//if (CheckRfblPinsAttatched())
+	//	bootDirection = BOOT_TO_RECOVERY_COMMAND;
 
 	//serial number check here:
 	//if (SERIALNUMBER != readSerialNumber) {
@@ -139,6 +141,9 @@ int main(void)
 		case BOOT_TO_DFU_COMMAND:
 			SystemResetToDfuBootloader(); //reset to DFU
 			break;
+		case BOOT_TO_RECOVERY_COMMAND: //go into recovery mode
+			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_RECV_COMMAND); //force boot to app for crappy firmware now that we've entered recovery command
+			break;
 		case BOOT_TO_ADDRESS:
 		case BOOT_TO_SPEKTRUM5:
 		case BOOT_TO_SPEKTRUM9:
@@ -146,9 +151,6 @@ int main(void)
 		case BOOT_TO_RFBL_COMMAND:
 		default: //default is to boot to rfbl quietly
 			boot_to_app();  //jump to application
-			break;
-		case BOOT_TO_RECOVERY_COMMAND: //go into recovery mode
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_RECV_COMMAND); //force boot to app for crappy firmware now that we've entered recovery command
 			break;
 	}
 

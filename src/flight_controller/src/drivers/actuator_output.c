@@ -67,6 +67,7 @@ void InitActuators(void) {
 			InitActuatorTimer(ports[board.motors[motorNum].port], board.motors[motorNum].pin, timers[board.motors[motorNum].timer], board.motors[motorNum].timChannel, board.motors[motorNum].AF, board.motors[motorNum].polarity, disarmPulseValue, pwmHz, timerHz);
 	}
 
+	DelayMs(5); //give timer time to stabilize.
 
 }
 
@@ -121,7 +122,7 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 	sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
 	 */
 	sConfigOC.OCMode      = TIM_OCMODE_PWM2;
-	sConfigOC.Pulse       = pulseValue;
+	sConfigOC.Pulse       = 0;
 	sConfigOC.OCPolarity  = polarity;
 	sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
 	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;

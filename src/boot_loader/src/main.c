@@ -34,7 +34,7 @@ cfg1_t cfg1;
 int main(void)
 {
 
-	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress, toggleLedOn, ledTime=0;
+	volatile uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress, toggleLedOn, ledTime=0;
 
 	VectorIrqInit(0x08008000);
 	__enable_irq();
@@ -63,7 +63,7 @@ int main(void)
 	rfblVersion   = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
 	cfg1Version   = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
 	bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
-	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
+	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG);
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
 
 	if (bootDirection == BOOT_TO_APP_AFTER_RECV_COMMAND) {
