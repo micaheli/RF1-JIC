@@ -194,7 +194,7 @@
 #define USART2_RX_DMA_IRQn         0
 #define USART2_RX_DMA_IRQHandler   0
 */
-
+/*
 #define USE_USART3
 #define USARTx					   USART3
 #define USARTx_TX_PIN              GPIO_PIN_10
@@ -213,6 +213,25 @@
 #define USARTx_RX_DMA_CHANNEL      DMA_CHANNEL_4
 #define USARTx_RX_DMA_IRQn         DMA1_Stream1_IRQn
 #define USARTx_RX_DMA_IRQHandler   DMA1_Stream1_IRQHandler
+*/
+#define USE_USART1
+#define USARTx					   USART1
+#define USARTx_TX_PIN              GPIO_PIN_9
+#define USARTx_TX_GPIO_PORT        GPIOA
+#define USARTx_TX_AF               GPIO_AF7_USART1
+#define USARTx_RX_PIN              GPIO_PIN_10
+#define USARTx_RX_GPIO_PORT        GPIOA
+#define USARTx_RX_AF               GPIO_AF7_USART1
+#define USARTx_IRQHandler          USART1_IRQHandler
+#define USARTx_IRQn                USART1_IRQn
+#define USARTx_TX_DMA_STREAM       DMA2_Stream7
+#define USARTx_TX_DMA_CHANNEL      DMA_CHANNEL_4
+#define USARTx_TX_DMA_IRQn         DMA2_Stream7_IRQn
+#define USARTx_TX_DMA_IRQHandler   DMA2_Stream7_IRQHandler
+#define USARTx_RX_DMA_STREAM       DMA2_Stream2
+#define USARTx_RX_DMA_CHANNEL      DMA_CHANNEL_4
+#define USARTx_RX_DMA_IRQn         DMA2_Stream2_IRQn
+#define USARTx_RX_DMA_IRQHandler   DMA2_Stream2_IRQHandler
 
 /*
 #define USE_UART4
