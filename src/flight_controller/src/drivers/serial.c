@@ -251,10 +251,10 @@ extern uint32_t ignoreEcho;
 extern uint32_t spekPhase;
 //Interrupt callback routine
 
-void HAL_UART_RxIdleCallback(UART_HandleTypeDef *huart)
-{
-  __HAL_UART_DISABLE_IT(huart, UART_IT_IDLE);
-}
+//void HAL_UART_RxIdleCallback(UART_HandleTypeDef *huart)
+//{
+//  __HAL_UART_DISABLE_IT(huart, UART_IT_IDLE);
+//}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -265,14 +265,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     if ( huart == &uartHandle )
     {
        // HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 2);
-       // __HAL_UART_FLUSH_DRREGISTER(&uartHandle); // Clear the buffer to prevent overrun
+    	__HAL_UART_FLUSH_DRREGISTER(&uartHandle); // Clear the buffer to prevent overrun
+    	HAL_UART_DMAStop(&uartHandle);
     	ProcessSbusPacket();
-            __HAL_UART_CLEAR_IDLEFLAG(&uartHandle);
-            __HAL_UART_ENABLE_IT(&uartHandle, UART_IT_IDLE);
-            if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE) != HAL_OK) {
-              // error
-            	return;
-            }
+		USARTx_RX_DMA_STREAM->NDTR = 0;
+		__HAL_UART_CLEAR_IDLEFLAG(&uartHandle);
+		__HAL_UART_ENABLE_IT(&uartHandle, UART_IT_IDLE);
+		if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE) != HAL_OK) {
+		  // error
+			return;
+		}
         return;
     }
     return;

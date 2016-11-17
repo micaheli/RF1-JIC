@@ -209,35 +209,41 @@ void ProcessSpektrumPacket(void)
 
 void ProcessSbusPacket(void)
 {
+	static uint32_t outOfSync = 0, inSync = 0;
+
 	sbusFrame_t *frame = (sbusFrame_t*)copiedBufferData;
 
 	memcpy(copiedBufferData, serialRxBuffer, SBUS_FRAME_SIZE);
 
 	// do we need to hook these into rxData[ChannelMap(i)] ?
-	rxData[0] = frame->chan0;
-	rxData[1] = frame->chan1;
-	rxData[2] = frame->chan2;
-	rxData[3] = frame->chan3;
-	rxData[4] = frame->chan4;
-	rxData[5] = frame->chan5;
-	rxData[6] = frame->chan6;
-	rxData[7] = frame->chan7;
-	rxData[8] = frame->chan8;
-	rxData[9] = frame->chan9;
-	rxData[10] = frame->chan10;
-	rxData[11] = frame->chan11;
-	rxData[12] = frame->chan12;
-	rxData[13] = frame->chan13;
-	rxData[14] = frame->chan14;
-	rxData[15] = frame->chan15;
-
-	// TODO: is this best way to deal with failsafe stuff?
-	if (!(frame->flags & (SBUS_FRAME_LOSS_FLAG | SBUS_FAILSAFE_FLAG))) {
-		rx_timeout = 0;
+	if (frame->syncByte == 15) {
+		rxData[0] = frame->chan0;
+		rxData[1] = frame->chan1;
+		rxData[2] = frame->chan2;
+		rxData[3] = frame->chan3;
+		rxData[4] = frame->chan4;
+		rxData[5] = frame->chan5;
+		rxData[6] = frame->chan6;
+		rxData[7] = frame->chan7;
+		rxData[8] = frame->chan8;
+		rxData[9] = frame->chan9;
+		rxData[10] = frame->chan10;
+		rxData[11] = frame->chan11;
+		rxData[12] = frame->chan12;
+		rxData[13] = frame->chan13;
+		rxData[14] = frame->chan14;
+		rxData[15] = frame->chan15;
+		inSync++;
+		// TODO: is this best way to deal with failsafe stuff?
+		if (!(frame->flags & (SBUS_FRAME_LOSS_FLAG | SBUS_FAILSAFE_FLAG))) {
+			rx_timeout = 0;
+		}
+		InlineCollectRcCommand();
+		RxUpdate();
+	} else {
+		outOfSync++;
 	}
 
-	InlineCollectRcCommand();
-	RxUpdate();
 }
 
 void InitRcData (void) {
