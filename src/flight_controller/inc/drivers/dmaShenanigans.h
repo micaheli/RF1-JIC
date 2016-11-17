@@ -1,4 +1,4 @@
-#define WS2812_MAX_LEDS 24
+#define WS2812_MAX_LEDS 32
 #define MAX_LED_COLORS 7
 
 typedef struct {

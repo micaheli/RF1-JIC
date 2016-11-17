@@ -46,7 +46,7 @@ const config_variables_rec valueTable[] = {
 		{ "idle_percent", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,		0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,				0, 15.0, 7.0, "" },
 
-		{ "led_count",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledCount,					0, WS2812_MAX_LEDS, 1, "" },
+		{ "led_count",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledCount,					0, WS2812_MAX_LEDS, 8, "" },
 		{ "led_color",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledColor,					0, MAX_LED_COLORS, 1, "" },
 
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,				0, 12, CW0, "" },
@@ -651,6 +651,26 @@ void ProcessCommand(char *inString)
 			} else {
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				memcpy(rf_custom_out_buffer, "buzzer needs a number to go BUZZZZZZ!\0", sizeof("buzzer needs a number to go BUZZZZZZ!\0"));
+				RfCustomReply(rf_custom_out_buffer);
+			}
+		}
+
+	else if (!strcmp("ledcolor", inString))
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "dumpstarted", sizeof("dumpstarted"));
+			RfCustomReply(rf_custom_out_buffer);
+
+			args = StripSpaces(args);
+			if (atoi(args) <= 22) {
+				mainConfig.ledConfig.ledColor = atoi(args);
+				SetLEDColor(mainConfig.ledConfig.ledColor);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "led goes BLING!\0", sizeof("led goes BLING!\0"));
+				RfCustomReply(rf_custom_out_buffer);
+			} else {
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "led needs a number to go BLING!\0", sizeof("led needs a number to go BLING!\0"));
 				RfCustomReply(rf_custom_out_buffer);
 			}
 		}

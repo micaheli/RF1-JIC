@@ -50,6 +50,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
     GPIO_InitTypeDef GPIO_InitStruct;
     if (hspi->Instance == SPI1) {
+    	/* Peripheral clock enable */
+    	__HAL_RCC_SPI1_CLK_ENABLE();
 
 	    HAL_GPIO_DeInit(SPI1_NSS_GPIO_PORT, SPI1_NSS_PIN);
 	    HAL_GPIO_DeInit(SPI1_SCK_GPIO_PORT, SPI1_SCK_PIN);
@@ -123,6 +125,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     }
 
 	if (hspi->Instance == SPI2) {
+    	/* Peripheral clock enable */
+		__HAL_RCC_SPI2_CLK_ENABLE();
 
 		HAL_GPIO_DeInit(SPI2_NSS_GPIO_PORT, SPI2_NSS_PIN);
 		HAL_GPIO_DeInit(SPI2_SCK_GPIO_PORT, SPI2_SCK_PIN);
@@ -196,6 +200,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 	}
     else if (hspi->Instance == SPI3)
     {
+    	/* Peripheral clock enable */
+    	__HAL_RCC_SPI3_CLK_ENABLE();
 
 	    HAL_GPIO_DeInit(SPI3_NSS_GPIO_PORT, SPI3_NSS_PIN);
 	    HAL_GPIO_DeInit(SPI3_SCK_GPIO_PORT, SPI3_SCK_PIN);

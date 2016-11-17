@@ -83,8 +83,13 @@ inline void taskHandlePcComm(void)
 
 inline void taskLed(void)
 {
+	static uint32_t lastUpdate = 0;
 	UpdateLeds();
-	ws2812_led_update(mainConfig.ledConfig.ledCount);
+
+	if ( ( InlineMillis() - lastUpdate ) > 100 ) {
+		lastUpdate = InlineMillis();
+		ws2812_led_update(mainConfig.ledConfig.ledCount);
+	}
 }
 
 inline void taskBuzzer(void)

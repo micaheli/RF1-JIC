@@ -55,8 +55,8 @@ int main(void)
     InitFlightCode();
     InitPid();
     InitActuators();
-//    Ws2812LedInit();
-//    ZeroActuators(); //output actuators to idle after timers are stable;
+    Ws2812LedInit();
+    ZeroActuators(); //output actuators to idle after timers are stable;
 
     if (!accgyroInit(mainConfig.gyroConfig.loopCtrl)) {
         ErrorHandler();
