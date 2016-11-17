@@ -9,6 +9,8 @@ __IO ITStatus UartReady = RESET;
 uint8_t catfish;
 uint32_t lastRXPacket;
 
+#define SBUS_FRAME_SIZE 25
+
 
 /* Buffer used for transmission */
 unsigned char serialTxBuffer[TXBUFFERSIZE];
@@ -50,8 +52,8 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 	// TODO: make this configurable, eg SBUS 2 stopbis, even parity
 	uartHandle.Init.BaudRate   = baudRate;
 	uartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-	uartHandle.Init.StopBits   = UART_STOPBITS_1;
-	uartHandle.Init.Parity     = UART_PARITY_NONE;
+	uartHandle.Init.StopBits   = UART_STOPBITS_2;
+	uartHandle.Init.Parity     = UART_PARITY_EVEN;
 	uartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
 	uartHandle.Init.Mode       = UART_MODE_TX_RX;
 	if(HAL_UART_DeInit(&uartHandle) != HAL_OK)
@@ -194,9 +196,9 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	//HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].RXDMA_IRQn, 1, 0);
 	//HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].RXDMA_IRQn);
 	
-    __HAL_UART_FLUSH_DRREGISTER(huart);
+	__HAL_UART_FLUSH_DRREGISTER(huart);
 
-	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, 16) == HAL_OK)
+	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE) == HAL_OK)
 	{
 		
 	}
@@ -223,8 +225,8 @@ void BoardUsartInit () {
 	HAL_NVIC_DisableIRQ(USARTx_TX_DMA_IRQn);
 	HAL_NVIC_DisableIRQ(USARTx_RX_DMA_IRQn);
 
-    // read and write settings at slow speed
-	UsartInit(115200, USARTx, &uartHandle);
+	// read and write settings at slow speed
+	UsartInit(100000, USARTx, &uartHandle);
 
 }
 
@@ -284,7 +286,6 @@ void USARTx_TX_DMA_IRQHandler(void)
 	
 }
 
-uint32_t minDMA = 16;
 uint32_t rxDMA;
 uint32_t txDMA;
 void USARTx_IRQHandler(void)
@@ -294,7 +295,6 @@ void USARTx_IRQHandler(void)
 //	{
 	while (__HAL_DMA_GET_COUNTER(&dmaUartTx) != 0)
 	{
-		minDMA = __HAL_DMA_GET_COUNTER(&dmaUartTx);
 	}
 	HAL_UART_IRQHandler(&uartHandle);
 	HAL_DMA_IRQHandler(&dmaUartRx);
@@ -303,17 +303,37 @@ void USARTx_IRQHandler(void)
 	// ##-2- Put UART peripheral in reception process ###########################
 	__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
 
-	
-		
+	/*
+	if (__HAL_UART_GET_FLAG(&uartHandle, UART_FLAG_PE))
+	{
+		__HAL_UART_CLEAR_PEFLAG(&uartHandle);
+	}
+
+	if (__HAL_UART_GET_FLAG(&uartHandle, UART_FLAG_FE))
+	{
+		__HAL_UART_CLEAR_FEFLAG(&uartHandle);
+	}
+
+	if (__HAL_UART_GET_FLAG(&uartHandle, UART_FLAG_NE))
+	{
+		__HAL_UART_CLEAR_NEFLAG(&uartHandle);
+	}
+
+	if (__HAL_UART_GET_FLAG(&uartHandle, UART_FLAG_ORE))
+	{
+		__HAL_UART_CLEAR_OREFLAG(&uartHandle);
+	}
+	*/
+
 	if (__HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_IDLE))
 	{
 		HAL_UART_DMAStop(&uartHandle);	
-		rxDMA = DMA1_Stream0->NDTR;
-		txDMA = DMA1_Stream7->NDTR;
-		if ((uint16_t)(USARTx_RX_DMA_STREAM->NDTR) == 0 && !ignoreEcho)
+		if ((uint16_t)(USARTx_RX_DMA_STREAM->NDTR) == 0)
 		{
+
 			// TODO: dispatch configurable callback
-			ProcessSpektrumPacket();
+			//ProcessSpektrumPacket();
+			ProcessSbusPacket();
 			lastRXPacket = InlineMillis();
 #ifdef SPEKTRUM_TELEM
 			if (!spekPhase)
@@ -328,10 +348,7 @@ void USARTx_IRQHandler(void)
 			ignoreEcho = 0;
 		}
 
-		if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
-		{
-			minDMA = 0;
-		}
+		HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE);
 	}
 
 	//if ((uint16_t)(board.serials[RECEIVER_UART].RXDMAStream->NDTR) == 0)

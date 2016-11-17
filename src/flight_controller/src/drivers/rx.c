@@ -13,6 +13,7 @@ uint32_t progMode = 0;
 uint32_t progTimer = 0;
 
 // 2048 resolution
+#define SPEKTRUM_FRAME_SIZE 16
 uint32_t spektrumChannelShift = 3;
 uint32_t spektrumChannelMask = 0x07;
 
