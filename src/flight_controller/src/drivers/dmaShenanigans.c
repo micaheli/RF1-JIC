@@ -77,8 +77,8 @@ void ws2812_led_update(uint32_t nLeds) {
     WS2812_IO_framedata[2] = 0;
     WS2812_IO_framedata[3] = 0;
     for (ledIdx = 0; ledIdx < nLeds; ledIdx++) {        // send green, red, blue, MSB first
-        //uint32_t grb = (WS2812_IO_colors[ledIdx].g << 16) | (WS2812_IO_colors[ledIdx].r << 8) | WS2812_IO_colors[ledIdx].b;
-        uint32_t grb = (0xAA << 16) | (0xAA << 8) | 0xAA;
+        uint32_t grb = (WS2812_IO_colors[ledIdx].g << 16) | (WS2812_IO_colors[ledIdx].r << 8) | WS2812_IO_colors[ledIdx].b;
+        //uint32_t grb = (0xAA << 16) | (0xAA << 8) | 0xAA;
         for (bitIdx = 23; bitIdx >= 0; bitIdx--) {
             WS2812_IO_framedata[4+(bufferIdx++)] = (grb & (1 << bitIdx)) ? 17 : 8;
         }
@@ -100,6 +100,8 @@ void ws2812_led_update(uint32_t nLeds) {
     	//__HAL_DMA_SET_COUNTER(&ws2812_led, 0);
     	//__HAL_TIM_SET_COUNTER(&pwmTimerBase, 0);
 
+
+		HAL_TIM_PWM_Stop(&pwmTimerBase, board.motors[3].timChannel);
     	HAL_TIM_PWM_ConfigChannel(&pwmTimerBase, &sConfigOC, board.motors[3].timChannel);
     	HAL_TIM_PWM_Start_DMA(&pwmTimerBase, board.motors[3].timChannel, (uint32_t *)WS2812_IO_framedata, WS2812_BUFSIZE);
 
@@ -148,10 +150,11 @@ static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex) {
 	ws2812_led.Init.PeriphInc           = DMA_PINC_DISABLE;
 	ws2812_led.Init.MemInc              = DMA_MINC_ENABLE;
 	ws2812_led.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-	ws2812_led.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
+	ws2812_led.Init.MemDataAlignment    = DMA_MDATAALIGN_HALFWORD;
 	ws2812_led.Init.Mode                = DMA_NORMAL;
 	ws2812_led.Init.Priority            = DMA_PRIORITY_HIGH;
-	ws2812_led.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
+	ws2812_led.Init.FIFOMode            = DMA_FIFOMODE_ENABLE;
+	ws2812_led.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
 	ws2812_led.Init.MemBurst     	    = DMA_MBURST_SINGLE;
 	ws2812_led.Init.PeriphBurst         = DMA_PBURST_SINGLE;
 
@@ -164,7 +167,8 @@ static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex) {
 
 	//__HAL_DMA_ENABLE_IT(&ws2812_led, DMA_IT_TC);
 
-	//HAL_DMA_Init(htim->hdma[handlerIndex]);
+//	 HAL_DMA_Init(htim->hdma[TIM_DMA_ID_UPDATE]);
+//	//HAL_DMA_Init(htim->hdma[handlerIndex]);
 	if (HAL_DMA_Init(&ws2812_led) != HAL_OK) {
 		ErrorHandler();
 	}
@@ -286,6 +290,7 @@ extern DMA_HandleTypeDef dma_spi1_tx;
 
 void DMA1_Stream1_IRQHandler(void) {
 	HAL_DMA_IRQHandler(&ws2812_led);
+	HAL_TIM_PWM_Stop(&pwmTimerBase, board.motors[3].timChannel);
 	dmaTriggered = 1;
 }
 //void DMA1_Stream2_IRQHandler(void) {
