@@ -4,6 +4,42 @@
 
 
 
+//DMA1 St1  USART3 RX
+
+//DMA2 St0 SPI1 RX
+//DMA2 St3 SPI1 RX
+
+//DMA2 St7 USART1 TX
+//DMA2 St2 USART1 RX
+
+//DMA1 St0 M4/PA2
+//DMA1 St6 M3/PA3
+//DMA1 St M2/PA3
+
+
+
+
+
+//DMA1 Ch7, St4, USART3 TX
+//DMA1 Ch4, St1, USART3 RX
+
+//DMA2 Ch3, St0 GYRO SPI1 RX
+//DMA2 Ch3, St3 GYRO SPI1 TX
+
+//DMA1 Ch0, St3 ESC SPI2 RX
+//DMA1 Ch4, St5 ESC SPI2 TX
+
+//DMA1 Ch0, St0 FLASH SPI3 RX
+//DMA1 Ch0, St5 FLASH SPI3 TX
+
+//DMA1 Ch6, St4 LED
+
+//DMA1 Ch5, St7 M1
+//DMA1 Ch5, St2 M2
+//DMA1 Ch3, St6 M3
+//DMA1 Ch3, St1 M4
+
+
 //USB config
 #define RFFW_HID_PRODUCT_STRING "RaceFlight FC"
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
@@ -38,6 +74,11 @@
 //buzzer setup
 #define BUZZER_GPIO_Port        _PORTB
 #define BUZZER_GPIO_Pin         GPIO_PIN_4
+
+//ws2812
+//PB6
+#define WS2812_LED_Port			_PORTB
+#define WS2812_LED_Pin			GPIO_PIN_6
 
 //#define SPEKTRUM_TELEM
 
@@ -141,12 +182,12 @@
 #define SPI3_SCK_AF					GPIO_AF6_SPI3
 #define SPI3_TX_DMA_STREAM			DMA1_Stream5
 #define SPI3_TX_DMA_CHANNEL			DMA_CHANNEL_0
-#define SPI3_TX_DMA_IRQn			DMA1_Stream2_IRQn
-#define SPI3_TX_DMA_IRQHandler		DMA1_Stream2_IRQHandler
-#define SPI3_RX_DMA_STREAM			DMA1_Stream2
+#define SPI3_TX_DMA_IRQn			DMA1_Stream5_IRQn
+#define SPI3_TX_DMA_IRQHandler		DMA1_Stream5_IRQHandler
+#define SPI3_RX_DMA_STREAM			DMA1_Stream0
 #define SPI3_RX_DMA_CHANNEL			DMA_CHANNEL_0
-#define SPI3_RX_DMA_IRQn			DMA1_Stream5_IRQn
-#define SPI3_RX_DMA_IRQHandler		DMA1_Stream5_IRQHandler
+#define SPI3_RX_DMA_IRQn			DMA1_Stream0_IRQn
+#define SPI3_RX_DMA_IRQHandler		DMA1_Stream0_IRQHandler
 
 //END SPI defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -209,7 +250,7 @@
 #define USARTx_TX_DMA_CHANNEL      DMA_CHANNEL_4
 #define USARTx_TX_DMA_IRQn         DMA1_Stream3_IRQn
 #define USARTx_TX_DMA_IRQHandler   DMA1_Stream3_IRQHandler
-#define USARTx_RX_DMA_STREAM       DMA1_Stream1
+#define USARTx_RX_DMA_STREAM       DMA1_Stream3
 #define USARTx_RX_DMA_CHANNEL      DMA_CHANNEL_4
 #define USARTx_RX_DMA_IRQn         DMA1_Stream1_IRQn
 #define USARTx_RX_DMA_IRQHandler   DMA1_Stream1_IRQHandler
@@ -349,4 +390,4 @@
 #define FLASH_DMA_TX_IRQn			SPI3_TX_DMA_IRQn
 #define FLASH_DMA_TX_IRQHandler		SPI3_TX_DMA_IRQHandler
 #define FLASH_DMA_RX_IRQn			SPI3_RX_DMA_IRQn
-#define FLASH_DMA_RX_IRQHandler		SPI3_RX_DMA_IRQHandler
+#define FLASH_DMA_RX_IRQHandler		SPI3_RX_DMA_IRQHandler

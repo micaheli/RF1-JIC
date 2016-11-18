@@ -1,8 +1,8 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint8_t)(4U)
-#define CONFIG_VERSION_STR		"4"
-#define FIRMWARE_VERSION		"0.003 ALPHA"
+#define CONFIG_VERSION			(uint8_t)(6U)
+#define CONFIG_VERSION_STR		"6"
+#define FIRMWARE_VERSION		"0.006 ALPHA"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
 
@@ -10,6 +10,7 @@ typedef struct {
 	rc_control_config rcControlsConfig;
 	gyro_config       gyroConfig;
 	mixer_config      mixerConfig;
+	led_config		  ledConfig;
 	filter_device     filterConfig[AXIS_NUMBER];
 	pid_terms         pidConfig[AXIS_NUMBER];
 	uint8_t           version;

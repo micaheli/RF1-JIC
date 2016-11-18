@@ -31,6 +31,8 @@ void sendSpektrumTelem(void)
 
 	switch (telemetryState)
 	{
+	case NUM_TELEM_STATES: //stop compile error
+		break;
 	case TELEM_FLIGHTLOG:
 		{
 			//Rx will be handling this data internally until multiple receivers are supported

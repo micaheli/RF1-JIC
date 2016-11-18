@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -12,6 +13,7 @@
 #include "mcu_include.h"
 #include "general_functions.h"
 
+
 //general includes
 #include "pid.h"
 #include "mixer.h"
@@ -23,10 +25,12 @@
 #include "flight_logger.h"
 #include "rfbl_functions.h"
 
+
 //input
 #include "input/gyro.h"
 #include "usbd_hid.h"
 #include "usb_device.h"
+
 
 //all drivers
 #include "drivers/spektrumTelemetry.h"
@@ -39,8 +43,7 @@
 #include "drivers/invensense_bus.h"
 #include "drivers/invensense_device.h"
 #include "drivers/invensense_register_map.h"
-
-
+#include "drivers/dmaShenanigans.h"
 
 
 //config
