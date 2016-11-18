@@ -13,6 +13,6 @@ typedef struct {
 } led_config;
 
 extern ws2812Led_t WS2812_IO_colors[];
-void Ws2812LedInit( void );
-void ws2812_led_update(uint32_t nLeds);
-
+extern void Ws2812LedInit( void );
+extern void ws2812_led_update(uint32_t nLeds);
+extern void SetLEDColor(uint8_t newColor);
