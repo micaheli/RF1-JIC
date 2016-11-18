@@ -71,10 +71,9 @@ inline void CheckFailsafe(void) {
 		boardArmed = 0;
 		ZeroActuators(); //immediately set actuators to disarmed position.
 	}
-
 }
 
-inline void RxUpdate(void) // hook for when rx updates
+ void RxUpdate(void) // hook for when rx updates
 {
 
 	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
@@ -92,11 +91,12 @@ inline void RxUpdate(void) // hook for when rx updates
 
 		boardArmed = 1;
 
-		if ( ABS(rxData[PITCH] - mainConfig.rcControlsConfig.midRc[PITCH]) < 50 )
+		//todo: make sure stick movement on these three axis are next to zero before setting centers.
+		if ( ABS((int32_t)rxData[PITCH] - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
 			mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
-		if ( ABS(rxData[ROLL] - mainConfig.rcControlsConfig.midRc[ROLL]) < 50 )
+		if ( ABS((int32_t)rxData[ROLL] - (int32_t)mainConfig.rcControlsConfig.midRc[ROLL]) < 30 )
 			mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
-		if ( ABS(rxData[YAW] - mainConfig.rcControlsConfig.midRc[YAW]) < 50 )
+		if ( ABS((int32_t)rxData[YAW] - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
 			mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
 
 	} else if (rxData[4] < 400) {
