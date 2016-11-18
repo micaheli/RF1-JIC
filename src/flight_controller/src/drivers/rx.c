@@ -140,6 +140,7 @@ void SpektrumBind (uint32_t bindNumber) {
 
 	//todo: init all RX ports and ping each one as a spektrum port, maybe check each one to see if it allows spektrum binding
 	InitializeGpio(GPIOB, GPIO_PIN_11, 1);
+	InitializeGpio(GPIOA, GPIO_PIN_9, 1);
 
 	DelayMs(70);
 
@@ -149,9 +150,11 @@ void SpektrumBind (uint32_t bindNumber) {
 	for (i=0; i < bindNumber; i++) {
 
 		inlineDigitalLo(GPIOB, GPIO_PIN_11);
+		inlineDigitalLo(GPIOA, GPIO_PIN_9);
 		DelayMs(2);
 
 		inlineDigitalHi(GPIOB, GPIO_PIN_11);
+		inlineDigitalHi(GPIOA, GPIO_PIN_9);
 		DelayMs(2);
 
 	}
