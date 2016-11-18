@@ -55,7 +55,7 @@ int main(void)
     InitFlightCode();
     InitPid();
     InitActuators();
-    Ws2812LedInit();
+//    Ws2812LedInit();
     ZeroActuators(); //output actuators to idle after timers are stable;
 
     if (!accgyroInit(mainConfig.gyroConfig.loopCtrl)) {
@@ -67,7 +67,7 @@ int main(void)
     buzzerStatus.status = STATE_BUZZER_OFF;
     ledStatus.status = LEDS_SLOW_BLINK;
 
-//    BoardUsartInit();
+    BoardUsartInit();
 
     bzero(serialRxBuffer, sizeof(serialRxBuffer));
     bzero(serialTxBuffer, sizeof(serialTxBuffer));

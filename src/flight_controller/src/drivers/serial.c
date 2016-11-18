@@ -6,10 +6,19 @@ DMA_HandleTypeDef dmaUartTx;
 
 __IO ITStatus UartReady = RESET;
 
-uint8_t catfish;
+#define USING_SPEKTRUM 0
+#define USING_SBUS     1
+
+
 uint32_t lastRXPacket;
 
-#define SBUS_FRAME_SIZE 25
+//sbus
+//#define FRAME_SIZE 25
+//uint32_t currentProtocol = USING_SBUS;
+
+//spektrum
+#define FRAME_SIZE 16
+uint32_t currentProtocol = USING_SPEKTRUM;
 
 
 /* Buffer used for transmission */
@@ -23,6 +32,7 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 
 	GPIO_InitTypeDef  GPIO_InitStruct;
 
+	(void)(baudRate);
 	/*##-2- Configure peripheral GPIO ##########################################*/
 	/* UART TX GPIO pin configuration  */
 	GPIO_InitStruct.Pin       = USARTx_TX_PIN;
@@ -49,13 +59,12 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 		- Hardware flow control disabled (RTS and CTS signals) */
 	uartHandle.Instance        = Usart;
 
-	// TODO: make this configurable, eg SBUS 2 stopbis, even parity
-	uartHandle.Init.BaudRate   = baudRate;
-	uartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-	uartHandle.Init.StopBits   = UART_STOPBITS_2;
-	uartHandle.Init.Parity     = UART_PARITY_EVEN;
-	uartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
-	uartHandle.Init.Mode       = UART_MODE_TX_RX;
+	uartHandle.Init.BaudRate   = USARTx_BAUDRATE;
+	uartHandle.Init.WordLength = USARTx_WORDLENGTH;
+	uartHandle.Init.StopBits   = USARTx_STOPBITS;
+	uartHandle.Init.Parity     = USARTx_PARITY;
+	uartHandle.Init.HwFlowCtl  = USARTx_HWFLOWCTRL;
+	uartHandle.Init.Mode       = USARTx_MODE;
 	if(HAL_UART_DeInit(&uartHandle) != HAL_OK)
 	{
 //		ErrorHandler();
@@ -77,14 +86,14 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 		}
 	}
 		
-	 UsartDmaInit(huart);
-	 __HAL_UART_FLUSH_DRREGISTER(huart);
-     __HAL_UART_CLEAR_IDLEFLAG(&uartHandle);
-      __HAL_UART_ENABLE_IT(&uartHandle, UART_IT_IDLE);
-      if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE) != HAL_OK) {
-        // error
-      	return;
-      }
+	UsartDmaInit(huart);
+	__HAL_UART_FLUSH_DRREGISTER(huart);
+	__HAL_UART_CLEAR_IDLEFLAG(&uartHandle);
+	__HAL_UART_ENABLE_IT(&uartHandle, UART_IT_IDLE);
+	if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, FRAME_SIZE) != HAL_OK) {
+	// error
+		return;
+	}
 
 }
 
@@ -182,7 +191,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	/* Associate the initialized DMA handle to the the UART handle */
 	__HAL_LINKDMA(huart, hdmarx, dmaUartRx);
 
-//	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE) == HAL_OK)
+//	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, FRAME_SIZE) == HAL_OK)
 //	{
 //		__HAL_UART_FLUSH_DRREGISTER(huart);
 //	}
@@ -213,7 +222,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	
 	__HAL_UART_FLUSH_DRREGISTER(huart);
 
-	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE) == HAL_OK)
+	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, FRAME_SIZE) == HAL_OK)
 	{
 		
 	}
@@ -267,11 +276,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
        // HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 2);
     	__HAL_UART_FLUSH_DRREGISTER(&uartHandle); // Clear the buffer to prevent overrun
     	HAL_UART_DMAStop(&uartHandle);
-    	ProcessSbusPacket();
+
+    	if (currentProtocol == USING_SPEKTRUM)
+    		ProcessSpektrumPacket();
+    	else if (currentProtocol == USING_SBUS)
+    		ProcessSbusPacket();
+
 		USARTx_RX_DMA_STREAM->NDTR = 0;
 		__HAL_UART_CLEAR_IDLEFLAG(&uartHandle);
 		__HAL_UART_ENABLE_IT(&uartHandle, UART_IT_IDLE);
-		if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE) != HAL_OK) {
+		if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, FRAME_SIZE) != HAL_OK) {
 		  // error
 			return;
 		}
@@ -283,7 +297,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	//{
 		lastRXPacket = InlineMillis();
 		ProcessSbusPacket();
-		HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE);
+		HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, FRAME_SIZE);
 	//}
 	return;
 		ProcessSbusPacket();
@@ -293,14 +307,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		{
 			ErrorHandler();
 		}
-		if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE) == HAL_OK)
+		if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, FRAME_SIZE) == HAL_OK)
 		{
 			__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
 		}
 /*
 	if (!ignoreEcho)
 	{
-		if(HAL_UART_Receive_DMA(&dmaUartRx, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE) != HAL_OK)
+		if(HAL_UART_Receive_DMA(&dmaUartRx, (uint8_t *)serialRxBuffer, FRAME_SIZE) != HAL_OK)
 		{
 			ErrorHandler();
 		}
@@ -333,7 +347,7 @@ void USARTx_RX_DMA_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&dmaUartRx);
   //UART_DMA_RX_ENABLE(&dmaUartRx);
-  //HAL_UART_Receive_DMA(&dmaUartRx, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE);
+  //HAL_UART_Receive_DMA(&dmaUartRx, (uint8_t *)serialRxBuffer, FRAME_SIZE);
 }
 
 void USARTx_TX_DMA_IRQHandler(void)
@@ -397,15 +411,7 @@ void USARTx_IRQHandler(void)
 #define USART_IT_CTS                    ((uint32_t)(USART_CR3_REG_INDEX << 28U | USART_CR3_CTSIE))
 #define USART_IT_ERR                    ((uint32_t)(USART_CR3_REG_INDEX << 28U | USART_CR3_EIE))
 	*/
-	volatile uint32_t fishy = __HAL_DMA_GET_COUNTER(&dmaUartRx);
-	volatile uint32_t doggy1 = __HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_TXE);
-	volatile uint32_t doggy2 = __HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_TC);
-	volatile uint32_t doggy3 = __HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_RXNE);
-	volatile uint32_t doggy4 = __HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_IDLE);
-	volatile uint32_t doggy5 = __HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_LBD);
-	volatile uint32_t doggy6 = __HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_CTS);
-	volatile uint32_t doggy7 = __HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_ERR);
-	volatile uint32_t doggy8 = USARTx_RX_DMA_STREAM->NDTR;
+
 /*
 	if (__HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_IDLE))
 	    {
@@ -431,7 +437,7 @@ void USARTx_IRQHandler(void)
 	        {
 	            ignoreEcho = 0;
 	        }
-	        HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE);
+	        HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, FRAME_SIZE);
 	    }
 */
 	if (__HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_IDLE))
@@ -457,7 +463,7 @@ void USARTx_IRQHandler(void)
 			ignoreEcho = 0;
 		}
 
-		HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, SBUS_FRAME_SIZE);
+		HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, FRAME_SIZE);
 	}
 return;
 

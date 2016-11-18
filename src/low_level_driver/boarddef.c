@@ -184,7 +184,7 @@ void getBoardHardwareDefs(void)
 	board.motors[1].timCCR     = MOTOR2_TIM_CCR;
 	board.motors[1].polarity   = MOTOR2_POLARITY;
 
-	board.motors[2].enabled    = 0;
+	board.motors[2].enabled    = 1;
 	board.motors[2].timer      = MOTOR3_TIM;
 	board.motors[2].pin        = MOTOR3_PIN;
 	board.motors[2].port       = MOTOR3_GPIO;
@@ -193,7 +193,7 @@ void getBoardHardwareDefs(void)
 	board.motors[2].timCCR     = MOTOR3_TIM_CCR;
 	board.motors[2].polarity   = MOTOR3_POLARITY;
 
-	board.motors[3].enabled    = 0;
+	board.motors[3].enabled    = 1;
 	board.motors[3].timer      = MOTOR4_TIM;
 	board.motors[3].pin        = MOTOR4_PIN;
 	board.motors[3].port       = MOTOR4_GPIO;
@@ -204,12 +204,12 @@ void getBoardHardwareDefs(void)
 
 	//GYRO connection settings	------------------------------------------------------------------------------------------------------------------------------------------------------------
 	board.gyro_pins.SPIInstance = GYRO_SPI;	//use this to determine spi irqn and irq handlers to use. No need to re define them here
-	board.gyro_pins.SPINumber = GYRO_SPI_NUMBER;		
-	board.gyro_pins.csPin = GYRO_SPI_CS_GPIO_Pin;
-	board.gyro_pins.csPort = GYRO_SPI_CS_GPIO_Port;
-	board.gyro_pins.extiPin = GYRO_EXTI_GPIO_Pin;
-	board.gyro_pins.extiPort = GYRO_EXTI_GPIO_Port;
-	board.gyro_pins.extiIRQn = GYRO_EXTI_IRQn;
+	board.gyro_pins.SPINumber   = GYRO_SPI_NUMBER;
+	board.gyro_pins.csPin       = GYRO_SPI_CS_GPIO_Pin;
+	board.gyro_pins.csPort      = GYRO_SPI_CS_GPIO_Port;
+	board.gyro_pins.extiPin     = GYRO_EXTI_GPIO_Pin;
+	board.gyro_pins.extiPort    = GYRO_EXTI_GPIO_Port;
+	board.gyro_pins.extiIRQn    = GYRO_EXTI_IRQn;
 	board.gyro_pins.spiFastBaud = GYRO_SPI_FAST_BAUD;
 	board.gyro_pins.spiSlowBaud = GYRO_SPI_SLOW_BAUD;
 

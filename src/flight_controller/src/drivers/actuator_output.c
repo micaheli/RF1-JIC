@@ -75,6 +75,8 @@ void InitActuatorTimer(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, TIM_TypeDef *time
 
 	uint16_t timerPrescaler = 0;
 
+	(void)(pulseValue);
+
 	if(timer == TIM1 || timer == TIM8 || timer == TIM9|| timer == TIM10|| timer == TIM11) {
 		timerPrescaler = (uint16_t)(SystemCoreClock / timerHz) - 1;
 	} else {
