@@ -13,8 +13,10 @@ typedef struct {
     uint32_t maxRc[MAXCHANNELS];
     uint32_t useCurve[MAXCHANNELS];
     float    curveExpo[MAXCHANNELS];
+    uint32_t channelMap[MAXCHANNELS];
     float    rates[3];
     float    acroPlus[3];
+    uint32_t rcCalibrated;
 } rc_control_config;
 
 //Enumerate the different channels in code. The TX map is not affected by this. This is for internal code only.
@@ -43,12 +45,13 @@ enum {
 	EXPO_CURVE_END,
 };
 
-extern void CheckFailsafe(void);
+extern volatile uint32_t rx_timeout;
 extern float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position
 extern float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the rcCommand after the curve is applied
 extern float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
 extern uint32_t rxData[MAXCHANNELS];
-extern unsigned char isRxDataNew;
+extern volatile unsigned char isRxDataNew;
+
 extern void SpektrumBind (uint32_t bindNumber);
 
 extern void InitRcData(void);

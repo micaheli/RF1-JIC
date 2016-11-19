@@ -3,9 +3,9 @@
 float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position
 float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the rcCommand after the curve is applied
 float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
-unsigned char isRxDataNew;
-uint32_t disarmCount = 0, latchFirstArm = 0;
-
+volatile unsigned char isRxDataNew;
+volatile uint32_t disarmCount = 0, latchFirstArm = 0;
+uint32_t usingSpektrum = 0; //only works if we are ONLY using Spektrum. Not sure why we would ever use more than one type of RX at a time.
 
 uint32_t rxData[MAXCHANNELS];
 
@@ -32,22 +32,7 @@ SPM_VTX_DATA vtxData;
 
 typedef struct {
 	uint8_t syncByte;
-	unsigned int chan0 : 11;
-	unsigned int chan1 : 11;
-	unsigned int chan2 : 11;
-	unsigned int chan3 : 11;
-	unsigned int chan4 : 11;
-	unsigned int chan5 : 11;
-	unsigned int chan6 : 11;
-	unsigned int chan7 : 11;
-	unsigned int chan8 : 11;
-	unsigned int chan9 : 11;
-	unsigned int chan10 : 11;
-	unsigned int chan11 : 11;
-	unsigned int chan12 : 11;
-	unsigned int chan13 : 11;
-	unsigned int chan14 : 11;
-	unsigned int chan15 : 11;
+	uint32_t chan[16];
 	uint8_t flags;
 	uint8_t endByte;
 } __attribute__ ((__packed__)) sbusFrame_t;
@@ -76,9 +61,9 @@ inline void CheckFailsafe(void) {
  void RxUpdate(void) // hook for when rx updates
 {
 
-	if ( (latchFirstArm == 0) && (!boardArmed) && (rxData[4] > 1500) ) {
+	if ( (latchFirstArm == 0) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) ) {
 		latchFirstArm = 1;
-	} else if ( (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (rxData[4] > 1500) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode) { //TODO: make uncalibrated board buzz
+	} else if ( (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode) { //TODO: make uncalibrated board buzz
 
 		latchFirstArm = 0;
 		disarmCount = 0;
@@ -99,7 +84,7 @@ inline void CheckFailsafe(void) {
 		if ( ABS((int32_t)rxData[YAW] - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
 			mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
 
-	} else if (rxData[4] < 400) {
+	} else if (trueRcCommandF[AUX1] < 0.5) {
 
 		if (disarmCount++ > 3) {
 			if (latchFirstArm==1) {
@@ -122,16 +107,6 @@ inline void CheckFailsafe(void) {
 	}
 
 
-}
-
-inline uint32_t SpektrumChannelMap(uint32_t inChannel) {
-	if (inChannel == 3)
-		return(0);
-
-	if (inChannel == 0)
-		return(3);
-
-	return(inChannel);
 }
 
 void SpektrumBind (uint32_t bindNumber) {
@@ -162,17 +137,21 @@ void SpektrumBind (uint32_t bindNumber) {
 
 inline uint32_t ChannelMap(uint32_t inChannel)
 {
-	volatile uint32_t channel = 0;
+	volatile uint32_t outChannel;
+
+	if (mainConfig.rcControlsConfig.channelMap[inChannel] <= MAXCHANNELS)
+		outChannel = mainConfig.rcControlsConfig.channelMap[inChannel];
+	else
+		outChannel = inChannel;
 
 	if (1) // here is where we check which rx we are using probably use case
 	{
-		channel = SpektrumChannelMap(inChannel);
 
-		if (channel == 3)
+		if (outChannel == THROTTLE)
 			rx_timeout = 0;
 	}
 
-	return(channel);
+	return(outChannel);
 }
 
 void ProcessSpektrumPacket(void)
@@ -188,6 +167,7 @@ void ProcessSpektrumPacket(void)
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
 		spektrumChannel = (value & 0x7800) >> 11;
 		if (spektrumChannel < MAXCHANNELS) {
+			usingSpektrum=1;
 			rxData[ChannelMap(spektrumChannel)] = value & 0x7FF;
 		}
 	}
@@ -220,25 +200,17 @@ void ProcessSbusPacket(void)
 
 	// do we need to hook these into rxData[ChannelMap(i)] ?
 	if (frame->syncByte == 15) {
-		rxData[0] = frame->chan0;
-		rxData[1] = frame->chan1;
-		rxData[2] = frame->chan2;
-		rxData[3] = frame->chan3;
-		rxData[4] = frame->chan4;
-		rxData[5] = frame->chan5;
-		rxData[6] = frame->chan6;
-		rxData[7] = frame->chan7;
-		rxData[8] = frame->chan8;
-		rxData[9] = frame->chan9;
-		rxData[10] = frame->chan10;
-		rxData[11] = frame->chan11;
-		rxData[12] = frame->chan12;
-		rxData[13] = frame->chan13;
-		rxData[14] = frame->chan14;
-		rxData[15] = frame->chan15;
+		usingSpektrum=0;
+		for (int32_t x = 15;x>=0;x--) {
+			rxData[ChannelMap(x)] = frame->chan[x];
+		}
 		inSync++;
 		// TODO: is this best way to deal with failsafe stuff?
-		if (!(frame->flags & (SBUS_FRAME_LOSS_FLAG | SBUS_FAILSAFE_FLAG))) {
+		//if (!(frame->flags & (SBUS_FRAME_LOSS_FLAG | SBUS_FAILSAFE_FLAG))) {
+		//	rx_timeout = 0;
+		//}
+		// TODO: No, we should only look at SBUS_FAILSAFE_FLAG for failsafe.
+		if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) ) {
 			rx_timeout = 0;
 		}
 		InlineCollectRcCommand();

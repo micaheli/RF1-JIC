@@ -22,3 +22,4 @@
 
 float InlineConstrainf(float amt, float low, float high);
 float InlineChangeRangef(float oldValue, float oldMax, float oldMin, float newMax, float newMin);
+float CalculateSD(float data[]);

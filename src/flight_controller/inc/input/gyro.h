@@ -3,6 +3,7 @@
 #define GYRO_CALIBRATION_CYCLES 1000
 
 extern volatile uint32_t gyroCalibrationCycles;
+extern float geeForceAccArray[3];
 
 //config structure which is loaded by config
 typedef struct {

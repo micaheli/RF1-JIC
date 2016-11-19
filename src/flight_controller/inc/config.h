@@ -1,8 +1,8 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint8_t)(6U)
-#define CONFIG_VERSION_STR		"6"
-#define FIRMWARE_VERSION		"0.016 ALPHA"
+#define CONFIG_VERSION			(uint8_t)(7U)
+#define CONFIG_VERSION_STR		"7"
+#define FIRMWARE_VERSION		"0.017 ALPHA"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
 
@@ -44,3 +44,10 @@ extern void LoadConfig (uint32_t addresConfigStart);
 extern void GenerateConfig(void);
 extern void ProcessCommand(char *inString);
 extern int RfCustomReply(char *rf_custom_out_buffer);
+
+uint32_t CheckSafeMotors(uint32_t time, uint32_t deviationAllowed);
+int32_t SetChannelMapAndDirection(uint32_t inChannel, uint32_t outChannel);
+int32_t WhichInChannelChange(void);
+void ResetChannelCheck(void);
+int32_t FindRxMinMax(void);
+int32_t FindRxCenter(void);

@@ -2,8 +2,9 @@
 
 extern uint8_t tOutBuffer[];
 extern uint8_t tInBuffer[];
-uint32_t failsafeStage = 0;
-uint32_t autoSaveTimer = 0;
+uint32_t skipTaskHandlePcComm = 0;
+uint32_t failsafeStage        = 0;
+uint32_t autoSaveTimer        = 0;
 
 void scheduler(int32_t count)
 {
@@ -58,24 +59,13 @@ inline void taskAutoSaveConfig(void) {
 
 inline void taskHandlePcComm(void)
 {
+	if (skipTaskHandlePcComm)
+		return;
 
 	if (tOutBuffer[0]==2) { //we have a usb report
 
-		if (tOutBuffer[1]==1) {
-			tInBuffer[0] = 1;
-			tInBuffer[1] = (int8_t)pitchAttitude;
-			tInBuffer[2] = (int8_t)rollAttitude;
-			tInBuffer[3] = (int8_t)yawAttitude;
-			USBD_HID_SendReport (&hUsbDeviceFS, tInBuffer, HID_EPIN_SIZE);
-			bzero(tOutBuffer, HID_EPIN_SIZE);
-		} else {
-
-			if (tOutBuffer[4]==0) {
-				tOutBuffer[4]=0x20;
-			}
-			ProcessCommand((char *)tOutBuffer);
-			bzero(tOutBuffer, HID_EPIN_SIZE);
-		}
+		ProcessCommand((char *)tOutBuffer);
+		bzero(tOutBuffer, HID_EPIN_SIZE);
 
 	}
 
