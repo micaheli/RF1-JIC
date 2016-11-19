@@ -186,8 +186,8 @@ inline void InlineInitAccFilters(void)  {
 
 	}
 
-	accCompAccTrust = 0.1;
-	accCompGyroTrust = 0.9;
+	accCompAccTrust = 0.25;
+	accCompGyroTrust = 0.75;
 }
 
 
@@ -213,16 +213,19 @@ void ComplementaryFilterUpdateAttitude(void)
 	rollAttitude += (filteredGyroData[ROLL] * dT);
 	yawAttitude += (filteredGyroData[YAW] * dT);
 
+	//ACCX is Z
+	//ACCZ is Y
+	//ACCY is X
     // Compensate for drift with accelerometer data is valid
     float forceMagnitudeApprox = ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ]);
     if (forceMagnitudeApprox > .45 && forceMagnitudeApprox < 2.1) //only look at ACC data if it's within .45 and 2.1 Gees
     {
 	// Turning around the X axis results in a vector on the Y-axis
-    	pitchAcc = atan2f( (float)filteredAccData[ACCY], (float)filteredAccData[ACCZ]) * 180 * IPIf; //multiplying by the inverse of Pi is faster than dividing by Pi
+    	pitchAcc = (atan2f( (float)filteredAccData[ACCY], (float)filteredAccData[ACCX]) + PIf) * (180.0 * IPIf) - 180.0; //multiplying by the inverse of Pi is faster than dividing by Pi
     	pitchAttitude = pitchAttitude * accCompGyroTrust + pitchAcc * accCompAccTrust;
 
 	// Turning around the Y axis results in a vector on the X-axis
-        rollAcc = atan2f((float)filteredAccData[ACCX], (float)filteredAccData[ACCZ]) * 180 * IPIf;
+        rollAcc = (atan2f((float)filteredAccData[ACCZ], (float)filteredAccData[ACCX]) + PIf) * (180.0 * IPIf) - 180.0;
         rollAttitude = rollAttitude * accCompGyroTrust + rollAcc * accCompAccTrust;
     }
 }
