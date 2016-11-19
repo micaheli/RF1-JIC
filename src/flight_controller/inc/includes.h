@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <ctype.h>
+#include <limits.h>
 //low level drivers and driver based functions
 #include "../../low_level_driver/boarddef.h"
 #include "mcu_include.h"

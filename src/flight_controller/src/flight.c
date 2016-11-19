@@ -21,7 +21,10 @@ uint32_t counterFish = 0;
 uint32_t loopCounter = 0;
 float accCompAccTrust, accCompGyroTrust;
 volatile uint32_t SKIP_GYRO = 0;
-
+float rollAttitudeError = 0;
+float pitchAttitudeError = 0;
+float rollAttitudeErrorKi = 0;
+float pitchAttitudeErrorKi = 0;
 int SetCalibrate1(void) {
 
 	if ( ABS(filteredAccData[ACCX]) > (ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ])) )
@@ -186,12 +189,14 @@ inline void InlineInitAccFilters(void)  {
 
 	}
 
-	accCompAccTrust = 0.25;
-	accCompGyroTrust = 0.75;
+	accCompAccTrust  = 0.30;
+	accCompGyroTrust = 0.70;
+
 }
 
 
 inline void InlineUpdateAttitude(float geeForceAccArray[]) {
+
 	//update gyro filter
 	PafUpdate(&pafAccStates[ACCX], geeForceAccArray[ACCX]);
 	PafUpdate(&pafAccStates[ACCY], geeForceAccArray[ACCY]);
@@ -268,10 +273,19 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
 
 	//get setpoint for PIDC
-	flightSetPoints[YAW]   = -InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
-	flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL]);
-	flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH]);
-
+	if (1==1) { //if rateMode
+		flightSetPoints[YAW]   = -InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
+		flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL]);
+		flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH]);
+	} else { //if rateMode
+		flightSetPoints[YAW]   = -InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
+		rollAttitudeError      = -( rollAttitude - (smoothedRcCommandF[ROLL] * 70) );
+		pitchAttitudeError     = ( pitchAttitude - (smoothedRcCommandF[PITCH] * -70) );
+		rollAttitudeErrorKi    = (rollAttitudeErrorKi+rollAttitudeErrorKi * 3 * dT);
+		pitchAttitudeErrorKi   = (pitchAttitudeErrorKi+pitchAttitudeErrorKi * 3 * dT);
+		flightSetPoints[ROLL]  = (rollAttitudeError * 5) + rollAttitudeErrorKi;
+		flightSetPoints[PITCH] = (pitchAttitudeError * 5) + pitchAttitudeErrorKi;
+	}
 	//Run PIDC
 	InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, mainConfig.pidConfig);
 
@@ -287,6 +301,8 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 		flightPids[YAW].ki = 0;
 		flightPids[ROLL].ki = 0;
 		flightPids[PITCH].ki = 0;
+		rollAttitudeErrorKi = 0;
+		pitchAttitudeErrorKi = 0;
 		fullKiLatched = 1;
 	}
 

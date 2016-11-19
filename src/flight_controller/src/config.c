@@ -528,36 +528,40 @@ void ResetChannelCheck(void) {
 
 int32_t WhichInChannelChange(void) { //only returns unassigned channels //returns channel with largest change that's unassigned
 
-	int32_t inChannelChanged = -1;
-	uint32_t changeValue = 0;
-	uint32_t largestChangeValue = 0;
+	int32_t inChannelChanged  = -1;
+	uint32_t changeValue      = 0;
+	float currentChannelRange = 0;
+	float percentFromMax      = 0;
+	float percentFromMin      = 0;
+	volatile float diffFloat  = 0;
+	float closestToEndPoint   = .5;
 
 	for (uint32_t x = 0;x<MAXCHANNELS;x++) {
 
 		changeValue = ABS((int32_t)rxData[x] - (int32_t)checkRxData[x]);
 
-		if ( (  changeValue > 200 ) && (changeValue >largestChangeValue) ) {
-
+		if ( changeValue > 200 ) {
 			if (mainConfig.rcControlsConfig.channelMap[x] == 50) {
-				inChannelChanged = x;
-				if (largestChangeValue < changeValue)
-					largestChangeValue = changeValue;
-			}
+				currentChannelRange = ABS((float)mainConfig.rcControlsConfig.maxRc[x] - (float)mainConfig.rcControlsConfig.minRc[x]); //1000    //0  //1
+				diffFloat      = (float)rxData[x] -  (float)mainConfig.rcControlsConfig.maxRc[x];
+				percentFromMax = (float)( ABS(diffFloat) / (float)currentChannelRange);
+				diffFloat      = (float)rxData[x] -  (float)mainConfig.rcControlsConfig.minRc[x];
+				percentFromMin = (float)( ABS(diffFloat) / (float)currentChannelRange);
+				if (percentFromMax > percentFromMin) { //we're near min
+					if (percentFromMax > closestToEndPoint ) { //if current channel is closer to endpoint and it's changed at least 200 points, this is our channel
+						closestToEndPoint = percentFromMin;
+						//inChannelChanged = x;
+					}
+				} else { //we're closer to max or we're in the middle
+					if (percentFromMin > closestToEndPoint ) { //if current channel is closer to endpoint and it's changed at least 200 points, this is our channel
+						closestToEndPoint = percentFromMax;
+						//inChannelChanged = x;
+					}
+				}
+				if (closestToEndPoint < 0.05) { //at least within 5% of endpoint
+					inChannelChanged = x;
+				}
 
-		}
-
-	}
-
-	for (uint32_t x = 0;x<MAXCHANNELS;x++) {
-
-		changeValue = ABS((int32_t)rxData[x] - (int32_t)checkRxData[x]);
-
-		if ( (  changeValue > 50 ) && (changeValue >largestChangeValue) ) {
-
-			if (mainConfig.rcControlsConfig.channelMap[x] == 50) {
-				inChannelChanged = x;
-				if (largestChangeValue < changeValue)
-					largestChangeValue = changeValue;
 			}
 
 		}
@@ -570,14 +574,14 @@ int32_t WhichInChannelChange(void) { //only returns unassigned channels //return
 
 int32_t SetChannelMapAndDirection(uint32_t inChannel, uint32_t outChannel) {
 
-	int32_t channelCheck = ( rxData[inChannel] < (mainConfig.rcControlsConfig.maxRc[inChannel] - 50) ); //channel is reversed
+	int32_t channelCheck = ( rxData[inChannel] < (mainConfig.rcControlsConfig.maxRc[inChannel] - 300) ); //channel is reversed
 
 	if (mainConfig.rcControlsConfig.channelMap[inChannel] == 50) { //if channelMap for the inChannel is 50 than it's waiting to be assigned.
 
 		mainConfig.rcControlsConfig.channelMap[inChannel] = outChannel; //set channel map
 
-		if ( channelCheck > 50 ) { //min is higher so channel is reversed, reverse if needed
-			channelCheck = (int32_t)mainConfig.rcControlsConfig.minRc[inChannel];
+		if ( channelCheck ) { //min is higher so channel is reversed, reverse if needed
+			channelCheck = (int32_t)mainConfig.rcControlsConfig.maxRc[inChannel];
 			mainConfig.rcControlsConfig.maxRc[inChannel] = mainConfig.rcControlsConfig.minRc[inChannel];
 			mainConfig.rcControlsConfig.minRc[inChannel] = (uint32_t)channelCheck;
 		}
