@@ -141,9 +141,9 @@ const config_variables_rec valueTable[] = {
 		{ "aux3_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX3], 		0, 2148, 2048, "" },
 		{ "aux4_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX4], 		0, 2148, 2048, "" },
 
-		{ "pitch_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[PITCH], 		0, 1000, 0, "" },
+		{ "pitch_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[PITCH], 		0, 1000, 2, "" },
 		{ "roll_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[ROLL], 		0, 1000, 1, "" },
-		{ "yaw_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[YAW], 		0, 1000, 2, "" },
+		{ "yaw_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[YAW], 		0, 1000, 0, "" },
 		{ "throttle_map", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[THROTTLE],	0, 1000, 3, "" },
 		{ "aux1_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX1], 		0, 1000, 4, "" },
 		{ "aux2_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX2], 		0, 1000, 5, "" },

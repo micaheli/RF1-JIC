@@ -139,7 +139,7 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 {
 	volatile uint32_t outChannel;
 
-	if (mainConfig.rcControlsConfig.channelMap[inChannel] <= MAXCHANNELS)
+	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (mainConfig.rcControlsConfig.channelMap[inChannel] <= MAXCHANNELS) )
 		outChannel = mainConfig.rcControlsConfig.channelMap[inChannel];
 	else
 		outChannel = inChannel;
