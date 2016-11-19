@@ -12,13 +12,16 @@ __IO ITStatus UartReady = RESET;
 
 uint32_t lastRXPacket;
 
-//sbus
-//#define FRAME_SIZE 25
-//uint32_t currentProtocol = USING_SBUS;
 
-//spektrum
-#define FRAME_SIZE 16
-uint32_t currentProtocol = USING_SPEKTRUM;
+#if defined(USE_SBUS_SERIAL)
+  //sbus
+  #define FRAME_SIZE 25
+  uint32_t currentProtocol = USING_SBUS;
+#else
+  //spektrum
+  #define FRAME_SIZE 16
+  uint32_t currentProtocol = USING_SPEKTRUM;
+#endif
 
 
 /* Buffer used for transmission */

@@ -9,6 +9,7 @@ uint32_t usingSpektrum = 0; //only works if we are ONLY using Spektrum. Not sure
 
 uint32_t rxData[MAXCHANNELS];
 
+uint32_t skipRxMap = 0;
 uint32_t progMode = 0;
 uint32_t progTimer = 0;
 
@@ -32,7 +33,22 @@ SPM_VTX_DATA vtxData;
 
 typedef struct {
 	uint8_t syncByte;
-	uint32_t chan[16];
+	unsigned int chan0 : 11;
+	unsigned int chan1 : 11;
+	unsigned int chan2 : 11;
+	unsigned int chan3 : 11;
+	unsigned int chan4 : 11;
+	unsigned int chan5 : 11;
+	unsigned int chan6 : 11;
+	unsigned int chan7 : 11;
+	unsigned int chan8 : 11;
+	unsigned int chan9 : 11;
+	unsigned int chan10 : 11;
+	unsigned int chan11 : 11;
+	unsigned int chan12 : 11;
+	unsigned int chan13 : 11;
+	unsigned int chan14 : 11;
+	unsigned int chan15 : 11;
 	uint8_t flags;
 	uint8_t endByte;
 } __attribute__ ((__packed__)) sbusFrame_t;
@@ -139,7 +155,7 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 {
 	volatile uint32_t outChannel;
 
-	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (mainConfig.rcControlsConfig.channelMap[inChannel] <= MAXCHANNELS) )
+	if ( (!skipRxMap) && (mainConfig.rcControlsConfig.channelMap[inChannel] <= MAXCHANNELS) )
 		outChannel = mainConfig.rcControlsConfig.channelMap[inChannel];
 	else
 		outChannel = inChannel;
@@ -201,9 +217,22 @@ void ProcessSbusPacket(void)
 	// do we need to hook these into rxData[ChannelMap(i)] ?
 	if (frame->syncByte == 15) {
 		usingSpektrum=0;
-		for (int32_t x = 15;x>=0;x--) {
-			rxData[ChannelMap(x)] = frame->chan[x];
-		}
+		rxData[ChannelMap(0)] = frame->chan0;
+		rxData[ChannelMap(1)] = frame->chan1;
+		rxData[ChannelMap(2)] = frame->chan2;
+		rxData[ChannelMap(3)] = frame->chan3;
+		rxData[ChannelMap(4)] = frame->chan4;
+		rxData[ChannelMap(5)] = frame->chan5;
+		rxData[ChannelMap(6)] = frame->chan6;
+		rxData[ChannelMap(7)] = frame->chan7;
+		rxData[ChannelMap(8)] = frame->chan8;
+		rxData[ChannelMap(9)] = frame->chan9;
+		rxData[ChannelMap(10)] = frame->chan10;
+		rxData[ChannelMap(11)] = frame->chan11;
+		rxData[ChannelMap(12)] = frame->chan12;
+		rxData[ChannelMap(13)] = frame->chan13;
+		rxData[ChannelMap(14)] = frame->chan14;
+		rxData[ChannelMap(15)] = frame->chan15;
 		inSync++;
 		// TODO: is this best way to deal with failsafe stuff?
 		//if (!(frame->flags & (SBUS_FRAME_LOSS_FLAG | SBUS_FAILSAFE_FLAG))) {
