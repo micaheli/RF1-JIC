@@ -471,18 +471,18 @@ int32_t FindRxMinMax(void) {
 		ZeroActuators();
 		DelayMs(20);
 
-		//bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(rxData[0]));
-		//RfCustomReply(rf_custom_out_buffer);
+		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(rxData[0]));
+		RfCustomReply(rf_custom_out_buffer);
 
 		for (uint32_t x = 0;x<MAXCHANNELS;x++) {
-			if ( (volatile)rxData[x] < tempRc.minRc[x]) {
-				tempRc.minRc[x] = (volatile)rxData[x];
+			if (rxData[x] < tempRc.minRc[x]) {
+				tempRc.minRc[x] = (volatile unsigned int)rxData[x];
 				tempRc.channelMap[x] = x;
 			}
 
-			if ((volatile)rxData[x] > tempRc.maxRc[x]) {
-				tempRc.maxRc[x] = (volatile)rxData[x];
+			if (rxData[x] > tempRc.maxRc[x]) {
+				tempRc.maxRc[x] = (volatile unsigned int)rxData[x];
 				tempRc.channelMap[x] = x;
 			}
 		}
