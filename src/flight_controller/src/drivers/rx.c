@@ -30,6 +30,8 @@ SPM_VTX_DATA vtxData;
 #define SBUS_FRAME_SIZE 25
 #define SBUS_FRAME_LOSS_FLAG (1 << 2)
 #define SBUS_FAILSAFE_FLAG (1 << 3)
+#define SBUS_STARTBYTE         0x0f
+#define SBUS_ENDBYTE           0x00
 
 typedef struct {
 	uint8_t syncByte;
@@ -215,7 +217,7 @@ void ProcessSbusPacket(void)
 	memcpy(copiedBufferData, serialRxBuffer, SBUS_FRAME_SIZE);
 
 	// do we need to hook these into rxData[ChannelMap(i)] ?
-	if (frame->syncByte == 15) {
+	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) ) {
 		usingSpektrum=0;
 		rxData[ChannelMap(0)] = frame->chan0;
 		rxData[ChannelMap(1)] = frame->chan1;
