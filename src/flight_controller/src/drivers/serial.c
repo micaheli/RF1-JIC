@@ -88,7 +88,7 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 			//ErrorHandler();
 		}
 	}
-		
+
 	UsartDmaInit(huart);
 	__HAL_UART_FLUSH_DRREGISTER(huart);
 	__HAL_UART_CLEAR_IDLEFLAG(&uartHandle);
@@ -332,7 +332,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
 	if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
 	{
-		
+
 	}
 	ignoreEcho = 0;
 
@@ -373,7 +373,7 @@ void USARTx_IRQHandler(void)
 	HAL_UART_IRQHandler(&uartHandle);
 	HAL_DMA_IRQHandler(&dmaUartRx);
 	HAL_DMA_IRQHandler(&dmaUartTx);
-	
+
 	// ##-2- Put UART peripheral in reception process ###########################
 	__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
 
@@ -477,8 +477,8 @@ return;
 	//}
 	//else
 	//	ignoreEcho = 0;
-		
-		
+
+
 		//lastRXPacket = InlineMillis();
 		//if(HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, 16) != HAL_OK)
 		//{

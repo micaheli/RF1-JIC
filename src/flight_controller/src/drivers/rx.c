@@ -78,9 +78,7 @@ inline void CheckFailsafe(void) {
 {
 
 	if ( (latchFirstArm == 0) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) ) {
-
 		latchFirstArm = 1;
-
 	} else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode) { //TODO: make uncalibrated board buzz
 
 		latchFirstArm = 0;

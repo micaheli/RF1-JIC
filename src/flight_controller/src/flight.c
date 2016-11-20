@@ -218,6 +218,11 @@ void ComplementaryFilterUpdateAttitude(void)
 	rollAttitude += (filteredGyroData[ROLL] * dT);
 	yawAttitude += (filteredGyroData[YAW] * dT);
 
+	if (yawAttitude > 180)
+			yawAttitude = (yawAttitude - 360);
+	else if (yawAttitude < -180)
+			yawAttitude = (yawAttitude + 360);
+
 	//ACCX is Z
 	//ACCZ is Y
 	//ACCY is X
