@@ -259,7 +259,7 @@
 */
 /*
 */
-//#define USE_SPEKTRUM_SERIAL
+#define USE_SPEKTRUM_SERIAL
 
 //spektrum
 #ifdef USE_SPEKTRUM_SERIAL
@@ -271,8 +271,8 @@
 	#define USARTx_RX_PIN              GPIO_PIN_9
 	#define USARTx_RX_GPIO_PORT        GPIOA
 	#define USARTx_RX_AF               GPIO_AF7_USART1
-	#define USARTx_IRQHandler          USART1_IRQHandler
-	#define USARTx_IRQn                USART1_IRQn
+	#define USARTx_IRQHandler          UART1_IRQHandler
+	#define USARTx_IRQn                UART1_IRQn
 	#define USARTx_TX_DMA_STREAM       DMA2_Stream7
 	#define USARTx_TX_DMA_CHANNEL      DMA_CHANNEL_4
 	#define USARTx_TX_DMA_IRQn         DMA2_Stream7_IRQn

@@ -58,20 +58,19 @@ int main(void)
 //    Ws2812LedInit();
     ZeroActuators(); //output actuators to idle after timers are stable;
 
+    BoardUsartInit();
+
     if (!accgyroInit(mainConfig.gyroConfig.loopCtrl)) {
         ErrorHandler();
     }
 
-    InitWatchdog(WATCHDOG_TIMEOUT_2S);
+    InitWatchdog(WATCHDOG_TIMEOUT_16S);
 
     buzzerStatus.status = STATE_BUZZER_OFF;
     ledStatus.status = LEDS_SLOW_BLINK;
 
-    BoardUsartInit();
 
-    bzero(serialRxBuffer, sizeof(serialRxBuffer));
-    bzero(serialTxBuffer, sizeof(serialTxBuffer));
-	
+
     while (1) {
 
 

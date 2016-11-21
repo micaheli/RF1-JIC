@@ -8,7 +8,8 @@ __IO ITStatus UartReady = RESET;
 
 #define USING_SPEKTRUM 0
 #define USING_SBUS     1
-
+uint8_t dmaRxBuffer = '\000';
+uint32_t dmaIndex = 0;
 
 uint32_t lastRXPacket;
 
@@ -37,6 +38,9 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 
 	(void)(baudRate);
 	/*##-2- Configure peripheral GPIO ##########################################*/
+	HAL_GPIO_DeInit(USARTx_TX_GPIO_PORT, USARTx_TX_PIN);
+	HAL_GPIO_DeInit(USARTx_RX_GPIO_PORT, USARTx_RX_PIN);
+
 	/* UART TX GPIO pin configuration  */
 	GPIO_InitStruct.Pin       = USARTx_TX_PIN;
 	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
@@ -57,17 +61,18 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 	/* UART configured as follows:
 		- Word LengNoneth = 8 Bits
 		- Stop Bit = One Stop bit
-		- Parity = 
+		- Parity =
 		- BaudRate = 9600 baud
 		- Hardware flow control disabled (RTS and CTS signals) */
 	uartHandle.Instance        = Usart;
 
-	uartHandle.Init.BaudRate   = USARTx_BAUDRATE;
-	uartHandle.Init.WordLength = USARTx_WORDLENGTH;
-	uartHandle.Init.StopBits   = USARTx_STOPBITS;
-	uartHandle.Init.Parity     = USARTx_PARITY;
-	uartHandle.Init.HwFlowCtl  = USARTx_HWFLOWCTRL;
-	uartHandle.Init.Mode       = USARTx_MODE;
+	uartHandle.Init.BaudRate     = USARTx_BAUDRATE;
+	uartHandle.Init.WordLength   = USARTx_WORDLENGTH;
+	uartHandle.Init.StopBits     = USARTx_STOPBITS;
+	uartHandle.Init.Parity       = USARTx_PARITY;
+	uartHandle.Init.HwFlowCtl    = USARTx_HWFLOWCTRL;
+	uartHandle.Init.Mode         = USARTx_MODE;
+	uartHandle.Init.OverSampling = UART_OVERSAMPLING_16;
 	if(HAL_UART_DeInit(&uartHandle) != HAL_OK)
 	{
 //		ErrorHandler();
@@ -90,9 +95,17 @@ void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *
 	}
 
 	UsartDmaInit(huart);
+	__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
+	HAL_UART_Receive_DMA(&uartHandle, &dmaRxBuffer, 1);
+	return;
 	__HAL_UART_FLUSH_DRREGISTER(huart);
 	__HAL_UART_CLEAR_IDLEFLAG(&uartHandle);
+	if (HAL_UART_Receive_IT(&uartHandle, (uint8_t *)serialRxBuffer, FRAME_SIZE) != HAL_OK) {
+
+	}
 	__HAL_UART_ENABLE_IT(&uartHandle, UART_IT_IDLE);
+return;
+
 	if (HAL_UART_Receive_DMA(&uartHandle, (uint8_t *)serialRxBuffer, FRAME_SIZE) != HAL_OK) {
 	// error
 		return;
@@ -182,10 +195,10 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 	dmaUartRx.Init.Channel             = USARTx_RX_DMA_CHANNEL;
 	dmaUartRx.Init.Direction           = DMA_PERIPH_TO_MEMORY;
 	dmaUartRx.Init.PeriphInc           = DMA_PINC_DISABLE;
-	dmaUartRx.Init.MemInc              = DMA_MINC_ENABLE;
+	dmaUartRx.Init.MemInc              = DMA_MINC_DISABLE;
 	dmaUartRx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
 	dmaUartRx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-	dmaUartRx.Init.Mode                = DMA_NORMAL;
+	dmaUartRx.Init.Mode                = DMA_CIRCULAR;
 	dmaUartRx.Init.Priority            = DMA_PRIORITY_HIGH;
 	dmaUartRx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
 
@@ -222,14 +235,14 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
 //	HAL_NVIC_EnableIRQ(USARTx_IRQn);
 
 
-	
+
 	__HAL_UART_FLUSH_DRREGISTER(huart);
 
 	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, FRAME_SIZE) == HAL_OK)
 	{
-		
-	}
 
+	}
+/*
     for (x=0;x<100;x++)
     {
     	//if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, 16) == HAL_OK)
@@ -240,7 +253,7 @@ void UsartDmaInit(UART_HandleTypeDef *huart)
     {
     	// SHOW SOME CRAZY ERRORS
     }
-
+*/
 }
 
 void BoardUsartInit () {
@@ -254,7 +267,7 @@ void BoardUsartInit () {
 	HAL_NVIC_DisableIRQ(USARTx_RX_DMA_IRQn);
 
 	// read and write settings at slow speed
-	UsartInit(100000, USARTx, &uartHandle);
+	UsartInit(USARTx_BAUDRATE, USARTx, &uartHandle);
 	//UsartInit(115200, USARTx, &uartHandle);
 
 }
@@ -267,10 +280,41 @@ extern uint32_t spekPhase;
 //{
 //  __HAL_UART_DISABLE_IT(huart, UART_IT_IDLE);
 //}
-
+void HAL_USART_RxCpltCallback(USART_HandleTypeDef *huart)
+{
+	volatile uint32_t cat =1;
+	return;
+}
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+    __HAL_UART_FLUSH_DRREGISTER(&uartHandle); // Clear the buffer to prevent overrun
 
+    int i = 0;
+    uint32_t timeSinceLastPacket = 0;
+    uint32_t currentTime = 0;
+    static uint32_t timeOfLastPacket = 0;
+
+    currentTime = InlineMillis();
+    timeSinceLastPacket = (currentTime - timeOfLastPacket);
+    timeOfLastPacket = currentTime;
+
+    if (timeSinceLastPacket > 2)
+    	dmaIndex = 0;
+
+    serialRxBuffer[dmaIndex++] = dmaRxBuffer; // Add that character to the string
+
+
+	if (dmaIndex >= FRAME_SIZE) // User typing too much, we can't have commands that big
+	{
+		dmaIndex = 0;
+    	if (currentProtocol == USING_SPEKTRUM)
+    		ProcessSpektrumPacket();
+    	else if (currentProtocol == USING_SBUS)
+    		ProcessSbusPacket();
+		bzero(serialRxBuffer, sizeof(serialRxBuffer));
+	}
+
+	return;
 	// ##-2- Put UART peripheral in reception process ###########################
 	//__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
 
@@ -348,7 +392,10 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 void USARTx_RX_DMA_IRQHandler(void)
 {
-  HAL_DMA_IRQHandler(&dmaUartRx);
+    HAL_NVIC_ClearPendingIRQ(USARTx_RX_DMA_IRQn);
+    HAL_DMA_IRQHandler(&dmaUartRx);
+//  HAL_DMA_IRQHandler(&dmaUartRx);
+//  __HAL_DMA_SET_COUNTER(&dmaUartRx, 0);
   //UART_DMA_RX_ENABLE(&dmaUartRx);
   //HAL_UART_Receive_DMA(&dmaUartRx, (uint8_t *)serialRxBuffer, FRAME_SIZE);
 }
@@ -356,7 +403,7 @@ void USARTx_RX_DMA_IRQHandler(void)
 void USARTx_TX_DMA_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&dmaUartTx);
-	
+
 }
 
 uint32_t rxDMA;
@@ -445,7 +492,7 @@ void USARTx_IRQHandler(void)
 */
 	if (__HAL_USART_GET_IT_SOURCE(&uartHandle, USART_IT_IDLE))
 	{
-		HAL_UART_DMAStop(&uartHandle);	
+		HAL_UART_DMAStop(&uartHandle);
 		if ((uint16_t)(USARTx_RX_DMA_STREAM->NDTR) == 0)
 		{
 
@@ -508,3 +555,4 @@ return;
 	}
 	*/
 }
+

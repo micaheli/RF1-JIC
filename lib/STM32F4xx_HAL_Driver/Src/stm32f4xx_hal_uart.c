@@ -968,7 +968,7 @@ HAL_StatusTypeDef HAL_UART_Receive_DMA(UART_HandleTypeDef *huart, uint8_t *pData
 
     /* Enable the DMA Stream */
     tmp = (uint32_t*)&pData;
-    HAL_DMA_Start_IT(huart->hdmarx, (uint32_t)&huart->Instance->DR, *(uint32_t*)tmp, Size); 
+    HAL_DMA_Start_IT(huart->hdmarx, (uint32_t)&huart->Instance->DR, *(uint32_t*)tmp, Size);
 
     /* Enable the UART Parity Error Interrupt */
     SET_BIT(huart->Instance->CR1, USART_CR1_PEIE);
@@ -1586,7 +1586,7 @@ static void UART_DMAReceiveCplt(DMA_HandleTypeDef *hdma)
   if((hdma->Instance->CR & DMA_SxCR_CIRC) == 0U)
   {
     huart->RxXferCount = 0U;
-  
+
     /* Disable RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
     CLEAR_BIT(huart->Instance->CR1, USART_CR1_PEIE);
     CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
