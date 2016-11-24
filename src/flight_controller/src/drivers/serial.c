@@ -6,10 +6,8 @@ DMA_HandleTypeDef dmaUartTx[6];
 
 __IO ITStatus UartReady = RESET;
 
-#define USING_SPEKTRUM 0
-#define USING_SBUS     1
 uint8_t dmaRxBuffer = '\000';
-uint32_t dmaIndex = 0;
+uint32_t dmaIndex[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 5 usarts
 
 uint32_t lastRXPacket;
 
@@ -26,10 +24,10 @@ uint32_t lastRXPacket;
 
 
 /* Buffer used for transmission */
-unsigned char serialTxBuffer[TXBUFFERSIZE];
+//unsigned char serialTxBuffer[TXBUFFERSIZE];
 
 /* Buffer used for reception */
-unsigned char serialRxBuffer[RXBUFFERSIZE];
+//unsigned char serialRxBuffer[RXBUFFERSIZE];
 
 
 void UsartInit(uint32_t serialNumber) {
@@ -92,6 +90,12 @@ void UsartInit(uint32_t serialNumber) {
 
 void UsartDeinit(uint32_t serialNumber) {
 
+
+	if (board.serials[serialNumber].serialTxBuffer)
+		bzero(serialTxBuffer[board.serials[serialNumber].serialTxBuffer-1], sizeof(serialTxBuffer[board.serials[serialNumber].serialTxBuffer-1]));
+
+	if (board.serials[serialNumber].serialRxBuffer)
+		bzero(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], sizeof(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1]));
 
 	HAL_UART_DeInit(&uartHandles[board.serials[serialNumber].usartHandle]);
 
@@ -205,8 +209,7 @@ void UsartDmaInit(uint32_t serialNumber)
 
 void BoardUsartInit () {
 
-    bzero(serialRxBuffer, sizeof(serialRxBuffer));
-    bzero(serialTxBuffer, sizeof(serialTxBuffer));
+
 
 	lastRXPacket = InlineMillis();
 
@@ -221,44 +224,38 @@ void BoardUsartInit () {
 
 }
 
-//Interrupt callback routine
-void HAL_USART_RxCpltCallback(USART_HandleTypeDef *huart)
-{
-	(void)(huart);
-	return;
-}
-
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     //__HAL_UART_FLUSH_DRREGISTER(&uartHandle); // Clear the buffer to prevent overrun
 
-    volatile uint32_t timeSinceLastPacket = 0;
-    uint32_t currentTime = 0;
-    static uint32_t timeOfLastPacket = 0;
+    volatile uint32_t timeSinceLastPacket[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 5 usarts
+    uint32_t currentTime[MAX_USARTS];
+    static uint32_t timeOfLastPacket[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 5 usarts
 
-	if (huart == &uartHandles[board.serials[0].usartHandle]) {
-		currentTime = InlineMillis();
-		timeSinceLastPacket = (currentTime - timeOfLastPacket);
-		timeOfLastPacket = currentTime;
+	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++) {
+		if (huart == &uartHandles[board.serials[serialNumber].usartHandle]) {
+			currentTime[serialNumber]         = InlineMillis(); //todo: How do we handle multiple RXs with this?
+			timeSinceLastPacket[serialNumber] = (currentTime[serialNumber] - timeOfLastPacket[serialNumber]); //todo: How do we handle multiple RXs with this?
+			timeOfLastPacket[serialNumber]    = currentTime[serialNumber]; //todo: How do we handle multiple RXs with this?
 
-		if (timeSinceLastPacket > 3) {
-			if (dmaIndex < FRAME_SIZE) {
-				__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[0].usartHandle]); // Clear the buffer to prevent overrun
+			if (timeSinceLastPacket[serialNumber] > 3) {
+				if (dmaIndex[serialNumber] < board.serials[serialNumber].FrameSize) {
+					__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[serialNumber].usartHandle]); // Clear the buffer to prevent overrun
+				}
+				dmaIndex[serialNumber] = 0;
 			}
-			dmaIndex = 0;
-		}
 
-		serialRxBuffer[dmaIndex++] = dmaRxBuffer; // Add that character to the string
+			serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][dmaIndex[serialNumber]++] = dmaRxBuffer; // Add that character to the string
 
 
-		if (dmaIndex >= FRAME_SIZE) // User typing too much, we can't have commands that big
-		{
-			dmaIndex = 0;
-			if (currentProtocol == USING_SPEKTRUM)
-				ProcessSpektrumPacket();
-			else if (currentProtocol == USING_SBUS)
-				ProcessSbusPacket();
-			//bzero(serialRxBuffer, sizeof(serialRxBuffer));
+			if (dmaIndex[serialNumber] >= board.serials[serialNumber].FrameSize) // User typing too much, we can't have commands that big
+			{
+				dmaIndex[serialNumber] = 0;
+				if (board.serials[serialNumber].Protocol == USING_SPEKTRUM)
+					ProcessSpektrumPacket(serialNumber);
+				else if (board.serials[serialNumber].Protocol == USING_SBUS)
+					ProcessSbusPacket(serialNumber);
+			}
 		}
 	}
 

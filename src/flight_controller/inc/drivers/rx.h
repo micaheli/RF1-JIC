@@ -60,8 +60,8 @@ extern void InlineCollectRcCommand (void);
 extern float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo);
 extern void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]);
 
-extern void ProcessSpektrumPacket(void);
-extern void ProcessSbusPacket(void);
+extern void ProcessSpektrumPacket(uint32_t serialNumber);
+extern void ProcessSbusPacket(uint32_t serialNumber);
 
 extern void RxUpdate(void);
 extern void CheckFailsafe(void);

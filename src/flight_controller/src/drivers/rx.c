@@ -172,13 +172,13 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 	return(outChannel);
 }
 
-void ProcessSpektrumPacket(void)
+void ProcessSpektrumPacket(uint32_t serialNumber)
 {
 	uint32_t spektrumChannel;
 	uint32_t x;
 	uint32_t value;
 															   // Make sure this is very first thing done in function, and its called first on interrupt
-	memcpy(copiedBufferData, serialRxBuffer, SPEKTRUM_FRAME_SIZE);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SPEKTRUM_FRAME_SIZE);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
 
 	for (x = 2; x < 16; x += 2) {
@@ -208,13 +208,13 @@ void ProcessSpektrumPacket(void)
 	RxUpdate();
 }
 
-void ProcessSbusPacket(void)
+void ProcessSbusPacket(uint32_t serialNumber)
 {
 	static uint32_t outOfSync = 0, inSync = 0;
 
 	sbusFrame_t *frame = (sbusFrame_t*)copiedBufferData;
 
-	memcpy(copiedBufferData, serialRxBuffer, SBUS_FRAME_SIZE);
+	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SBUS_FRAME_SIZE);
 
 	// do we need to hook these into rxData[ChannelMap(i)] ?
 	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) ) {

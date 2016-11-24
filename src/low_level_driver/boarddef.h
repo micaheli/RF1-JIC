@@ -5,6 +5,11 @@
 #define MAX_MOTOR_NUMBER 8
 #define MAX_SERVO_NUMBER 8
 #define MAX_USARTS 6
+#define RXBUFFERSIZE 64
+#define TXBUFFERSIZE 64
+
+#define USING_SPEKTRUM 0
+#define USING_SBUS     1
 
 #define uid0_1 (*(uint8_t*)0x1fff7a10)
 #define uid0_2 (*(uint8_t*)0x1fff7a11)
@@ -253,6 +258,12 @@ typedef struct {
 	uint32_t				TXDma;
 	uint32_t				RXDma;
 
+	uint32_t				Protocol;
+	uint32_t				FrameSize;
+
+	int32_t					serialTxBuffer;
+	int32_t					serialRxBuffer;
+
 	//below won't be needed
 	uint32_t				TXDMAStream; // looked up from array
 	uint32_t				TXDMAChannel;
@@ -419,6 +430,9 @@ extern serial_type         usarts[];
 extern DMA_Stream_TypeDef *dmaStream[];
 extern UART_HandleTypeDef  uartHandles[];
 extern DMA_HandleTypeDef   dmaHandles[];
+
+extern unsigned char serialTxBuffer[][TXBUFFERSIZE];
+extern unsigned char serialRxBuffer[][RXBUFFERSIZE];
 
 extern int InitializeMCUSettings();
 void getBoardHardwareDefs();

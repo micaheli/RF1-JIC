@@ -16,6 +16,9 @@ DMA_Stream_TypeDef *dmaStream[16];
 UART_HandleTypeDef  uartHandles[6];
 DMA_HandleTypeDef   dmaHandles[16];
 
+unsigned char serialRxBuffer[3][RXBUFFERSIZE];
+unsigned char serialTxBuffer[3][TXBUFFERSIZE];
+
 int InitializeMCUSettings() {
 	//target_pinout pins;
 
@@ -401,8 +404,14 @@ void getBoardHardwareDefs(void)
 	//board.serials[0].USART_IRQn  = USART5_IRQn;  //JUST A Define for the function name
 	board.serials[0].usartHandle = ENUM_USART1;  //JUST A Define for the function name
 
+	board.serials[0].serialTxBuffer 		= 1; //three buffers, give this one the first buffer
+	board.serials[0].serialRxBuffer 		= 1; //three buffers, give this one the first buffer
+
 	board.serials[0].TXDma 		= ENUM_DMA2_STREAM_7;
 	board.serials[0].RXDma 		= ENUM_DMA2_STREAM_2;
+
+	board.serials[0].Protocol	= USING_SPEKTRUM;
+	board.serials[0].FrameSize	= 16;
 
 	board.dmas[board.serials[0].TXDma].enabled            = 1;
 	board.dmas[board.serials[0].TXDma].dmaStream          = ENUM_DMA2_STREAM_7;

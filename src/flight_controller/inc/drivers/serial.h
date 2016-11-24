@@ -6,11 +6,11 @@ extern DMA_HandleTypeDef dmaUartRx[];
 extern DMA_HandleTypeDef dmaUartTx[];
 extern uint32_t lastRXPacket;
 
-#define RXBUFFERSIZE 64
-#define TXBUFFERSIZE 64
+//#define RXBUFFERSIZE 64
+//#define TXBUFFERSIZE 64
 
-extern unsigned char serialTxBuffer[TXBUFFERSIZE];
-extern unsigned char serialRxBuffer[TXBUFFERSIZE];
+//extern unsigned char serialTxBuffer[TXBUFFERSIZE];
+//extern unsigned char serialRxBuffer[TXBUFFERSIZE];
 
 unsigned char txTransimissionReady;
 
