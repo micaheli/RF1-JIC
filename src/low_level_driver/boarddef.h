@@ -8,8 +8,10 @@
 #define RXBUFFERSIZE 64
 #define TXBUFFERSIZE 64
 
-#define USING_SPEKTRUM 0
-#define USING_SBUS     1
+#define USING_MANUAL           0
+#define USING_SPEKTRUM_ONE_WAY 1
+#define USING_SPEKTRUM_TWO_WAY 2
+#define USING_SBUS             3
 
 #define uid0_1 (*(uint8_t*)0x1fff7a10)
 #define uid0_2 (*(uint8_t*)0x1fff7a11)

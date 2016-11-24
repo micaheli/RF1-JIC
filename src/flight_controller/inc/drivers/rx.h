@@ -17,6 +17,8 @@ typedef struct {
     float    rates[3];
     float    acroPlus[3];
     uint32_t rcCalibrated;
+    uint32_t rxProtcol;
+    uint32_t rxUsart;
 } rc_control_config;
 
 //Enumerate the different channels in code. The TX map is not affected by this. This is for internal code only.

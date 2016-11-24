@@ -12,16 +12,6 @@ uint32_t dmaIndex[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we
 uint32_t lastRXPacket;
 
 
-#if defined(USE_SBUS_SERIAL)
-  //sbus
-  #define FRAME_SIZE 25
-  uint32_t currentProtocol = USING_SBUS;
-#else
-  //spektrum
-  #define FRAME_SIZE 16
-  uint32_t currentProtocol = USING_SPEKTRUM;
-#endif
-
 
 /* Buffer used for transmission */
 //unsigned char serialTxBuffer[TXBUFFERSIZE];
@@ -34,24 +24,79 @@ void UsartInit(uint32_t serialNumber) {
 
 	GPIO_InitTypeDef  GPIO_InitStruct;
 
+	uint32_t txPin = 0;
+	uint32_t rxPin = 0;
+	GPIO_TypeDef *txPort = 0;
+	GPIO_TypeDef *rxPort = 0;
+
+	switch (board.serials[serialNumber].Protocol) {
+		case USING_SPEKTRUM_ONE_WAY:
+			board.serials[serialNumber].FrameSize  = 16;
+			board.serials[serialNumber].BaudRate   = 115200;
+			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
+			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
+			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
+			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
+			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
+			txPin = board.serials[serialNumber].TXPin;
+			rxPin = board.serials[serialNumber].RXPin;
+			txPort = ports[board.serials[serialNumber].TXPort];
+			rxPort = ports[board.serials[serialNumber].RXPort];
+			break;
+		case USING_SPEKTRUM_TWO_WAY:
+			board.serials[serialNumber].FrameSize  = 16;
+			board.serials[serialNumber].BaudRate   = 115200;
+			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
+			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
+			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
+			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
+			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
+			txPin  = board.serials[serialNumber].TXPin;
+			rxPin  = board.serials[serialNumber].TXPin;
+			txPort = ports[board.serials[serialNumber].TXPort];
+			rxPort = ports[board.serials[serialNumber].TXPort];
+			break;
+		case USING_SBUS:
+			board.serials[serialNumber].FrameSize  = 25;
+			board.serials[serialNumber].BaudRate   = 100000;
+			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
+			board.serials[serialNumber].StopBits   = UART_STOPBITS_2;
+			board.serials[serialNumber].Parity     = UART_PARITY_EVEN;
+			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
+			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
+			txPin  = board.serials[serialNumber].TXPin;
+			rxPin  = board.serials[serialNumber].RXPin;
+			txPort = ports[board.serials[serialNumber].TXPort];
+			rxPort = ports[board.serials[serialNumber].RXPort];
+			break;
+		case USING_MANUAL:
+		default:
+			txPin  = board.serials[serialNumber].TXPin;
+			rxPin  = board.serials[serialNumber].RXPin;
+			txPort = ports[board.serials[serialNumber].TXPort];
+			rxPort = ports[board.serials[serialNumber].RXPort];
+			break;
+	}
+
+
 	/*##-2- Configure peripheral GPIO ##########################################*/
-	HAL_GPIO_DeInit(ports[board.serials[serialNumber].TXPort], board.serials[serialNumber].TXPin);
-	HAL_GPIO_DeInit(ports[board.serials[serialNumber].RXPort], board.serials[serialNumber].RXPin);
+	HAL_GPIO_DeInit(txPort, txPin);
+	HAL_GPIO_DeInit(rxPort, rxPin);
 
 	/* UART TX GPIO pin configuration  */
-	GPIO_InitStruct.Pin       = board.serials[serialNumber].TXPin;
+	GPIO_InitStruct.Pin       = txPin;
 	GPIO_InitStruct.Mode      = board.serials[serialNumber].PinMode;
 	GPIO_InitStruct.Pull      = board.serials[serialNumber].Pull;
 	GPIO_InitStruct.Speed     = board.serials[serialNumber].Speed;
 	GPIO_InitStruct.Alternate = board.serials[serialNumber].TXAlternate;
 
-	HAL_GPIO_Init(ports[board.serials[serialNumber].TXPort], &GPIO_InitStruct);
+	HAL_GPIO_Init(txPort, &GPIO_InitStruct);
 
 	/* UART RX GPIO pin configuration  */
-	GPIO_InitStruct.Pin = board.serials[serialNumber].RXPin;
+	GPIO_InitStruct.Pin = rxPin;
 	GPIO_InitStruct.Alternate = board.serials[serialNumber].RXAlternate;
 
-	HAL_GPIO_Init(ports[board.serials[serialNumber].RXPort], &GPIO_InitStruct);
+	HAL_GPIO_Init(rxPort, &GPIO_InitStruct);
 
 	/*##-1- Configure the UART peripheral ######################################*/
 	/* Put the USART peripheral in the Asynchronous mode (UART Mode) */
@@ -67,7 +112,7 @@ void UsartInit(uint32_t serialNumber) {
 
 
 	//Config uart as  half duplex if TX and RX pins are the same
-	if (board.serials[serialNumber].TXPin == board.serials[serialNumber].RXPin && ports[board.serials[serialNumber].TXPort] == ports[board.serials[serialNumber].RXPort])
+	if ( (txPin == rxPin) && (txPort == rxPort) )
 	{
 		if (HAL_HalfDuplex_Init(&uartHandles[board.serials[serialNumber].usartHandle]) != HAL_OK)
 		{
@@ -209,7 +254,22 @@ void UsartDmaInit(uint32_t serialNumber)
 
 void BoardUsartInit () {
 
-
+    //TODO: change this up, for ability to set usarts now on revolt
+    if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_ONE_WAY) {
+    	board.serials[ENUM_USART1].enabled  = 0;
+    	board.serials[ENUM_USART3].enabled  = 1;
+    	board.serials[ENUM_USART3].Protocol = USING_SPEKTRUM_ONE_WAY;
+    } else
+    if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY) {
+		board.serials[ENUM_USART3].enabled  = 0;
+		board.serials[ENUM_USART1].enabled  = 1;
+		board.serials[ENUM_USART1].Protocol = USING_SPEKTRUM_TWO_WAY;
+	} else
+    if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS) {
+		board.serials[ENUM_USART3].enabled  = 0;
+		board.serials[ENUM_USART1].enabled  = 1;
+		board.serials[ENUM_USART1].Protocol = USING_SBUS;
+	}
 
 	lastRXPacket = InlineMillis();
 
@@ -253,7 +313,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			if (dmaIndex[serialNumber] >= board.serials[serialNumber].FrameSize) // User typing too much, we can't have commands that big
 			{
 				dmaIndex[serialNumber] = 0;
-				if (board.serials[serialNumber].Protocol == USING_SPEKTRUM)
+				if ((board.serials[serialNumber].Protocol == USING_SPEKTRUM_TWO_WAY) || (board.serials[serialNumber].Protocol == USING_SPEKTRUM_ONE_WAY))
 					ProcessSpektrumPacket(serialNumber);
 				else if (board.serials[serialNumber].Protocol == USING_SBUS)
 					ProcessSbusPacket(serialNumber);

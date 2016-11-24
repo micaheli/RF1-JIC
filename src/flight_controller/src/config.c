@@ -27,6 +27,7 @@ void AddVariable(char *variableName, void *VariableLocation, uint32_t variableTy
 
 main_config mainConfig;
 uint32_t checkRxData[MAXCHANNELS];
+uint32_t resetBoard = 0;
 
 static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -106,6 +107,9 @@ const config_variables_rec valueTable[] = {
 		{ "z_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.q, 			0, 10, 0.04000, "" },
 		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 			0, 10, 90.0000, "" },
 		{ "z_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.p, 			0, 10, 0.06000, "" },
+
+		{ "rx_protocol", 		typeUINT,  "rccf",  &mainConfig.rcControlsConfig.rxProtcol, 			0, 10, USING_SPEKTRUM_TWO_WAY, "" },
+		{ "rx_usart", 			typeUINT,  "rccf",  &mainConfig.rcControlsConfig.rxUsart, 			0, MAX_USARTS-1, ENUM_USART1, "" },
 
 		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 	0, 0.1, 0.01, "" },
 		{ "roll_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[ROLL], 	0, 0.1, 0.01, "" },
@@ -281,6 +285,16 @@ void SaveConfig (uint32_t addresConfigStart)
 {
 
 	uint32_t addressOffset;
+
+	if (resetBoard) {
+		BoardUsartInit();
+		InitRcData();
+	    InitMixer();
+	    InitFlightCode();
+	    InitPid();
+	    InitActuators();
+	    resetBoard=0;
+	}
 
 	mainConfig.version  = CONFIG_VERSION;
 	mainConfig.size     = sizeof(main_config);
@@ -942,11 +956,7 @@ int32_t SetVariable(char *inString) {
 			SetValue(x, args);
 			autoSaveTimer = InlineMillis();
 			if ( (!strcmp(valueTable[x].group, "mixr")) || (!strcmp(valueTable[x].group, "gyro")) || (!strcmp(valueTable[x].group, "filt"))  || (!strcmp(valueTable[x].group, "rccf")) ) {
-				InitRcData();
-			    InitMixer();
-			    InitFlightCode();
-			    InitPid();
-			    InitActuators();
+				resetBoard=1;
 			}
 			return (1);
 		}
