@@ -51,6 +51,7 @@ extern float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this
 extern float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
 extern uint32_t rxData[MAXCHANNELS];
 extern volatile unsigned char isRxDataNew;
+extern uint32_t skipRxMap;
 
 extern void SpektrumBind (uint32_t bindNumber);
 

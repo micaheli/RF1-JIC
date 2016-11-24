@@ -35,10 +35,10 @@ typedef struct {
 paf_state InitPaf(float q, float r, float p, float intial_value);
 void PafUpdate(paf_state *state, float measurement);
 
-void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRate);
+void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSeconds, uint32_t filterType);
 float BiquadUpdate(float sample, biquad_state *bQstate);
 
 
 #define M_LN2_FLOAT	0.69314718055994530942f
 #define M_PI_FLOAT	3.14159265358979323846f
-#define BIQUAD_BANDWIDTH 1.111f
+#define BIQUAD_BANDWIDTH 1.92f

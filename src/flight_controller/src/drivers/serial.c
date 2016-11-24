@@ -151,7 +151,6 @@ void UsartDeinit(UART_HandleTypeDef *huart, USART_TypeDef *Usart, GPIO_TypeDef *
 
 void UsartDmaInit(UART_HandleTypeDef *huart)
 {
-	int x;
 	/*##-3- Configure the DMA ##################################################*/
 	/* Configure the DMA handler for Transmission process */
 	dmaUartTx.Instance                 = USARTx_TX_DMA_STREAM;
@@ -254,7 +253,7 @@ void BoardUsartInit () {
 //Interrupt callback routine
 void HAL_USART_RxCpltCallback(USART_HandleTypeDef *huart)
 {
-	volatile uint32_t cat =1;
+	(void)(huart);
 	return;
 }
 
@@ -266,28 +265,30 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     uint32_t currentTime = 0;
     static uint32_t timeOfLastPacket = 0;
 
-    currentTime = InlineMillis();
-    timeSinceLastPacket = (currentTime - timeOfLastPacket);
-    timeOfLastPacket = currentTime;
+	if (huart == &uartHandle) {
+		currentTime = InlineMillis();
+		timeSinceLastPacket = (currentTime - timeOfLastPacket);
+		timeOfLastPacket = currentTime;
 
-    if (timeSinceLastPacket > 3) {
-    	if (dmaIndex < FRAME_SIZE) {
-    		__HAL_UART_FLUSH_DRREGISTER(&uartHandle); // Clear the buffer to prevent overrun
-    	}
-    	dmaIndex = 0;
-    }
+		if (timeSinceLastPacket > 3) {
+			if (dmaIndex < FRAME_SIZE) {
+				__HAL_UART_FLUSH_DRREGISTER(&uartHandle); // Clear the buffer to prevent overrun
+			}
+			dmaIndex = 0;
+		}
 
-    serialRxBuffer[dmaIndex++] = dmaRxBuffer; // Add that character to the string
+		serialRxBuffer[dmaIndex++] = dmaRxBuffer; // Add that character to the string
 
 
-	if (dmaIndex >= FRAME_SIZE) // User typing too much, we can't have commands that big
-	{
-		dmaIndex = 0;
-    	if (currentProtocol == USING_SPEKTRUM)
-    		ProcessSpektrumPacket();
-    	else if (currentProtocol == USING_SBUS)
-    		ProcessSbusPacket();
-		//bzero(serialRxBuffer, sizeof(serialRxBuffer));
+		if (dmaIndex >= FRAME_SIZE) // User typing too much, we can't have commands that big
+		{
+			dmaIndex = 0;
+			if (currentProtocol == USING_SPEKTRUM)
+				ProcessSpektrumPacket();
+			else if (currentProtocol == USING_SBUS)
+				ProcessSbusPacket();
+			//bzero(serialRxBuffer, sizeof(serialRxBuffer));
+		}
 	}
 
 }

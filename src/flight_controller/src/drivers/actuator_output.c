@@ -171,11 +171,15 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 	(void)(servoOutput);
 }
 
-void ZeroActuators(void) {
+void ZeroActuators(uint32_t delayUs) {
 
+	__disable_irq();
 	for (uint32_t motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++) {
 		if (board.motors[motorNum].enabled)
 			*ccr[board.motors[motorNum].timCCR] = (uint16_t)disarmPulseValue;
 	}
+	if (delayUs)
+		simpleDelay_ASM(delayUs);
+	__enable_irq();
 
 }

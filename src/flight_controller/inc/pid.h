@@ -17,6 +17,7 @@ typedef struct {
     float ki;
     float kd;
     uint32_t wc;
+    uint32_t ga;
 } pid_terms;
 
 extern float pidSetpoint[AXIS_NUMBER];    //3 axis for pidc. range is in DPS.

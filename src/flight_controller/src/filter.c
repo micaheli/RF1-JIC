@@ -28,22 +28,37 @@ void PafUpdate(paf_state *state, float measurement)
 
 
 
-void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateUs)
+void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSeconds, uint32_t filterType)
 {
 
+	float samplingRate;
     float omega, sn, cs, alpha;
     float a0, a1, a2, b0, b1, b2;
 
-	omega = 2 * (float)M_PI_FLOAT * (float) filterCutFreq / refreshRateUs;
+    samplingRate = (1 / refreshRateSeconds);
+
+	omega = 2 * (float)M_PI_FLOAT * (float) filterCutFreq / samplingRate;
 	sn = (float)sinf((float)omega);
 	cs = (float)cosf((float)omega);
 	alpha = sn * (float)sinf( (float)((float)M_LN2_FLOAT / 2 * (float)BIQUAD_BANDWIDTH * (omega / sn)) );
-	b0 = (1.0 - cs) / 2;
-	b1 = 1.0 - cs;
-	b2 = (1.0 - cs) / 2;
-	a0 = 1.0 + alpha;
-	a1 = -2.0 * cs;
-	a2 = 1.0 - alpha;
+
+	if (filterType) {
+	    b0 = 1;
+	    b1 = -2 * cs;
+	    b2 = 1;
+	    a0 = 1 + alpha;
+	    a1 = -2 * cs;
+	    a2 = 1 - alpha;
+	} else {
+		b0 = (1.0 - cs) / 2;
+		b1 = 1.0 - cs;
+		b2 = (1.0 - cs) / 2;
+		a0 = 1.0 + alpha;
+		a1 = -2.0 * cs;
+		a2 = 1.0 - alpha;
+	}
+
+
 
     // precompute the coefficients
     newState->a0 = b0 / a0;
@@ -65,9 +80,6 @@ float BiquadUpdate(float sample, biquad_state *state)
 {
     float result;
 
-    if (isnan(sample) || isfinite(sample))
-    	return 0;
-
     /* compute result */
     result = state->a0 * (float)sample + state->a1 * state->x1 + state->a2 * state->x2 -
             state->a3 * state->y1 - state->a4 * state->y2;
@@ -78,9 +90,7 @@ float BiquadUpdate(float sample, biquad_state *state)
     /* shift y1 to y2, result to y1 */
     state->y2 = state->y1;
     state->y1 = result;
-    if (isnan(result) || isfinite(result))
-    	return (float)result;
-    else
-    	return (float)result;
+
+    return (float)result;
 
 }

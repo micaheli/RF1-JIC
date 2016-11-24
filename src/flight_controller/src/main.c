@@ -56,7 +56,7 @@ int main(void)
     InitPid();
     InitActuators();
 //    Ws2812LedInit();
-    ZeroActuators(); //output actuators to idle after timers are stable;
+    ZeroActuators(32000); //output actuators to idle after timers are stable;
 
     BoardUsartInit();
 
@@ -85,7 +85,7 @@ int main(void)
 
 void ErrorHandler(void)
 {
-	ZeroActuators();
+	ZeroActuators(32000);
 
     while (1) {
 		DoLed(0, 1);

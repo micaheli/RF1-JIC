@@ -1,7 +1,13 @@
 #include "includes.h"
 
+#define GYRO_AVERAGE_MAX_SUM 33
+
 pid_output flightPids[AXIS_NUMBER];
-float averagedGyroData[AXIS_NUMBER][3];
+biquad_state lpfFilterState[AXIS_NUMBER];
+
+float averagedGyroData[AXIS_NUMBER][GYRO_AVERAGE_MAX_SUM];
+uint32_t averagedGyroDataPointer[AXIS_NUMBER];
+float averagedGyroDataPointerMultiplier[AXIS_NUMBER];
 float filteredGyroData[AXIS_NUMBER];
 float filteredAccData[VECTOR_NUMBER];
 paf_state pafGyroStates[AXIS_NUMBER];
@@ -150,7 +156,11 @@ void InitFlightCode(void) {
 
 	bzero(averagedGyroData,sizeof(averagedGyroData));
 	bzero(filteredGyroData,sizeof(filteredGyroData));
+	bzero(averagedGyroDataPointer,sizeof(averagedGyroDataPointer));
 	bzero(&flightPids,sizeof(flightPids));
+	averagedGyroDataPointerMultiplier[YAW] = (1.0 / (float)mainConfig.pidConfig[YAW].ga);
+	averagedGyroDataPointerMultiplier[ROLL] = (1.0 / (float)mainConfig.pidConfig[ROLL].ga);
+	averagedGyroDataPointerMultiplier[PITCH] = (1.0 / (float)mainConfig.pidConfig[PITCH].ga);
 	actuatorRange = 0;
 	boardArmed = 0;
 	calibrateMotors = 0;
@@ -169,7 +179,9 @@ inline void InlineInitGyroFilters(void)  {
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
+		InitBiquad(mainConfig.filterConfig[axis].gyro.r, &lpfFilterState[axis], 0.00003125, 0);
+
+		//pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
 
 		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].gyro.r;
 
@@ -240,6 +252,26 @@ void ComplementaryFilterUpdateAttitude(void)
     }
 }
 
+inline float AverageGyroADCbuffer(uint32_t axis, float currentData)
+{
+
+	if (mainConfig.pidConfig[axis].ga) {
+
+		averagedGyroData[axis][averagedGyroDataPointer[axis]++] = currentData;
+		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] += currentData;
+
+		if (averagedGyroDataPointer[axis] == mainConfig.pidConfig[axis].ga)
+			averagedGyroDataPointer[axis] = 0;
+
+		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] -= averagedGyroData[axis][averagedGyroDataPointer[axis]];
+
+		return (averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] * averagedGyroDataPointerMultiplier[axis]) ;
+
+	}
+
+	return currentData;
+
+}
 
 inline void InlineFlightCode(float dpsGyroArray[]) {
 
@@ -267,11 +299,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	//update gyro filter
 	for (axis = 2; axis >= 0; --axis) {
-		averagedGyroData[axis][0] = averagedGyroData[axis][1];
-		averagedGyroData[axis][1] = averagedGyroData[axis][2];
-		averagedGyroData[axis][2] = dpsGyroArray[axis];
-		PafUpdate(&pafGyroStates[axis], ( (averagedGyroData[axis][0] + averagedGyroData[axis][1] + averagedGyroData[axis][2]) / 3 ) );
-		filteredGyroData[axis]    = pafGyroStates[axis].x;
+		filteredGyroData[axis] = BiquadUpdate(dpsGyroArray[axis], &lpfFilterState[axis]);
+		//PafUpdate(&pafGyroStates[axis], AverageGyroADCbuffer(axis, dpsGyroArray[axis]) );
+		//filteredGyroData[axis]    = pafGyroStates[axis].x;
 	}
 
 	//smooth the rx data between rx signals

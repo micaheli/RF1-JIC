@@ -22,7 +22,7 @@ void NMI_Handler(void)
 */
 void HardFault_Handler(void)
 {
-	ZeroActuators();
+	ZeroActuators(32000);
     while (1) {
 		DoLed(0, 1);
 		DoLed(1, 1);
@@ -35,7 +35,7 @@ void HardFault_Handler(void)
 */
 void MemManage_Handler(void)
 {
-	ZeroActuators();
+	ZeroActuators(32000);
     while (1);
 }
 
@@ -44,7 +44,7 @@ void MemManage_Handler(void)
 */
 void BusFault_Handler(void)
 {
-	ZeroActuators();
+	ZeroActuators(32000);
     while (1);
 }
 
@@ -53,7 +53,7 @@ void BusFault_Handler(void)
 */
 void UsageFault_Handler(void)
 {
-	ZeroActuators();
+	ZeroActuators(32000);
     while (1);
 }
 

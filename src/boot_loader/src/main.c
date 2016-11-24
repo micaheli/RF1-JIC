@@ -610,7 +610,8 @@ void ErrorHandler(void)
     }
 }
 
-void ZeroActuators(void) {
+void ZeroActuators(uint32_t delayUs) {
+	(void)(delayUs);
 	return;
 }
 

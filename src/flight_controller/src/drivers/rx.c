@@ -72,7 +72,7 @@ inline void CheckFailsafe(void) {
 	if ((boardArmed) && (rx_timeout > 1000))
 	{
 		boardArmed = 0;
-		ZeroActuators(); //immediately set actuators to disarmed position.
+		ZeroActuators(32000); //immediately set actuators to disarmed position.
 	}
 }
 

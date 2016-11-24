@@ -49,6 +49,8 @@ void scheduler(int32_t count)
 }
 
 inline void taskAutoSaveConfig(void) {
+	autoSaveTimer = 0;
+	return;
 	if (!boardArmed) {
 		if ( autoSaveTimer && ( InlineMillis() - autoSaveTimer > 1000) ) {
 			autoSaveTimer = 0;

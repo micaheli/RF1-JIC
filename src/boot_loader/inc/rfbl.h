@@ -86,7 +86,7 @@ void rfbl_write_packet(void);
 void rfbl_finish_flash(void);
 void errorBlink(void);
 void erase_all_flash (void);
-void ZeroActuators(void);
+void ZeroActuators(uint32_t delayUs);
 
 typedef void (*pFunction)(void);
 pFunction JumpToApplication;

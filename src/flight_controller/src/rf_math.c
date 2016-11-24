@@ -20,6 +20,7 @@ inline float InlineChangeRangef(float oldValue, float oldMax, float oldMin, floa
 inline float CalculateSD(float data[])
 {
     float sum = 0.0, mean, standardDeviation = 0.0;
+    float result;
 
     int i;
 
@@ -33,5 +34,7 @@ inline float CalculateSD(float data[])
     for(i=0; i<10; ++i)
         standardDeviation += powf(data[i] - mean, 2);
 
-    return (sqrtf(standardDeviation/10.0)) ;
+    arm_sqrt_f32((standardDeviation/10.0), &result);
+
+    return(result);
 }
