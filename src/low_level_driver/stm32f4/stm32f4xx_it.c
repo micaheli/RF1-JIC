@@ -102,3 +102,22 @@ void OTG_FS_IRQHandler(void)
 {
     HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
 }
+
+
+//void DMA2_Stream3_IRQHandler(void)
+//{
+//    HAL_NVIC_ClearPendingIRQ(DMA2_Stream3_IRQn);
+//    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_3]);
+//    //HAL_DMA_IRQHandler(dma_gyro_tx);
+//}
+
+
+void DMA2_Stream2_IRQHandler(void) { //clear the IRQ and handle the DMA
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream2_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_2]);
+}
+
+void DMA2_Stream7_IRQHandler(void) {
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream7_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_7]);
+}

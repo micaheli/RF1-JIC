@@ -34,15 +34,6 @@ static void SPI_Init(uint32_t baudRatePrescaler)
 	HAL_GPIO_WritePin(GYRO_SPI_CS_GPIO_Port, GYRO_SPI_CS_GPIO_Pin, GPIO_PIN_SET);
 }
 
-static void DMA_Init(void)
-{
-    /* DMA interrupt init */
-	HAL_NVIC_SetPriority(GYRO_TX_DMA_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(GYRO_TX_DMA_IRQn);
-	HAL_NVIC_SetPriority(GYRO_RX_DMA_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(GYRO_RX_DMA_IRQn);
-}
-
 bool accgyroInit(loopCtrl_e loopCtrl)
 {
 #ifdef GYRO_EXTI
@@ -68,7 +59,6 @@ bool accgyroInit(loopCtrl_e loopCtrl)
 
     // reinitialize at full speed
 	SPI_Init(GYRO_SPI_FAST_BAUD);
-    DMA_Init();
 
 #ifdef GYRO_EXTI
     // after the gyro is started, start up the interrupt

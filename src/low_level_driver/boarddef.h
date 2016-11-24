@@ -198,6 +198,10 @@ typedef struct {
 	
 	uint32_t				SPI_IRQn;
 
+	uint32_t				TXDma;
+	uint32_t				RXDma;
+
+	//below not needed since DMAs are now in an array
 	DMA_Stream_TypeDef *	TXDMAStream; // looked up from array
 	uint32_t				TXDMAChannel;
 	uint32_t				TXDMADirection;
@@ -263,32 +267,6 @@ typedef struct {
 
 	int32_t					serialTxBuffer;
 	int32_t					serialRxBuffer;
-
-	//below won't be needed
-	uint32_t				TXDMAStream; // looked up from array
-	uint32_t				TXDMAChannel;
-	uint32_t				TXDMADirection;
-	uint32_t				TXDMAPeriphInc;
-	uint32_t				TXDMAMemInc;
-	uint32_t				TXDMAPeriphDataAlignment;
-	uint32_t				TXDMAMemDataAlignment;
-	uint32_t				TXDMAMode;
-	uint32_t				TXDMAPriority;
-	uint32_t				TXDMAFIFOMode;
-
-	uint32_t				RXDMAStream; // looked up from array
-	uint32_t				RXDMAChannel;
-	uint32_t				RXDMADirection;
-	uint32_t				RXDMAPeriphInc;
-	uint32_t				RXDMAMemInc;
-	uint32_t				RXDMAPeriphDataAlignment;
-	uint32_t				RXDMAMemDataAlignment;
-	uint32_t				RXDMAMode;
-	uint32_t				RXDMAPriority;
-	uint32_t				RXDMAFIFOMode;
-
-	uint32_t				TXDMA_IRQn;
-	uint32_t				RXDMA_IRQn;
 
 } board_serial;
 

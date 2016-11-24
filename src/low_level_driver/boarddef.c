@@ -281,8 +281,36 @@ void getBoardHardwareDefs(void)
 	board.spis[0].TXDMA_IRQn = SPI1_TX_DMA_IRQn;
 	board.spis[0].RXDMA_IRQn = SPI1_RX_DMA_IRQn;
 
+	board.spis[0].TXDma 		    = ENUM_DMA2_STREAM_3;
+	board.spis[0].RXDma 		    = ENUM_DMA2_STREAM_0;
 
+	board.dmas[board.spis[0].TXDma].enabled            = 1;
+	board.dmas[board.spis[0].TXDma].dmaStream          = ENUM_DMA2_STREAM_3;
+	board.dmas[board.spis[0].TXDma].dmaChannel         = DMA_CHANNEL_3;
+	board.dmas[board.spis[0].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH;
+	board.dmas[board.spis[0].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+	board.dmas[board.spis[0].TXDma].dmaMemInc          = DMA_MINC_ENABLE;
+	board.dmas[board.spis[0].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+	board.dmas[board.spis[0].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+	board.dmas[board.spis[0].TXDma].dmaMode            = DMA_NORMAL;
+	board.dmas[board.spis[0].TXDma].dmaPriority        = DMA_PRIORITY_HIGH;
+	board.dmas[board.spis[0].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+	board.dmas[board.spis[0].TXDma].dmaIRQn            = DMA2_Stream3_IRQn;
+	board.dmas[board.spis[0].TXDma].dmaHandle          = ENUM_DMA2_STREAM_3;
 
+	board.dmas[board.spis[0].RXDma].enabled            = 1;
+	board.dmas[board.spis[0].RXDma].dmaStream          = ENUM_DMA2_STREAM_0;
+	board.dmas[board.spis[0].RXDma].dmaChannel         = DMA_CHANNEL_3;
+	board.dmas[board.spis[0].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
+	board.dmas[board.spis[0].RXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+	board.dmas[board.spis[0].RXDma].dmaMemInc          = DMA_MINC_ENABLE;
+	board.dmas[board.spis[0].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+	board.dmas[board.spis[0].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+	board.dmas[board.spis[0].RXDma].dmaMode            = DMA_NORMAL;
+	board.dmas[board.spis[0].RXDma].dmaPriority        = DMA_PRIORITY_HIGH;
+	board.dmas[board.spis[0].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+	board.dmas[board.spis[0].RXDma].dmaIRQn            = DMA2_Stream0_IRQn;
+	board.dmas[board.spis[0].RXDma].dmaHandle          = ENUM_DMA2_STREAM_0;
 
 
 	board.spis[1].enabled = SPI2_ENABLE;
@@ -381,48 +409,47 @@ void getBoardHardwareDefs(void)
 
 	//UART settings ------------------------------------------------------------------------------------------------------------------------------------------------------------
 	
-	board.serials[0].enabled     = 1;
-	board.serials[0].PinMode     = GPIO_MODE_AF_PP;
-	board.serials[0].Pull        = GPIO_PULLUP;
-	board.serials[0].Speed       = GPIO_SPEED_HIGH;
-	board.serials[0].TXAlternate = GPIO_AF7_USART1;
-	board.serials[0].TXPin       = GPIO_PIN_9;
-	board.serials[0].TXPort      = ENUM_PORTA;
-	board.serials[0].RXAlternate = GPIO_AF7_USART1;
-	board.serials[0].RXPin       = GPIO_PIN_9;
-	board.serials[0].RXPort      = ENUM_PORTA;
+	board.serials[0].enabled         = 1;
+	board.serials[0].PinMode         = GPIO_MODE_AF_PP;
+	board.serials[0].Pull            = GPIO_PULLUP;
+	board.serials[0].Speed           = GPIO_SPEED_HIGH;
+	board.serials[0].TXAlternate     = GPIO_AF7_USART1;
+	board.serials[0].TXPin           = GPIO_PIN_9;
+	board.serials[0].TXPort          = ENUM_PORTA;
+	board.serials[0].RXAlternate     = GPIO_AF7_USART1;
+	board.serials[0].RXPin           = GPIO_PIN_9;
+	board.serials[0].RXPort          = ENUM_PORTA;
 	
 	board.serials[0].SerialInstance = ENUM_USART1;  // loaded from port array
 
-	board.serials[0].BaudRate   = 115200;
-	board.serials[0].WordLength = UART_WORDLENGTH_8B;
-	board.serials[0].StopBits   = UART_STOPBITS_1;
-	board.serials[0].Parity     = UART_PARITY_NONE;
-	board.serials[0].HwFlowCtl  = UART_HWCONTROL_NONE;
-	board.serials[0].Mode       = UART_MODE_TX_RX;
+	board.serials[0].BaudRate       = 115200;
+	board.serials[0].WordLength     = UART_WORDLENGTH_8B;
+	board.serials[0].StopBits       = UART_STOPBITS_1;
+	board.serials[0].Parity         = UART_PARITY_NONE;
+	board.serials[0].HwFlowCtl      = UART_HWCONTROL_NONE;
+	board.serials[0].Mode           = UART_MODE_TX_RX;
 
-	//board.serials[0].USART_IRQn  = USART5_IRQn;  //JUST A Define for the function name
-	board.serials[0].usartHandle = ENUM_USART1;  //JUST A Define for the function name
+	board.serials[0].usartHandle    = ENUM_USART1;  //JUST A Define for the function name
 
-	board.serials[0].serialTxBuffer 		= 1; //three buffers, give this one the first buffer
-	board.serials[0].serialRxBuffer 		= 1; //three buffers, give this one the first buffer
+	board.serials[0].serialTxBuffer = 1; //three buffers, give this one the first buffer
+	board.serials[0].serialRxBuffer = 1; //three buffers, give this one the first buffer
 
-	board.serials[0].TXDma 		= ENUM_DMA2_STREAM_7;
-	board.serials[0].RXDma 		= ENUM_DMA2_STREAM_2;
+	board.serials[0].TXDma 		    = ENUM_DMA2_STREAM_7;
+	board.serials[0].RXDma 		    = ENUM_DMA2_STREAM_2;
 
-	board.serials[0].Protocol	= USING_SPEKTRUM;
-	board.serials[0].FrameSize	= 16;
+	board.serials[0].Protocol	    = USING_SPEKTRUM;
+	board.serials[0].FrameSize	    = 16;
 
 	board.dmas[board.serials[0].TXDma].enabled            = 1;
 	board.dmas[board.serials[0].TXDma].dmaStream          = ENUM_DMA2_STREAM_7;
 	board.dmas[board.serials[0].TXDma].dmaChannel         = DMA_CHANNEL_4;
 	board.dmas[board.serials[0].TXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
-	board.dmas[board.serials[0].TXDma].dmaPeriphInc       = DMA_PERIPH_TO_MEMORY;
+	board.dmas[board.serials[0].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
 	board.dmas[board.serials[0].TXDma].dmaMemInc          = DMA_MINC_DISABLE;
 	board.dmas[board.serials[0].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
-	board.dmas[board.serials[0].TXDma].dmaMemAlignment    = DMA_PDATAALIGN_BYTE;
+	board.dmas[board.serials[0].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
 	board.dmas[board.serials[0].TXDma].dmaMode            = DMA_CIRCULAR;
-	board.dmas[board.serials[0].TXDma].dmaPriority        = DMA_PRIORITY_HIGH;
+	board.dmas[board.serials[0].TXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
 	board.dmas[board.serials[0].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmas[board.serials[0].TXDma].dmaIRQn            = DMA2_Stream7_IRQn;
 	board.dmas[board.serials[0].TXDma].dmaHandle          = ENUM_DMA2_STREAM_7;
@@ -431,42 +458,14 @@ void getBoardHardwareDefs(void)
 	board.dmas[board.serials[0].RXDma].dmaStream          = ENUM_DMA2_STREAM_2;
 	board.dmas[board.serials[0].RXDma].dmaChannel         = DMA_CHANNEL_4;
 	board.dmas[board.serials[0].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
-	board.dmas[board.serials[0].RXDma].dmaPeriphInc       = DMA_PERIPH_TO_MEMORY;
+	board.dmas[board.serials[0].RXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
 	board.dmas[board.serials[0].RXDma].dmaMemInc          = DMA_MINC_DISABLE;
 	board.dmas[board.serials[0].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
-	board.dmas[board.serials[0].RXDma].dmaMemAlignment    = DMA_PDATAALIGN_BYTE;
+	board.dmas[board.serials[0].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
 	board.dmas[board.serials[0].RXDma].dmaMode            = DMA_CIRCULAR;
-	board.dmas[board.serials[0].RXDma].dmaPriority        = DMA_PRIORITY_HIGH;
+	board.dmas[board.serials[0].RXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
 	board.dmas[board.serials[0].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmas[board.serials[0].RXDma].dmaIRQn            = DMA2_Stream2_IRQn;
 	board.dmas[board.serials[0].RXDma].dmaHandle          = ENUM_DMA2_STREAM_2;
 
-
-
-
-
-	board.serials[0].TXDMAStream =	USART5_TX_DMA_STREAM; // looked up from array
-	board.serials[0].TXDMAChannel = USART5_TX_DMA_CHANNEL;
-	board.serials[0].TXDMADirection = DMA_MEMORY_TO_PERIPH;
-	board.serials[0].TXDMAPeriphInc = DMA_PINC_DISABLE;
-	board.serials[0].TXDMAMemInc = DMA_MINC_ENABLE;
-	board.serials[0].TXDMAPeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-	board.serials[0].TXDMAMemDataAlignment = DMA_MDATAALIGN_BYTE;
-	board.serials[0].TXDMAMode = DMA_NORMAL;
-	board.serials[0].TXDMAPriority = DMA_PRIORITY_LOW;
-	board.serials[0].TXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
-
-	board.serials[0].RXDMAStream = USART5_RX_DMA_STREAM; // looked up from array
-	board.serials[0].RXDMAChannel = USART5_RX_DMA_CHANNEL;
-	board.serials[0].RXDMADirection = DMA_PERIPH_TO_MEMORY;
-	board.serials[0].RXDMAPeriphInc = DMA_PINC_DISABLE;
-	board.serials[0].RXDMAMemInc = DMA_MINC_ENABLE;
-	board.serials[0].RXDMAPeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-	board.serials[0].RXDMAMemDataAlignment = DMA_MDATAALIGN_BYTE;
-	board.serials[0].RXDMAMode = DMA_NORMAL;
-	board.serials[0].RXDMAPriority = DMA_PRIORITY_HIGH;
-	board.serials[0].RXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
-
-	board.serials[0].TXDMA_IRQn = USART5_TX_DMA_IRQn;
-	board.serials[0].RXDMA_IRQn = USART5_RX_DMA_IRQn;
 }

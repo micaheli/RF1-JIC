@@ -23,18 +23,18 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 	else if (GYRO_SPI == SPI2)
 	{
 		dma_gyro_rx = &dma_spi2_rx;
-		dma_gyro_tx = &dma_spi2_tx;
+		//dma_gyro_tx = &dma_spi2_tx;
 	}
 	else if (GYRO_SPI == SPI3)
 	{
 		dma_gyro_rx = &dma_spi3_rx;
-		dma_gyro_tx = &dma_spi3_tx;
+		//dma_gyro_tx = &dma_spi3_tx;
 	}
 
 	if (FLASH_SPI == SPI1)
 	{
 		dma_flash_rx = &dma_spi1_rx;
-		dma_flash_tx = &dma_spi1_tx;
+		//dma_flash_tx = &dma_spi1_tx;
 	}
 	else if (FLASH_SPI == SPI2)
 	{
@@ -103,16 +103,16 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
         __HAL_LINKDMA(hspi, hdmarx, dma_spi1_rx);
 
-	    dma_spi1_tx.Instance                 = SPI1_TX_DMA_STREAM;
-	    dma_spi1_tx.Init.Channel             = SPI1_TX_DMA_CHANNEL;
-	    dma_spi1_tx.Init.Direction           = DMA_MEMORY_TO_PERIPH;
-	    dma_spi1_tx.Init.PeriphInc           = DMA_PINC_DISABLE;
-	    dma_spi1_tx.Init.MemInc              = DMA_MINC_ENABLE;
-	    dma_spi1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-	    dma_spi1_tx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-	    dma_spi1_tx.Init.Mode                = DMA_NORMAL;
-	    dma_spi1_tx.Init.Priority            = DMA_PRIORITY_HIGH;
-	    dma_spi1_tx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
+        dma_spi1_tx.Instance                 = dmaStream[board.dmas[board.spis[0].TXDma].dmaStream];
+        dma_spi1_tx.Init.Channel             = board.dmas[board.spis[0].TXDma].dmaChannel;
+        dma_spi1_tx.Init.Direction           = board.dmas[board.spis[0].TXDma].dmaDirection;
+        dma_spi1_tx.Init.PeriphInc           = board.dmas[board.spis[0].TXDma].dmaPeriphInc;
+        dma_spi1_tx.Init.MemInc              = board.dmas[board.spis[0].TXDma].dmaMemInc;
+        dma_spi1_tx.Init.PeriphDataAlignment = board.dmas[board.spis[0].TXDma].dmaPeriphAlignment;
+        dma_spi1_tx.Init.MemDataAlignment    = board.dmas[board.spis[0].TXDma].dmaMemAlignment;
+        dma_spi1_tx.Init.Mode                = board.dmas[board.spis[0].TXDma].dmaMode;
+        dma_spi1_tx.Init.Priority            = board.dmas[board.spis[0].TXDma].dmaPriority;
+        dma_spi1_tx.Init.FIFOMode            = board.dmas[board.spis[0].TXDma].fifoMode;
         if (HAL_DMA_Init(&dma_spi1_tx) != HAL_OK) {
             ErrorHandler();
         }
@@ -120,8 +120,30 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
         __HAL_LINKDMA(hspi, hdmatx, dma_spi1_tx);
 
         /* Peripheral interrupt init */
-	    HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
-	    HAL_NVIC_EnableIRQ(SPI1_IRQn);
+	    HAL_NVIC_SetPriority(board.dmas[board.spis[0].TXDma].dmaIRQn, 0, 0);
+	    HAL_NVIC_EnableIRQ(board.dmas[board.spis[0].TXDma].dmaIRQn);
+
+	    /*
+	    dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Instance                 = dmaStream[board.dmas[board.spis[0].TXDma].dmaStream];
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.Channel             = board.dmas[board.spis[0].TXDma].dmaChannel;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.Direction           = board.dmas[board.spis[0].TXDma].dmaDirection;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.PeriphInc           = board.dmas[board.spis[0].TXDma].dmaPeriphInc;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.MemInc              = board.dmas[board.spis[0].TXDma].dmaMemInc;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.PeriphDataAlignment = board.dmas[board.spis[0].TXDma].dmaPeriphAlignment;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.MemDataAlignment    = board.dmas[board.spis[0].TXDma].dmaMemAlignment;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.Mode                = board.dmas[board.spis[0].TXDma].dmaMode;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.Priority            = board.dmas[board.spis[0].TXDma].dmaPriority;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.FIFOMode            = board.dmas[board.spis[0].TXDma].fifoMode;
+        if (HAL_DMA_Init(&dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle]) != HAL_OK) {
+            ErrorHandler();
+        }
+
+        __HAL_LINKDMA(hspi, hdmatx, dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle]);
+
+        // Peripheral interrupt init
+	    HAL_NVIC_SetPriority(board.dmas[board.spis[0].TXDma].dmaIRQn, 0, 0);
+	    HAL_NVIC_EnableIRQ(board.dmas[board.spis[0].TXDma].dmaIRQn);
+	     */
     }
 
 	if (hspi->Instance == SPI2) {

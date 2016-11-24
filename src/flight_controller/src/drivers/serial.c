@@ -226,17 +226,19 @@ void BoardUsartInit () {
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    //__HAL_UART_FLUSH_DRREGISTER(&uartHandle); // Clear the buffer to prevent overrun
 
+	//works for all serials, we check huart against each serial handle to decide which one has interrupted then deal with it.
     volatile uint32_t timeSinceLastPacket[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 5 usarts
-    uint32_t currentTime[MAX_USARTS];
+    uint32_t currentTime;
     static uint32_t timeOfLastPacket[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 5 usarts
+
+    currentTime = InlineMillis();
 
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++) {
 		if (huart == &uartHandles[board.serials[serialNumber].usartHandle]) {
-			currentTime[serialNumber]         = InlineMillis(); //todo: How do we handle multiple RXs with this?
-			timeSinceLastPacket[serialNumber] = (currentTime[serialNumber] - timeOfLastPacket[serialNumber]); //todo: How do we handle multiple RXs with this?
-			timeOfLastPacket[serialNumber]    = currentTime[serialNumber]; //todo: How do we handle multiple RXs with this?
+			//todo: How do we handle multiple RXs with this?
+			timeSinceLastPacket[serialNumber] = (currentTime - timeOfLastPacket[serialNumber]); //todo: How do we handle multiple RXs with this?
+			timeOfLastPacket[serialNumber]    = currentTime; //todo: How do we handle multiple RXs with this?
 
 			if (timeSinceLastPacket[serialNumber] > 3) {
 				if (dmaIndex[serialNumber] < board.serials[serialNumber].FrameSize) {
@@ -256,17 +258,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				else if (board.serials[serialNumber].Protocol == USING_SBUS)
 					ProcessSbusPacket(serialNumber);
 			}
+			break;
 		}
 	}
 
-}
-
-void DMA2_Stream2_IRQHandler(void) {
-    HAL_NVIC_ClearPendingIRQ(DMA2_Stream2_IRQn);
-    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_2]);
-}
-
-void DMA2_Stream7_IRQHandler(void) {
-    HAL_NVIC_ClearPendingIRQ(DMA2_Stream7_IRQn);
-    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_7]);
 }

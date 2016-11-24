@@ -285,8 +285,6 @@ void Ws2812LedInit( void )
 
 //void DMA1_Stream0_IRQHandler(void) {
 //}
-extern DMA_HandleTypeDef dma_spi1_rx;
-extern DMA_HandleTypeDef dma_spi1_tx;
 
 void DMA1_Stream1_IRQHandler(void) {
 	HAL_DMA_IRQHandler(&ws2812_led);
