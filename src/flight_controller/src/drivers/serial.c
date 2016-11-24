@@ -1,8 +1,8 @@
 #include "includes.h"
 
-UART_HandleTypeDef uartHandle;
-DMA_HandleTypeDef dmaUartRx;
-DMA_HandleTypeDef dmaUartTx;
+UART_HandleTypeDef uartHandle[6];
+DMA_HandleTypeDef dmaUartRx[6];
+DMA_HandleTypeDef dmaUartTx[6];
 
 __IO ITStatus UartReady = RESET;
 
@@ -32,105 +32,103 @@ unsigned char serialTxBuffer[TXBUFFERSIZE];
 unsigned char serialRxBuffer[RXBUFFERSIZE];
 
 
-void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *huart) {
+void UsartInit(uint32_t serialNumber) {
 
 	GPIO_InitTypeDef  GPIO_InitStruct;
 
-	(void)(baudRate);
 	/*##-2- Configure peripheral GPIO ##########################################*/
-	HAL_GPIO_DeInit(USARTx_TX_GPIO_PORT, USARTx_TX_PIN);
-	HAL_GPIO_DeInit(USARTx_RX_GPIO_PORT, USARTx_RX_PIN);
+	HAL_GPIO_DeInit(ports[board.serials[serialNumber].TXPort], board.serials[serialNumber].TXPin);
+	HAL_GPIO_DeInit(ports[board.serials[serialNumber].RXPort], board.serials[serialNumber].RXPin);
 
 	/* UART TX GPIO pin configuration  */
-	GPIO_InitStruct.Pin       = USARTx_TX_PIN;
-	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Pull      = GPIO_PULLUP;
-	GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
-	GPIO_InitStruct.Alternate = USARTx_TX_AF;
+	GPIO_InitStruct.Pin       = board.serials[serialNumber].TXPin;
+	GPIO_InitStruct.Mode      = board.serials[serialNumber].PinMode;
+	GPIO_InitStruct.Pull      = board.serials[serialNumber].Pull;
+	GPIO_InitStruct.Speed     = board.serials[serialNumber].Speed;
+	GPIO_InitStruct.Alternate = board.serials[serialNumber].TXAlternate;
 
-	HAL_GPIO_Init(USARTx_TX_GPIO_PORT, &GPIO_InitStruct);
+	HAL_GPIO_Init(ports[board.serials[serialNumber].TXPort], &GPIO_InitStruct);
 
 	/* UART RX GPIO pin configuration  */
-	GPIO_InitStruct.Pin = USARTx_RX_PIN;
-	GPIO_InitStruct.Alternate = USARTx_RX_AF;
+	GPIO_InitStruct.Pin = board.serials[serialNumber].RXPin;
+	GPIO_InitStruct.Alternate = board.serials[serialNumber].RXAlternate;
 
-	HAL_GPIO_Init(USARTx_RX_GPIO_PORT, &GPIO_InitStruct);
+	HAL_GPIO_Init(ports[board.serials[serialNumber].RXPort], &GPIO_InitStruct);
 
 	/*##-1- Configure the UART peripheral ######################################*/
 	/* Put the USART peripheral in the Asynchronous mode (UART Mode) */
-	uartHandle.Instance        = Usart;
+	uartHandles[board.serials[serialNumber].usartHandle].Instance = usarts[board.serials[serialNumber].SerialInstance].port;
 
-	uartHandle.Init.BaudRate     = USARTx_BAUDRATE;
-	uartHandle.Init.WordLength   = USARTx_WORDLENGTH;
-	uartHandle.Init.StopBits     = USARTx_STOPBITS;
-	uartHandle.Init.Parity       = USARTx_PARITY;
-	uartHandle.Init.HwFlowCtl    = USARTx_HWFLOWCTRL;
-	uartHandle.Init.Mode         = USARTx_MODE;
+	uartHandles[board.serials[serialNumber].usartHandle].Init.BaudRate     = board.serials[serialNumber].BaudRate;
+	uartHandles[board.serials[serialNumber].usartHandle].Init.WordLength   = board.serials[serialNumber].WordLength;
+	uartHandles[board.serials[serialNumber].usartHandle].Init.StopBits     = board.serials[serialNumber].StopBits;
+	uartHandles[board.serials[serialNumber].usartHandle].Init.Parity       = board.serials[serialNumber].Parity;
+	uartHandles[board.serials[serialNumber].usartHandle].Init.HwFlowCtl    = board.serials[serialNumber].HwFlowCtl;
+	uartHandles[board.serials[serialNumber].usartHandle].Init.Mode         = board.serials[serialNumber].Mode;
 	//uartHandle.Init.OverSampling = UART_OVERSAMPLING_16;
-	if(HAL_UART_DeInit(&uartHandle) != HAL_OK)
-	{
-//		ErrorHandler();
-	}
+
 
 	//Config uart as  half duplex if TX and RX pins are the same
-	if (USARTx_TX_PIN == USARTx_RX_PIN && USARTx_RX_GPIO_PORT == USARTx_TX_GPIO_PORT)
+	if (board.serials[serialNumber].TXPin == board.serials[serialNumber].RXPin && ports[board.serials[serialNumber].TXPort] == ports[board.serials[serialNumber].RXPort])
 	{
-		if (HAL_HalfDuplex_Init(&uartHandle) != HAL_OK)
+		if (HAL_HalfDuplex_Init(&uartHandles[board.serials[serialNumber].usartHandle]) != HAL_OK)
 		{
 			//ErrorHandler();
 		}
 	}
 	else
 	{
-		if(HAL_UART_Init(&uartHandle) != HAL_OK)
+		if(HAL_UART_Init(&uartHandles[board.serials[serialNumber].usartHandle]) != HAL_OK)
 		{
 			//ErrorHandler();
 		}
 	}
 
-	UsartDmaInit(huart);
-	__HAL_UART_FLUSH_DRREGISTER(&uartHandle);
-	HAL_UART_Receive_DMA(&uartHandle, &dmaRxBuffer, 1);
+	UsartDmaInit(serialNumber);
+	__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[serialNumber].usartHandle]);
+	HAL_UART_Receive_DMA(&uartHandles[board.serials[serialNumber].usartHandle], &dmaRxBuffer, 1);
+
 }
 
-void UsartDeinit(UART_HandleTypeDef *huart, USART_TypeDef *Usart, GPIO_TypeDef *GPIOx_tx, uint16_t GPIO_Pin_tx, GPIO_TypeDef *GPIOx_rx, uint16_t GPIO_Pin_rx, uint8_t usartDmaTxIrqN, uint8_t usartDmaRxIrqN) {
+void UsartDeinit(uint32_t serialNumber) {
+
+
+	HAL_UART_DeInit(&uartHandles[board.serials[serialNumber].usartHandle]);
 
 	/*##-1- Reset peripherals ##################################################*/
-	Usart = Usart;
-/*
-	switch (Usart) {
-		case USART1:
-					__USART1_FORCE_RESET()
-					__USART1_RELEASE_RESET()
+
+	switch (board.serials[serialNumber].SerialInstance) {
+		case ENUM_USART1:
+					__USART1_FORCE_RESET();
+					__USART1_RELEASE_RESET();
 					break;
-		case USART2:
-					__USART2_FORCE_RESET()
-					__USART2_RELEASE_RESET()
+		case ENUM_USART2:
+					__USART2_FORCE_RESET();
+					__USART2_RELEASE_RESET();
 					break;
-		case USART3:
-					__USART3_FORCE_RESET()
-					__USART3_RELEASE_RESET()
+		case ENUM_USART3:
+					__USART3_FORCE_RESET();
+					__USART3_RELEASE_RESET();
 					break;
-		case USART4:
-					__USART4_FORCE_RESET()
-					__USART4_RELEASE_RESET()
+		case ENUM_USART4:
+					__UART4_FORCE_RESET();
+					__UART4_RELEASE_RESET();
 					break;
-		case USART5:
-					__USART5_FORCE_RESET()
-					__USART5_RELEASE_RESET()
+		case ENUM_USART5:
+					__UART5_FORCE_RESET();
+					__UART5_RELEASE_RESET();
 					break;
-		case USART6:
-					__USART6_FORCE_RESET()
-					__USART6_RELEASE_RESET()
+		case ENUM_USART6:
+					__USART6_FORCE_RESET();
+					__USART6_RELEASE_RESET();
 					break;
 	}
-*/
-	/*##-2- Disable peripherals and GPIO Clocks #################################*/
-	/* Configure USARTx Tx as alternate function  */
-	HAL_GPIO_DeInit(GPIOx_tx, GPIO_Pin_tx);
-	/* Configure USARTx Rx as alternate function  */
-	HAL_GPIO_DeInit(GPIOx_rx, GPIO_Pin_rx);
 
+	/*##-2- Disable peripherals and GPIO Clocks #################################*/
+	HAL_GPIO_DeInit(ports[board.serials[serialNumber].TXPort], board.serials[serialNumber].TXPin);
+	HAL_GPIO_DeInit(ports[board.serials[serialNumber].RXPort], board.serials[serialNumber].RXPin);
+
+	UART_HandleTypeDef *huart = &uartHandles[board.serials[serialNumber].usartHandle];
 	/*##-3- Disable the DMA #####################################################*/
 	/* De-Initialize the DMA channel associated to reception process */
 	if (huart->hdmarx != 0)
@@ -144,95 +142,65 @@ void UsartDeinit(UART_HandleTypeDef *huart, USART_TypeDef *Usart, GPIO_TypeDef *
 	}
 
 	/*##-4- Disable the NVIC for DMA ###########################################*/
-	HAL_NVIC_DisableIRQ(usartDmaTxIrqN);
-	HAL_NVIC_DisableIRQ(usartDmaRxIrqN);
+	if (board.dmas[board.serials[serialNumber].TXDma].enabled)
+		HAL_NVIC_DisableIRQ(board.dmas[board.serials[serialNumber].TXDma].dmaIRQn);
+
+	if (board.dmas[board.serials[serialNumber].RXDma].enabled)
+		HAL_NVIC_DisableIRQ(board.dmas[board.serials[serialNumber].RXDma].dmaIRQn);
 
 }
 
-void UsartDmaInit(UART_HandleTypeDef *huart)
+void UsartDmaInit(uint32_t serialNumber)
 {
+
 	/*##-3- Configure the DMA ##################################################*/
 	/* Configure the DMA handler for Transmission process */
-	dmaUartTx.Instance                 = USARTx_TX_DMA_STREAM;
-	dmaUartTx.Init.Channel             = USARTx_TX_DMA_CHANNEL;
-	dmaUartTx.Init.Direction           = DMA_MEMORY_TO_PERIPH;
-	dmaUartTx.Init.PeriphInc           = DMA_PINC_DISABLE;
-	dmaUartTx.Init.MemInc              = DMA_MINC_ENABLE;
-	dmaUartTx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-	dmaUartTx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-	dmaUartTx.Init.Mode                = DMA_NORMAL;
-	dmaUartTx.Init.Priority            = DMA_PRIORITY_LOW;
-	dmaUartTx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
+	if (board.dmas[board.serials[serialNumber].TXDma].enabled) {
+		dmaUartTx[serialNumber].Instance                 = dmaStream[board.dmas[board.serials[serialNumber].TXDma].dmaStream];
+		dmaUartTx[serialNumber].Init.Channel             = board.dmas[board.serials[serialNumber].TXDma].dmaChannel;
+		dmaUartTx[serialNumber].Init.Direction           = board.dmas[board.serials[serialNumber].TXDma].dmaDirection;
+		dmaUartTx[serialNumber].Init.PeriphInc           = board.dmas[board.serials[serialNumber].TXDma].dmaPeriphInc;
+		dmaUartTx[serialNumber].Init.MemInc              = board.dmas[board.serials[serialNumber].TXDma].dmaMemInc;
+		dmaUartTx[serialNumber].Init.PeriphDataAlignment = board.dmas[board.serials[serialNumber].TXDma].dmaPeriphAlignment;
+		dmaUartTx[serialNumber].Init.MemDataAlignment    = board.dmas[board.serials[serialNumber].TXDma].dmaMemAlignment;
+		dmaUartTx[serialNumber].Init.Mode                = board.dmas[board.serials[serialNumber].TXDma].dmaMode;
+		dmaUartTx[serialNumber].Init.Priority            = board.dmas[board.serials[serialNumber].TXDma].dmaPriority;
+		dmaUartTx[serialNumber].Init.FIFOMode            = board.dmas[board.serials[serialNumber].TXDma].fifoMode;
 
-	HAL_DMA_Init(&dmaUartTx);
+		HAL_DMA_Init(&dmaUartTx[serialNumber]);
 
-	/* Associate the initialized DMA handle to the UART handle */
-	__HAL_LINKDMA(huart, hdmatx, dmaUartTx);
+		/* Associate the initialized DMA handle to the UART handle */
+		__HAL_LINKDMA(&uartHandles[board.serials[serialNumber].usartHandle], hdmatx, dmaUartTx[serialNumber]);
+
+	    /* DMA interrupt init */
+		HAL_NVIC_SetPriority(board.dmas[board.serials[serialNumber].TXDma].dmaIRQn, 1, 0);
+		HAL_NVIC_EnableIRQ(board.dmas[board.serials[serialNumber].TXDma].dmaIRQn);
+	}
 
 	/* Configure the DMA handler for reception process */
-	dmaUartRx.Instance                 = USARTx_RX_DMA_STREAM;
-	dmaUartRx.Init.Channel             = USARTx_RX_DMA_CHANNEL;
-	dmaUartRx.Init.Direction           = DMA_PERIPH_TO_MEMORY;
-	dmaUartRx.Init.PeriphInc           = DMA_PINC_DISABLE;
-	dmaUartRx.Init.MemInc              = DMA_MINC_DISABLE;
-	dmaUartRx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-	dmaUartRx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-	dmaUartRx.Init.Mode                = DMA_CIRCULAR;
-	dmaUartRx.Init.Priority            = DMA_PRIORITY_LOW;
-	dmaUartRx.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
+	if (board.dmas[board.serials[serialNumber].RXDma].enabled) {
 
-	HAL_DMA_Init(&dmaUartRx);
+		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Instance                 = dmaStream[board.dmas[board.serials[serialNumber].RXDma].dmaStream];
+		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.Channel             = board.dmas[board.serials[serialNumber].RXDma].dmaChannel;
+		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.Direction           = board.dmas[board.serials[serialNumber].RXDma].dmaDirection;
+		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.PeriphInc           = board.dmas[board.serials[serialNumber].RXDma].dmaPeriphInc;
+		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.MemInc              = board.dmas[board.serials[serialNumber].RXDma].dmaMemInc;
+		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.PeriphDataAlignment = board.dmas[board.serials[serialNumber].RXDma].dmaPeriphAlignment;
+		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.MemDataAlignment    = board.dmas[board.serials[serialNumber].RXDma].dmaMemAlignment;
+		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.Mode                = board.dmas[board.serials[serialNumber].RXDma].dmaMode;
+		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.Priority            = board.dmas[board.serials[serialNumber].RXDma].dmaPriority;
+		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.FIFOMode            = board.dmas[board.serials[serialNumber].RXDma].fifoMode;
 
-	/* Associate the initialized DMA handle to the the UART handle */
-	__HAL_LINKDMA(huart, hdmarx, dmaUartRx);
+		HAL_DMA_Init(&dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle]);
 
-//	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, FRAME_SIZE) == HAL_OK)
-//	{
-//		__HAL_UART_FLUSH_DRREGISTER(huart);
-//	}
+		/* Associate the initialized DMA handle to the the UART handle */
+		__HAL_LINKDMA(&uartHandles[board.serials[serialNumber].usartHandle], hdmarx, dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle]);
 
-    /* DMA interrupt init */
-	HAL_NVIC_SetPriority(USARTx_TX_DMA_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(USARTx_TX_DMA_IRQn);
-	HAL_NVIC_SetPriority(USARTx_RX_DMA_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(USARTx_RX_DMA_IRQn);
-
-	return;
-	//HAL_USART_Receive_DMA(USART_HandleTypeDef *husart, uint8_t *pRxData, uint16_t Size);
-
-	/*##-4- Configure the NVIC for DMA #########################################*/
-	/* NVIC configuration for DMA transfer complete interrupt (USART6_TX) */
-	//HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].TXDMA_IRQn, 0, 1);
-	//HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].TXDMA_IRQn);
-
-	/* NVIC configuration for DMA transfer complete interrupt (USART6_RX) */
-	//HAL_NVIC_SetPriority(board.serials[RECEIVER_UART].RXDMA_IRQn, 0, 0);
-	//HAL_NVIC_EnableIRQ(board.serials[RECEIVER_UART].RXDMA_IRQn);
-
-	/* NVIC for USART, to catch the TX complete */
-//	HAL_NVIC_SetPriority(USARTx_IRQn, 0, 0);
-//	HAL_NVIC_EnableIRQ(USARTx_IRQn);
-
-
-
-	__HAL_UART_FLUSH_DRREGISTER(huart);
-
-	if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, FRAME_SIZE) == HAL_OK)
-	{
-
+	    /* DMA interrupt init */
+		HAL_NVIC_SetPriority(board.dmas[board.serials[serialNumber].RXDma].dmaIRQn, 1, 0);
+		HAL_NVIC_EnableIRQ(board.dmas[board.serials[serialNumber].RXDma].dmaIRQn);
 	}
-/*
-    for (x=0;x<100;x++)
-    {
-    	//if (HAL_UART_Receive_DMA(huart, (uint8_t *)serialRxBuffer, 16) == HAL_OK)
-    		break;
-    }
 
-    if (x==100)
-    {
-    	// SHOW SOME CRAZY ERRORS
-    }
-*/
 }
 
 void BoardUsartInit () {
@@ -242,11 +210,14 @@ void BoardUsartInit () {
 
 	lastRXPacket = InlineMillis();
 
-	HAL_NVIC_DisableIRQ(USARTx_TX_DMA_IRQn);
-	HAL_NVIC_DisableIRQ(USARTx_RX_DMA_IRQn);
-
 	// read and write settings at slow speed
-	UsartInit(USARTx_BAUDRATE, USARTx, &uartHandle);
+	// starting serial ENUM_USART1 which is serial 0
+	for (uint32_t serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++) {
+		if (board.serials[serialNumber].enabled) {
+			UsartDeinit(serialNumber); //deinits serial and associated pins and DMAs
+			UsartInit(serialNumber); //inits serial and associated pins and DMAs
+		}
+	}
 
 }
 
@@ -265,14 +236,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     uint32_t currentTime = 0;
     static uint32_t timeOfLastPacket = 0;
 
-	if (huart == &uartHandle) {
+	if (huart == &uartHandles[board.serials[0].usartHandle]) {
 		currentTime = InlineMillis();
 		timeSinceLastPacket = (currentTime - timeOfLastPacket);
 		timeOfLastPacket = currentTime;
 
 		if (timeSinceLastPacket > 3) {
 			if (dmaIndex < FRAME_SIZE) {
-				__HAL_UART_FLUSH_DRREGISTER(&uartHandle); // Clear the buffer to prevent overrun
+				__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[0].usartHandle]); // Clear the buffer to prevent overrun
 			}
 			dmaIndex = 0;
 		}
@@ -293,21 +264,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 }
 
-void USARTx_RX_DMA_IRQHandler(void)
-{
-    HAL_NVIC_ClearPendingIRQ(USARTx_RX_DMA_IRQn);
-    HAL_DMA_IRQHandler(&dmaUartRx);
+void DMA2_Stream2_IRQHandler(void) {
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream2_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_2]);
 }
 
-void USARTx_TX_DMA_IRQHandler(void)
-{
-  HAL_DMA_IRQHandler(&dmaUartTx);
-
-}
-
-uint32_t rxDMA;
-uint32_t txDMA;
-void USARTx_IRQHandler(void)
-{
-	return;
+void DMA2_Stream7_IRQHandler(void) {
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream7_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_7]);
 }

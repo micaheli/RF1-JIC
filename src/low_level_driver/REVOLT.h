@@ -288,6 +288,33 @@
 	#define USARTx_PARITY              (uint32_t)UART_PARITY_NONE
 	#define USARTx_HWFLOWCTRL          (uint32_t)UART_HWCONTROL_NONE
 	#define USARTx_MODE                (uint32_t)UART_MODE_TX_RX
+/*
+ 	#define USE_USART1
+	#define USARTx					   ENUM_USART1
+	#define USARTx_TX_PIN              GPIO_PIN_9
+	#define USARTx_TX_GPIO_PORT        ENUM_PORTA
+	#define USARTx_TX_AF               GPIO_AF7_USART1
+	#define USARTx_RX_PIN              GPIO_PIN_9
+	#define USARTx_RX_GPIO_PORT        ENUM_PORTA
+	#define USARTx_RX_AF               GPIO_AF7_USART1
+	#define USARTx_IRQHandler          UART1_IRQHandler
+	#define USARTx_IRQn                UART1_IRQn
+	#define USARTx_TX_DMA_STREAM       DMA2_Stream7
+	#define USARTx_TX_DMA_CHANNEL      DMA_CHANNEL_4
+	#define USARTx_TX_DMA_IRQn         DMA2_Stream7_IRQn
+	#define USARTx_TX_DMA_IRQHandler   DMA2_Stream7_IRQHandler
+	#define USARTx_RX_DMA_STREAM       DMA2_Stream2
+	#define USARTx_RX_DMA_CHANNEL      DMA_CHANNEL_4
+	#define USARTx_RX_DMA_IRQn         DMA2_Stream2_IRQn
+	#define USARTx_RX_DMA_IRQHandler   DMA2_Stream2_IRQHandler
+
+	#define USARTx_BAUDRATE            (uint32_t)115200
+	#define USARTx_WORDLENGTH          (uint32_t)UART_WORDLENGTH_8B
+	#define USARTx_STOPBITS            (uint32_t)UART_STOPBITS_1
+	#define USARTx_PARITY              (uint32_t)UART_PARITY_NONE
+	#define USARTx_HWFLOWCTRL          (uint32_t)UART_HWCONTROL_NONE
+	#define USARTx_MODE                (uint32_t)UART_MODE_TX_RX
+ */
 #else
 	//frsky
 	#define USE_SBUS_SERIAL

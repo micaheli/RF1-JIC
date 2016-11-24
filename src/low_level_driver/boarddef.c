@@ -6,18 +6,36 @@
 #include "../flight_controller/inc/rf_math.h"
 #include "includes.h"
 
-GPIO_TypeDef      *ports[11];
-serial_type        usarts[6];
-spi_type           spis[5];
-TIM_TypeDef       *timers[14];
-volatile uint32_t *ccr[56];
-board_type         board;
-
+GPIO_TypeDef       *ports[11];
+serial_type         usarts[6];
+spi_type            spis[5];
+TIM_TypeDef        *timers[14];
+volatile uint32_t  *ccr[56];
+board_type          board;
+DMA_Stream_TypeDef *dmaStream[16];
+UART_HandleTypeDef  uartHandles[6];
+DMA_HandleTypeDef   dmaHandles[16];
 
 int InitializeMCUSettings() {
 	//target_pinout pins;
 
-
+	bzero(dmaStream, sizeof(dmaStream));
+	dmaStream[0] = DMA1_Stream0;
+	dmaStream[1] = DMA1_Stream1;
+	dmaStream[2] = DMA1_Stream2;
+	dmaStream[3] = DMA1_Stream3;
+	dmaStream[4] = DMA1_Stream4;
+	dmaStream[5] = DMA1_Stream5;
+	dmaStream[6] = DMA1_Stream6;
+	dmaStream[7] = DMA1_Stream7;
+	dmaStream[8] = DMA2_Stream0;
+	dmaStream[9] = DMA2_Stream1;
+	dmaStream[10] = DMA2_Stream2;
+	dmaStream[11] = DMA2_Stream3;
+	dmaStream[12] = DMA2_Stream4;
+	dmaStream[13] = DMA2_Stream5;
+	dmaStream[14] = DMA2_Stream6;
+	dmaStream[15] = DMA2_Stream7;
 
 	bzero(ports, sizeof(ports));
 	ports[0]=_GPIOA;
@@ -261,6 +279,9 @@ void getBoardHardwareDefs(void)
 	board.spis[0].RXDMA_IRQn = SPI1_RX_DMA_IRQn;
 
 
+
+
+
 	board.spis[1].enabled = SPI2_ENABLE;
 
 	board.spis[1].NSSPin = SPI2_NSS_PIN;
@@ -355,53 +376,88 @@ void getBoardHardwareDefs(void)
 	board.spis[2].RXDMA_IRQn = SPI3_RX_DMA_IRQn;
 
 
-
 	//UART settings ------------------------------------------------------------------------------------------------------------------------------------------------------------
 	
-	board.serials[4].PinMode =		GPIO_MODE_AF_PP;
-	board.serials[4].Pull =			GPIO_PULLUP;
-	board.serials[4].Speed =		GPIO_SPEED_HIGH;
-	board.serials[4].TXAlternate =	USART5_TX_AF;
-	board.serials[4].TXPin =		USART5_TX_PIN;
-	board.serials[4].TXPort =		USART5_TX_GPIO_PORT;
-	board.serials[4].RXAlternate =	USART5_RX_AF;
-	board.serials[4].RXPin =		USART5_RX_PIN;
-	board.serials[4].RXPort =		USART5_RX_GPIO_PORT;
+	board.serials[0].enabled     = 1;
+	board.serials[0].PinMode     = GPIO_MODE_AF_PP;
+	board.serials[0].Pull        = GPIO_PULLUP;
+	board.serials[0].Speed       = GPIO_SPEED_HIGH;
+	board.serials[0].TXAlternate = GPIO_AF7_USART1;
+	board.serials[0].TXPin       = GPIO_PIN_9;
+	board.serials[0].TXPort      = ENUM_PORTA;
+	board.serials[0].RXAlternate = GPIO_AF7_USART1;
+	board.serials[0].RXPin       = GPIO_PIN_9;
+	board.serials[0].RXPort      = ENUM_PORTA;
 	
+	board.serials[0].SerialInstance = ENUM_USART1;  // loaded from port array
 
-	board.serials[4].SerialInstance = UART5;  // loaded from port array
+	board.serials[0].BaudRate   = 115200;
+	board.serials[0].WordLength = UART_WORDLENGTH_8B;
+	board.serials[0].StopBits   = UART_STOPBITS_1;
+	board.serials[0].Parity     = UART_PARITY_NONE;
+	board.serials[0].HwFlowCtl  = UART_HWCONTROL_NONE;
+	board.serials[0].Mode       = UART_MODE_TX_RX;
 
-	board.serials[4].BaudRate =		115200;
-	board.serials[4].WordLength =	UART_WORDLENGTH_8B;
-	board.serials[4].StopBits =		UART_STOPBITS_1;
-	board.serials[4].Parity =		UART_PARITY_NONE;
-	board.serials[4].HwFlowCtl =	UART_HWCONTROL_NONE;
-	board.serials[4].Mode =			UART_MODE_TX_RX;
+	//board.serials[0].USART_IRQn  = USART5_IRQn;  //JUST A Define for the function name
+	board.serials[0].usartHandle = ENUM_USART1;  //JUST A Define for the function name
 
-	board.serials[4].USART_IRQn =	USART5_IRQn;
+	board.serials[0].TXDma 		= ENUM_DMA2_STREAM_7;
+	board.serials[0].RXDma 		= ENUM_DMA2_STREAM_2;
 
-	board.serials[4].TXDMAStream =	USART5_TX_DMA_STREAM; // looked up from array
-	board.serials[4].TXDMAChannel = USART5_TX_DMA_CHANNEL;
-	board.serials[4].TXDMADirection = DMA_MEMORY_TO_PERIPH;
-	board.serials[4].TXDMAPeriphInc = DMA_PINC_DISABLE;
-	board.serials[4].TXDMAMemInc = DMA_MINC_ENABLE;
-	board.serials[4].TXDMAPeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-	board.serials[4].TXDMAMemDataAlignment = DMA_MDATAALIGN_BYTE;
-	board.serials[4].TXDMAMode = DMA_NORMAL;
-	board.serials[4].TXDMAPriority = DMA_PRIORITY_LOW;
-	board.serials[4].TXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
+	board.dmas[board.serials[0].TXDma].enabled            = 1;
+	board.dmas[board.serials[0].TXDma].dmaStream          = ENUM_DMA2_STREAM_7;
+	board.dmas[board.serials[0].TXDma].dmaChannel         = DMA_CHANNEL_4;
+	board.dmas[board.serials[0].TXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
+	board.dmas[board.serials[0].TXDma].dmaPeriphInc       = DMA_PERIPH_TO_MEMORY;
+	board.dmas[board.serials[0].TXDma].dmaMemInc          = DMA_MINC_DISABLE;
+	board.dmas[board.serials[0].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+	board.dmas[board.serials[0].TXDma].dmaMemAlignment    = DMA_PDATAALIGN_BYTE;
+	board.dmas[board.serials[0].TXDma].dmaMode            = DMA_CIRCULAR;
+	board.dmas[board.serials[0].TXDma].dmaPriority        = DMA_PRIORITY_HIGH;
+	board.dmas[board.serials[0].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+	board.dmas[board.serials[0].TXDma].dmaIRQn            = DMA2_Stream7_IRQn;
+	board.dmas[board.serials[0].TXDma].dmaHandle          = ENUM_DMA2_STREAM_7;
 
-	board.serials[4].RXDMAStream = USART5_RX_DMA_STREAM; // looked up from array
-	board.serials[4].RXDMAChannel = USART5_RX_DMA_CHANNEL;
-	board.serials[4].RXDMADirection = DMA_PERIPH_TO_MEMORY;
-	board.serials[4].RXDMAPeriphInc = DMA_PINC_DISABLE;
-	board.serials[4].RXDMAMemInc = DMA_MINC_ENABLE;
-	board.serials[4].RXDMAPeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-	board.serials[4].RXDMAMemDataAlignment = DMA_MDATAALIGN_BYTE;
-	board.serials[4].RXDMAMode = DMA_NORMAL;
-	board.serials[4].RXDMAPriority = DMA_PRIORITY_HIGH;
-	board.serials[4].RXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
+	board.dmas[board.serials[0].RXDma].enabled            = 1;
+	board.dmas[board.serials[0].RXDma].dmaStream          = ENUM_DMA2_STREAM_2;
+	board.dmas[board.serials[0].RXDma].dmaChannel         = DMA_CHANNEL_4;
+	board.dmas[board.serials[0].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
+	board.dmas[board.serials[0].RXDma].dmaPeriphInc       = DMA_PERIPH_TO_MEMORY;
+	board.dmas[board.serials[0].RXDma].dmaMemInc          = DMA_MINC_DISABLE;
+	board.dmas[board.serials[0].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+	board.dmas[board.serials[0].RXDma].dmaMemAlignment    = DMA_PDATAALIGN_BYTE;
+	board.dmas[board.serials[0].RXDma].dmaMode            = DMA_CIRCULAR;
+	board.dmas[board.serials[0].RXDma].dmaPriority        = DMA_PRIORITY_HIGH;
+	board.dmas[board.serials[0].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+	board.dmas[board.serials[0].RXDma].dmaIRQn            = DMA2_Stream2_IRQn;
+	board.dmas[board.serials[0].RXDma].dmaHandle          = ENUM_DMA2_STREAM_2;
 
-	board.serials[4].TXDMA_IRQn = USART5_TX_DMA_IRQn;
-	board.serials[4].RXDMA_IRQn = USART5_RX_DMA_IRQn;
+
+
+
+
+	board.serials[0].TXDMAStream =	USART5_TX_DMA_STREAM; // looked up from array
+	board.serials[0].TXDMAChannel = USART5_TX_DMA_CHANNEL;
+	board.serials[0].TXDMADirection = DMA_MEMORY_TO_PERIPH;
+	board.serials[0].TXDMAPeriphInc = DMA_PINC_DISABLE;
+	board.serials[0].TXDMAMemInc = DMA_MINC_ENABLE;
+	board.serials[0].TXDMAPeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+	board.serials[0].TXDMAMemDataAlignment = DMA_MDATAALIGN_BYTE;
+	board.serials[0].TXDMAMode = DMA_NORMAL;
+	board.serials[0].TXDMAPriority = DMA_PRIORITY_LOW;
+	board.serials[0].TXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
+
+	board.serials[0].RXDMAStream = USART5_RX_DMA_STREAM; // looked up from array
+	board.serials[0].RXDMAChannel = USART5_RX_DMA_CHANNEL;
+	board.serials[0].RXDMADirection = DMA_PERIPH_TO_MEMORY;
+	board.serials[0].RXDMAPeriphInc = DMA_PINC_DISABLE;
+	board.serials[0].RXDMAMemInc = DMA_MINC_ENABLE;
+	board.serials[0].RXDMAPeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+	board.serials[0].RXDMAMemDataAlignment = DMA_MDATAALIGN_BYTE;
+	board.serials[0].RXDMAMode = DMA_NORMAL;
+	board.serials[0].RXDMAPriority = DMA_PRIORITY_HIGH;
+	board.serials[0].RXDMAFIFOMode = DMA_FIFOMODE_DISABLE;
+
+	board.serials[0].TXDMA_IRQn = USART5_TX_DMA_IRQn;
+	board.serials[0].RXDMA_IRQn = USART5_RX_DMA_IRQn;
 }

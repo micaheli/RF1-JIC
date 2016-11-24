@@ -4,6 +4,7 @@
 
 #define MAX_MOTOR_NUMBER 8
 #define MAX_SERVO_NUMBER 8
+#define MAX_USARTS 6
 
 #define uid0_1 (*(uint8_t*)0x1fff7a10)
 #define uid0_2 (*(uint8_t*)0x1fff7a11)
@@ -29,6 +30,22 @@
 #define _PORTH 7
 #define _PORTI 8
 
+#define ENUM_PORTA _PORTA
+#define ENUM_PORTB _PORTB
+#define ENUM_PORTC _PORTC
+#define ENUM_PORTD _PORTD
+#define ENUM_PORTE _PORTE
+#define ENUM_PORTF _PORTF
+#define ENUM_PORTG _PORTG
+#define ENUM_PORTH _PORTH
+#define ENUM_PORTI _PORTI
+
+#define ENUM_USART1_IRQn 0
+#define ENUM_USART2_IRQn 1
+#define ENUM_USART3_IRQn 2
+#define ENUM_USART4_IRQn 3
+#define ENUM_USART5_IRQn 4
+#define ENUM_USART6_IRQn 5
 
 #define ENUMTIM1	0
 #define ENUMTIM2	1
@@ -102,6 +119,30 @@
 #define	TIM14CCR2 53
 #define	TIM14CCR3 54
 #define	TIM14CCR4 55
+
+#define ENUM_USART1 0
+#define ENUM_USART2 1
+#define ENUM_USART3 2
+#define ENUM_USART4 3
+#define ENUM_USART5 4
+#define ENUM_USART6 5
+
+#define ENUM_DMA1_STREAM_0 0
+#define ENUM_DMA1_STREAM_1 1
+#define ENUM_DMA1_STREAM_2 2
+#define ENUM_DMA1_STREAM_3 3
+#define ENUM_DMA1_STREAM_4 4
+#define ENUM_DMA1_STREAM_5 5
+#define ENUM_DMA1_STREAM_6 6
+#define ENUM_DMA1_STREAM_7 7
+#define ENUM_DMA2_STREAM_0 8
+#define ENUM_DMA2_STREAM_1 9
+#define ENUM_DMA2_STREAM_2 10
+#define ENUM_DMA2_STREAM_3 11
+#define ENUM_DMA2_STREAM_4 12
+#define ENUM_DMA2_STREAM_5 13
+#define ENUM_DMA2_STREAM_6 14
+#define ENUM_DMA2_STREAM_7 15
 
 
 #define	REVO
@@ -185,6 +226,7 @@ typedef struct {
 } board_spi;
 
 typedef struct {
+	uint32_t				enabled;
 	uint32_t				PinMode;
 	uint32_t				Pull;
 	uint32_t				Speed;
@@ -193,10 +235,10 @@ typedef struct {
 	uint32_t				RXAlternate;
 	uint32_t				RXPin;
 
-	GPIO_TypeDef *			RXPort;
-	GPIO_TypeDef *			TXPort;
+	uint32_t				RXPort; // loaded from port array
+	uint32_t				TXPort; // loaded from port array
 
-	USART_TypeDef *			SerialInstance; // loaded from port array
+	uint32_t				SerialInstance; // loaded from usart array
 
 	uint32_t				BaudRate;
 	uint32_t				WordLength;
@@ -206,8 +248,13 @@ typedef struct {
 	uint32_t				Mode;
 
 	uint32_t				USART_IRQn;
+	uint32_t				usartHandle;
 
-	DMA_Stream_TypeDef *	TXDMAStream; // looked up from array
+	uint32_t				TXDma;
+	uint32_t				RXDma;
+
+	//below won't be needed
+	uint32_t				TXDMAStream; // looked up from array
 	uint32_t				TXDMAChannel;
 	uint32_t				TXDMADirection;
 	uint32_t				TXDMAPeriphInc;
@@ -218,7 +265,7 @@ typedef struct {
 	uint32_t				TXDMAPriority;
 	uint32_t				TXDMAFIFOMode;
 
-	DMA_Stream_TypeDef *	RXDMAStream; // looked up from array
+	uint32_t				RXDMAStream; // looked up from array
 	uint32_t				RXDMAChannel;
 	uint32_t				RXDMADirection;
 	uint32_t				RXDMAPeriphInc;
@@ -234,6 +281,21 @@ typedef struct {
 
 } board_serial;
 
+typedef struct {
+	uint32_t				enabled;
+	uint32_t				dmaStream;
+	uint32_t				dmaChannel;
+	uint32_t				dmaDirection;
+	uint32_t				dmaPeriphInc;
+	uint32_t				dmaMemInc;
+	uint32_t				dmaPeriphAlignment;
+	uint32_t				dmaMemAlignment;
+	uint32_t				dmaMode;
+	uint32_t				dmaPriority;
+	uint32_t				fifoMode;
+	uint32_t				dmaIRQn;
+	uint32_t				dmaHandle;
+} board_dma;
 
 typedef struct {
 	uint32_t				port;
@@ -270,6 +332,7 @@ typedef struct {
 	uint32_t				timChannel;
 	uint32_t				timCCR;
 	uint32_t				polarity;
+	uint32_t				motorDma;
 } motor_type;
 
 
@@ -298,7 +361,8 @@ typedef struct {
 
 	board_serial			serials[6];
 
-	
+	board_dma				dmas[16];
+
 } board_type;
 
 
@@ -347,10 +411,14 @@ typedef struct
 
 */
 
-extern board_type         board;
-extern GPIO_TypeDef      *ports[];
-extern volatile uint32_t *ccr[];
-extern TIM_TypeDef       *timers[];
+extern board_type          board;
+extern GPIO_TypeDef       *ports[];
+extern volatile uint32_t  *ccr[];
+extern TIM_TypeDef        *timers[];
+extern serial_type         usarts[];
+extern DMA_Stream_TypeDef *dmaStream[];
+extern UART_HandleTypeDef  uartHandles[];
+extern DMA_HandleTypeDef   dmaHandles[];
 
 extern int InitializeMCUSettings();
 void getBoardHardwareDefs();

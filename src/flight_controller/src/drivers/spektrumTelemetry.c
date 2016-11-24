@@ -204,7 +204,7 @@ void sendSpektrumBind()
 
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 {
-	HAL_UART_Transmit_DMA(&uartHandle, (uint8_t *)baseAddress, packetSize);
+	HAL_UART_Transmit_DMA(&uartHandle[0], (uint8_t *)baseAddress, packetSize);
 }
 
 uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly)

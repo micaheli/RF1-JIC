@@ -1,9 +1,9 @@
 #pragma once
 #include "includes.h"
 
-UART_HandleTypeDef uartHandle;
-DMA_HandleTypeDef dmaUartRx;
-DMA_HandleTypeDef dmaUartTx;
+extern UART_HandleTypeDef uartHandle[];
+extern DMA_HandleTypeDef dmaUartRx[];
+extern DMA_HandleTypeDef dmaUartTx[];
 extern uint32_t lastRXPacket;
 
 #define RXBUFFERSIZE 64
@@ -14,9 +14,9 @@ extern unsigned char serialRxBuffer[TXBUFFERSIZE];
 
 unsigned char txTransimissionReady;
 
-void UsartInit(unsigned int baudRate, USART_TypeDef* Usart, UART_HandleTypeDef *huart);
-void UsartDeinit(UART_HandleTypeDef *huart, USART_TypeDef *Usart, GPIO_TypeDef *GPIOx_tx, uint16_t GPIO_Pin_tx, GPIO_TypeDef *GPIOx_rx, uint16_t GPIO_Pin_rx, uint8_t usartDmaTxIrqN, uint8_t usartDmaRxIrqN);
-void UsartDmaInit(UART_HandleTypeDef *huart);
+void UsartInit(uint32_t serialNumber);
+void UsartDeinit(uint32_t serialNumber);
+void UsartDmaInit(uint32_t serialNumber);
 void BoardUsartInit ();
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void USARTx_DMA_RX_IRQHandler(void);
