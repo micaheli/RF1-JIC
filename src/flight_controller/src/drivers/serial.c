@@ -177,7 +177,7 @@ void UsartDmaInit(uint32_t serialNumber)
 		__HAL_LINKDMA(&uartHandles[board.serials[serialNumber].usartHandle], hdmatx, dmaUartTx[serialNumber]);
 
 	    /* DMA interrupt init */
-		HAL_NVIC_SetPriority(board.dmas[board.serials[serialNumber].TXDma].dmaIRQn, 1, 0);
+		HAL_NVIC_SetPriority(board.dmas[board.serials[serialNumber].TXDma].dmaIRQn, 1, 1);
 		HAL_NVIC_EnableIRQ(board.dmas[board.serials[serialNumber].TXDma].dmaIRQn);
 	}
 
@@ -201,7 +201,7 @@ void UsartDmaInit(uint32_t serialNumber)
 		__HAL_LINKDMA(&uartHandles[board.serials[serialNumber].usartHandle], hdmarx, dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle]);
 
 	    /* DMA interrupt init */
-		HAL_NVIC_SetPriority(board.dmas[board.serials[serialNumber].RXDma].dmaIRQn, 1, 0);
+		HAL_NVIC_SetPriority(board.dmas[board.serials[serialNumber].RXDma].dmaIRQn, 1, 1);
 		HAL_NVIC_EnableIRQ(board.dmas[board.serials[serialNumber].RXDma].dmaIRQn);
 	}
 

@@ -94,10 +94,6 @@ void GYRO_EXTI_IRQHandler(void)
 }
 #endif
 
-void GYRO_TX_DMA_IRQHandler(void)
-{
-    HAL_DMA_IRQHandler(dma_gyro_tx);
-}
 
 void GYRO_RX_DMA_IRQHandler(void)
 {

@@ -104,12 +104,11 @@ void OTG_FS_IRQHandler(void)
 }
 
 
-//void DMA2_Stream3_IRQHandler(void)
-//{
-//    HAL_NVIC_ClearPendingIRQ(DMA2_Stream3_IRQn);
-//    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_3]);
-//    //HAL_DMA_IRQHandler(dma_gyro_tx);
-//}
+void DMA2_Stream3_IRQHandler(void)
+{
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream3_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_3]);
+}
 
 
 void DMA2_Stream2_IRQHandler(void) { //clear the IRQ and handle the DMA

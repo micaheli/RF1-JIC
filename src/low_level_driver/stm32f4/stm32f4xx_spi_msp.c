@@ -1,12 +1,12 @@
 #include "includes.h"
 
 extern DMA_HandleTypeDef *dma_gyro_rx;
-extern DMA_HandleTypeDef *dma_gyro_tx;
+//extern DMA_HandleTypeDef *dma_gyro_tx;
 extern DMA_HandleTypeDef *dma_flash_rx;
 extern DMA_HandleTypeDef *dma_flash_tx;
 
 DMA_HandleTypeDef dma_spi1_rx;
-DMA_HandleTypeDef dma_spi1_tx;
+//DMA_HandleTypeDef dma_spi1_tx;
 DMA_HandleTypeDef dma_spi2_rx;
 DMA_HandleTypeDef dma_spi2_tx;
 DMA_HandleTypeDef dma_spi3_rx;
@@ -18,7 +18,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 	if (GYRO_SPI == SPI1)
 	{
 		dma_gyro_rx = &dma_spi1_rx;
-		dma_gyro_tx = &dma_spi1_tx;
+		//dma_gyro_tx = &dma_spi1_tx;
 	}
 	else if (GYRO_SPI == SPI2)
 	{
@@ -103,6 +103,33 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
         __HAL_LINKDMA(hspi, hdmarx, dma_spi1_rx);
 
+	    dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Instance                 = dmaStream[board.dmas[board.spis[0].TXDma].dmaStream];
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.Channel             = board.dmas[board.spis[0].TXDma].dmaChannel;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.Direction           = board.dmas[board.spis[0].TXDma].dmaDirection;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.PeriphInc           = board.dmas[board.spis[0].TXDma].dmaPeriphInc;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.MemInc              = board.dmas[board.spis[0].TXDma].dmaMemInc;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.PeriphDataAlignment = board.dmas[board.spis[0].TXDma].dmaPeriphAlignment;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.MemDataAlignment    = board.dmas[board.spis[0].TXDma].dmaMemAlignment;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.Mode                = board.dmas[board.spis[0].TXDma].dmaMode;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.Priority            = board.dmas[board.spis[0].TXDma].dmaPriority;
+        dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.FIFOMode            = board.dmas[board.spis[0].TXDma].fifoMode;
+        if (HAL_DMA_Init(&dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle]) != HAL_OK) {
+            ErrorHandler();
+        }
+
+        __HAL_LINKDMA(hspi, hdmatx, dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle]);
+
+     	HAL_NVIC_SetPriority(board.dmas[board.spis[0].TXDma].dmaIRQn, 1, 0);
+     	HAL_NVIC_EnableIRQ(board.dmas[board.spis[0].TXDma].dmaIRQn);
+
+     	HAL_NVIC_SetPriority(GYRO_RX_DMA_IRQn, 1, 0);
+     	HAL_NVIC_EnableIRQ(GYRO_RX_DMA_IRQn);
+
+        // Peripheral interrupt init
+	    HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
+	    HAL_NVIC_EnableIRQ(SPI1_IRQn);
+
+	    /*
         dma_spi1_tx.Instance                 = dmaStream[board.dmas[board.spis[0].TXDma].dmaStream];
         dma_spi1_tx.Init.Channel             = board.dmas[board.spis[0].TXDma].dmaChannel;
         dma_spi1_tx.Init.Direction           = board.dmas[board.spis[0].TXDma].dmaDirection;
@@ -119,10 +146,10 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
         __HAL_LINKDMA(hspi, hdmatx, dma_spi1_tx);
 
-        /* Peripheral interrupt init */
-	    HAL_NVIC_SetPriority(board.dmas[board.spis[0].TXDma].dmaIRQn, 0, 0);
-	    HAL_NVIC_EnableIRQ(board.dmas[board.spis[0].TXDma].dmaIRQn);
-
+        // Peripheral interrupt init
+	    HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
+	    HAL_NVIC_EnableIRQ(SPI1_IRQn);
+	    */
 	    /*
 	    dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Instance                 = dmaStream[board.dmas[board.spis[0].TXDma].dmaStream];
         dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle].Init.Channel             = board.dmas[board.spis[0].TXDma].dmaChannel;
@@ -141,8 +168,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
         __HAL_LINKDMA(hspi, hdmatx, dmaHandles[board.dmas[board.spis[0].TXDma].dmaHandle]);
 
         // Peripheral interrupt init
-	    HAL_NVIC_SetPriority(board.dmas[board.spis[0].TXDma].dmaIRQn, 0, 0);
-	    HAL_NVIC_EnableIRQ(board.dmas[board.spis[0].TXDma].dmaIRQn);
+	    HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
+	    HAL_NVIC_EnableIRQ(SPI1_IRQn);
 	     */
     }
 

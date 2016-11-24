@@ -443,7 +443,7 @@ void getBoardHardwareDefs(void)
 	board.dmas[board.serials[0].TXDma].enabled            = 1;
 	board.dmas[board.serials[0].TXDma].dmaStream          = ENUM_DMA2_STREAM_7;
 	board.dmas[board.serials[0].TXDma].dmaChannel         = DMA_CHANNEL_4;
-	board.dmas[board.serials[0].TXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
+	board.dmas[board.serials[0].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH;
 	board.dmas[board.serials[0].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
 	board.dmas[board.serials[0].TXDma].dmaMemInc          = DMA_MINC_DISABLE;
 	board.dmas[board.serials[0].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
