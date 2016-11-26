@@ -24,10 +24,10 @@ void UsartInit(uint32_t serialNumber) {
 
 	GPIO_InitTypeDef  GPIO_InitStruct;
 
-	uint32_t txPin = 0;
-	uint32_t rxPin = 0;
-	GPIO_TypeDef *txPort = 0;
-	GPIO_TypeDef *rxPort = 0;
+	uint32_t txPin;
+	uint32_t rxPin;
+	GPIO_TypeDef *txPort;
+	GPIO_TypeDef *rxPort;
 
 	switch (board.serials[serialNumber].Protocol) {
 		case USING_SPEKTRUM_ONE_WAY:
@@ -38,8 +38,8 @@ void UsartInit(uint32_t serialNumber) {
 			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
 			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
 			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
-			txPin = board.serials[serialNumber].TXPin;
-			rxPin = board.serials[serialNumber].RXPin;
+			txPin  = board.serials[serialNumber].TXPin;
+			rxPin  = board.serials[serialNumber].RXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].RXPort];
 			break;
@@ -116,14 +116,14 @@ void UsartInit(uint32_t serialNumber) {
 	{
 		if (HAL_HalfDuplex_Init(&uartHandles[board.serials[serialNumber].usartHandle]) != HAL_OK)
 		{
-			//ErrorHandler();
+			ErrorHandler(SERIAL_HALF_DUPLEX_INIT_FAILURE);
 		}
 	}
 	else
 	{
 		if(HAL_UART_Init(&uartHandles[board.serials[serialNumber].usartHandle]) != HAL_OK)
 		{
-			//ErrorHandler();
+			ErrorHandler(SERIAL_INIT_FAILURE);
 		}
 	}
 
@@ -252,7 +252,7 @@ void UsartDmaInit(uint32_t serialNumber)
 
 }
 
-void BoardUsartInit () {
+void BoardUsartInit (void) {
 
     //TODO: change this up, for ability to set usarts now on revolt
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_ONE_WAY) {
@@ -279,6 +279,16 @@ void BoardUsartInit () {
 		if (board.serials[serialNumber].enabled) {
 			UsartDeinit(serialNumber); //deinits serial and associated pins and DMAs
 			UsartInit(serialNumber); //inits serial and associated pins and DMAs
+		}
+	}
+
+}
+
+void BoardUsartDeinit (void) {
+
+	for (uint32_t serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++) {
+		if (board.serials[serialNumber].enabled) {
+			UsartDeinit(serialNumber); //deinits serial and associated pins and DMAs
 		}
 	}
 

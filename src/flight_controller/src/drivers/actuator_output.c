@@ -18,6 +18,7 @@ void InitActuators(void) {
 	float disarmUs;   // shortest pulse width (disarmed)
 	float walledUs;   // longest pulse width (full throttle)
 	float idleUs;     // idle pulse width (armed, zero throttle)
+	uint32_t motorNum;
 
 	// timerHz *must* be a proper divisor of the timer frequency
 	//     REVOLT - 48 MHz (overclocked from 42 MHz)
@@ -64,9 +65,19 @@ void InitActuators(void) {
 
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
-	for (uint32_t motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
 		if (board.motors[motorNum].enabled) {
 			InitActuatorTimer(board.motors[motorNum], pwmHz, timerHz);
+		}
+	}
+
+	DelayMs(1); //give timer time to stabilize.
+
+	// Start the timers
+	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+		if (board.motors[motorNum].enabled) {
+			HAL_TIM_Base_Start(&pwmTimers[board.motors[motorNum].timerHandle]);
+			HAL_TIM_PWM_Start(&pwmTimers[board.motors[motorNum].timerHandle], board.motors[motorNum].timChannel);
 		}
 	}
 
@@ -79,7 +90,6 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	uint16_t timerPrescaler = 0;
 
 	GPIO_InitTypeDef GPIO_InitStruct;
-	TIM_HandleTypeDef pwmTimer;
 	TIM_OC_InitTypeDef sConfigOC;
 	TIM_MasterConfigTypeDef sMasterConfig;
 	TIM_ClockConfigTypeDef sClockSourceConfig;
@@ -110,23 +120,23 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 
 	// TIM_Handle's _should_ be preserved in a global state, since we don't,
 	// and to ensure initialization happens correctly, zero the handle
-	memset(&pwmTimer, 0, sizeof(pwmTimer));
+	memset(&pwmTimers[actuator.timerHandle], 0, sizeof(pwmTimers[actuator.timerHandle]));
 
-	pwmTimer.Instance = timers[actuator.timer];
-	pwmTimer.Init.Prescaler = timerPrescaler;
-	pwmTimer.Init.CounterMode = TIM_COUNTERMODE_UP;
-	pwmTimer.Init.Period = (timerHz / pwmHz) - 1;
-	pwmTimer.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	HAL_TIM_Base_Init(&pwmTimer);
+	pwmTimers[actuator.timerHandle].Instance = timers[actuator.timer];
+	pwmTimers[actuator.timerHandle].Init.Prescaler = timerPrescaler;
+	pwmTimers[actuator.timerHandle].Init.CounterMode = TIM_COUNTERMODE_UP;
+	pwmTimers[actuator.timerHandle].Init.Period = (timerHz / pwmHz) - 1;
+	pwmTimers[actuator.timerHandle].Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]);
 
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-	HAL_TIM_ConfigClockSource(&pwmTimer, &sClockSourceConfig);
+	HAL_TIM_ConfigClockSource(&pwmTimers[actuator.timerHandle], &sClockSourceConfig);
 
-	HAL_TIM_PWM_Init(&pwmTimer);
+	HAL_TIM_PWM_Init(&pwmTimers[actuator.timerHandle]);
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	HAL_TIMEx_MasterConfigSynchronization(&pwmTimer, &sMasterConfig);
+	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.timerHandle], &sMasterConfig);
 
 	// Initialize timer pwm channel
 
@@ -136,12 +146,8 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
 	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
 
-	HAL_TIM_PWM_ConfigChannel(&pwmTimer, &sConfigOC, actuator.timChannel);
+	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.timerHandle], &sConfigOC, actuator.timChannel);
 
-	// Start the timer
-
-	HAL_TIM_Base_Start(&pwmTimer);
-	HAL_TIM_PWM_Start(&pwmTimer, actuator.timChannel);
 }
 
 

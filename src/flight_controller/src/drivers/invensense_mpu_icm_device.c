@@ -94,7 +94,7 @@ static int32_t gyroData[3];
 static int32_t gyroCal[3];
 gyro_device_config gyroConfig;
 
-int accgyroDeviceInit(loopCtrl_e gyroLoop)
+int AccGyroDeviceInit(loopCtrl_e gyroLoop)
 {
 
     // the mpu6000 caps out at 8khz
@@ -112,65 +112,65 @@ int accgyroDeviceInit(loopCtrl_e gyroLoop)
 	}
 
     // reset gyro
-    accgyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
+	AccGyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
     HAL_Delay(150);
 
     // set gyro clock to Z axis gyro
-    accgyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_Z);
+    AccGyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_Z);
 
     // clear low power states
-    accgyroWriteRegister(INVENS_RM_PWR_MGMT_2, 0);
+    AccGyroWriteRegister(INVENS_RM_PWR_MGMT_2, 0);
 
     // disable I2C Interface, clear fifo, and reset sensor signal paths
     // TODO: shouldn't disable i2c on non-spi
-    accgyroWriteRegister(INVENS_RM_USER_CTRL, INVENS_CONST_I2C_IF_DIS | INVENS_CONST_FIFO_RESET | INVENS_CONST_SIG_COND_RESET);
+    AccGyroWriteRegister(INVENS_RM_USER_CTRL, INVENS_CONST_I2C_IF_DIS | INVENS_CONST_FIFO_RESET | INVENS_CONST_SIG_COND_RESET);
 
     // set gyro sample divider rate
-    accgyroVerifyWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.rateDiv - 1);
+    AccGyroVerifyWriteRegister(INVENS_RM_SMPLRT_DIV, gyroConfig.rateDiv - 1);
 
     // gyro DLPF config
-    accgyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.gyroDlpf);
+    AccGyroVerifyWriteRegister(INVENS_RM_CONFIG, gyroConfig.gyroDlpf);
 
     // set gyro full scale to +/- 2000 deg / sec
-    accgyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_GYRO_FSR_2000DPS << 3 | gyroConfig.gyroDlpfBypass);
+    AccGyroVerifyWriteRegister(INVENS_RM_GYRO_CONFIG, INVENS_CONST_GYRO_FSR_2000DPS << 3 | gyroConfig.gyroDlpfBypass);
 
     // set accel full scale to +/- 16g
-    accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_ACC_FSR_16G << 3);
+    AccGyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG, INVENS_CONST_ACC_FSR_16G << 3);
 
     if (deviceWhoAmI != MPU6000_WHO_AM_I) { //6000 is only gyro not to have this function
     	// set the accelerometer dlpf
-    	accgyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG2, gyroConfig.accDlpfBypass << 3 | gyroConfig.accDlpf);
+    	AccGyroVerifyWriteRegister(INVENS_RM_ACCEL_CONFIG2, gyroConfig.accDlpfBypass << 3 | gyroConfig.accDlpf);
     	//this function varies between 6000 and 6500+ family
     	// set interrupt pin PP, 50uS pulse, status cleared on INT_STATUS read
-        accgyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR | INVENS_CONST_BYPASS_EN);
+    	AccGyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR | INVENS_CONST_BYPASS_EN);
     } else {
         // set interrupt pin PP, 50uS pulse, status cleared on INT_STATUS read
-        accgyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR);
+    	AccGyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR);
     }
 
 
 #ifdef GYRO_EXTI_GPIO_Port
     // enable data ready interrupt
-    accgyroVerifyWriteRegister(INVENS_RM_INT_ENABLE, INVENS_CONST_DATA_RDY_EN);
+    AccGyroVerifyWriteRegister(INVENS_RM_INT_ENABLE, INVENS_CONST_DATA_RDY_EN);
 #endif
 
     return true;
 }
 
-int accgyroDeviceDetect(void)
+int AccGyroDeviceDetect(void)
 {
     uint8_t attempt, data;
 
     // reset gyro
-    accgyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
+    AccGyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
     HAL_Delay(151);
-    accgyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
+    AccGyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
 
     // poll for the who am i register while device resets
     for (attempt = 0; attempt < 100; attempt++) {
         HAL_Delay(151);
 
-        accgyroReadData(INVENS_RM_WHO_AM_I, &data, 1);
+        AccGyroReadData(INVENS_RM_WHO_AM_I, &data, 1);
         switch (data) {
         	case MPU6000_WHO_AM_I:
         	case MPU6500_WHO_AM_I:
@@ -192,7 +192,7 @@ int accgyroDeviceDetect(void)
     return false;
     /* No need to do this
     // read the product id
-    accgyroReadData(INVENS_RM_PRODUCT_ID, &data, 1);
+    AccGyroReadData(INVENS_RM_PRODUCT_ID, &data, 1);
 
     // if who am i and id match, return true
     switch (data) {
@@ -222,7 +222,7 @@ void accgyroDeviceReadAccGyro(void)
     gyroTxFrame.accAddress = INVENS_RM_ACCEL_XOUT_H | 0x80;
 
     accelUpdate = true;
-    accgyroDMAReadWriteData(&gyroTxFrame.accAddress, &gyroRxFrame.accAddress, 15);
+    AccGyroDMAReadWriteData(&gyroTxFrame.accAddress, &gyroRxFrame.accAddress, 15);
 }
 
 void accgyroDeviceReadGyro(void)
@@ -231,7 +231,7 @@ void accgyroDeviceReadGyro(void)
     gyroTxFrame.gyroAddress = INVENS_RM_GYRO_XOUT_H | 0x80;
 
     accelUpdate = false;
-    accgyroDMAReadWriteData(&gyroTxFrame.gyroAddress, &gyroRxFrame.gyroAddress, 7);
+    AccGyroDMAReadWriteData(&gyroTxFrame.gyroAddress, &gyroRxFrame.gyroAddress, 7);
 
 }
 
@@ -260,16 +260,16 @@ void accgyroDeviceCalibrate(int32_t *gyroData)
         gyroCal[idx] = gyroData[idx];
     }
     /*//mpu 6500+ has gyro offset. Faster than using the old fashioned way above
-    skipGyro = true;
+    skipGyro = 1;
 
-    accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_H, (uint8_t)(gyroData[0] >> 8));
-    accgyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_L, (uint8_t)(gyroData[0] & 0xFF));
-    accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_H, (uint8_t)(gyroData[1] >> 8));
-    accgyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_L, (uint8_t)(gyroData[1] & 0xFF));
-    accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_H, (uint8_t)(gyroData[2] >> 8));
-    accgyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_L, (uint8_t)(gyroData[2] & 0xFF));
+    AccGyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_H, (uint8_t)(gyroData[0] >> 8));
+    AccGyroVerifyWriteRegister(INVENS_RM_XG_OFFSET_L, (uint8_t)(gyroData[0] & 0xFF));
+    AccGyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_H, (uint8_t)(gyroData[1] >> 8));
+    AccGyroVerifyWriteRegister(INVENS_RM_YG_OFFSET_L, (uint8_t)(gyroData[1] & 0xFF));
+    AccGyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_H, (uint8_t)(gyroData[2] >> 8));
+    AccGyroVerifyWriteRegister(INVENS_RM_ZG_OFFSET_L, (uint8_t)(gyroData[2] & 0xFF));
 
-    skipGyro = false;
+    skipGyro = 0;
      */
 }
 

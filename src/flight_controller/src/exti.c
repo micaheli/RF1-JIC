@@ -14,3 +14,9 @@ void EXTI_Init(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, IRQn_Type IRQn, uint32_t 
     HAL_NVIC_SetPriority(IRQn, PreemptPriority, SubPriority);
     HAL_NVIC_EnableIRQ(IRQn);
 }
+
+void EXTI_Deinit(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, IRQn_Type IRQn)
+{
+    HAL_GPIO_DeInit(GPIOx, GPIO_Pin);
+    HAL_NVIC_DisableIRQ(IRQn);
+}

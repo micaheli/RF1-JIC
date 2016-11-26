@@ -35,7 +35,7 @@ typedef struct {
 paf_state InitPaf(float q, float r, float p, float intial_value);
 void PafUpdate(paf_state *state, float measurement);
 
-void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSeconds, uint32_t filterType);
+void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSeconds, uint32_t filterType, biquad_state *oldState);
 float BiquadUpdate(float sample, biquad_state *bQstate);
 
 

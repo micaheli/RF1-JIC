@@ -22,12 +22,7 @@ void NMI_Handler(void)
 */
 void HardFault_Handler(void)
 {
-	ZeroActuators(32000);
-    while (1) {
-		DoLed(0, 1);
-		DoLed(1, 1);
-		DoLed(2, 1);
-    }
+	ErrorHandler(HARD_FAULT);
 }
 
 /**
@@ -35,8 +30,7 @@ void HardFault_Handler(void)
 */
 void MemManage_Handler(void)
 {
-	ZeroActuators(32000);
-    while (1);
+	ErrorHandler(MEM_FAULT);
 }
 
 /**
@@ -44,8 +38,7 @@ void MemManage_Handler(void)
 */
 void BusFault_Handler(void)
 {
-	ZeroActuators(32000);
-    while (1);
+	ErrorHandler(BUS_FAULT);
 }
 
 /**
@@ -53,8 +46,7 @@ void BusFault_Handler(void)
 */
 void UsageFault_Handler(void)
 {
-	ZeroActuators(32000);
-    while (1);
+	ErrorHandler(USAGE_FAULT);
 }
 
 /**
@@ -103,17 +95,50 @@ void OTG_FS_IRQHandler(void)
     HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
 }
 
+void DMA1_Stream1_IRQHandler(void) {
+	HAL_NVIC_ClearPendingIRQ(DMA1_Stream1_IRQn);
+	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_1]);
+}
+
+void DMA1_Stream2_IRQHandler(void) {
+	HAL_NVIC_ClearPendingIRQ(DMA1_Stream2_IRQn);
+	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_2]);
+}
+
+void DMA1_Stream3_IRQHandler(void) {
+	HAL_NVIC_ClearPendingIRQ(DMA1_Stream3_IRQn);
+	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_3]);
+}
+
+void DMA1_Stream4_IRQHandler(void) {
+	HAL_NVIC_ClearPendingIRQ(DMA1_Stream4_IRQn);
+	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_4]);
+}
+
+//void DMA1_Stream5_IRQHandler(void) {
+//	HAL_NVIC_ClearPendingIRQ(DMA1_Stream5_IRQn);
+//	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_5]);
+//}
+
+void DMA1_Stream6_IRQHandler(void) {
+	HAL_NVIC_ClearPendingIRQ(DMA1_Stream6_IRQn);
+	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_6]);
+}
+
+void DMA1_Stream7_IRQHandler(void) {
+	HAL_NVIC_ClearPendingIRQ(DMA1_Stream7_IRQn);
+	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_7]);
+}
+
+void DMA2_Stream2_IRQHandler(void) {
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream2_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_2]);
+}
 
 void DMA2_Stream3_IRQHandler(void)
 {
     HAL_NVIC_ClearPendingIRQ(DMA2_Stream3_IRQn);
     HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_3]);
-}
-
-
-void DMA2_Stream2_IRQHandler(void) { //clear the IRQ and handle the DMA
-    HAL_NVIC_ClearPendingIRQ(DMA2_Stream2_IRQn);
-    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_2]);
 }
 
 void DMA2_Stream7_IRQHandler(void) {

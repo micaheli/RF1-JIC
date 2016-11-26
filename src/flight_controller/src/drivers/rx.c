@@ -71,7 +71,7 @@ inline void CheckFailsafe(void) {
 
 	if ((boardArmed) && (rx_timeout > 1000))
 	{
-		boardArmed = 0;
+		DisarmBoard();
 		ZeroActuators(32000); //immediately set actuators to disarmed position.
 	}
 }
@@ -92,7 +92,7 @@ inline void CheckFailsafe(void) {
 			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
 		}
 
-		boardArmed = 1;
+		ArmBoard();
 
 		//todo: make sure stick movement on these three axis are next to zero before setting centers.
 		if ( ABS((int32_t)rxData[PITCH] - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
@@ -108,7 +108,7 @@ inline void CheckFailsafe(void) {
 			if (latchFirstArm==1) {
 				latchFirstArm = 2;
 			}
-			boardArmed = 0;
+			DisarmBoard();
 			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_IDLE);
 		}
 
@@ -158,9 +158,17 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 	volatile uint32_t outChannel;
 
 	if ( (!skipRxMap) && (mainConfig.rcControlsConfig.channelMap[inChannel] <= MAXCHANNELS) )
-		outChannel = mainConfig.rcControlsConfig.channelMap[inChannel];
+	{
+		outChannel =mainConfig.rcControlsConfig.channelMap[inChannel];
+	}
+	else if ( mainConfig.rcControlsConfig.rcCalibrated != 1)
+	{
+		outChannel = inChannel;//not calibrated and no need to skip, send default
+	}
 	else
-		outChannel = inChannel;
+	{
+		outChannel = 15; //else dump to junk channel
+	}
 
 	if (1) // here is where we check which rx we are using probably use case
 	{
@@ -174,12 +182,13 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 
 void ProcessSpektrumPacket(uint32_t serialNumber)
 {
-	uint32_t spektrumChannel;
+	volatile uint32_t spektrumChannel;
 	uint32_t x;
 	uint32_t value;
-															   // Make sure this is very first thing done in function, and its called first on interrupt
+
+																													// Make sure this is very first thing done in function, and its called first on interrupt
 	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SPEKTRUM_FRAME_SIZE);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
-															   // We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
+															   	   	   	   	   	   	   	   	   	   	   	   	   	   	// We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
 
 	for (x = 2; x < 16; x += 2) {
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
@@ -194,14 +203,14 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	//Check for vtx data
 	if (copiedBufferData[12] == 0xE0) { 
 		vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
-		vtxData.vtxBand = (copiedBufferData[13] >> 5) & 0x07;
+		vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
 	}
       
 	      //Check channel slot 7 for vtx power, pit, and region data
 	if (copiedBufferData[14] == 0xE0) { 
-		vtxData.vtxPower = copiedBufferData[15] & 0x03;
+		vtxData.vtxPower  = copiedBufferData[15] & 0x03;
 		vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
-		vtxData.vtxPit = (copiedBufferData[15] >> 4) & 0x01;
+		vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
 	}
 
 	InlineCollectRcCommand();
@@ -292,7 +301,7 @@ inline void InlineCollectRcCommand (void) {
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
 		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis]) {
 			trueRcCommandF[axis]   = InlineConstrainf ( rangedRx, -1, 1);
-			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis]);
+			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis], axis);
 		} else {
 			// no need to calculate if movement is below deadband
 			trueRcCommandF[axis]   = 0;
@@ -305,12 +314,23 @@ inline void InlineCollectRcCommand (void) {
 }
 
 
-inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo) {
+inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo, uint32_t axis) {
+
+	float maxOutput, maxOutputMod, returnValue;
+
+	maxOutputMod = 0.01;
 
 	switch (curveToUse) {
 
+		case SKITZO_PLUS_EXPO: //return skitzo expo after acro_plus is applied
+			maxOutput = (1 + 1  * mainConfig.rcControlsConfig.acroPlus[axis] ); //max output possible is treated as a value higher than one
+			maxOutputMod = maxOutput * 0.01;
+			returnValue = (maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1)) * rcCommand; //proper expo applied, now we need to scale to -1 to 1
+			return (InlineChangeRangef(returnValue, ABS(maxOutput), -ABS(maxOutput), 1.0, -1.0));
+			break;
+
 		case SKITZO_EXPO:
-			return ((1 + 0.01 * expo * (rcCommand * rcCommand - 1)) * rcCommand); // KALYN listen to your ide, IT SAID USE () :)  This isn't some lame language
+			return ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1)) * rcCommand);
 			break;
 
 		case TARANIS_EXPO:

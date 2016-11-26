@@ -284,6 +284,9 @@ typedef struct {
 	uint32_t				dmaMode;
 	uint32_t				dmaPriority;
 	uint32_t				fifoMode;
+	uint32_t				fifoThreshold;
+	uint32_t				MemBurst;
+	uint32_t				PeriphBurst;
 	uint32_t				dmaIRQn;
 	uint32_t				dmaHandle;
 } board_dma;
@@ -323,7 +326,11 @@ typedef struct {
 	uint32_t				timChannel;
 	uint32_t				timCCR;
 	uint32_t				polarity;
-	uint32_t				motorDma;
+	uint32_t				dmaHandle;
+	uint32_t				timerHandle;
+	uint32_t				Dma;
+	uint32_t				CcDmaHandle;
+	uint32_t				timerIRQn;
 } motor_type;
 
 
@@ -353,6 +360,8 @@ typedef struct {
 	board_serial			serials[6];
 
 	board_dma				dmas[16];
+
+	board_dma				dmasMotor[16];
 
 } board_type;
 
@@ -410,6 +419,7 @@ extern serial_type         usarts[];
 extern DMA_Stream_TypeDef *dmaStream[];
 extern UART_HandleTypeDef  uartHandles[];
 extern DMA_HandleTypeDef   dmaHandles[];
+extern TIM_HandleTypeDef   pwmTimers[];
 
 extern unsigned char serialTxBuffer[][TXBUFFERSIZE];
 extern unsigned char serialRxBuffer[][RXBUFFERSIZE];

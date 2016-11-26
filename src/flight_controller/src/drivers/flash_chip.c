@@ -259,7 +259,7 @@ static void SpiInit(uint32_t baudRatePrescaler)
     flash_spi.Init.CRCPolynomial = 7;
 
     if (HAL_SPI_Init(&flash_spi) != HAL_OK) {
-        ErrorHandler();
+        ErrorHandler(FLASH_SPI_INIT_FAILIURE);
     }
 
     HAL_GPIO_WritePin(FLASH_SPI_CS_GPIO_Port, FLASH_SPI_CS_GPIO_Pin, GPIO_PIN_SET);

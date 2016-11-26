@@ -28,7 +28,7 @@ void PafUpdate(paf_state *state, float measurement)
 
 
 
-void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSeconds, uint32_t filterType)
+void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSeconds, uint32_t filterType, biquad_state *oldState)
 {
 
 	float samplingRate;
@@ -69,10 +69,10 @@ void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSe
 
     // zero initial samples
     //todo: make updateable on the fly
-    newState->x1 = 0;
-    newState->x2 = 0;
-    newState->y1 = 0;
-    newState->y2 = 0;
+    newState->x1 =  oldState->x1;
+    newState->x2 =  oldState->x2;
+    newState->y1 =  oldState->y1;
+    newState->y2 =  oldState->y1;
 
 }
 

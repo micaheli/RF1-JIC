@@ -46,6 +46,7 @@
 #include "drivers/invensense_device.h"
 #include "drivers/invensense_register_map.h"
 #include "drivers/dmaShenanigans.h"
+#include "drivers/esc_1wire.h"
 
 
 //config
@@ -55,4 +56,28 @@
 #include <arm_math.h>
 
 void BoardInit(void);
-void ErrorHandler(void);
+void ErrorHandler(uint32_t error);
+
+#define GYRO_INIT_FAILIURE                0
+#define SERIAL_INIT_FAILIURE              1
+#define DMA_INIT_FAILIURE                 2
+#define FLASH_INIT_FAILIURE               3
+#define WS2812_LED_INIT_FAILIURE          4
+#define FLASH_SPI_INIT_FAILIURE           5
+#define GYRO_SETUP_COMMUNICATION_FAILIURE 6
+#define SERIAL_HALF_DUPLEX_INIT_FAILURE   7
+#define SERIAL_INIT_FAILURE               8
+#define MSP_DMA_GYRO_RX_INIT_FAILIURE     9
+#define MSP_DMA_GYRO_TX_INIT_FAILIURE     10
+#define MSP_DMA_SPI1_RX_INIT_FAILIURE     11
+#define MSP_DMA_SPI1_TX_INIT_FAILIURE     12
+#define MSP_DMA_SPI2_RX_INIT_FAILIURE     13
+#define MSP_DMA_SPI2_TX_INIT_FAILIURE     14
+#define MSP_DMA_SPI3_RX_INIT_FAILIURE     15
+#define MSP_DMA_SPI3_TX_INIT_FAILIURE     16
+#define HARD_FAULT                        17
+#define MEM_FAULT                         18
+#define BUS_FAULT                         19
+#define USAGE_FAULT                       20
+#define GYRO_SPI_INIT_FAILIURE            21
+

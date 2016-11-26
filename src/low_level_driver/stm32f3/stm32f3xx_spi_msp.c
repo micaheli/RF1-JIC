@@ -78,7 +78,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
         dma_gyro_rx.Init.Mode = DMA_NORMAL;
         dma_gyro_rx.Init.Priority = DMA_PRIORITY_VERY_HIGH;
         if (HAL_DMA_Init(&dma_gyro_rx) != HAL_OK) {
-            ErrorHandler();
+            ErrorHandler(MSP_DMA_GYRO_RX_INIT_FAILIURE);
         }
 
         __HAL_LINKDMA(hspi, hdmarx, dma_gyro_rx);
@@ -92,7 +92,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
         dma_gyro_tx.Init.Mode = DMA_NORMAL;
         dma_gyro_tx.Init.Priority = DMA_PRIORITY_VERY_HIGH;
         if (HAL_DMA_Init(&dma_gyro_tx) != HAL_OK) {
-            ErrorHandler();
+            ErrorHandler(MSP_DMA_GYRO_TX_INIT_FAILIURE);
         }
 
         __HAL_LINKDMA(hspi, hdmatx, dma_gyro_tx);
