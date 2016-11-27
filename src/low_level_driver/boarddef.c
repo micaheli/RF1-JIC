@@ -208,7 +208,7 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[0].Dma].dmaPeriphInc       = DMA_PINC_DISABLE;
 	board.dmasMotor[board.motors[0].Dma].dmaMemInc          = DMA_MINC_ENABLE;
 	board.dmasMotor[board.motors[0].Dma].dmaPeriphAlignment = DMA_PDATAALIGN_WORD;
-	board.dmasMotor[board.motors[0].Dma].dmaMemAlignment    = DMA_MDATAALIGN_HALFWORD;
+	board.dmasMotor[board.motors[0].Dma].dmaMemAlignment    = DMA_MDATAALIGN_WORD;
 	board.dmasMotor[board.motors[0].Dma].dmaMode            = DMA_NORMAL;
 	board.dmasMotor[board.motors[0].Dma].dmaPriority        = DMA_PRIORITY_HIGH;
 	board.dmasMotor[board.motors[0].Dma].fifoMode           = DMA_FIFOMODE_ENABLE;
@@ -238,7 +238,7 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[1].Dma].dmaPeriphInc       = DMA_PINC_DISABLE;
 	board.dmasMotor[board.motors[1].Dma].dmaMemInc          = DMA_MINC_ENABLE;
 	board.dmasMotor[board.motors[1].Dma].dmaPeriphAlignment = DMA_PDATAALIGN_WORD;
-	board.dmasMotor[board.motors[1].Dma].dmaMemAlignment    = DMA_MDATAALIGN_HALFWORD;
+	board.dmasMotor[board.motors[1].Dma].dmaMemAlignment    = DMA_MDATAALIGN_WORD;
 	board.dmasMotor[board.motors[1].Dma].dmaMode            = DMA_NORMAL;
 	board.dmasMotor[board.motors[1].Dma].dmaPriority        = DMA_PRIORITY_HIGH;
 	board.dmasMotor[board.motors[1].Dma].fifoMode           = DMA_FIFOMODE_ENABLE;
@@ -269,7 +269,7 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[2].Dma].dmaPeriphInc       = DMA_PINC_DISABLE;
 	board.dmasMotor[board.motors[2].Dma].dmaMemInc          = DMA_MINC_ENABLE;
 	board.dmasMotor[board.motors[2].Dma].dmaPeriphAlignment = DMA_PDATAALIGN_WORD;
-	board.dmasMotor[board.motors[2].Dma].dmaMemAlignment    = DMA_MDATAALIGN_HALFWORD;
+	board.dmasMotor[board.motors[2].Dma].dmaMemAlignment    = DMA_MDATAALIGN_WORD;
 	board.dmasMotor[board.motors[2].Dma].dmaMode            = DMA_NORMAL;
 	board.dmasMotor[board.motors[2].Dma].dmaPriority        = DMA_PRIORITY_HIGH;
 	board.dmasMotor[board.motors[2].Dma].fifoMode           = DMA_FIFOMODE_ENABLE;
@@ -300,7 +300,7 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[3].Dma].dmaPeriphInc       = DMA_PINC_DISABLE;
 	board.dmasMotor[board.motors[3].Dma].dmaMemInc          = DMA_MINC_ENABLE;
 	board.dmasMotor[board.motors[3].Dma].dmaPeriphAlignment = DMA_PDATAALIGN_WORD;
-	board.dmasMotor[board.motors[3].Dma].dmaMemAlignment    = DMA_MDATAALIGN_HALFWORD;
+	board.dmasMotor[board.motors[3].Dma].dmaMemAlignment    = DMA_MDATAALIGN_WORD;
 	board.dmasMotor[board.motors[3].Dma].dmaMode            = DMA_NORMAL;
 	board.dmasMotor[board.motors[3].Dma].dmaPriority        = DMA_PRIORITY_HIGH;
 	board.dmasMotor[board.motors[3].Dma].fifoMode           = DMA_FIFOMODE_ENABLE;

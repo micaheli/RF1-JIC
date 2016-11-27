@@ -11,7 +11,32 @@ typedef struct {
 	uint32_t ccr;
 } motor_output_array;
 
+
+void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz);
+
+
 //motor_output_array motorOutputArray[MAX_MOTOR_NUMBER];
+
+void DeinitActuators(void)  {
+	uint32_t motorNum;
+	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+		if (board.motors[motorNum].enabled)
+		{
+			if (board.motors[motorNum].polarity == TIM_OCPOLARITY_LOW)
+			{
+				inlineDigitalLo(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
+			}
+			else
+			{
+				inlineDigitalHi(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
+			}
+
+			HAL_GPIO_DeInit(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
+			HAL_TIM_Base_DeInit(&pwmTimers[board.motors[motorNum].timerHandle]);
+			HAL_TIM_PWM_DeInit(&pwmTimers[board.motors[motorNum].timerHandle]);
+		}
+	}
+}
 
 void InitActuators(void) {
 

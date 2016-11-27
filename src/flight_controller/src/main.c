@@ -43,6 +43,8 @@ int main(void)
 
     HandleFcStartupReg();
 
+    //InitDmaInputOnMotors(board.motors[0]);
+    //DelayMs(100000);
     InitBuzzer();
     InitLeds();
     InitUsb();
@@ -86,6 +88,7 @@ int main(void)
 void ErrorHandler(uint32_t error)
 {
 	switch (error) {
+		case TIMER_INPUT_INIT_FAILIURE:
 		case MSP_DMA_GYRO_RX_INIT_FAILIURE:
 		case MSP_DMA_GYRO_TX_INIT_FAILIURE:
 		case MSP_DMA_SPI1_RX_INIT_FAILIURE:

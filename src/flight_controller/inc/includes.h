@@ -80,4 +80,5 @@ void ErrorHandler(uint32_t error);
 #define BUS_FAULT                         19
 #define USAGE_FAULT                       20
 #define GYRO_SPI_INIT_FAILIURE            21
+#define TIMER_INPUT_INIT_FAILIURE         22
 

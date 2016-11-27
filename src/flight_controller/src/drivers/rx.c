@@ -318,6 +318,7 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 
 	float maxOutput, maxOutputMod, returnValue;
 
+	maxOutput    = 1;
 	maxOutputMod = 0.01;
 
 	switch (curveToUse) {

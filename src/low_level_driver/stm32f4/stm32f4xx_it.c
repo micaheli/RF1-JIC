@@ -95,6 +95,8 @@ void OTG_FS_IRQHandler(void)
     HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
 }
 
+
+
 void DMA1_Stream1_IRQHandler(void) {
 	HAL_NVIC_ClearPendingIRQ(DMA1_Stream1_IRQn);
 	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_1]);
