@@ -68,12 +68,15 @@ void OutputSerialDma(uint8_t *serialOutBuffer, uint32_t outputLength, motor_type
 	//frame, data bits * 8, no parity, 1 stop bit; between 10 and 12 bits per frame. We store that into a buffer
 
     for (outputIndex = 0; outputIndex < outputLength; outputIndex++) { //Send Data MSB
-        WS2812_IO_framedata[bufferIdx++] = zeroPulseWidth[actuator.timerHandle];//frame start
+        WS2812_IO_framedata[bufferIdx++] = zeroPulseWidth[actuator.timerHandle];//idle
+        WS2812_IO_framedata[bufferIdx++] = zeroPulseWidth[actuator.timerHandle];//idle
+        WS2812_IO_framedata[bufferIdx++] = onePulseWidth[actuator.timerHandle];//frame start
         for (bitIdx = bitsPerFrame; bitIdx >= 0; bitIdx--) {
             WS2812_IO_framedata[bufferIdx++] = (serialOutBuffer[outputIndex] & (1 << bitIdx)) ? onePulseWidth[actuator.timerHandle] : zeroPulseWidth[actuator.timerHandle]; //load data into framedata one bit at a time
         }
-        WS2812_IO_framedata[bufferIdx++] = onePulseWidth[actuator.timerHandle]; //stop bit
-        WS2812_IO_framedata[bufferIdx++] = onePulseWidth[actuator.timerHandle]; //idle
+        WS2812_IO_framedata[bufferIdx++] = zeroPulseWidth[actuator.timerHandle]; //stop bit
+        //WS2812_IO_framedata[bufferIdx++] = zeroPulseWidth[actuator.timerHandle]; //idle
+        //WS2812_IO_framedata[bufferIdx++] = zeroPulseWidth[actuator.timerHandle]; //idle
     }
 
 	HAL_TIM_PWM_Stop(&pwmTimers[actuator.timerHandle], actuator.timChannel);
@@ -188,7 +191,7 @@ void InitDmaOutputOnMotors(uint32_t usedFor) {
 		//52 ticks is a 1 and 0 ticks is a 0 for serial
 		timerHz   = 1000000; //1 MHz frequency is perfectly fine for 19200 Baud, but not perfect, 52.08 cycles before overrun. We can reset the timer after XX cycles though.
 		pwmHz     = 19200;   //baudrate
-		onePulse  = 52;
+		onePulse  = 54;
 		zeroPulse = 0;
 	} else if (usedFor == DMA_OUTPUT_DSHOT) {
 		timerHz   = 24000000;
@@ -268,10 +271,10 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.timerHandle], &sMasterConfig);
 
 	sConfigOC.OCMode      = TIM_OCMODE_PWM1;
-	sConfigOC.Pulse       = 55;
+	sConfigOC.Pulse       = 0;
 	sConfigOC.OCPolarity  = polarityForDma;
 	//sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
-	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
+	sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
 
 	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.timerHandle], &sConfigOC, actuator.timChannel);
 

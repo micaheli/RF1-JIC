@@ -108,11 +108,10 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	}
 
 	// Initialize GPIO
-
-	GPIO_InitStruct.Pin = actuator.pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Pin       = actuator.pin;
+	GPIO_InitStruct.Pull      = (actuator.polarity == TIM_OCPOLARITY_LOW) ? GPIO_PULLDOWN : GPIO_PULLUP;
+	GPIO_InitStruct.Mode      = actuator.AF;
+	GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
 	GPIO_InitStruct.Alternate = actuator.AF;
 	HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStruct);
 
@@ -122,10 +121,10 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	// and to ensure initialization happens correctly, zero the handle
 	memset(&pwmTimers[actuator.timerHandle], 0, sizeof(pwmTimers[actuator.timerHandle]));
 
-	pwmTimers[actuator.timerHandle].Instance = timers[actuator.timer];
-	pwmTimers[actuator.timerHandle].Init.Prescaler = timerPrescaler;
-	pwmTimers[actuator.timerHandle].Init.CounterMode = TIM_COUNTERMODE_UP;
-	pwmTimers[actuator.timerHandle].Init.Period = (timerHz / pwmHz) - 1;
+	pwmTimers[actuator.timerHandle].Instance           = timers[actuator.timer];
+	pwmTimers[actuator.timerHandle].Init.Prescaler     = timerPrescaler;
+	pwmTimers[actuator.timerHandle].Init.CounterMode   = TIM_COUNTERMODE_UP;
+	pwmTimers[actuator.timerHandle].Init.Period        = (timerHz / pwmHz) - 1;
 	pwmTimers[actuator.timerHandle].Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]);
 

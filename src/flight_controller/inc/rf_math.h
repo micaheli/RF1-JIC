@@ -20,6 +20,7 @@
   #define CONSTRAIN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #endif
 
-float InlineConstrainf(float amt, float low, float high);
-float InlineChangeRangef(float oldValue, float oldMax, float oldMin, float newMax, float newMin);
-float CalculateSD(float data[]);
+extern uint8_t BitReverse8(uint8_t byteToConvert);
+extern float InlineConstrainf(float amt, float low, float high);
+extern float InlineChangeRangef(float oldValue, float oldMax, float oldMin, float newMax, float newMin);
+extern float CalculateSD(float data[]);

@@ -20,16 +20,16 @@ int OneWireMain(void) {
 	uint8_t serialOutBuffer[10];
 
 	while (1) {
-		serialOutBuffer[0] = 'R';
-		serialOutBuffer[1] = 'A';
-		serialOutBuffer[2] = 'C';
-		serialOutBuffer[3] = 'E';
-		serialOutBuffer[4] = 'F';
-		serialOutBuffer[5] = 'L';
-		serialOutBuffer[6] = 'I';
-		serialOutBuffer[7] = 'G';
-		serialOutBuffer[8] = 'H';
-		serialOutBuffer[9] = 'T';
+		serialOutBuffer[0] = BitReverse8(0);
+		serialOutBuffer[1] = BitReverse8(1);
+		serialOutBuffer[2] = BitReverse8(2);
+		serialOutBuffer[3] = BitReverse8(3);
+		serialOutBuffer[4] = BitReverse8(4);
+		serialOutBuffer[5] = BitReverse8(5);
+		serialOutBuffer[6] = BitReverse8(6);
+		serialOutBuffer[7] = BitReverse8('C');
+		serialOutBuffer[8] = BitReverse8('A');
+		serialOutBuffer[9] = BitReverse8('T');
 		outputLength = 10;
 		OutputSerialDma((uint8_t *)serialOutBuffer, outputLength, board.motors[0]);
 		OutputSerialDma((uint8_t *)serialOutBuffer, outputLength, board.motors[1]);
