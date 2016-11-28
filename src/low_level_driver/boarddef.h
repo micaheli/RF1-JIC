@@ -324,6 +324,8 @@ typedef struct {
 	uint32_t				port;
 	uint32_t				AF;	
 	uint32_t				timChannel;
+	uint32_t				timChannelC;
+	uint32_t				activeTim;
 	uint32_t				timCCR;
 	uint32_t				polarity;
 	uint32_t				dmaHandle;

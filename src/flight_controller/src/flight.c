@@ -405,9 +405,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 			kdAverage[PITCH] /= (khzDivider * 10);
 
 			//experimental auto filter
-			mainConfig.filterConfig[YAW].kd.r   = InlineChangeRangef(ABS(kdAverage[YAW]), MAX_KD, 0, 70, 40);
-			mainConfig.filterConfig[ROLL].kd.r  = InlineChangeRangef(ABS(kdAverage[ROLL]), MAX_KD, 0, 70, 40);
-			mainConfig.filterConfig[PITCH].kd.r = InlineChangeRangef(ABS(kdAverage[PITCH]), MAX_KD, 0, 70, 40);
+			mainConfig.filterConfig[YAW].kd.r   = InlineChangeRangef(ABS(kdAverage[YAW]), MAX_KD, 0, 65, 40);
+			mainConfig.filterConfig[ROLL].kd.r  = InlineChangeRangef(ABS(kdAverage[ROLL]), MAX_KD, 0, 65, 40);
+			mainConfig.filterConfig[PITCH].kd.r = InlineChangeRangef(ABS(kdAverage[PITCH]), MAX_KD, 0, 65, 40);
 
 			kdAverage[YAW]   = 0;
 			kdAverage[ROLL]  = 0;

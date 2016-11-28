@@ -4,13 +4,6 @@ volatile uint32_t disarmPulseValue;
 volatile uint32_t idlePulseValue;
 volatile uint32_t pulseValueRange;
 
-typedef struct {
-	unsigned char active;
-	uint32_t timer;
-	uint32_t timerChannel;
-	uint32_t ccr;
-} motor_output_array;
-
 
 void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz);
 
@@ -85,7 +78,7 @@ void InitActuators(void) {
 	idleUs = ((walledUs - disarmUs) * (mainConfig.mixerConfig.idlePercent * 0.01) ) + disarmUs;
 
 	disarmPulseValue = ((uint32_t)(disarmUs * timerHz)) / 1000000;
-	idlePulseValue   = ((uint32_t)(idleUs * timerHz)) / 1000000;
+	idlePulseValue   = ((uint32_t)(idleUs * timerHz))   / 1000000;
 	walledPulseValue = ((uint32_t)(walledUs * timerHz)) / 1000000;
 
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
@@ -101,6 +94,13 @@ void InitActuators(void) {
 	// Start the timers
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
 		if (board.motors[motorNum].enabled) {
+//			HAL_TIM_Base_Start(&pwmTimers[board.motors[motorNum].timerHandle]);
+//			HAL_TIM_PWM_Start(&pwmTimers[board.motors[motorNum].timerHandle], board.motors[motorNum].timChannel);
+
+			HAL_TIM_Base_Init(&pwmTimers[board.motors[motorNum].timerHandle]);
+
+			HAL_TIM_PWM_Init(&pwmTimers[board.motors[motorNum].timerHandle]);
+
 			HAL_TIM_Base_Start(&pwmTimers[board.motors[motorNum].timerHandle]);
 			HAL_TIM_PWM_Start(&pwmTimers[board.motors[motorNum].timerHandle], board.motors[motorNum].timChannel);
 		}
@@ -133,30 +133,28 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	}
 
 	// Initialize GPIO
+	HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
+
 	GPIO_InitStruct.Pin       = actuator.pin;
 	GPIO_InitStruct.Pull      = (actuator.polarity == TIM_OCPOLARITY_LOW) ? GPIO_PULLDOWN : GPIO_PULLUP;
-	GPIO_InitStruct.Mode      = actuator.AF;
+	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
 	GPIO_InitStruct.Alternate = actuator.AF;
+
 	HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStruct);
 
 	// Initialize timer
-
-	// TIM_Handle's _should_ be preserved in a global state, since we don't,
-	// and to ensure initialization happens correctly, zero the handle
-	memset(&pwmTimers[actuator.timerHandle], 0, sizeof(pwmTimers[actuator.timerHandle]));
-
 	pwmTimers[actuator.timerHandle].Instance           = timers[actuator.timer];
 	pwmTimers[actuator.timerHandle].Init.Prescaler     = timerPrescaler;
 	pwmTimers[actuator.timerHandle].Init.CounterMode   = TIM_COUNTERMODE_UP;
 	pwmTimers[actuator.timerHandle].Init.Period        = (timerHz / pwmHz) - 1;
 	pwmTimers[actuator.timerHandle].Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]);
+//	HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]);
 
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
 	HAL_TIM_ConfigClockSource(&pwmTimers[actuator.timerHandle], &sClockSourceConfig);
 
-	HAL_TIM_PWM_Init(&pwmTimers[actuator.timerHandle]);
+//	HAL_TIM_PWM_Init(&pwmTimers[actuator.timerHandle]);
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;

@@ -22,7 +22,8 @@ int OneWireMain(void) {
 
 	outputLength=sizeof("RACEFLIGHT FTW!!!");
 
-	InitDmaInputOnMotors(board.motors[0]);
+	InitOdd(board.motors[0]);
+	//InitDmaInputOnMotors(board.motors[0]);
 
 	while (1) {
 		memcpy(serialOutBuffer,"RACEFLIGHT FTW!!!",outputLength);

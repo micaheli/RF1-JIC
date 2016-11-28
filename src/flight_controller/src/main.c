@@ -56,6 +56,7 @@ int main(void)
     InitMixer();
     InitFlightCode();
     InitPid();
+    DeinitActuators();
     InitActuators();
 //    Ws2812LedInit();
     ZeroActuators(32000); //output actuators to idle after timers are stable;
@@ -71,7 +72,7 @@ int main(void)
     buzzerStatus.status = STATE_BUZZER_OFF;
     ledStatus.status = LEDS_SLOW_BLINK;
 
-    OneWireInit();
+//    OneWireInit();
 
     while (1) {
 

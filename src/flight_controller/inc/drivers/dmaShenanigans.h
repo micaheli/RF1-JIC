@@ -19,7 +19,7 @@ typedef struct {
 
 extern ws2812Led_t WS2812_IO_colors[];
 
-
+extern void InitOdd(motor_type actuator);
 extern void InitDmaInputOnMotors(motor_type actuator);
 extern void InitDmaOutputOnMotors(uint32_t usedFor);
 extern void Ws2812LedInit(void);

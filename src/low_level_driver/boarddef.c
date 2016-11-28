@@ -194,8 +194,10 @@ void getBoardHardwareDefs(void)
 	board.motors[0].port        = MOTOR1_GPIO;
 	board.motors[0].AF          = MOTOR1_ALTERNATE;
 	board.motors[0].timChannel  = MOTOR1_TIM_CH;
+	board.motors[0].timChannelC = TIM_CHANNEL_1;
+	board.motors[0].activeTim	= HAL_TIM_ACTIVE_CHANNEL_3;
 	board.motors[0].timCCR      = MOTOR1_TIM_CCR;
-	board.motors[0].polarity    = MOTOR2_POLARITY;
+	board.motors[0].polarity    = MOTOR1_POLARITY;
 	board.motors[0].timerHandle = 0;
 	board.motors[0].Dma         = ENUM_DMA1_STREAM_7;
 	board.motors[0].CcDmaHandle = TIM_DMA_ID_CC3;
@@ -224,6 +226,8 @@ void getBoardHardwareDefs(void)
 	board.motors[1].port        = MOTOR2_GPIO;
 	board.motors[1].AF          = MOTOR2_ALTERNATE;
 	board.motors[1].timChannel  = MOTOR2_TIM_CH;
+	board.motors[1].timChannelC = TIM_CHANNEL_2;
+	board.motors[1].activeTim	= HAL_TIM_ACTIVE_CHANNEL_4;
 	board.motors[1].timCCR      = MOTOR2_TIM_CCR;
 	board.motors[1].polarity    = MOTOR2_POLARITY;
 	board.motors[1].timerHandle = 1;
@@ -255,6 +259,8 @@ void getBoardHardwareDefs(void)
 	board.motors[2].port        = MOTOR3_GPIO;
 	board.motors[2].AF          = MOTOR3_ALTERNATE;
 	board.motors[2].timChannel  = MOTOR3_TIM_CH;
+	board.motors[2].timChannelC = TIM_CHANNEL_2;
+	board.motors[2].activeTim	= HAL_TIM_ACTIVE_CHANNEL_4;
 	board.motors[2].timCCR      = MOTOR3_TIM_CCR;
 	board.motors[2].polarity    = MOTOR3_POLARITY;
 	board.motors[2].timerHandle = 2;
@@ -286,6 +292,8 @@ void getBoardHardwareDefs(void)
 	board.motors[3].port        = MOTOR4_GPIO;
 	board.motors[3].AF          = MOTOR4_ALTERNATE;
 	board.motors[3].timChannel  = MOTOR4_TIM_CH;
+	board.motors[3].timChannelC = TIM_CHANNEL_1;
+	board.motors[3].activeTim	= HAL_TIM_ACTIVE_CHANNEL_3;
 	board.motors[3].timCCR      = MOTOR4_TIM_CCR;
 	board.motors[3].polarity    = MOTOR4_POLARITY;
 	board.motors[3].timerHandle = 3;

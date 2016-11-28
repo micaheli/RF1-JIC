@@ -563,7 +563,7 @@ def configure_target(TARGET):
     INCLUDES = " ".join("-I" + include for include in INCLUDE_DIRS)
 
     LTO_FLAGS = "-flto -fuse-linker-plugin"
-    DEBUG_FLAGS = "-ggdb3 -DDEBUG -O0"
+    DEBUG_FLAGS = "-ggdb3 -DDEBUG -Og"
 
     CFLAGS = " ".join([
         ARCH_FLAGS,
