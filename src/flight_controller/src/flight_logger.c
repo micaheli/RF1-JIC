@@ -179,6 +179,10 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[], float dpsGy
 			InlineWrite16To8(  (int16_t)(motorOutput[2]          * 10000) ); //56
 			InlineWrite16To8(  (int16_t)(motorOutput[3]          * 10000) ); //58
 
+			InlineWrite16To8(  (int16_t)(accNoise[2]             * 1000) ); //60
+			InlineWrite16To8(  (int16_t)(accNoise[3]             * 1000) ); //62
+			InlineWrite16To8(  (int16_t)(accNoise[4]             * 1000) ); //64
+
 			FinishBlock(64);
 
 		}

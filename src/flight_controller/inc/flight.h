@@ -3,6 +3,7 @@
 extern volatile uint32_t boardArmed, calibrateMotors, fullKiLatched;
 extern float pitchAttitude, rollAttitude, yawAttitude;
 extern volatile uint32_t SKIP_GYRO;
+extern float accNoise[];
 
 enum { CALIBRATE_BOARD_FAILED = 0, CALIBRATE_BOARD_UPRIGHT = 1, CALIBRATE_BOARD_INVERTED = 2, };
 
@@ -15,6 +16,7 @@ void ComplementaryFilterUpdateAttitude(void);
 void InitFlightCode(void);
 void InlineInitGyroFilters(void);
 void InlineInitKdFilters(void);
+void InlineInitSpectrumNoiseFilter(void);
 void InlineInitAccFilters(void);
 void InlineFlightCode(float dpsGyroArray[]);
 void InlineUpdateAttitude(float geeForceAccArray[]);

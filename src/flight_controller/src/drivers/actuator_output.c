@@ -68,7 +68,8 @@ void InitActuators(void) {
 			disarmUs  = 5;
 			walledUs  = 22;
 			pwmHz     = 32000;
-			timerHz   = 48000000;
+			timerHz   = 48000000; // full resolution
+			//timerHz   = 12000000; // 1/4 resolution
 			break;
 	}
 

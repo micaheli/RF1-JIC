@@ -7,6 +7,8 @@ volatile unsigned char isRxDataNew;
 volatile uint32_t disarmCount = 0, latchFirstArm = 0;
 uint32_t usingSpektrum = 0; //only works if we are ONLY using Spektrum. Not sure why we would ever use more than one type of RX at a time.
 
+static uint32_t packetTime = 11;
+
 uint32_t rxData[MAXCHANNELS];
 
 uint32_t skipRxMap = 0;
@@ -63,6 +65,7 @@ unsigned char copiedBufferData[RXBUFFERSIZE];
 volatile uint32_t rx_timeout=0;
 uint32_t spekPhase=1;
 uint32_t ignoreEcho = 0;
+
 
 inline void CheckFailsafe(void) {
 
@@ -213,6 +216,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
 	}
 
+	packetTime = 11;
 	InlineCollectRcCommand();
 	RxUpdate();
 }
@@ -253,6 +257,7 @@ void ProcessSbusPacket(uint32_t serialNumber)
 		if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) ) {
 			rx_timeout = 0;
 		}
+		packetTime = 9;
 		InlineCollectRcCommand();
 		RxUpdate();
 	} else {
@@ -324,7 +329,7 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 	switch (curveToUse) {
 
 		case SKITZO_PLUS_EXPO: //return skitzo expo after acro_plus is applied
-			maxOutput = (1 + 1  * mainConfig.rcControlsConfig.acroPlus[axis] ); //max output possible is treated as a value higher than one
+			maxOutput = (1 + (1  * mainConfig.rcControlsConfig.acroPlus[axis]) ); //max output possible is treated as a value higher than one
 			maxOutputMod = maxOutput * 0.01;
 			returnValue = (maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1)) * rcCommand; //proper expo applied, now we need to scale to -1 to 1
 			return (InlineChangeRangef(returnValue, ABS(maxOutput), -ABS(maxOutput), 1.0, -1.0));
@@ -353,7 +358,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     static int32_t factor = 0;
     int32_t channel;
 
-    int32_t smoothingInterval = 352; //todo: calculate this number to be number of loops between PID loops
+    int32_t smoothingInterval = (32 * packetTime); //todo: calculate this number to be number of loops between PID loops
 	//88  for spektrum at  8 KHz loop time
 	//264 for spektrum at 24 KHz loop time
 	//352 for spektrum at 32 KHz loop time
