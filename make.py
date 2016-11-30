@@ -93,6 +93,10 @@ TargetConfig = namedtuple('TargetConfig', [
     'cflags', 'asmflags', 'ldflags', 'useColor'
 ])
 
+excluded_files = [
+    ".*_template.c",
+]
+
 def configure_target(TARGET):
     # required features
     FEATURES = []
@@ -132,6 +136,7 @@ def configure_target(TARGET):
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
+        STM32F4_ARCH_FLAGS_ADD = ""
 
     elif TARGET == "stm32f405xx_rfbl":
         PROJECT = "boot_loader"
@@ -139,7 +144,8 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
+        STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f405xx_rfbll":
         PROJECT = "recovery_loader"
@@ -147,7 +153,8 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
+        STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f411xe":
         PROJECT = "flight_controller"
@@ -439,7 +446,7 @@ def configure_target(TARGET):
         STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
     else:
         STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET
-        STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
+        STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant" + " " + STM32F4_ARCH_FLAGS_ADD
 
     STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=25000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7 -D" + TARGET
     STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
@@ -510,12 +517,15 @@ def configure_target(TARGET):
         INCLUDE_DIRS.append("src/flight_controller/inc/input")
         SOURCE_DIRS.append("src/flight_controller/src/input")
         FEATURES.extend(["esc_1wire", "leds", "dmaShenanigans", "actuator_output", "buzzer", "flash_chip", "mpu_icm_device/spi", "rx", "serial", "spektrumTelemetry"])
+        
     elif PROJECT == "esc":
         FEATURES.extend(["leds"])
     elif PROJECT == "boot_loader":
         FEATURES.extend(["leds"])
+        excluded_files.append("stm32f4xx_spi_msp.c")
     elif PROJECT == "recovery_loader":
         FEATURES.extend(["leds"])
+        excluded_files.append("stm32f4xx_spi_msp.c")
     else:
         print("ERROR: NOT VALID PROJECT TYPE, CHECK MAKE FILE CODE", file=sys.stderr)
         sys.exit(1)
@@ -631,10 +641,9 @@ size_command = "arm-none-eabi-size output/{OUTPUT_NAME}.elf"
 copy_obj_command = "arm-none-eabi-objcopy -O binary output/{OUTPUT_NAME}.elf output/{OUTPUT_NAME}.bin"
 
 
-excluded_files = [
-    ".*_template.c",
-]
-
+#excluded_files = [
+#    ".*_template.c",
+#]
 
 THREAD_LIMIT = args.threads
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)

@@ -153,8 +153,10 @@ int InitializeMCUSettings() {
 uint32_t boardSize;
 void getBoardHardwareDefs(void)
 {
+
 	boardSize = sizeof(board);
 	bzero(&board, sizeof(board));
+
 
 	//PLL settings
 	board.fc_pllm = FC_PLLM;
@@ -185,8 +187,6 @@ void getBoardHardwareDefs(void)
 	board.buzzerPin  = BUZZER_GPIO_Pin;
 
 	
-	//gyro settings
-
 	//Motor output assignments
 	board.motors[0].enabled     = 1;
 	board.motors[0].timer       = MOTOR1_TIM;
@@ -219,6 +219,7 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[0].Dma].PeriphBurst        = DMA_PBURST_SINGLE;
 	board.dmasMotor[board.motors[0].Dma].dmaIRQn            = DMA1_Stream7_IRQn;     //motor out
 	board.dmasMotor[board.motors[0].Dma].dmaHandle          = ENUM_DMA1_STREAM_7;    //motor out
+
 
 	board.motors[1].enabled     = 1;
 	board.motors[1].timer       = MOTOR2_TIM;
@@ -332,6 +333,9 @@ void getBoardHardwareDefs(void)
 	board.gyro_pins.spiSlowBaud = GYRO_SPI_SLOW_BAUD;
 
 
+
+
+
 	//SPI settings ------------------------------------------------------------------------------------------------------------------------------------------------------------
 	board.spis[0].enabled  = SPI1_ENABLE;
 
@@ -410,6 +414,10 @@ void getBoardHardwareDefs(void)
 	board.dmas[board.spis[0].RXDma].dmaHandle          = ENUM_DMA2_STREAM_0;
 
 
+
+
+
+
 	board.spis[1].enabled = SPI2_ENABLE;
 
 	board.spis[1].NSSPin = SPI2_NSS_PIN;
@@ -458,6 +466,9 @@ void getBoardHardwareDefs(void)
 	//board.spis[1].TXDMA_IRQ_Handler = SPI2_TX_DMA_IRQHandler;
 	//board.spis[1].RXDMA_IRQ_Handler = SPI2_RX_DMA_IRQHandler;
 
+
+
+
 	board.spis[2].enabled = SPI3_ENABLE;
 
 	board.spis[2].NSSPin = SPI2_NSS_PIN;
@@ -502,6 +513,10 @@ void getBoardHardwareDefs(void)
 
 	board.spis[2].TXDMA_IRQn = SPI3_TX_DMA_IRQn;
 	board.spis[2].RXDMA_IRQn = SPI3_RX_DMA_IRQn;
+
+
+
+
 
 
 	//UART settings ------------------------------------------------------------------------------------------------------------------------------------------------------------

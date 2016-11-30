@@ -520,7 +520,7 @@ void rfbl_write_packet(void) {
 			if (HAL_FLASH_Program(TYPEPROGRAM_WORD, FwInfo.address + FwInfo.wordOffset, data32) == HAL_OK) {
 			} else {
 				//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-				ErrorHandler();
+				ErrorHandler(0);
 			}
 
 		}
@@ -623,8 +623,9 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 
 }
 
-void ErrorHandler(void)
+void ErrorHandler(uint32_t error)
 {
+	(void)(error);
     while (1) {
         DoLed(1, 1);;
         DoLed(2, 0);;

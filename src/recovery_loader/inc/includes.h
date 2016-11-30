@@ -21,8 +21,6 @@
 
 void BoardInit(void);
 void gpioClockInit(void);
-void ErrorHandler(void);
-
 
 //revolt and revo hard code
 #ifdef STM32F405xx

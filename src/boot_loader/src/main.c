@@ -598,8 +598,9 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 
 }
 
-void ErrorHandler(void)
+void ErrorHandler(uint32_t error)
 {
+	(void)(error);
     while (1) {
         DoLed(1, 1);
         DoLed(2, 0);

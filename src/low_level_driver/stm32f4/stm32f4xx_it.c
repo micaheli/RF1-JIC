@@ -101,7 +101,7 @@ void DMA1_Stream1_IRQHandler(void) {
 	HAL_NVIC_ClearPendingIRQ(DMA1_Stream1_IRQn);
 	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_1]);
 	//dma needs a function pointer
-	HAL_TIM_PWM_Stop(&pwmTimers[board.motors[3].timerHandle], board.motors[3].timChannel);
+	//HAL_TIM_PWM_Stop(&pwmTimers[board.motors[3].timerHandle], board.motors[3].timChannel);
 }
 
 void DMA1_Stream2_IRQHandler(void) {

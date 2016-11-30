@@ -98,6 +98,9 @@ void UsartInit(uint32_t serialNumber) {
 
 	HAL_GPIO_Init(rxPort, &GPIO_InitStruct);
 
+	//inlineDigitalHi(txPort, txPin);
+	//inlineDigitalHi(rxPort, rxPin);
+
 	/*##-1- Configure the UART peripheral ######################################*/
 	/* Put the USART peripheral in the Asynchronous mode (UART Mode) */
 	uartHandles[board.serials[serialNumber].usartHandle].Instance = usarts[board.serials[serialNumber].SerialInstance].port;

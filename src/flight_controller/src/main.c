@@ -56,12 +56,14 @@ int main(void)
     InitMixer();
     InitFlightCode();
     InitPid();
+
     DeinitActuators();
     InitActuators();
 //    Ws2812LedInit();
     ZeroActuators(32000); //output actuators to idle after timers are stable;
 
     BoardUsartInit();
+
 
     if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl)) {
         ErrorHandler(GYRO_INIT_FAILIURE);
