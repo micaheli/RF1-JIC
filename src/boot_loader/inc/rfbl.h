@@ -4,7 +4,7 @@
 #include "usbd_hid.h" //needed for HID_EPIN_SIZE delcaration
 
 typedef enum {
-	RFBLS_IDLE,
+	RFBLS_NONE,
 	RFBLS_REBOOT_TO_DFU,
 	RFBLS_REBOOT_TO_RFBL,
 	RFBLS_REBOOT_TO_APP,
@@ -21,6 +21,7 @@ typedef enum {
 	RFBLS_ERASE_ALL_FLASH,
 	RFBLS_BOOT_TO_APP,
 	RFBLS_VERSION,
+	RFBLS_IDLE,
 	RFBLS_ERROR,
 	RFBLS_LAST,
 } RfblState_e;

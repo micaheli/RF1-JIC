@@ -333,6 +333,9 @@ typedef struct {
 	uint32_t				Dma;
 	uint32_t				CcDmaHandle;
 	uint32_t				timerIRQn;
+	uint32_t				motorOutputBuffer;
+ 	uint32_t				motorOutputLength;
+ 	uint32_t				sConfigOCHandle;
 } motor_type;
 
 
@@ -422,9 +425,11 @@ extern DMA_Stream_TypeDef *dmaStream[];
 extern UART_HandleTypeDef  uartHandles[];
 extern DMA_HandleTypeDef   dmaHandles[];
 extern TIM_HandleTypeDef   pwmTimers[];
+extern TIM_OC_InitTypeDef  sConfigOCHandles[];
 
 extern unsigned char serialTxBuffer[][TXBUFFERSIZE];
 extern unsigned char serialRxBuffer[][RXBUFFERSIZE];
+extern uint32_t motorOutputBuffer[][32];
 
 extern int InitializeMCUSettings();
 void getBoardHardwareDefs();

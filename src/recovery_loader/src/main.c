@@ -603,8 +603,8 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 	tInBuffer[6]=*RfblState;
 
 	if (*RfblState == RFBLS_VERSION) {
-		tInBuffer[7]=RFBL_VERSION;
-		tInBuffer[8]=CFG1_VERSION;
+		tInBuffer[7]=RECOVERY_VERSION;
+		tInBuffer[8]=RECOVERY_VERSION;
 		tInBuffer[9]=uid0_1;
 		tInBuffer[10]=uid0_2;
 		tInBuffer[11]=uid0_3;

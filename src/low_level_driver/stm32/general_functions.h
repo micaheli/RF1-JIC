@@ -67,11 +67,11 @@ void ErrorHandler(uint32_t error);
 #define RFPM					0x5246504D
 #define PL						0x504C
 
-#define RECOVERY_VERSION		1414
-#define RFBL_VERSION			14
-#define CFG1_VERSION			14
-#define RCVR_TAG				"RCVRVERSION#00140014" //must be 20 bytes max
-#define RFBL_TAG				"RFBLVERSION#00140014" //must be 20 bytes max
+#define RECOVERY_VERSION		15
+#define RFBL_VERSION			15
+#define CFG1_VERSION			15
+#define RCVR_TAG				"RCVRVERSION#00150015" //must be 20 bytes max
+#define RFBL_TAG				"RFBLVERSION#00150015" //must be 20 bytes max
 
 #define APP_ADDRESS						0x08008000
 #define BOOT_TO_RECOVERY_COMMAND		0xCA77F154
