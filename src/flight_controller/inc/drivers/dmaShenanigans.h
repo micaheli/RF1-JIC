@@ -25,4 +25,4 @@ extern void InitDmaOutputOnMotors(uint32_t usedFor);
 extern void Ws2812LedInit(void);
 extern void ws2812_led_update(uint32_t nLeds);
 extern void SetLEDColor(uint8_t newColor);
-extern void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_type actuator);
+extern void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_type actuator, uint32_t msb);

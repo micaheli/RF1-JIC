@@ -16,9 +16,11 @@ DMA_Stream_TypeDef *dmaStream[16];
 UART_HandleTypeDef  uartHandles[6];
 DMA_HandleTypeDef   dmaHandles[16];
 TIM_HandleTypeDef   pwmTimers[16];
+TIM_OC_InitTypeDef  sConfigOCHandles[16];
 
 unsigned char serialRxBuffer[3][RXBUFFERSIZE];
 unsigned char serialTxBuffer[3][TXBUFFERSIZE];
+uint32_t motorOutputBuffer[4][32];
 
 int InitializeMCUSettings() {
 	//target_pinout pins;
@@ -188,20 +190,23 @@ void getBoardHardwareDefs(void)
 
 	
 	//Motor output assignments
-	board.motors[0].enabled     = 1;
-	board.motors[0].timer       = MOTOR1_TIM;
-	board.motors[0].pin         = MOTOR1_PIN;
-	board.motors[0].port        = MOTOR1_GPIO;
-	board.motors[0].AF          = MOTOR1_ALTERNATE;
-	board.motors[0].timChannel  = MOTOR1_TIM_CH;
-	board.motors[0].timChannelC = TIM_CHANNEL_1;
-	board.motors[0].activeTim	= HAL_TIM_ACTIVE_CHANNEL_3;
-	board.motors[0].timCCR      = MOTOR1_TIM_CCR;
-	board.motors[0].polarity    = MOTOR1_POLARITY;
-	board.motors[0].timerHandle = 0;
-	board.motors[0].Dma         = ENUM_DMA1_STREAM_7;
-	board.motors[0].CcDmaHandle = TIM_DMA_ID_CC3;
-	board.motors[0].timerIRQn   = TIM3_IRQn;
+ 	board.motors[0].enabled           = 1;
+ 	board.motors[0].timer             = MOTOR1_TIM;
+ 	board.motors[0].pin               = MOTOR1_PIN;
+ 	board.motors[0].port              = MOTOR1_GPIO;
+ 	board.motors[0].AF                = MOTOR1_ALTERNATE;
+ 	board.motors[0].timChannel        = MOTOR1_TIM_CH;
+ 	board.motors[0].timChannelC       = TIM_CHANNEL_1;
+ 	board.motors[0].activeTim	      = HAL_TIM_ACTIVE_CHANNEL_3;
+ 	board.motors[0].timCCR            = MOTOR1_TIM_CCR;
+ 	board.motors[0].polarity          = MOTOR1_POLARITY;
+ 	board.motors[0].timerHandle       = 0;
+ 	board.motors[0].Dma               = ENUM_DMA1_STREAM_7;
+ 	board.motors[0].CcDmaHandle       = TIM_DMA_ID_CC3;
+ 	board.motors[0].timerIRQn         = TIM3_IRQn;
+ 	board.motors[0].motorOutputBuffer = 0;
+ 	board.motors[0].motorOutputLength = 16; //bits
+ 	board.motors[0].sConfigOCHandle   = 0;
 
 	board.dmasMotor[board.motors[0].Dma].enabled            = 1;
 	board.dmasMotor[board.motors[0].Dma].dmaStream          = ENUM_DMA1_STREAM_7;    //motor out
@@ -213,7 +218,7 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[0].Dma].dmaMemAlignment    = DMA_MDATAALIGN_WORD;
 	board.dmasMotor[board.motors[0].Dma].dmaMode            = DMA_NORMAL;
 	board.dmasMotor[board.motors[0].Dma].dmaPriority        = DMA_PRIORITY_HIGH;
-	board.dmasMotor[board.motors[0].Dma].fifoMode           = DMA_FIFOMODE_ENABLE;
+	board.dmasMotor[board.motors[0].Dma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmasMotor[board.motors[0].Dma].fifoThreshold      = DMA_FIFO_THRESHOLD_FULL;
 	board.dmasMotor[board.motors[0].Dma].MemBurst           = DMA_MBURST_SINGLE;
 	board.dmasMotor[board.motors[0].Dma].PeriphBurst        = DMA_PBURST_SINGLE;
@@ -221,20 +226,23 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[0].Dma].dmaHandle          = ENUM_DMA1_STREAM_7;    //motor out
 
 
-	board.motors[1].enabled     = 1;
-	board.motors[1].timer       = MOTOR2_TIM;
-	board.motors[1].pin         = MOTOR2_PIN;
-	board.motors[1].port        = MOTOR2_GPIO;
-	board.motors[1].AF          = MOTOR2_ALTERNATE;
-	board.motors[1].timChannel  = MOTOR2_TIM_CH;
-	board.motors[1].timChannelC = TIM_CHANNEL_2;
-	board.motors[1].activeTim	= HAL_TIM_ACTIVE_CHANNEL_4;
-	board.motors[1].timCCR      = MOTOR2_TIM_CCR;
-	board.motors[1].polarity    = MOTOR2_POLARITY;
-	board.motors[1].timerHandle = 1;
-	board.motors[1].Dma         = ENUM_DMA1_STREAM_2;
-	board.motors[1].CcDmaHandle = TIM_DMA_ID_CC4;
-	board.motors[1].timerIRQn   = TIM3_IRQn;
+ 	board.motors[1].enabled           = 1;
+ 	board.motors[1].timer             = MOTOR2_TIM;
+ 	board.motors[1].pin               = MOTOR2_PIN;
+ 	board.motors[1].port              = MOTOR2_GPIO;
+ 	board.motors[1].AF                = MOTOR2_ALTERNATE;
+ 	board.motors[1].timChannel        = MOTOR2_TIM_CH;
+ 	board.motors[1].timChannelC       = TIM_CHANNEL_2;
+ 	board.motors[1].activeTim	      = HAL_TIM_ACTIVE_CHANNEL_4;
+ 	board.motors[1].timCCR            = MOTOR2_TIM_CCR;
+ 	board.motors[1].polarity          = MOTOR2_POLARITY;
+ 	board.motors[1].timerHandle       = 1;
+ 	board.motors[1].Dma               = ENUM_DMA1_STREAM_2;
+ 	board.motors[1].CcDmaHandle       = TIM_DMA_ID_CC4;
+ 	board.motors[1].timerIRQn         = TIM3_IRQn;
+ 	board.motors[1].motorOutputBuffer = 1;
+ 	board.motors[1].motorOutputLength = 16; //bits
+ 	board.motors[1].sConfigOCHandle   = 1;
 
 	board.dmasMotor[board.motors[1].Dma].enabled            = 1;
 	board.dmasMotor[board.motors[1].Dma].dmaStream          = ENUM_DMA1_STREAM_2;    //motor out
@@ -246,7 +254,7 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[1].Dma].dmaMemAlignment    = DMA_MDATAALIGN_WORD;
 	board.dmasMotor[board.motors[1].Dma].dmaMode            = DMA_NORMAL;
 	board.dmasMotor[board.motors[1].Dma].dmaPriority        = DMA_PRIORITY_HIGH;
-	board.dmasMotor[board.motors[1].Dma].fifoMode           = DMA_FIFOMODE_ENABLE;
+	board.dmasMotor[board.motors[1].Dma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmasMotor[board.motors[1].Dma].fifoThreshold      = DMA_FIFO_THRESHOLD_FULL;
 	board.dmasMotor[board.motors[1].Dma].MemBurst           = DMA_MBURST_SINGLE;
 	board.dmasMotor[board.motors[1].Dma].PeriphBurst        = DMA_PBURST_SINGLE;
@@ -254,24 +262,27 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[1].Dma].dmaHandle          = ENUM_DMA1_STREAM_2;    //motor out
 
 
-	board.motors[2].enabled     = 1;
-	board.motors[2].timer       = MOTOR3_TIM;
-	board.motors[2].pin         = MOTOR3_PIN;
-	board.motors[2].port        = MOTOR3_GPIO;
-	board.motors[2].AF          = MOTOR3_ALTERNATE;
-	board.motors[2].timChannel  = MOTOR3_TIM_CH;
-	board.motors[2].timChannelC = TIM_CHANNEL_2;
-	board.motors[2].activeTim	= HAL_TIM_ACTIVE_CHANNEL_4;
-	board.motors[2].timCCR      = MOTOR3_TIM_CCR;
-	board.motors[2].polarity    = MOTOR3_POLARITY;
-	board.motors[2].timerHandle = 2;
-	board.motors[2].Dma         = ENUM_DMA1_STREAM_6;
-	board.motors[2].CcDmaHandle = TIM_DMA_ID_CC4;
-	board.motors[2].timerIRQn   = TIM2_IRQn;
+	board.motors[2].enabled           = 1;
+	board.motors[2].timer             = MOTOR3_TIM;
+	board.motors[2].pin               = MOTOR3_PIN;
+	board.motors[2].port              = MOTOR3_GPIO;
+	board.motors[2].AF                = MOTOR3_ALTERNATE;
+	board.motors[2].timChannel        = MOTOR3_TIM_CH;
+	board.motors[2].timChannelC       = TIM_CHANNEL_2;
+	board.motors[2].activeTim	      = HAL_TIM_ACTIVE_CHANNEL_4;
+	board.motors[2].timCCR            = MOTOR3_TIM_CCR;
+	board.motors[2].polarity          = MOTOR3_POLARITY;
+	board.motors[2].timerHandle       = 2;
+	board.motors[2].Dma               = ENUM_DMA1_STREAM_6;
+	board.motors[2].CcDmaHandle       = TIM_DMA_ID_CC4;
+	board.motors[2].timerIRQn         = TIM2_IRQn;
+	board.motors[2].motorOutputBuffer = 2;
+	board.motors[2].motorOutputLength = 16; //bits
+	board.motors[2].sConfigOCHandle   = 2;
 
 	board.dmasMotor[board.motors[2].Dma].enabled            = 1;
 	board.dmasMotor[board.motors[2].Dma].dmaStream          = ENUM_DMA1_STREAM_6;    //motor out
-	board.dmasMotor[board.motors[2].Dma].dmaChannel         = DMA_CHANNEL_5;         //motor out
+	board.dmasMotor[board.motors[2].Dma].dmaChannel         = DMA_CHANNEL_3;         //motor out
 	board.dmasMotor[board.motors[2].Dma].dmaDirection       = DMA_MEMORY_TO_PERIPH;
 	board.dmasMotor[board.motors[2].Dma].dmaPeriphInc       = DMA_PINC_DISABLE;
 	board.dmasMotor[board.motors[2].Dma].dmaMemInc          = DMA_MINC_ENABLE;
@@ -279,7 +290,7 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[2].Dma].dmaMemAlignment    = DMA_MDATAALIGN_WORD;
 	board.dmasMotor[board.motors[2].Dma].dmaMode            = DMA_NORMAL;
 	board.dmasMotor[board.motors[2].Dma].dmaPriority        = DMA_PRIORITY_HIGH;
-	board.dmasMotor[board.motors[2].Dma].fifoMode           = DMA_FIFOMODE_ENABLE;
+	board.dmasMotor[board.motors[2].Dma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmasMotor[board.motors[2].Dma].fifoThreshold      = DMA_FIFO_THRESHOLD_FULL;
 	board.dmasMotor[board.motors[2].Dma].MemBurst           = DMA_MBURST_SINGLE;
 	board.dmasMotor[board.motors[2].Dma].PeriphBurst        = DMA_PBURST_SINGLE;
@@ -287,20 +298,23 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[2].Dma].dmaHandle          = ENUM_DMA1_STREAM_6;    //motor out
 
 
-	board.motors[3].enabled     = 1;
-	board.motors[3].timer       = MOTOR4_TIM;
-	board.motors[3].pin         = MOTOR4_PIN;
-	board.motors[3].port        = MOTOR4_GPIO;
-	board.motors[3].AF          = MOTOR4_ALTERNATE;
-	board.motors[3].timChannel  = MOTOR4_TIM_CH;
-	board.motors[3].timChannelC = TIM_CHANNEL_1;
-	board.motors[3].activeTim	= HAL_TIM_ACTIVE_CHANNEL_3;
-	board.motors[3].timCCR      = MOTOR4_TIM_CCR;
-	board.motors[3].polarity    = MOTOR4_POLARITY;
-	board.motors[3].timerHandle = 3;
-	board.motors[3].Dma         = ENUM_DMA1_STREAM_1; //motor out DMA
-	board.motors[3].CcDmaHandle = TIM_DMA_ID_CC3;
-	board.motors[3].timerIRQn   = TIM2_IRQn;
+	board.motors[3].enabled           = 1;
+	board.motors[3].timer             = MOTOR4_TIM;
+	board.motors[3].pin               = MOTOR4_PIN;
+	board.motors[3].port              = MOTOR4_GPIO;
+	board.motors[3].AF                = MOTOR4_ALTERNATE;
+	board.motors[3].timChannel        = MOTOR4_TIM_CH;
+	board.motors[3].timChannelC       = TIM_CHANNEL_1;
+	board.motors[3].activeTim	      = HAL_TIM_ACTIVE_CHANNEL_3;
+	board.motors[3].timCCR            = MOTOR4_TIM_CCR;
+	board.motors[3].polarity          = MOTOR4_POLARITY;
+	board.motors[3].timerHandle       = 3;
+	board.motors[3].Dma               = ENUM_DMA1_STREAM_1; //motor out DMA
+	board.motors[3].CcDmaHandle       = TIM_DMA_ID_CC3;
+	board.motors[3].timerIRQn         = TIM2_IRQn;
+	board.motors[3].motorOutputBuffer = 3;
+	board.motors[3].motorOutputLength = 16; //bits
+	board.motors[3].sConfigOCHandle   = 3;
 
 	board.dmasMotor[board.motors[3].Dma].enabled            = 1;
 	board.dmasMotor[board.motors[3].Dma].dmaStream          = ENUM_DMA1_STREAM_1;    //motor out
@@ -312,7 +326,7 @@ void getBoardHardwareDefs(void)
 	board.dmasMotor[board.motors[3].Dma].dmaMemAlignment    = DMA_MDATAALIGN_WORD;
 	board.dmasMotor[board.motors[3].Dma].dmaMode            = DMA_NORMAL;
 	board.dmasMotor[board.motors[3].Dma].dmaPriority        = DMA_PRIORITY_HIGH;
-	board.dmasMotor[board.motors[3].Dma].fifoMode           = DMA_FIFOMODE_ENABLE;
+	board.dmasMotor[board.motors[3].Dma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmasMotor[board.motors[3].Dma].fifoThreshold      = DMA_FIFO_THRESHOLD_FULL;
 	board.dmasMotor[board.motors[3].Dma].MemBurst           = DMA_MBURST_SINGLE;
 	board.dmasMotor[board.motors[3].Dma].PeriphBurst        = DMA_PBURST_SINGLE;
