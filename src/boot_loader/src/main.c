@@ -194,11 +194,11 @@ int main(void)
 			case RFBLS_DONE_UPGRADING:
 				//Last packet received and written to
 				FinishFlash();
-				RfblState = RFBLS_IDLE;
-				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
-				for (int8_t iii = 100; iii >= 0; iii -= 2) {
+				for (int8_t iii = 50; iii >= 0; iii -= 2) {
 					startupBlink(2, iii);
 				}
+				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
+				RfblState = RFBLS_IDLE;
 				break;
 
 			case RFBLS_AWAITING_FW_DATA:

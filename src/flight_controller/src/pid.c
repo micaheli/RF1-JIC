@@ -15,11 +15,10 @@ float kiErrorLimit[AXIS_NUMBER];
 //1000000 114
 pid_terms  pidsUsed[AXIS_NUMBER];
 
-float dT; //8KHz
-float InversedT; //8KHz
-uint32_t uhohNumber = 4000;
+
+
 uint32_t uhOhRecover = 0;
-volatile uint32_t khzDivider = 0;
+
 
 /*
  *     LOOP_L1,
@@ -51,75 +50,19 @@ void InitPid (void) {
 
 	uhOhRecover = 0; //unset recover mode
 
-	switch (mainConfig.gyroConfig.loopCtrl) {
-		case LOOP_UH32:
-		case LOOP_H32:
-			dT = 0.00003125;
-			uhohNumber = 16000;
-			khzDivider = 32;
-			break;
-		case LOOP_UH16:
-		case LOOP_H16:
-			dT = 0.00006250;
-			uhohNumber = 8000;
-			khzDivider = 16;
-			break;
-		case LOOP_UH8:
-		case LOOP_H8:
-		case LOOP_M8:
-			dT = 0.00012500;
-			uhohNumber = 4000;
-			khzDivider = 8;
-			break;
-		case LOOP_UH4:
-		case LOOP_H4:
-		case LOOP_M4:
-			dT = 0.00025000;
-			uhohNumber = 2000;
-			khzDivider = 4;
-			break;
-		case LOOP_UH2:
-		case LOOP_H2:
-		case LOOP_M2:
-			dT = 0.00050000;
-			uhohNumber = 1000;
-			khzDivider = 2;
-			break;
-		case LOOP_UH1:
-		case LOOP_H1:
-		case LOOP_M1:
-		case LOOP_L1:
-		default:
-			dT = 0.00100000;
-			uhohNumber = 500;
-			khzDivider = 1;
-			break;
-	}
-
-	InversedT = (1/dT);
-	//InlineInitPidFilters();
-
-	//0.00   (x / 10000) * 1 = .00140000
-	//0.00   (x / 10000) * 0.00003125 = .00140000
-	//0.00   (x * 100) * 0.00003125 = .00000280
-
-	//140
-	//140
-	//200
-
 	pidsUsed[0].kp = mainConfig.pidConfig[0].kp / 100000;
-	pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 50000) * dT;
-	pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 200000000 )  / dT;
+	pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 50000) * loopSpeed.dT;
+	pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 200000000 )  / loopSpeed.dT;
 	pidsUsed[0].wc = mainConfig.pidConfig[0].wc;
 
 	pidsUsed[1].kp = mainConfig.pidConfig[1].kp / 100000;
-	pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 50000) * dT;
-	pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 200000000 )  / dT;
+	pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 50000) * loopSpeed.dT;
+	pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 200000000 )  / loopSpeed.dT;
 	pidsUsed[1].wc = mainConfig.pidConfig[1].wc;
 
 	pidsUsed[2].kp = mainConfig.pidConfig[2].kp / 100000;
-	pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 50000) * dT;
-	pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 200000000 )  / dT;
+	pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 50000) * loopSpeed.dT;
+	pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 200000000 )  / loopSpeed.dT;
 	pidsUsed[2].wc = mainConfig.pidConfig[2].wc;
 
 }
@@ -136,7 +79,7 @@ void InitPid (void) {
 
 		//if (onlyOnce) { //biquad can't be reinitialized.
 		//	//mainConfig.filterConfig[axis].kdBq.lpfHz
-		//	InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], dT, 0);
+		//	InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, 0);
 		//}
 
 	//}
@@ -257,13 +200,13 @@ inline uint32_t SpinStopper(int32_t axis, float pidError) {
 		} else {
 			countErrorUhoh[axis] = 0;
 		}
-		if (countErrorUhoh[axis] > uhohNumber ) {
+		if (countErrorUhoh[axis] > loopSpeed.uhohNumber ) {
 			uhOhRecover = 1;
 		}
 	} else {
 		uhOhRecoverCounter++;
 	}
-	if (uhOhRecoverCounter > uhohNumber) {
+	if (uhOhRecoverCounter > loopSpeed.uhohNumber) {
 		uhOhRecover = 0;
 		uhOhRecoverCounter = 0;
 	}

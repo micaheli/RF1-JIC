@@ -24,8 +24,6 @@ typedef struct {
 extern float pidSetpoint[AXIS_NUMBER];    //3 axis for pidc. range is in DPS.
 extern pid_output pids[AXIS_NUMBER];
 extern float currentKdFilterConfig[AXIS_NUMBER];
-extern volatile uint32_t khzDivider;
-extern float dT;
 
 void InitPid (void);
 //void InlineInitPidFilters(void);

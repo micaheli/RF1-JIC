@@ -1,8 +1,8 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint32_t)(29U)
-#define CONFIG_VERSION_STR		"29"
-#define FIRMWARE_VERSION		"0.079 ALPHA"
+#define CONFIG_VERSION			(uint32_t)(30U)
+#define CONFIG_VERSION_STR		"30"
+#define FIRMWARE_VERSION		"0.091.030 ALPHA"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
 
@@ -20,7 +20,6 @@ typedef struct {
 
 
 
-
 enum {typeINT=0,typeUINT,typeFLOAT,typeSTRING,};
 
 typedef struct {
@@ -33,6 +32,11 @@ typedef struct {
     float Default;
     const char *strDefault;
 } config_variables_rec;
+
+typedef struct {
+    const char *valueString;
+    const int32_t valueInt;
+} string_comp_rec;
 
 extern main_config mainConfig;
 extern const config_variables_rec valueTable[];

@@ -220,11 +220,14 @@ HAL_StatusTypeDef USB_DevInit (USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
     USBx->GOTGCTL |= USB_OTG_GOTGCTL_BVALOVAL;
   }
 #else
-  USBx->GCCFG |= USB_OTG_GCCFG_VBUSBSEN;
   
   if (cfg.vbus_sensing_enable == 0U)
   {
     USBx->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+  }
+  else
+  {
+    USBx->GCCFG |= USB_OTG_GCCFG_VBUSBSEN;
   }
 #endif /* STM32F446xx || STM32F469xx || STM32F479xx || STM32F412Zx || STM32F412Rx || STM32F412Vx || STM32F412Cx */
 

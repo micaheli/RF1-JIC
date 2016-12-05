@@ -44,7 +44,7 @@ int main(void)
     HandleFcStartupReg();
 
     //InitDmaInputOnMotors(board.motors[0]);
-    //DelayMs(100000);
+
     InitBuzzer();
     InitLeds();
     InitUsb();
@@ -54,7 +54,7 @@ int main(void)
 //#endif
     InitRcData();
     InitMixer();
-    InitFlightCode();
+    InitFlightCode(); //flight code before PID code is a must
     InitPid();
 
     DeinitActuators();

@@ -1,9 +1,24 @@
 #pragma once
 
+
+typedef struct {
+	volatile float dT;
+	volatile float gyrodT;
+	volatile float accdT;
+	volatile float InversedT;
+	volatile uint32_t uhohNumber;
+	volatile uint32_t khzDivider;
+	volatile uint32_t gyroDivider;
+} loop_speed_record;
+
+extern loop_speed_record loopSpeed;
+
 extern volatile uint32_t boardArmed, calibrateMotors, fullKiLatched;
 extern float pitchAttitude, rollAttitude, yawAttitude;
 extern volatile uint32_t SKIP_GYRO;
 extern float accNoise[];
+
+
 
 enum { CALIBRATE_BOARD_FAILED = 0, CALIBRATE_BOARD_UPRIGHT = 1, CALIBRATE_BOARD_INVERTED = 2, };
 

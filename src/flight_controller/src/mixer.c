@@ -15,7 +15,7 @@ const actuator_mixer CONST_MIXER_X1234[MAX_MOTOR_NUMBER] =  {
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
 };
 
-const actuator_mixer CONST_MIXER_X1234_REVERSE_YAW[MAX_MOTOR_NUMBER] =  {
+const actuator_mixer CONST_MIXER_X1234RY[MAX_MOTOR_NUMBER] =  {
 	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
 	{-1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
 	{ 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2
@@ -71,8 +71,8 @@ void InitMixer(void) {
 		servoOutput[i]=0.0f;
 
 	switch (mainConfig.mixerConfig.mixerType) {
-		case MIXER_X1234_REVERSE_YAW:
-			memcpy(motorMixer, CONST_MIXER_X1234_REVERSE_YAW, sizeof(motorMixer));
+		case MIXER_X1234RY:
+			memcpy(motorMixer, CONST_MIXER_X1234RY, sizeof(motorMixer));
 			break;
 		case MIXER_CUSTOM:
 			//fill mixer customer here, for now it defaults to MIXER_X1234

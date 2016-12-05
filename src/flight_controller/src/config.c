@@ -29,6 +29,9 @@ main_config mainConfig;
 uint32_t checkRxData[MAXCHANNELS];
 uint32_t resetBoard = 0;
 
+static void SetValueOrString(uint32_t position, char *value);
+static void SetValue(uint32_t position, char *value);
+
 static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static void EncodeBlock( unsigned char *in, unsigned char *out, int len )
@@ -39,6 +42,50 @@ static void EncodeBlock( unsigned char *in, unsigned char *out, int len )
    out[3] = (unsigned char) (len > 2 ? cb64[ (int)(in[2] & 0x3f) ] : '=');
 }
 
+const string_comp_rec stringCompTable[] = {
+		//mixer.h
+		{"ESC_MULTISHOT", ESC_MULTISHOT },
+		{"ESC_ONESHOT",   ESC_ONESHOT },
+		{"ESC_PWM",       ESC_PWM },
+		{"ESC_ONESHOT42", ESC_ONESHOT42 },
+		{"ESC_DSHOT600",  ESC_DSHOT600 },
+		{"ESC_DSHOT300",  ESC_DSHOT300 },
+		{"ESC_DSHOT150",  ESC_DSHOT150 },
+//		{"ESC_MEGAVOLT",  ESC_MEGAVOLT },
+
+		//mixer.h
+		{"MIXER_X1234RY", MIXER_X1234RY },
+		{"MIXER_X1234",   MIXER_X1234 },
+		{"MIXER_CUSTOM",  MIXER_CUSTOM },
+
+		//gyro.h
+		{"LOOP_L1",   LOOP_L1   },
+		{"LOOP_M1",   LOOP_M1   },
+		{"LOOP_M2",   LOOP_M2   },
+		{"LOOP_M4",   LOOP_M4   },
+		{"LOOP_M8",   LOOP_M8   },
+		{"LOOP_H16",  LOOP_H16  },
+		{"LOOP_H1",   LOOP_H1   },
+		{"LOOP_H2",   LOOP_H2   },
+		{"LOOP_H4",   LOOP_H4   },
+		{"LOOP_H8",   LOOP_H8   },
+		{"LOOP_H32",  LOOP_H32  },
+		{"LOOP_UH16", LOOP_UH16 },
+		{"LOOP_UH1",  LOOP_UH1  },
+		{"LOOP_UH2",  LOOP_UH2  },
+		{"LOOP_UH4",  LOOP_UH4  },
+		{"LOOP_UH8",  LOOP_UH8  },
+		{"LOOP_UH32", LOOP_UH32 },
+
+		//rx.h
+		{"NO_EXPO",      NO_EXPO      },
+		{"SKITZO_EXPO",  SKITZO_EXPO  },
+		{"TARANIS_EXPO", TARANIS_EXPO },
+		{"FAST_EXPO",    FAST_EXPO    },
+		{"ACRO_PLUS",    ACRO_PLUS    },
+		{"NO_EXPO",      NO_EXPO      },
+
+};
 
 const config_variables_rec valueTable[] = {
 
@@ -111,9 +158,9 @@ const config_variables_rec valueTable[] = {
 		{ "rx_protocol", 		typeUINT,  "rccf",  &mainConfig.rcControlsConfig.rxProtcol, 		0, 10, USING_SPEKTRUM_TWO_WAY, "" },
 		{ "rx_usart", 			typeUINT,  "rccf",  &mainConfig.rcControlsConfig.rxUsart, 			0, MAX_USARTS-1, ENUM_USART1, "" },
 
-		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 	0, 0.1, 0.01, "" },
-		{ "roll_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[ROLL], 	0, 0.1, 0.01, "" },
-		{ "yaw_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[YAW], 		0, 0.1, 0.01, "" },
+		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 	0, 0.1, 0.002, "" },
+		{ "roll_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[ROLL], 	0, 0.1, 0.002, "" },
+		{ "yaw_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[YAW], 		0, 0.1, 0.002, "" },
 		{ "throttle_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[THROTTLE], 0, 0.1, 0, "" },
 		{ "aux1_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX1], 	0, 0.1, 0, "" },
 		{ "aux2_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX2], 	0, 0.1, 0, "" },
@@ -168,9 +215,9 @@ const config_variables_rec valueTable[] = {
 
 		{ "rc_calibrated", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rcCalibrated,			0, 1, 0, "" },
 
-		{ "pitch_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[PITCH], 	0, EXPO_CURVE_END, SKITZO_PLUS_EXPO, "" },
-		{ "roll_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[ROLL], 	0, EXPO_CURVE_END, SKITZO_PLUS_EXPO, "" },
-		{ "yaw_curve", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[YAW], 		0, EXPO_CURVE_END, SKITZO_PLUS_EXPO, "" },
+		{ "pitch_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[PITCH], 	0, EXPO_CURVE_END, SKITZO_EXPO, "" },
+		{ "roll_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[ROLL], 	0, EXPO_CURVE_END, SKITZO_EXPO, "" },
+		{ "yaw_curve", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[YAW], 		0, EXPO_CURVE_END, SKITZO_EXPO, "" },
 		{ "throttle_curve", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[THROTTLE], 0, EXPO_CURVE_END, NO_EXPO, "" },
 		{ "aux1_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX1], 	0, EXPO_CURVE_END, NO_EXPO, "" },
 		{ "aux2_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX2], 	0, EXPO_CURVE_END, NO_EXPO, "" },
@@ -414,18 +461,40 @@ char *CleanupString(char *inString)
 }
 
 
+void SetValueOrString(uint32_t position, char *value)
+{
+	uint32_t x;
+	char stringBuffer[10];
+
+	//compare args with strings in stringCompTable
+	for (x=0;x<(sizeof(stringCompTable)/sizeof(string_comp_rec));x++)
+	{
+		if (!strcmp(stringCompTable[x].valueString, value))
+		{
+
+			//snprintf(buffer, 10, "%d", value);
+			snprintf(stringBuffer, 10, "%ld", stringCompTable[x].valueInt);
+			SetValue(position, stringBuffer);
+			return;
+		}
+	}
+
+	SetValue(position, value);
+}
+
 void SetValue(uint32_t position, char *value)
 {
-	switch (valueTable[position].type) {
-	//TODO used something better then atoi
-	case typeUINT:
-	case typeINT:
-		*(uint32_t *)valueTable[position].ptr = atoi(value);
-		break;
 
-	case typeFLOAT:
-		*(float *)valueTable[position].ptr = atof(value);
-		break;
+	switch (valueTable[position].type) {
+		//TODO used something better then atoi
+		case typeUINT:
+		case typeINT:
+			*(uint32_t *)valueTable[position].ptr = atoi(value);
+			break;
+
+		case typeFLOAT:
+			*(float *)valueTable[position].ptr = atof(value);
+			break;
 	}
 
 }
@@ -959,7 +1028,7 @@ int32_t SetVariable(char *inString) {
 	{
 		if (!strcmp(valueTable[x].name, inString))
 		{
-			SetValue(x, args);
+			SetValueOrString(x, args);
 			autoSaveTimer = InlineMillis();
 			if ( (!strcmp(valueTable[x].group, "mixr")) || (!strcmp(valueTable[x].group, "gyro")) || (!strcmp(valueTable[x].group, "filt"))  || (!strcmp(valueTable[x].group, "rccf")) ) {
 				resetBoard=1;
@@ -1159,34 +1228,98 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 
 		}
-	else if (!strcmp("spekdefaults", inString))
+	else if (!strcmp("taranisdefaultsrf1", inString) || !strcmp("taranisdefaultsrf1", inString))
 		{
-			mainConfig.rcControlsConfig.midRc[PITCH]    = 1024;
-			mainConfig.rcControlsConfig.midRc[ROLL]     = 1024;
-			mainConfig.rcControlsConfig.midRc[YAW]      = 1024;
-			mainConfig.rcControlsConfig.midRc[THROTTLE] = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX1]     = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX2]     = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX3]     = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX4]     = 1024;
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 985;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 985;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 985;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 985;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 985;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 985;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 985;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 985;
 
-			mainConfig.rcControlsConfig.minRc[PITCH]    = 22;
-			mainConfig.rcControlsConfig.minRc[ROLL]     = 22;
-			mainConfig.rcControlsConfig.minRc[YAW]      = 22;
-			mainConfig.rcControlsConfig.minRc[THROTTLE] = 22;
-			mainConfig.rcControlsConfig.minRc[AUX1]     = 342;
-			mainConfig.rcControlsConfig.minRc[AUX2]     = 1706;
-			mainConfig.rcControlsConfig.minRc[AUX3]     = 342;
-			mainConfig.rcControlsConfig.minRc[AUX4]     = 0;
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 172;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 172;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 172;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 172;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 1811;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 172;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 0;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
 
-			mainConfig.rcControlsConfig.maxRc[PITCH]    = 2025;
-			mainConfig.rcControlsConfig.maxRc[ROLL]     = 2025;
-			mainConfig.rcControlsConfig.maxRc[YAW]      = 2025;
-			mainConfig.rcControlsConfig.maxRc[THROTTLE] = 2025;
-			mainConfig.rcControlsConfig.maxRc[AUX1]     = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX2]     = 342;
-			mainConfig.rcControlsConfig.maxRc[AUX3]     = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX4]     = 1000000;
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 1811;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 1811;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 1811;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 1811;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 172;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1811;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1000000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
+
+			mainConfig.rcControlsConfig.rcCalibrated         = 1;
+
+			mainConfig.rcControlsConfig.rxProtcol            = USING_SBUS; //this is used by serial.c
+
+			resetBoard = 1;
+
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "settingdefaultstotaranisdefaultsrf1", sizeof("settingdefaultstotaranisdefaultsrf1"));
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
+			RfCustomReply(rf_custom_out_buffer);
+			SaveConfig(ADDRESS_CONFIG_START);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
+
+	else if (!strcmp("spekdefaults3", inString) || !strcmp("spekdefaults1", inString))
+		{
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 1706;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 342;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
 
 			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
 			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
@@ -1207,7 +1340,11 @@ void ProcessCommand(char *inString)
 
 			mainConfig.rcControlsConfig.rcCalibrated         = 1;
 
-			mainConfig.rcControlsConfig.rxProtcol            = USING_SPEKTRUM_TWO_WAY; //this is used by serial.c
+			if(!strcmp("spekdefaults1", inString))
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_TWO_WAY; //this is used by serial.c
+
+			if(!strcmp("spekdefaults3", inString))
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_ONE_WAY; //this is used by serial.c
 
 			resetBoard = 1;
 
@@ -1257,6 +1394,19 @@ void ProcessCommand(char *inString)
 			if (argsOutputted == 0) {
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "noargumentsfoundforargument:%s", args);
+				RfCustomReply(rf_custom_out_buffer);
+			}
+
+			//output flash here:
+			if ( (!strcmp("", args)) || (!strcmp("all", args)) || (!strcmp("flash", args)) ) {
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflused=%u", (unsigned int)(flashInfo.currentWriteAddress));
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlfltotal=%u", (unsigned int)(flashInfo.totalSize));
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflsectors=%u", (unsigned int)(flashInfo.flashSectors));
 				RfCustomReply(rf_custom_out_buffer);
 			}
 
@@ -1369,9 +1519,48 @@ void ProcessCommand(char *inString)
 
 			}
 		}
-	else if ( (!strcmp("downloadflightlog", inString)) || (!strcmp("dlb", inString)) || (!strcmp("dlfl", inString)) )
+	else if (!strcmp("dlfltotal", inString))
+		{
+
+
+			if (flashInfo.enabled) {
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)(flashInfo.totalSize));
+				RfCustomReply(rf_custom_out_buffer);
+
+			} else {
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)0);
+				RfCustomReply(rf_custom_out_buffer);
+
+			}
+		}
+	else if (!strcmp("dlflsectors", inString))
+		{
+
+
+			if (flashInfo.enabled) {
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)(flashInfo.flashSectors));
+				RfCustomReply(rf_custom_out_buffer);
+
+			} else {
+
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)0);
+				RfCustomReply(rf_custom_out_buffer);
+
+			}
+		}
+	else if ( (!strcmp("downloadflightlog", inString)) || (!strcmp("dlb", inString)) || (!strcmp("dlfl", inString)) || (!strcmp("dlflslow", inString)) )
 		{
 			int base64Encode = 0;
+
+			if (!strcmp("dlflslow", inString))
+				DelayMs(1000);
 
 			args = StripSpaces(args);
 			if (!strcmp("b64", args))
@@ -1422,6 +1611,8 @@ void ProcessCommand(char *inString)
 										RfCustomReply(rf_custom_out_buffer);
 										smallerPointer = 0;
 										bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+										//if (!strcmp("dlflslow", inString))
+											//DelayMs(1);
 									}
 
 								}

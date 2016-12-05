@@ -18,7 +18,8 @@ void OneWireInit(void) {
 
 int OneWireMain(void) {
 	uint32_t outputLength;
-	uint8_t *serialOutBuffer;
+	uint8_t serialOutBuffer[256];
+	//uint8_t *serialOutBuffer;
 
 	outputLength=sizeof("RACEFLIGHT FTW!!!");
 

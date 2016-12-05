@@ -51,7 +51,7 @@ enum {
 	NO_EXPO = 0,
 	SKITZO_EXPO = 1,
 	TARANIS_EXPO = 2,
-	SKITZO_PLUS_EXPO = 3,
+	FAST_EXPO = 3,
 	ACRO_PLUS = 33,
 	EXPO_CURVE_END,
 };
@@ -68,7 +68,7 @@ extern void SpektrumBind (uint32_t bindNumber);
 
 extern void InitRcData(void);
 extern void InlineCollectRcCommand (void);
-extern float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo, uint32_t axis);
+extern float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo);
 extern void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]);
 
 extern void ProcessSpektrumPacket(uint32_t serialNumber);

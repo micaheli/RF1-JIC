@@ -306,7 +306,7 @@ inline void InlineCollectRcCommand (void) {
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
 		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis]) {
 			trueRcCommandF[axis]   = InlineConstrainf ( rangedRx, -1, 1);
-			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis], axis);
+			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis]);
 		} else {
 			// no need to calculate if movement is below deadband
 			trueRcCommandF[axis]   = 0;
@@ -319,7 +319,7 @@ inline void InlineCollectRcCommand (void) {
 }
 
 
-inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo, uint32_t axis) {
+ float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo) {
 
 	float maxOutput, maxOutputMod, returnValue;
 
@@ -328,20 +328,21 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 
 	switch (curveToUse) {
 
-		case SKITZO_PLUS_EXPO: //return skitzo expo after acro_plus is applied
-			maxOutput = (1 + (1  * mainConfig.rcControlsConfig.acroPlus[axis]) ); //max output possible is treated as a value higher than one
-			maxOutputMod = maxOutput * 0.01;
-			returnValue = (maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1)) * rcCommand; //proper expo applied, now we need to scale to -1 to 1
-			return (InlineChangeRangef(returnValue, ABS(maxOutput), -ABS(maxOutput), 1.0, -1.0));
-			break;
-
 		case SKITZO_EXPO:
-			return ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1)) * rcCommand);
+			returnValue = ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0)) * rcCommand * rcCommand);
+			if (rcCommand < 0) {
+				returnValue = -returnValue;
+			}
+			return (returnValue);
 			break;
 
 		case TARANIS_EXPO:
 			return ( expo * (rcCommand * rcCommand * rcCommand) + rcCommand * (1-expo) );
 			break;
+
+		case FAST_EXPO:
+				return ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0)) * rcCommand);
+				break;
 
 		case NO_EXPO:
 		default:

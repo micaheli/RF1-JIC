@@ -142,12 +142,12 @@ void DMA2_Stream4_IRQHandler(void) {
 
 void InitOdd(motor_type actuator) {
 
-	GPIO_InitTypeDef        GPIO_InitStruct;
+	//GPIO_InitTypeDef        GPIO_InitStruct;
 	TIM_TypeDef            *timer;
-	TIM_IC_InitTypeDef      sConfig;
-	TIM_SlaveConfigTypeDef  sSlaveConfig;
-	TIM_ClockConfigTypeDef  sClockSourceConfig;
-	TIM_MasterConfigTypeDef sMasterConfig;
+	//TIM_IC_InitTypeDef      sConfig;
+	//TIM_SlaveConfigTypeDef  sSlaveConfig;
+	//TIM_ClockConfigTypeDef  sClockSourceConfig;
+	//TIM_MasterConfigTypeDef sMasterConfig;
 
 	uint16_t timerPrescaler;
 	uint32_t timerHz;
@@ -329,6 +329,7 @@ void InitOdd(motor_type actuator) {
 //	}
 
     return;
+    /*
     sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
 	if (HAL_TIM_ConfigClockSource(&pwmTimers[actuator.timerHandle], &sClockSourceConfig) != HAL_OK) {
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
@@ -348,25 +349,11 @@ void InitOdd(motor_type actuator) {
 	__TIM3_CLK_ENABLE();
 	HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]);
 	HAL_TIM_IC_Init(&pwmTimers[actuator.timerHandle]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+*/
 
 }
+
+
 void InitDmaInputOnMotors(motor_type actuator) {
 
 	GPIO_InitTypeDef       GPIO_InitStruct;
@@ -424,7 +411,6 @@ void InitDmaInputOnMotors(motor_type actuator) {
 		/* Configuration Error */
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
-	/*##-3
 
 	/* Select the slave Mode: Reset Mode */
 	sSlaveConfig.SlaveMode     = TIM_SLAVEMODE_RESET;
@@ -507,31 +493,8 @@ void InitDmaInputOnMotors(motor_type actuator) {
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
+	(void)(htim);
 	return;
-	//actuator.timChannel
-	if (htim->Channel == board.motors[0].activeTim)
-	{
-		/* Get the Input Capture value */
-		uwIC2Value = HAL_TIM_ReadCapturedValue(htim, board.motors[0].timChannel);
-
-    if (uwIC2Value != 0)
-    {
-      /* Duty cycle computation */
-    	uwIC2Value2 = HAL_TIM_ReadCapturedValue(htim, board.motors[0].timChannelC);
-    	uint32_t diff = uwIC2Value - uwIC2Value2;
-    	uwDutyCycle = ((HAL_TIM_ReadCapturedValue(htim, board.motors[0].timChannelC)) * 100) / uwIC2Value;
-
-      /* uwFrequency computation
-      TIM4 counter clock = (RCC_Clocks.HCLK_Frequency)/2 */
-      uwFrequency = (HAL_RCC_GetHCLKFreq())/2 / uwIC2Value;
-
-    }
-    else
-    {
-      uwDutyCycle = 0;
-      uwFrequency = 0;
-    }
-  }
 }
 
 void InitDmaOutputOnMotors(uint32_t usedFor) {
@@ -576,11 +539,37 @@ void InitDmaOutputOnMotors(uint32_t usedFor) {
 		//pwmHz     = 200000;   //baudrate
 		//onePulse  = 1;
 		//zeroPulse = 230; //240 max, but we can't fill the CCR
-	} else if (usedFor == DMA_OUTPUT_DSHOT) {
+	} else if (usedFor == ESC_DSHOT600) {
+		timerHz   = 24000000;
+		pwmHz     = 600000;
+		onePulse  = 30;
+		zeroPulse = 15;
+		//pwmHz     = 600000;
+		//onePulse  = 30;
+		//zeroPulse = 15;
+		//24,000,000 / 600,000 = 40 ticks per cycle
+		//1/24 = 0.04166666 us
+		//0.04166666 * 40 = 1.66666 us cycles
+		//(1/24)*x = 1.250; x=30;
+		//(1/24)*x = 0.625; x=15;
+	} else if (usedFor == ESC_DSHOT300) {
 		timerHz   = 24000000;
 		pwmHz     = 300000;
 		onePulse  = 60;
 		zeroPulse = 30;
+		//pwmHz     = 600000;
+		//onePulse  = 30;
+		//zeroPulse = 15;
+		//24,000,000 / 600,000 = 40 ticks per cycle
+		//1/24 = 0.04166666 us
+		//0.04166666 * 40 = 1.66666 us cycles
+		//(1/24)*x = 1.250; x=30;
+		//(1/24)*x = 0.625; x=15;
+	} else if (usedFor == ESC_DSHOT150) {
+		timerHz   = 24000000;
+		pwmHz     = 150000;
+		onePulse  = 120;
+		zeroPulse = 60;
 		//pwmHz     = 600000;
 		//onePulse  = 30;
 		//zeroPulse = 15;
@@ -616,8 +605,8 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 
     GPIO_InitTypeDef GPIO_InitStructure;
 	uint16_t timerPrescaler;
-	TIM_MasterConfigTypeDef sMasterConfig;
-	TIM_ClockConfigTypeDef  sClockSourceConfig;
+//	TIM_MasterConfigTypeDef sMasterConfig;
+//	TIM_ClockConfigTypeDef  sClockSourceConfig;
 	TIM_TypeDef *timer;
 
     // GPIO Init
@@ -741,6 +730,7 @@ static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma
 
 
 void ws2812_led_update(uint32_t nLeds) {
+	(void)(nLeds);
 /*
 	//HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1);
 	//HAL_TIM_PWM_Start_DMA(&TimHandle, TIM_CHANNEL_1, (uint32_t *) LEDbuffer, LED_BUFFER_SIZE);
@@ -920,7 +910,6 @@ void TIM2_IRQHandler(void)
 
 void TIM3_IRQHandler(void)
 {
-	volatile uint32_t cat = Micros();
 	HAL_TIM_IRQHandler(&pwmTimers[board.motors[0].timerHandle]);
 }
 

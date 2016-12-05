@@ -10,7 +10,6 @@ biquad_state hpfFilterStateAcc[6];
 
 float kdFiltUsed[AXIS_NUMBER];
 float accNoise[6];
-float maxGyroRate[AXIS_NUMBER];
 float averagedGyroData[AXIS_NUMBER][GYRO_AVERAGE_MAX_SUM];
 uint32_t averagedGyroDataPointer[AXIS_NUMBER];
 float averagedGyroDataPointerMultiplier[AXIS_NUMBER];
@@ -31,14 +30,21 @@ float pitchAttitude = 0, rollAttitude = 0, yawAttitude = 0;
 uint32_t boardOrientation1 = 0;
 uint32_t RfblDisasterPreventionCheck = 1;
 
-uint32_t counterFish = 0;
-uint32_t loopCounter = 0;
+
 float accCompAccTrust, accCompGyroTrust;
+uint32_t khzLoopCounter = 0;
+uint32_t gyroLoopCounter = 0;
 volatile uint32_t SKIP_GYRO = 0;
 float rollAttitudeError = 0;
 float pitchAttitudeError = 0;
 float rollAttitudeErrorKi = 0;
 float pitchAttitudeErrorKi = 0;
+
+
+
+//these numbers change based on loop_control
+loop_speed_record loopSpeed;
+
 
 void ArmBoard(void) {
 	InitWatchdog(WATCHDOG_TIMEOUT_2S);
@@ -189,9 +195,96 @@ void InitFlightCode(void) {
 	averagedGyroDataPointerMultiplier[ROLL]  = (1.0 / (float)mainConfig.pidConfig[ROLL].ga);
 	averagedGyroDataPointerMultiplier[PITCH] = (1.0 / (float)mainConfig.pidConfig[PITCH].ga);
 
-	maxGyroRate[YAW] = (mainConfig.rcControlsConfig.rates[YAW] + (mainConfig.rcControlsConfig.rates[YAW]  * mainConfig.rcControlsConfig.acroPlus[YAW]) );
-	maxGyroRate[ROLL] = (mainConfig.rcControlsConfig.rates[ROLL] + (mainConfig.rcControlsConfig.rates[ROLL]  * mainConfig.rcControlsConfig.acroPlus[ROLL]) );
-	maxGyroRate[PITCH] = (mainConfig.rcControlsConfig.rates[PITCH] + (mainConfig.rcControlsConfig.rates[PITCH]  * mainConfig.rcControlsConfig.acroPlus[PITCH]) );
+	switch (mainConfig.gyroConfig.loopCtrl) {
+		case LOOP_UH32:
+		case LOOP_H32:
+			loopSpeed.gyrodT      = 0.00003125;
+			loopSpeed.dT          = 0.00003125;
+			loopSpeed.uhohNumber  = 16000;
+			loopSpeed.gyroDivider = 1;
+			loopSpeed.khzDivider  = 32;
+			break;
+		case LOOP_UH16:
+		case LOOP_H16:
+			loopSpeed.gyrodT      = 0.00003125;
+			loopSpeed.dT          = 0.00006250;
+			loopSpeed.uhohNumber  = 8000;
+			loopSpeed.gyroDivider = 2;
+			loopSpeed.khzDivider  = 16;
+			break;
+		case LOOP_UH8:
+			loopSpeed.gyrodT      = 0.00003125;
+			loopSpeed.dT          = 0.00012500;
+			loopSpeed.uhohNumber  = 4000;
+			loopSpeed.gyroDivider = 4;
+			loopSpeed.khzDivider  = 8;
+			break;
+		case LOOP_H8:
+		case LOOP_M8:
+			loopSpeed.gyrodT      = 0.00012500;
+			loopSpeed.dT          = 0.00012500;
+			loopSpeed.uhohNumber  = 4000;
+			loopSpeed.gyroDivider = 1;
+			loopSpeed.khzDivider  = 8;
+			break;
+		case LOOP_UH4:
+			loopSpeed.gyrodT      = 0.00003125;
+			loopSpeed.dT          = 0.00025000;
+			loopSpeed.uhohNumber  = 2000;
+			loopSpeed.gyroDivider = 8;
+			loopSpeed.khzDivider  = 4;
+			break;
+		case LOOP_H4:
+		case LOOP_M4:
+			loopSpeed.gyrodT      = 0.00012500;
+			loopSpeed.dT          = 0.00025000;
+			loopSpeed.uhohNumber  = 2000;
+			loopSpeed.gyroDivider = 2;
+			loopSpeed.khzDivider  = 4;
+			break;
+		case LOOP_UH2:
+			loopSpeed.gyrodT      = 0.00003125;
+			loopSpeed.dT          = 0.00050000;
+			loopSpeed.uhohNumber  = 1000;
+			loopSpeed.gyroDivider = 16;
+			loopSpeed.khzDivider  = 2;
+		case LOOP_H2:
+		case LOOP_M2:
+			loopSpeed.gyrodT      = 0.00012500;
+			loopSpeed.dT          = 0.00050000;
+			loopSpeed.uhohNumber  = 1000;
+			loopSpeed.gyroDivider = 4;
+			loopSpeed.khzDivider  = 2;
+			break;
+		case LOOP_UH1:
+			loopSpeed.gyrodT      = 0.00003125;
+			loopSpeed.dT          = 0.00100000;
+			loopSpeed.uhohNumber  = 500;
+			loopSpeed.gyroDivider = 32;
+			loopSpeed.khzDivider  = 1;
+			break;
+		case LOOP_H1:
+		case LOOP_M1:
+			loopSpeed.gyrodT      = 0.00012500;
+			loopSpeed.dT          = 0.00100000;
+			loopSpeed.uhohNumber  = 500;
+			loopSpeed.gyroDivider = 8;
+			loopSpeed.khzDivider  = 1;
+			break;
+		case LOOP_L1:
+		default:
+			loopSpeed.gyrodT      = 0.00100000;
+			loopSpeed.dT          = 0.00100000;
+			loopSpeed.uhohNumber  = 500;
+			loopSpeed.gyroDivider = 1;
+			loopSpeed.khzDivider  = 1;
+			break;
+	}
+
+	loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
+	loopSpeed.InversedT = (1/loopSpeed.dT);
+
+
 
 	actuatorRange   = 0;
 	boardArmed      = 0;
@@ -213,7 +306,7 @@ inline void InlineInitGyroFilters(void)  {
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		InitBiquad(mainConfig.filterConfig[axis].gyro.r, &lpfFilterState[axis], 0.00003125, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.92f);
+		InitBiquad(mainConfig.filterConfig[axis].gyro.r, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.92f);
 
 		//pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
 
@@ -229,7 +322,7 @@ inline void InlineInitKdFilters(void)  {
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		InitBiquad(kdFiltUsed[axis], &lpfFilterStateKd[axis], 0.00003125, FILTER_TYPE_LOWPASS, &lpfFilterStateKd[axis], 1.0f);
+		InitBiquad(kdFiltUsed[axis], &lpfFilterStateKd[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterStateKd[axis], 1.0f);
 
 		//pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
 
@@ -241,12 +334,12 @@ inline void InlineInitKdFilters(void)  {
 
 inline void InlineInitSpectrumNoiseFilter(void) {
 
-	InitBiquad(075, &lpfFilterStateNoise[0], 0.00025, FILTER_TYPE_PEEK, &lpfFilterStateNoise[0], 0.33333333333f);
-	InitBiquad(125, &lpfFilterStateNoise[1], 0.00025, FILTER_TYPE_PEEK, &lpfFilterStateNoise[1], 0.20000000000f);
-	InitBiquad(175, &lpfFilterStateNoise[2], 0.00025, FILTER_TYPE_PEEK, &lpfFilterStateNoise[2], 0.14285714292f);
-	InitBiquad(225, &lpfFilterStateNoise[3], 0.00025, FILTER_TYPE_PEEK, &lpfFilterStateNoise[3], 0.11111111111f);
-	InitBiquad(275, &lpfFilterStateNoise[4], 0.00025, FILTER_TYPE_PEEK, &lpfFilterStateNoise[4], 0.09090909091f);
-	InitBiquad(325, &lpfFilterStateNoise[5], 0.00025, FILTER_TYPE_PEEK, &lpfFilterStateNoise[5], 0.07692307692f);
+	InitBiquad(075, &lpfFilterStateNoise[0], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[0], 0.33333333333f);
+	InitBiquad(125, &lpfFilterStateNoise[1], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[1], 0.20000000000f);
+	InitBiquad(175, &lpfFilterStateNoise[2], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[2], 0.14285714292f);
+	InitBiquad(225, &lpfFilterStateNoise[3], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[3], 0.11111111111f);
+	InitBiquad(275, &lpfFilterStateNoise[4], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[4], 0.09090909091f);
+	InitBiquad(325, &lpfFilterStateNoise[5], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[5], 0.07692307692f);
 
 }
 
@@ -294,9 +387,9 @@ void ComplementaryFilterUpdateAttitude(void)
 	static float pitchAcc = 0, rollAcc = 0;
 
     // Integrate the gyroscope data
-	pitchAttitude += (filteredGyroData[PITCH] * dT);
-	rollAttitude += (filteredGyroData[ROLL] * dT);
-	yawAttitude += (filteredGyroData[YAW] * dT);
+	pitchAttitude += (filteredGyroData[PITCH] * loopSpeed.dT);
+	rollAttitude += (filteredGyroData[ROLL] * loopSpeed.dT);
+	yawAttitude += (filteredGyroData[YAW] * loopSpeed.dT);
 
 	if (yawAttitude > 180)
 		yawAttitude = (yawAttitude - 360);
@@ -369,7 +462,7 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 		return;
 	}
 
-	//update gyro filter
+	//update gyro filter, every time there's an interrupt
 	for (axis = 2; axis >= 0; --axis) {
 		float averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
 		filteredGyroData[axis] = BiquadUpdate(averagedGyro, &lpfFilterState[axis]);
@@ -380,152 +473,137 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 		//filteredGyroData[axis]    = pafGyroStates[axis].x;
 	}
 
-	//smooth the rx data between rx signals
-	InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
+	if (gyroLoopCounter-- == 0) {
 
-	//get setpoint for PIDC
-	if (1==1) { //if rateMode
-		flightSetPoints[YAW]   = -InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
-		flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL]);
-		flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH]);
-	} else { //if rateMode
-		flightSetPoints[YAW]   = -InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
-		rollAttitudeError      = -( rollAttitude - (smoothedRcCommandF[ROLL] * 70) );
-		pitchAttitudeError     = ( pitchAttitude - (smoothedRcCommandF[PITCH] * -70) );
-		rollAttitudeErrorKi    = (rollAttitudeErrorKi+rollAttitudeErrorKi * 3 * dT);
-		pitchAttitudeErrorKi   = (pitchAttitudeErrorKi+pitchAttitudeErrorKi * 3 * dT);
-		flightSetPoints[ROLL]  = (rollAttitudeError * 5) + rollAttitudeErrorKi;
-		flightSetPoints[PITCH] = (pitchAttitudeError * 5) + pitchAttitudeErrorKi;
-	}
+		gyroLoopCounter=loopSpeed.gyroDivider;
 
-	//Run PIDC
-	InlinePidController(filteredGyroData, filteredGyroDataKd, flightSetPoints, flightPids, actuatorRange, mainConfig.pidConfig);
+		//smooth the rx data between rx signals
+		InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
 
-	if (boardArmed) {
-	   if (gyroCalibrationCycles != 0) {
-		   return;
-		}
-		//only run mixer if armed
-		actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
-	} else {
-		//otherwise we keep Ki zeroed.
-
-		flightPids[YAW].ki = 0;
-		flightPids[ROLL].ki = 0;
-		flightPids[PITCH].ki = 0;
-		rollAttitudeErrorKi = 0;
-		pitchAttitudeErrorKi = 0;
-		fullKiLatched = 1;
-	}
-
-	//output to actuators. This is the end of the flight code for this iteration.
-	OutputActuators(motorOutput, servoOutput);
-
-
-	//this code is less important that stabilization, so it happens AFTER stabilization.
-	//Anything changed here can happen after the next iteration without any drawbacks. Stabilization above all else!
-
-	ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
-
-	kdAverage[YAW]   += filteredGyroData[YAW];
-	kdAverage[ROLL]  += filteredGyroData[ROLL];
-	kdAverage[PITCH] += filteredGyroData[PITCH];
-	//MAX_KD
-	if (loopCounter-- == 0) {
-		loopCounter=khzDivider;
-
-		kdAverageCounter++;
-		if (kdAverageCounter == 8) {
-
-			kdAverageCounter=0;
-			kdAverage[YAW]   = kdAverage[YAW] / (khzDivider * 8);
-			kdAverage[ROLL]  = kdAverage[ROLL] / (khzDivider * 8);
-			kdAverage[PITCH] = kdAverage[PITCH] / (khzDivider * 8);
-
-			kdAverage[YAW]   = InlineConstrainf(kdAverage[YAW],  0, 300);
-			kdAverage[ROLL]  = InlineConstrainf(kdAverage[ROLL], 0, 300);
-			kdAverage[PITCH] = InlineConstrainf(kdAverage[PITCH],0, 300);
-
-			//experimental auto filter
-			kdFiltUsed[YAW]   = InlineChangeRangef(ABS(kdAverage[YAW]),   300, 0, mainConfig.filterConfig[YAW].kd.r+10,   mainConfig.filterConfig[YAW].kd.r);
-			kdFiltUsed[ROLL]  = InlineChangeRangef(ABS(kdAverage[ROLL]),  300, 0, mainConfig.filterConfig[ROLL].kd.r+15,  mainConfig.filterConfig[ROLL].kd.r);
-			kdFiltUsed[PITCH] = InlineChangeRangef(ABS(kdAverage[PITCH]), 300, 0, mainConfig.filterConfig[PITCH].kd.r+15, mainConfig.filterConfig[PITCH].kd.r);
-
-			kdAverage[YAW]   = 0;
-			kdAverage[ROLL]  = 0;
-			kdAverage[PITCH] = 0;
-
+		//get setpoint for PIDC
+		if (1==1) { //if rateMode
+			flightSetPoints[YAW]   = -InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
+			flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL]);
+			flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH]);
+		} else { //if angleMode
+			flightSetPoints[YAW]   = -InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
+			rollAttitudeError      = -( rollAttitude - (smoothedRcCommandF[ROLL] * 70) );
+			pitchAttitudeError     = ( pitchAttitude - (smoothedRcCommandF[PITCH] * -70) );
+			rollAttitudeErrorKi    = (rollAttitudeErrorKi+rollAttitudeErrorKi * 3 * loopSpeed.dT);
+			pitchAttitudeErrorKi   = (pitchAttitudeErrorKi+pitchAttitudeErrorKi * 3 * loopSpeed.dT);
+			flightSetPoints[ROLL]  = (rollAttitudeError * 5) + rollAttitudeErrorKi;
+			flightSetPoints[PITCH] = (pitchAttitudeError * 5) + pitchAttitudeErrorKi;
 		}
 
-/*
-		if (trueRcCommandF[AUX3] < -0.5)
-		{
-			mainConfig.filterConfig[YAW].kd.r = 45.0;
-			mainConfig.filterConfig[ROLL].kd.r = 65.0;
-			mainConfig.filterConfig[PITCH].kd.r = 65.0;
-		}
-		else if (trueRcCommandF[AUX3] > 0.5)
-		{
-			mainConfig.filterConfig[YAW].kd.r = 45.0;
-			mainConfig.filterConfig[ROLL].kd.r = 50.0;
-			mainConfig.filterConfig[PITCH].kd.r = 50.0;
-		}
-		else
-		{
-			mainConfig.filterConfig[YAW].kd.r = 45.0;
-			mainConfig.filterConfig[ROLL].kd.r = 57.5;
-			mainConfig.filterConfig[PITCH].kd.r = 57.5;
-		}
-*/
-		CheckFailsafe();
+		//Run PIDC
+		InlinePidController(filteredGyroData, filteredGyroDataKd, flightSetPoints, flightPids, actuatorRange, mainConfig.pidConfig);
 
-		//every 32 cycles we check if the filter needs an update.
-		if (
-				(currentGyroFilterConfig[YAW]   != mainConfig.filterConfig[YAW].gyro.r) ||
-				(currentGyroFilterConfig[ROLL]  != mainConfig.filterConfig[ROLL].gyro.r) ||
-				(currentGyroFilterConfig[PITCH] != mainConfig.filterConfig[PITCH].gyro.r)
-		) {
-			InlineInitGyroFilters();
-		}
+		if (boardArmed) {
+		   if (gyroCalibrationCycles != 0) {
+			   return;
+			}
+			//only run mixer if armed
+			actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
+		} else {
+			//otherwise we keep Ki zeroed.
 
-		if (
-				(currentKdFilterConfig[YAW]   != kdFiltUsed[YAW]) ||
-				(currentKdFilterConfig[ROLL]  != kdFiltUsed[ROLL]) ||
-				(currentKdFilterConfig[PITCH] != kdFiltUsed[PITCH])
-		) {
-			InlineInitKdFilters();
-		}
-
-		if (
-				(currentAccFilterConfig[ACCX] != mainConfig.filterConfig[ACCX].acc.r) ||
-				(currentAccFilterConfig[ACCY] != mainConfig.filterConfig[ACCY].acc.r) ||
-				(currentAccFilterConfig[ACCZ] != mainConfig.filterConfig[ACCZ].acc.r)
-		) {
-			InlineInitAccFilters();
-		}
-
-		//update blackbox here   //void UpdateBlackbox(pid_output *flightPids)
-		UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, filteredAccData);
-
-		//check for fullKiLatched here
-		if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) ) {
+			flightPids[YAW].ki = 0;
+			flightPids[ROLL].ki = 0;
+			flightPids[PITCH].ki = 0;
+			rollAttitudeErrorKi = 0;
+			pitchAttitudeErrorKi = 0;
 			fullKiLatched = 1;
 		}
 
+		//output to actuators. This is the end of the flight code for this iteration.
+		OutputActuators(motorOutput, servoOutput);
 
-		if (RfblDisasterPreventionCheck) {
-			if (InlineMillis() > 5000) {
-				RfblDisasterPreventionCheck = 0;
-				HandleRfblDisasterPrevention();
+
+		//this code is less important that stabilization, so it happens AFTER stabilization.
+		//Anything changed here can happen after the next iteration without any drawbacks. Stabilization above all else!
+
+		ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
+
+		kdAverage[YAW]   += filteredGyroData[YAW];
+		kdAverage[ROLL]  += filteredGyroData[ROLL];
+		kdAverage[PITCH] += filteredGyroData[PITCH];
+		//MAX_KD
+		if (khzLoopCounter-- == 0) {
+			khzLoopCounter=loopSpeed.khzDivider;
+
+			kdAverageCounter++;
+			if (kdAverageCounter == 8) {
+
+				kdAverageCounter=0;
+				kdAverage[YAW]   = kdAverage[YAW] / (loopSpeed.khzDivider * 8);
+				kdAverage[ROLL]  = kdAverage[ROLL] / (loopSpeed.khzDivider * 8);
+				kdAverage[PITCH] = kdAverage[PITCH] / (loopSpeed.khzDivider * 8);
+
+				kdAverage[YAW]   = InlineConstrainf(kdAverage[YAW],  0, 300);
+				kdAverage[ROLL]  = InlineConstrainf(kdAverage[ROLL], 0, 300);
+				kdAverage[PITCH] = InlineConstrainf(kdAverage[PITCH],0, 300);
+
+				//experimental auto filter
+				kdFiltUsed[YAW]   = InlineChangeRangef(ABS(kdAverage[YAW]),   300, 0, mainConfig.filterConfig[YAW].kd.r+10,   mainConfig.filterConfig[YAW].kd.r);
+				kdFiltUsed[ROLL]  = InlineChangeRangef(ABS(kdAverage[ROLL]),  300, 0, mainConfig.filterConfig[ROLL].kd.r+15,  mainConfig.filterConfig[ROLL].kd.r);
+				kdFiltUsed[PITCH] = InlineChangeRangef(ABS(kdAverage[PITCH]), 300, 0, mainConfig.filterConfig[PITCH].kd.r+15, mainConfig.filterConfig[PITCH].kd.r);
+
+				kdAverage[YAW]   = 0;
+				kdAverage[ROLL]  = 0;
+				kdAverage[PITCH] = 0;
+
 			}
+
+			CheckFailsafe();
+
+			//every 32 cycles we check if the filter needs an update.
+			if (
+					(currentGyroFilterConfig[YAW]   != mainConfig.filterConfig[YAW].gyro.r) ||
+					(currentGyroFilterConfig[ROLL]  != mainConfig.filterConfig[ROLL].gyro.r) ||
+					(currentGyroFilterConfig[PITCH] != mainConfig.filterConfig[PITCH].gyro.r)
+			) {
+				InlineInitGyroFilters();
+			}
+
+			if (
+					(currentKdFilterConfig[YAW]   != kdFiltUsed[YAW]) ||
+					(currentKdFilterConfig[ROLL]  != kdFiltUsed[ROLL]) ||
+					(currentKdFilterConfig[PITCH] != kdFiltUsed[PITCH])
+			) {
+				InlineInitKdFilters();
+			}
+
+			if (
+					(currentAccFilterConfig[ACCX] != mainConfig.filterConfig[ACCX].acc.r) ||
+					(currentAccFilterConfig[ACCY] != mainConfig.filterConfig[ACCY].acc.r) ||
+					(currentAccFilterConfig[ACCZ] != mainConfig.filterConfig[ACCZ].acc.r)
+			) {
+				InlineInitAccFilters();
+			}
+
+			//update blackbox here   //void UpdateBlackbox(pid_output *flightPids)
+			UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, filteredAccData);
+
+			//check for fullKiLatched here
+			if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) ) {
+				fullKiLatched = 1;
+			}
+
+
+			if (RfblDisasterPreventionCheck) {
+				if (InlineMillis() > 5000) {
+					RfblDisasterPreventionCheck = 0;
+					HandleRfblDisasterPrevention();
+				}
+			}
+
 		}
 
+
+		//cycle time
+		//flightcodeTime = ( (float)Micros() - (float)flightcodeTimeStart );
+		//debugU32[0] = flightcodeTime;
 	}
-
-
-	//cycle time
-	//flightcodeTime = ( (float)Micros() - (float)flightcodeTimeStart );
-	//debugU32[0] = flightcodeTime;
 }
 
 inline float InlineGetSetPoint(float curvedRcCommandF, float rates, float acroPlus) {
