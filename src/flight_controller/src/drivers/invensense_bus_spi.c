@@ -3,12 +3,11 @@
 
 uint32_t skipGyro = 1;
 
-DMA_HandleTypeDef *dma_gyro_rx;
 
 static void SPI_Init(uint32_t baudRatePrescaler)
 {
 
-	spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle].Instance = spiInstance[board.gyros[0].spiNumber];
+	spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle].Instance               = spiInstance[board.gyros[0].spiNumber];
     HAL_SPI_DeInit(&spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle]);
 
     spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle].Init.Mode              = SPI_MODE_MASTER;
@@ -89,7 +88,7 @@ uint32_t AccGyroInit(loopCtrl_e loopCtrl)
 void GyroExtiCallback(void)
 {
 	static uint32_t gyroLoopCounter = 0;
-	HAL_GPIO_EXTI_IRQHandler(board.gyro_pins.extiPin);
+	HAL_GPIO_EXTI_IRQHandler(board.gyros[0].extiPin);
 
     if (!skipGyro)
     {

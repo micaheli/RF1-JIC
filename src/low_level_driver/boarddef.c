@@ -35,6 +35,11 @@ int InitializeMCUSettings() {
 	//	callbackFunctionArray[x] = 0;
 	//}
 
+	bzero(spiInstance, sizeof(spiInstance));
+	spiInstance[0] = SPI1;
+	spiInstance[1] = SPI2;
+	spiInstance[3] = SPI3;//TODO: Add enum for other SPIs so all boards can use what they have avilable.
+
 	bzero(dmaStream, sizeof(dmaStream));
 	dmaStream[0]  = DMA1_Stream0;
 	dmaStream[1]  = DMA1_Stream1;
@@ -435,7 +440,6 @@ void getBoardHardwareDefs(void)
 	board.gyros[0].extiIRQn    = GYRO_EXTI_IRQn;
 	board.gyros[0].spiFastBaud = GYRO_SPI_FAST_BAUD;
 	board.gyros[0].spiSlowBaud = GYRO_SPI_SLOW_BAUD;
-
 	callbackFunctionArray[FP_EXTI4]   = GyroExtiCallback;
 
 	//SPI settings ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -457,7 +461,7 @@ void getBoardHardwareDefs(void)
 	board.spis[ENUM_SPI1].MOSIAlternate                        = SPI1_MOSI_AF;
 	
 	board.spis[ENUM_SPI1].SPI_IRQn                             = SPI1_IRQn;
-	board.spis[ENUM_SPI1].spiHandle                            = 0;
+	board.spis[ENUM_SPI1].spiHandle                            = ENUM_SPI1;
 
 
 	board.spis[ENUM_SPI1].TXDMA_IRQn                           = SPI1_TX_DMA_IRQn;
@@ -479,7 +483,7 @@ void getBoardHardwareDefs(void)
 	board.dmas[board.spis[ENUM_SPI1].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmas[board.spis[ENUM_SPI1].TXDma].dmaIRQn            = DMA2_Stream3_IRQn;
 	board.dmas[board.spis[ENUM_SPI1].TXDma].dmaHandle          = ENUM_DMA2_STREAM_3;
-	callbackFunctionArray[FP_DMA1_S3]                  = 0;
+	callbackFunctionArray[FP_DMA2_S3]                          = 0;
 
 	board.dmas[board.spis[ENUM_SPI1].RXDma].enabled            = 1;
 	board.dmas[board.spis[ENUM_SPI1].RXDma].dmaStream          = ENUM_DMA2_STREAM_0;
@@ -494,7 +498,7 @@ void getBoardHardwareDefs(void)
 	board.dmas[board.spis[ENUM_SPI1].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmas[board.spis[ENUM_SPI1].RXDma].dmaIRQn            = DMA2_Stream0_IRQn;
 	board.dmas[board.spis[ENUM_SPI1].RXDma].dmaHandle          = ENUM_DMA2_STREAM_0;
-	callbackFunctionArray[FP_DMA2_S0]                  = GyroRxDmaCallback;
+	callbackFunctionArray[FP_DMA2_S0]                          = GyroRxDmaCallback;
 
 
 
@@ -516,7 +520,7 @@ void getBoardHardwareDefs(void)
 	board.spis[ENUM_SPI2].MOSIAlternate                        = SPI2_MOSI_AF;
 	
 	board.spis[ENUM_SPI2].SPI_IRQn                             = SPI2_IRQn;
-	board.spis[ENUM_SPI2].spiHandle                            = 1;
+	board.spis[ENUM_SPI2].spiHandle                            = ENUM_SPI2;
 
 	board.spis[ENUM_SPI2].TXDMA_IRQn                           = SPI2_TX_DMA_IRQn;
 	board.spis[ENUM_SPI2].RXDMA_IRQn                           = SPI2_RX_DMA_IRQn;
@@ -534,7 +538,7 @@ void getBoardHardwareDefs(void)
 	board.dmas[board.spis[ENUM_SPI2].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE; //same
 	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaIRQn            = DMA1_Stream5_IRQn;    //diff
 	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaHandle          = ENUM_DMA1_STREAM_5;   //diff
-	callbackFunctionArray[FP_DMA1_S5]                  = 0;
+	callbackFunctionArray[FP_DMA1_S5]                          = 0;
 
 	board.dmas[board.spis[ENUM_SPI2].RXDma].enabled            = 0;
 	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaStream          = ENUM_DMA1_STREAM_0;
@@ -549,7 +553,7 @@ void getBoardHardwareDefs(void)
 	board.dmas[board.spis[ENUM_SPI2].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaIRQn            = DMA1_Stream0_IRQn;
 	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaHandle          = ENUM_DMA1_STREAM_0;
-	callbackFunctionArray[FP_DMA1_S0]                  = 0;
+	callbackFunctionArray[FP_DMA1_S0]                          = 0;
 
 
 
@@ -571,7 +575,7 @@ void getBoardHardwareDefs(void)
 	board.spis[ENUM_SPI3].MOSIAlternate                        = SPI3_MOSI_AF;
 	
 	board.spis[ENUM_SPI3].SPI_IRQn                             = SPI3_IRQn;
-	board.spis[ENUM_SPI3].spiHandle                            =2;
+	board.spis[ENUM_SPI3].spiHandle                            = ENUM_SPI3;
 
 	board.spis[ENUM_SPI3].TXDMA_IRQn                           = SPI3_TX_DMA_IRQn;
 	board.spis[ENUM_SPI3].RXDMA_IRQn                           = SPI3_RX_DMA_IRQn;
@@ -595,7 +599,7 @@ void getBoardHardwareDefs(void)
 	board.dmas[board.spis[ENUM_SPI3].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE; //same
 	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaIRQn            = DMA1_Stream5_IRQn;    //diff
 	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaHandle          = ENUM_DMA1_STREAM_5;   //diff
-	callbackFunctionArray[FP_DMA1_S5]                  = 0;
+	callbackFunctionArray[FP_DMA1_S5]                          = 0;
 
 	board.dmas[board.spis[ENUM_SPI3].RXDma].enabled            = 1;
 	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaStream          = ENUM_DMA1_STREAM_0;
@@ -610,7 +614,7 @@ void getBoardHardwareDefs(void)
 	board.dmas[board.spis[ENUM_SPI3].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaIRQn            = DMA1_Stream0_IRQn;
 	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaHandle          = ENUM_DMA1_STREAM_0;
-	callbackFunctionArray[FP_DMA1_S0]                  = FlashDmaRxCallback;
+	callbackFunctionArray[FP_DMA1_S0]                          = FlashDmaRxCallback;
 
 
 

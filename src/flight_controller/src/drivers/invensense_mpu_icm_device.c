@@ -148,13 +148,10 @@ int AccGyroDeviceInit(loopCtrl_e gyroLoop)
     	AccGyroVerifyWriteRegister(INVENS_RM_INT_PIN_CFG, INVENS_CONST_INT_RD_CLEAR);
     }
 
-
-#ifdef GYRO_EXTI_GPIO_Port
     // enable data ready interrupt
     AccGyroVerifyWriteRegister(INVENS_RM_INT_ENABLE, INVENS_CONST_DATA_RDY_EN);
-#endif
 
-    return true;
+    return 1;
 }
 
 int AccGyroDeviceDetect(void)
@@ -186,10 +183,10 @@ int AccGyroDeviceDetect(void)
 
     }
     if (attempt == 100) {
-        return false;
+        return 0;
     }
 
-    return false;
+    return 0;
     /* No need to do this
     // read the product id
     AccGyroReadData(INVENS_RM_PRODUCT_ID, &data, 1);
@@ -211,7 +208,7 @@ int AccGyroDeviceDetect(void)
             return true;
     }
 
-    return false;
+    return 0;
     */
 
 }
