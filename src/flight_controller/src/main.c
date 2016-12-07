@@ -47,22 +47,53 @@ int main(void)
 
     InitBuzzer();
     InitLeds();
+
+    //TODO: Only init if we have USB. Some F3s are serial only.
     InitUsb();
-//#ifndef STM32F446xx
-	InitFlashChip();
-    InitFlightLogger();
-//#endif
+
+    //TODO: only init if board config has flash chip selected.
+    //#ifndef STM32F446xx
+//TODO: Add flash to boarddef.c
+//	InitFlashChip();
+//  InitFlightLogger();
+    //#endif
+
     InitRcData();
     InitMixer();
-    InitFlightCode(); //flight code before PID code is a must
-    InitPid();
+    InitFlightCode(); //flight code before PID code is a must since flight.c contains loop time settings the pid.c uses.
+    InitPid();        //Relies on InitFlightCode for proper activations.
+
+    BoardUsartInit(); //most important thing is activated last, the ability to control the craft.
 
     DeinitActuators();
-    InitActuators();
-//    Ws2812LedInit();
+    InitActuators();      //Actuator init should happen after soft serial init.
     ZeroActuators(32000); //output actuators to idle after timers are stable;
 
-    BoardUsartInit();
+
+    //TODO: Move these functions to an init function in DMA shenanigans. F3 and F7 won't need the SPORT function in DMA shenanigans.
+    //LEDs don't work the same time as dshot. Actuator init should cancel out this activation if dshot is enabled, but for now we'll check the config
+//    if ( (mainConfig.mixerConfig.escProtcol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT150) ) {
+//    	//    Ws2812LedInit();
+//    	InitDmaOutputForSoftSerial(DMA_OUTPUT_WS2812_LEDS, board.motors[6]); //Enable LEDs on actuator 6
+//    }
+    //if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT) {
+
+
+
+		InitDmaOutputForSoftSerial(DMA_OUTPUT_SPORT, board.motors[7]); //Enable S.Port on actuator 7, in place of USART 1 RX pin
+		uint32_t currentTime = Micros();
+		__disable_irq();
+    	//prepare soft serial buffer and index
+		softSerialLastByteProcessedLocation = 0;
+		softSerialCurBuf = 0;
+		softSerialInd[softSerialCurBuf] = 0;
+		softSerialBuf[softSerialCurBuf][softSerialInd[softSerialCurBuf]++] = currentTime;
+		//prepare soft serial buffer and index
+		__enable_irq();
+    //}
+
+
+
 
 
     if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl)) {
@@ -94,12 +125,8 @@ void ErrorHandler(uint32_t error)
 		case TIMER_INPUT_INIT_FAILIURE:
 		case MSP_DMA_GYRO_RX_INIT_FAILIURE:
 		case MSP_DMA_GYRO_TX_INIT_FAILIURE:
-		case MSP_DMA_SPI1_RX_INIT_FAILIURE:
-		case MSP_DMA_SPI1_TX_INIT_FAILIURE:
-		case MSP_DMA_SPI2_RX_INIT_FAILIURE:
-		case MSP_DMA_SPI2_TX_INIT_FAILIURE:
-		case MSP_DMA_SPI3_RX_INIT_FAILIURE:
-		case MSP_DMA_SPI3_TX_INIT_FAILIURE:
+		case MSP_DMA_SPI_RX_INIT_FAILIURE:
+		case MSP_DMA_SPI_TX_INIT_FAILIURE:
 			//ping warning to user here, may not a valid reason to crash the board though
 			return;
 			break;

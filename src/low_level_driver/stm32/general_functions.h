@@ -39,12 +39,12 @@ void ErrorHandler(uint32_t error);
 #define SERIAL_INIT_FAILURE               8
 #define MSP_DMA_GYRO_RX_INIT_FAILIURE     9
 #define MSP_DMA_GYRO_TX_INIT_FAILIURE     10
-#define MSP_DMA_SPI1_RX_INIT_FAILIURE     11
-#define MSP_DMA_SPI1_TX_INIT_FAILIURE     12
-#define MSP_DMA_SPI2_RX_INIT_FAILIURE     13
-#define MSP_DMA_SPI2_TX_INIT_FAILIURE     14
-#define MSP_DMA_SPI3_RX_INIT_FAILIURE     15
-#define MSP_DMA_SPI3_TX_INIT_FAILIURE     16
+#define MSP_DMA_SPI_RX_INIT_FAILIURE      11
+#define MSP_DMA_SPI_TX_INIT_FAILIURE      12
+#define NOT_USED1					      13
+#define NOT_USED2					      14
+#define NOT_USED3					      15
+#define NOT_USED4					      16
 #define HARD_FAULT                        17
 #define MEM_FAULT                         18
 #define BUS_FAULT                         19
@@ -104,4 +104,8 @@ void ErrorHandler(uint32_t error);
 #define RFBLMR1	0xF443DEFA
 #define RFBLMR2	0x1AE82FA6
 
-enum{FC_STATUS_INFLIGHT=100,FC_STATUS_IDLE,FC_STATUS_CONFIG,FC_STATUS_STARTUP};
+#define FC_STATUS_INFLIGHT 100
+#define FC_STATUS_IDLE     101
+#define FC_STATUS_CONFIG   102
+#define FC_STATUS_STARTUP  103
+

@@ -42,6 +42,8 @@ void UsartInit(uint32_t serialNumber) {
 			rxPin  = board.serials[serialNumber].RXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].RXPort];
+			board.dmas[board.serials[serialNumber].TXDma].enabled = 1;
+			board.dmas[board.serials[serialNumber].RXDma].enabled = 1;
 			break;
 		case USING_SPEKTRUM_TWO_WAY:
 			board.serials[serialNumber].FrameSize  = 16;
@@ -55,19 +57,24 @@ void UsartInit(uint32_t serialNumber) {
 			rxPin  = board.serials[serialNumber].TXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].TXPort];
+			board.dmas[board.serials[serialNumber].TXDma].enabled = 1;
+			board.dmas[board.serials[serialNumber].RXDma].enabled = 1;
 			break;
 		case USING_SBUS:
+		case USING_SBUS_SPORT:
 			board.serials[serialNumber].FrameSize  = 25;
 			board.serials[serialNumber].BaudRate   = 100000;
 			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
 			board.serials[serialNumber].StopBits   = UART_STOPBITS_2;
 			board.serials[serialNumber].Parity     = UART_PARITY_EVEN;
 			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
-			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
+			board.serials[serialNumber].Mode       = UART_MODE_RX; //sbus only has input, TX is handled via soft serial
 			txPin  = board.serials[serialNumber].TXPin;
 			rxPin  = board.serials[serialNumber].RXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].RXPort];
+			board.dmas[board.serials[serialNumber].TXDma].enabled = 0;
+			board.dmas[board.serials[serialNumber].RXDma].enabled = 1;
 			break;
 		case USING_MANUAL:
 		default:
@@ -80,17 +87,22 @@ void UsartInit(uint32_t serialNumber) {
 
 
 	/*##-2- Configure peripheral GPIO ##########################################*/
-	HAL_GPIO_DeInit(txPort, txPin);
+	if (board.serials[serialNumber].Mode != UART_MODE_RX)
+		HAL_GPIO_DeInit(txPort, txPin); //no need for TX pin is serial is in RX only mode.
+
 	HAL_GPIO_DeInit(rxPort, rxPin);
 
 	/* UART TX GPIO pin configuration  */
-	GPIO_InitStruct.Pin       = txPin;
+	if (board.serials[serialNumber].Mode != UART_MODE_RX)
+		GPIO_InitStruct.Pin       = txPin; //no need for TX pin is serial is in RX only mode.
+
 	GPIO_InitStruct.Mode      = board.serials[serialNumber].PinMode;
 	GPIO_InitStruct.Pull      = board.serials[serialNumber].Pull;
 	GPIO_InitStruct.Speed     = board.serials[serialNumber].Speed;
 	GPIO_InitStruct.Alternate = board.serials[serialNumber].TXAlternate;
 
-	HAL_GPIO_Init(txPort, &GPIO_InitStruct);
+	if (board.serials[serialNumber].Mode != UART_MODE_RX)
+		HAL_GPIO_Init(txPort, &GPIO_InitStruct);
 
 	/* UART RX GPIO pin configuration  */
 	GPIO_InitStruct.Pin = rxPin;
@@ -98,8 +110,6 @@ void UsartInit(uint32_t serialNumber) {
 
 	HAL_GPIO_Init(rxPort, &GPIO_InitStruct);
 
-	//inlineDigitalHi(txPort, txPin);
-	//inlineDigitalHi(rxPort, rxPin);
 
 	/*##-1- Configure the UART peripheral ######################################*/
 	/* Put the USART peripheral in the Asynchronous mode (UART Mode) */
@@ -272,6 +282,11 @@ void BoardUsartInit (void) {
 		board.serials[ENUM_USART3].enabled  = 0;
 		board.serials[ENUM_USART1].enabled  = 1;
 		board.serials[ENUM_USART1].Protocol = USING_SBUS;
+	} else
+	if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT) {
+		board.serials[ENUM_USART3].enabled  = 0;
+		board.serials[ENUM_USART1].enabled  = 0;
+		board.serials[ENUM_USART1].Protocol = USING_SBUS_SPORT;
 	}
 
 	lastRXPacket = InlineMillis();
@@ -328,7 +343,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				dmaIndex[serialNumber] = 0;
 				if ((board.serials[serialNumber].Protocol == USING_SPEKTRUM_TWO_WAY) || (board.serials[serialNumber].Protocol == USING_SPEKTRUM_ONE_WAY))
 					ProcessSpektrumPacket(serialNumber);
-				else if (board.serials[serialNumber].Protocol == USING_SBUS)
+				else if ((board.serials[serialNumber].Protocol == USING_SBUS) || (board.serials[serialNumber].Protocol == USING_SBUS_SPORT))
 					ProcessSbusPacket(serialNumber);
 			}
 			break;

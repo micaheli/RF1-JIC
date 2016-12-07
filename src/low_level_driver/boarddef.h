@@ -1,17 +1,15 @@
 #pragma once
 
+
 #include "mcu_include.h"
+
 
 #define MAX_MOTOR_NUMBER 8
 #define MAX_SERVO_NUMBER 8
-#define MAX_USARTS 6
-#define RXBUFFERSIZE 64
-#define TXBUFFERSIZE 64
+#define MAX_USARTS       6
+#define RXBUFFERSIZE     64
+#define TXBUFFERSIZE     64
 
-#define USING_MANUAL           0
-#define USING_SPEKTRUM_ONE_WAY 1
-#define USING_SPEKTRUM_TWO_WAY 2
-#define USING_SBUS             3
 
 #define uid0_1 (*(uint8_t*)0x1fff7a10)
 #define uid0_2 (*(uint8_t*)0x1fff7a11)
@@ -26,6 +24,38 @@
 #define uid2_3 (*(uint8_t*)0x1fff7a1a)
 #define uid2_4 (*(uint8_t*)0x1fff7a1b)
 
+#define ENUM_SPI1 0
+#define ENUM_SPI2 1
+#define ENUM_SPI3 2
+#define ENUM_SPI4 3
+#define ENUM_SPI5 4
+#define ENUM_SPI6 5
+
+#define FP_EXTI0     0
+#define FP_EXTI1     1
+#define FP_EXTI2     2
+#define FP_EXTI3     3
+#define FP_EXTI4     4
+#define FP_EXTI9_5   5
+#define FP_EXTI15_10 6
+#define FP_DMA1_S0   7
+#define FP_DMA1_S1   8
+#define FP_DMA1_S2   9
+#define FP_DMA1_S3   10
+#define FP_DMA1_S4   11
+#define FP_DMA1_S5   12
+#define FP_DMA1_S6   13
+#define FP_DMA1_S7   14
+#define FP_DMA2_S0   15
+#define FP_DMA2_S1   16
+#define FP_DMA2_S2   17
+#define FP_DMA2_S3   18
+#define FP_DMA2_S4   19
+#define FP_DMA2_S5   20
+#define FP_DMA2_S6   21
+#define FP_DMA2_S7   22
+#define IRQH_FP_TOT  23
+
 
 #define _PORTA 0
 #define _PORTB 1
@@ -37,6 +67,7 @@
 #define _PORTH 7
 #define _PORTI 8
 
+
 #define ENUM_PORTA _PORTA
 #define ENUM_PORTB _PORTB
 #define ENUM_PORTC _PORTC
@@ -47,12 +78,14 @@
 #define ENUM_PORTH _PORTH
 #define ENUM_PORTI _PORTI
 
+
 #define ENUM_USART1_IRQn 0
 #define ENUM_USART2_IRQn 1
 #define ENUM_USART3_IRQn 2
 #define ENUM_USART4_IRQn 3
 #define ENUM_USART5_IRQn 4
 #define ENUM_USART6_IRQn 5
+
 
 #define ENUMTIM1	0
 #define ENUMTIM2	1
@@ -127,12 +160,14 @@
 #define	TIM14CCR3 54
 #define	TIM14CCR4 55
 
+
 #define ENUM_USART1 0
 #define ENUM_USART2 1
 #define ENUM_USART3 2
 #define ENUM_USART4 3
 #define ENUM_USART5 4
 #define ENUM_USART6 5
+
 
 #define ENUM_DMA1_STREAM_0 0
 #define ENUM_DMA1_STREAM_1 1
@@ -150,9 +185,6 @@
 #define ENUM_DMA2_STREAM_5 13
 #define ENUM_DMA2_STREAM_6 14
 #define ENUM_DMA2_STREAM_7 15
-
-
-#define	REVO
 
 
 //USB config
@@ -178,18 +210,20 @@ typedef struct {
 	SPI_TypeDef				*port;
 } spi_type;
 
+
 typedef struct {
 	uint32_t				enabled;
+	uint32_t				instance;
 
 	uint32_t				NSSPin;
 	uint32_t				SCKPin;
 	uint32_t				MISOPin;
 	uint32_t				MOSIPin;
 
-	GPIO_TypeDef *			NSSPort;
-	GPIO_TypeDef *			SCKPort;
-	GPIO_TypeDef *			MISOPort;
-	GPIO_TypeDef *			MOSIPort;
+	uint32_t				NSSPort;
+	uint32_t				SCKPort;
+	uint32_t				MISOPort;
+	uint32_t				MOSIPort;
 	
 	//uint32_t				NSSAlternate;
 	uint32_t				SCKAlternate;
@@ -199,35 +233,10 @@ typedef struct {
 	//uint32_t				GPIOSpeed;
 	
 	uint32_t				SPI_IRQn;
+	uint32_t 				spiHandle;
 
 	uint32_t				TXDma;
 	uint32_t				RXDma;
-
-	//below not needed since DMAs are now in an array
-	DMA_Stream_TypeDef *	TXDMAStream; // looked up from array
-	uint32_t				TXDMAChannel;
-	uint32_t				TXDMADirection;
-	uint32_t				TXDMAPeriphInc;
-	uint32_t				TXDMAMemInc;
-	uint32_t				TXDMAPeriphDataAlignment;
-	uint32_t				TXDMAMemDataAlignment;
-	uint32_t				TXDMAMode;
-	uint32_t				TXDMAPriority;
-	uint32_t				TXDMAFIFOMode;
-
-	DMA_Stream_TypeDef *	RXDMAStream; // looked up from array
-	uint32_t				RXDMAChannel;
-	uint32_t				RXDMADirection;
-	uint32_t				RXDMAPeriphInc;
-	uint32_t				RXDMAMemInc;
-	uint32_t				RXDMAPeriphDataAlignment;
-	uint32_t				RXDMAMemDataAlignment;
-	uint32_t				RXDMAMode;
-	uint32_t				RXDMAPriority;
-	uint32_t				RXDMAFIFOMode;
-
-
-
 
 	uint32_t				TXDMA_IRQn;
 	uint32_t				RXDMA_IRQn;
@@ -299,9 +308,15 @@ typedef struct {
 } internal_led_type;
 
 typedef struct {
-	uint32_t				port;
-	uint32_t				pin;
 	uint32_t				enabled;
+	uint32_t				spiNumber;
+	uint32_t				csPin;
+	uint32_t				csPort;
+	uint32_t				extiPin;
+	uint32_t				extiPort;
+	uint32_t				extiIRQn;
+	uint32_t				spiFastBaud;
+	uint32_t				spiSlowBaud;
 } gyro_type;
 
 typedef struct {
@@ -336,6 +351,7 @@ typedef struct {
 	uint32_t				motorOutputBuffer;
  	uint32_t				motorOutputLength;
  	uint32_t				sConfigOCHandle;
+ 	uint32_t				EXTIn;
 } motor_type;
 
 
@@ -360,7 +376,7 @@ typedef struct {
 
 	board_gyro				gyro_pins;
 
-	board_spi				spis[3];
+	board_spi				spis[6];
 
 	board_serial			serials[6];
 
@@ -416,6 +432,10 @@ typedef struct
 
 */
 
+typedef void (*function_pointer)(void);
+
+extern function_pointer callbackFunctionArray[];
+
 extern board_type          board;
 extern GPIO_TypeDef       *ports[];
 extern volatile uint32_t  *ccr[];
@@ -426,10 +446,12 @@ extern UART_HandleTypeDef  uartHandles[];
 extern DMA_HandleTypeDef   dmaHandles[];
 extern TIM_HandleTypeDef   pwmTimers[];
 extern TIM_OC_InitTypeDef  sConfigOCHandles[];
+extern SPI_HandleTypeDef   spiHandles[];
+extern SPI_TypeDef        *spiInstance[];
 
 extern unsigned char serialTxBuffer[][TXBUFFERSIZE];
 extern unsigned char serialRxBuffer[][RXBUFFERSIZE];
-extern uint32_t motorOutputBuffer[][32];
+extern uint32_t motorOutputBuffer[][128];
 
 extern int InitializeMCUSettings();
 void getBoardHardwareDefs();

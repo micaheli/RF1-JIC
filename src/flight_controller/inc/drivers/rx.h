@@ -46,7 +46,9 @@ enum {
 	ACCY = 1,
 	ACCZ = 2,
 };
+
 //We can use different styles of curves
+//used in config.c string table
 enum {
 	NO_EXPO = 0,
 	SKITZO_EXPO = 1,
@@ -55,6 +57,14 @@ enum {
 	ACRO_PLUS = 33,
 	EXPO_CURVE_END,
 };
+
+//used in config.c string table
+#define USING_MANUAL           0
+#define USING_SPEKTRUM_ONE_WAY 1
+#define USING_SPEKTRUM_TWO_WAY 2
+#define USING_SBUS             3
+#define USING_SBUS_SPORT       4
+
 
 extern volatile uint32_t rx_timeout;
 extern float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position

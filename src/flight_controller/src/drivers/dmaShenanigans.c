@@ -17,8 +17,13 @@ DMA_HandleTypeDef  ws2812_led;
 TIM_HandleTypeDef  pwmTimerBase;
 
 uint32_t dmaTriggered = 0;
-uint32_t onePulseWidth[16];
-uint32_t zeroPulseWidth[16];
+uint32_t onePulseWidth[17];
+uint32_t zeroPulseWidth[17];
+uint32_t alonePulseWidth[17];
+uint32_t normalPulseWidth[17];
+uint32_t endPulseWidth[17];
+uint32_t loPulseWidth[17];
+
 
 uint32_t testBuffer[88];
 
@@ -72,35 +77,41 @@ ws2812Led_t purple = {
 
 
 static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma actuatorDma);
-static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timerHz);
+static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timerHz, uint32_t inverted);
 
-void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_type actuator, uint32_t msb) {
+#define NO_PULSE 0
+#define LO_PULSE 1
+#define HI_PULSE 2
+
+void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_type actuator, uint32_t msb, uint32_t sendFrame) {
 
 	int32_t  bitIdx;
 	uint32_t bufferIdx = 0;
 	uint32_t outputIndex;
 	uint32_t bitsPerFrame = 8;
 
-    motorOutputBuffer[actuator.motorOutputBuffer][bufferIdx++] = 0;
+	uint8_t tempBuffer[256];
+
+	tempBuffer[bufferIdx++] = NO_PULSE;
 
     for (outputIndex = 0; outputIndex < outputLength; outputIndex++) { //Send Data MSB by default
 
     	if (!msb)
     		serialOutBuffer[outputIndex] = BitReverse8(serialOutBuffer[outputIndex]); //for LSB we do this
 
-    	//used for proper serial, not ws2812
-    	//motorOutputBuffer[actuator.motorOutputBuffer][bufferIdx++] = zeroPulseWidth[actuator.timerHandle];//frame start
+    	if (sendFrame)
+    		tempBuffer[bufferIdx++] = HI_PULSE;//frame start
+
         for (bitIdx = (bitsPerFrame - 1); bitIdx >= 0; bitIdx--) {
-        	motorOutputBuffer[actuator.motorOutputBuffer][bufferIdx++] = (serialOutBuffer[outputIndex] & (1 << bitIdx)) ? onePulseWidth[actuator.timerHandle+1] : zeroPulseWidth[actuator.timerHandle+1]; //load data into framedata one bit at a time
-         }
-        //used for proper serial, not ws2812
-        //motorOutputBuffer[actuator.motorOutputBuffer][bufferIdx++] = onePulseWidth[actuator.timerHandle]; //stop bit
+        	tempBuffer[bufferIdx++] = (serialOutBuffer[outputIndex] & (1 << bitIdx)) ? LO_PULSE : HI_PULSE; //load data into framedata one bit at a time
+        }
+
+        if (sendFrame)
+        	tempBuffer[bufferIdx++] = LO_PULSE; //stop bit, single stop bit only right now.
 
     }
 
-    motorOutputBuffer[actuator.motorOutputBuffer][bufferIdx++] = 0;
-
-//	inlineDigitalHi(ports[board.motors[3].port], board.motors[3].pin);
+	tempBuffer[bufferIdx] = NO_PULSE;
 
     //HAL_TIM_PWM_Stop(&pwmTimers[actuator.timerHandle], actuator.timChannel);
 	//HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.timerHandle], &sConfigOCHandles[actuator.sConfigOCHandle], actuator.timChannel); //todo: array of sConfigOC
@@ -120,6 +131,36 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 //	htim->hdma[actuator.CcDmaHandle]->XferErrorCallback = TIM_DMAError;
 //  HAL_DMA_Start_IT(htim->hdma[actuator.CcDmaHandle], (uint32_t)motorOutputBuffer[actuator.motorOutputBuffer], (uint32_t)&htim->Instance->CCR3,bufferIdx);
 
+//zeroPulseWidth[actuator.timerHandle+1]
+
+
+    motorOutputBuffer[actuator.motorOutputBuffer][0] = 0;
+    motorOutputBuffer[actuator.motorOutputBuffer][bufferIdx] = 0;
+
+    for (uint32_t x = 1; x < (bufferIdx - 1); x++) { //first bit is always a 0, last bit is always a 0
+
+    	if (tempBuffer[x] == HI_PULSE) { //this is a high bit high bit
+    		if (tempBuffer[x+1] == HI_PULSE) //After bit is high so this is a normal bit
+    		{
+				motorOutputBuffer[actuator.motorOutputBuffer][x] = normalPulseWidth[actuator.timerHandle+1];
+			} else
+			if ( ( tempBuffer[x-1] < HI_PULSE ) && (tempBuffer[x+1] < HI_PULSE) ) //B4 bit is low and AR bit low, so this is an ALONE BIT
+			{
+				motorOutputBuffer[actuator.motorOutputBuffer][x] = alonePulseWidth[actuator.timerHandle+1];;
+			} else
+			if ( ( tempBuffer[x-1] == HI_PULSE ) && (tempBuffer[x+1] < HI_PULSE) ) //B4 bit is high and AR bit low, so this is an END BIT
+			{
+				motorOutputBuffer[actuator.motorOutputBuffer][x] = endPulseWidth[actuator.timerHandle+1];
+			} else
+			{
+				motorOutputBuffer[actuator.motorOutputBuffer][x] = normalPulseWidth[actuator.timerHandle+1];
+			}
+    	} else {
+    		motorOutputBuffer[actuator.motorOutputBuffer][x] = loPulseWidth[actuator.timerHandle+1];
+    	}
+
+    }
+
 	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.timerHandle], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.motorOutputBuffer], bufferIdx);
 
 //	inlineDigitalLo(ports[board.motors[3].port], board.motors[3].pin);
@@ -128,16 +169,6 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 
 void TIM8_CC_IRQHandler(void) {
 	HAL_TIM_IRQHandler(&softSerialClockTimer);
-}
-
-void DMA2_Stream1_IRQHandler(void) {
-    HAL_NVIC_ClearPendingIRQ(DMA2_Stream1_IRQn);
-    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_1]);
-}
-
-void DMA2_Stream4_IRQHandler(void) {
-    HAL_NVIC_ClearPendingIRQ(DMA2_Stream4_IRQn);
-    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_4]);
 }
 
 void InitOdd(motor_type actuator) {
@@ -497,20 +528,67 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	return;
 }
 
+void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator) {
+
+	uint32_t timerHz;
+	uint32_t pwmHz;
+	uint32_t normalPulse;
+	uint32_t alonePulse;
+	uint32_t endPulse;
+	uint32_t loPulse;
+	uint32_t inverted;
+
+	if (usedFor == DMA_OUTPUT_WS2812_LEDS) {
+
+		timerHz   = 24000000;
+		pwmHz     = 800000;
+		//onePulse  = 17;
+		//zeroPulse = 8;
+
+		normalPulse = 17;
+		alonePulse  = 17;
+		endPulse    = 17;
+		loPulse     = 8;
+
+		inverted  = 1;
+
+	} else if (usedFor == DMA_OUTPUT_SPORT) {
+
+		timerHz   = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833
+		pwmHz     = 57600;   //baudrate
+
+		normalPulse = 833; //833 max, but we can't fill the CCR
+		alonePulse  = 820;
+		endPulse    = 1;
+		loPulse     = 0;
+
+		inverted    = 1;
+
+	}
+
+	alonePulseWidth[actuator.timerHandle+1]  = alonePulse;
+	normalPulseWidth[actuator.timerHandle+1] = normalPulse;
+	endPulseWidth[actuator.timerHandle+1]    = endPulse;
+	loPulseWidth[actuator.timerHandle+1]     = loPulse;
+
+	InitOutputForDma(actuator, pwmHz, timerHz, inverted);
+
+}
+
 void InitDmaOutputOnMotors(uint32_t usedFor) {
 
 	uint32_t timerHz;
 	uint32_t pwmHz;
 	uint32_t onePulse;
 	uint32_t zeroPulse;
-	bzero(onePulseWidth, sizeof(onePulseWidth));
-	bzero(zeroPulseWidth, sizeof(zeroPulseWidth));
+	uint32_t inverted;
 
 	if (usedFor == DMA_OUTPUT_WS2812_LEDS) {
 		timerHz   = 24000000;
 		pwmHz     = 800000;
 		onePulse  = 17;
 		zeroPulse = 8;
+		inverted  = 1;
 	} else if (usedFor == DMA_OUTPUT_ESC_1WIRE) {
 		//17 / 24 = 0.708 us
 	    // note that the timer is running at 24 MHZ, with a period of 30 cycles
@@ -523,10 +601,17 @@ void InitDmaOutputOnMotors(uint32_t usedFor) {
 		//52 ticks is a 1 and 0 ticks is a 0 for serial
 
 		//19200KBAUD
-		timerHz   = 48000000; //48 MHz frequency is perfectly fine for 19200 Baud.
-		pwmHz     = 19200;   //baudrate
-		onePulse  = 1;
-		zeroPulse = 2490; //2500 max, but we can't fill the CCR
+		//timerHz   = 48000000; //48 MHz frequency is perfectly fine for 19200 Baud.
+		//pwmHz     = 19200;   //baudrate
+		//onePulse  = 1;
+		//zeroPulse = 2490; //2500 max, but we can't fill the CCR
+
+		//57600KBAUD
+		timerHz   = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833
+		pwmHz     = 57600;   //baudrate
+		onePulse  = 0;
+		zeroPulse = 832; //833 max, but we can't fill the CCR
+		inverted  = 1;
 
 		//100KBAUD
 		//timerHz   = 48000000; //48 MHz frequency is perfectly fine for 19200 Baud.
@@ -540,10 +625,6 @@ void InitDmaOutputOnMotors(uint32_t usedFor) {
 		//onePulse  = 1;
 		//zeroPulse = 230; //240 max, but we can't fill the CCR
 	} else if (usedFor == ESC_DSHOT600) {
-		timerHz   = 24000000;
-		pwmHz     = 600000;
-		onePulse  = 30;
-		zeroPulse = 15;
 		//pwmHz     = 600000;
 		//onePulse  = 30;
 		//zeroPulse = 15;
@@ -552,39 +633,30 @@ void InitDmaOutputOnMotors(uint32_t usedFor) {
 		//0.04166666 * 40 = 1.66666 us cycles
 		//(1/24)*x = 1.250; x=30;
 		//(1/24)*x = 0.625; x=15;
+		timerHz   = 24000000;
+		pwmHz     = 600000;
+		onePulse  = 30;
+		zeroPulse = 15;
+		inverted  = 1;
 	} else if (usedFor == ESC_DSHOT300) {
 		timerHz   = 24000000;
 		pwmHz     = 300000;
 		onePulse  = 60;
 		zeroPulse = 30;
-		//pwmHz     = 600000;
-		//onePulse  = 30;
-		//zeroPulse = 15;
-		//24,000,000 / 600,000 = 40 ticks per cycle
-		//1/24 = 0.04166666 us
-		//0.04166666 * 40 = 1.66666 us cycles
-		//(1/24)*x = 1.250; x=30;
-		//(1/24)*x = 0.625; x=15;
+		inverted  = 1;
 	} else if (usedFor == ESC_DSHOT150) {
 		timerHz   = 24000000;
 		pwmHz     = 150000;
 		onePulse  = 120;
 		zeroPulse = 60;
-		//pwmHz     = 600000;
-		//onePulse  = 30;
-		//zeroPulse = 15;
-		//24,000,000 / 600,000 = 40 ticks per cycle
-		//1/24 = 0.04166666 us
-		//0.04166666 * 40 = 1.66666 us cycles
-		//(1/24)*x = 1.250; x=30;
-		//(1/24)*x = 0.625; x=15;
+		inverted  = 1;
 	}
 
 	for (uint32_t motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
 		if ( (board.motors[motorNum].enabled) && (board.dmasMotor[board.motors[motorNum].Dma].enabled) ) {
 			onePulseWidth[board.motors[motorNum].timerHandle+1]  = onePulse;
 			zeroPulseWidth[board.motors[motorNum].timerHandle+1] = zeroPulse;
-			InitOutputForDma(board.motors[motorNum], pwmHz, timerHz);
+			InitOutputForDma(board.motors[motorNum], pwmHz, timerHz, inverted);
 		}
 	}
 
@@ -601,13 +673,15 @@ void InitDmaOutputOnMotors(uint32_t usedFor) {
 //    HAL_GPIO_Init(ports[board.motors[3].port], &GPIO_InitStructure);
 }
 
-static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timerHz) {
+static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timerHz, uint32_t inverted) {
 
     GPIO_InitTypeDef GPIO_InitStructure;
 	uint16_t timerPrescaler;
 //	TIM_MasterConfigTypeDef sMasterConfig;
 //	TIM_ClockConfigTypeDef  sClockSourceConfig;
 	TIM_TypeDef *timer;
+
+	(void)(inverted);
 
     // GPIO Init
     HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
@@ -616,7 +690,7 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 
     GPIO_InitStructure.Pin       = actuator.pin;
     GPIO_InitStructure.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP
-    GPIO_InitStructure.Pull      = GPIO_PULLDOWN; //GPIO_PULLUP //pull up for non inverted, pull down for inverted
+    GPIO_InitStructure.Pull      = GPIO_PULLUP; //GPIO_PULLUP //pull up for non inverted, pull down for inverted
     GPIO_InitStructure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStructure.Alternate = actuator.AF;
 
@@ -632,10 +706,8 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
     }
 
 
-
-
     //Timer Init
-    timer        = timers[actuator.timer];
+    timer = timers[actuator.timer];
 
 	if(timer == TIM1 || timer == TIM8 || timer == TIM9|| timer == TIM10|| timer == TIM11) {
 		timerPrescaler = (SystemCoreClock / timerHz) - 1;
@@ -660,7 +732,7 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 //	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.timerHandle], &sMasterConfig);
 
 	sConfigOCHandles[actuator.sConfigOCHandle].OCMode       = TIM_OCMODE_PWM1;
-	sConfigOCHandles[actuator.sConfigOCHandle].Pulse        = 0;
+	sConfigOCHandles[actuator.sConfigOCHandle].Pulse        = 400;
 	//inverted serial and PWM use TIM_OCPOLARITY_HIGH, normal serial uses TIM_OCPOLARITY_LOW
 	sConfigOCHandles[actuator.sConfigOCHandle].OCPolarity   = TIM_OCPOLARITY_HIGH;
 	//sConfigOCHandles[actuator.sConfigOCHandle].OCPolarity  = TIM_OCPOLARITY_LOW;
@@ -680,7 +752,7 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 	bzero(motorOutputBuffer[actuator.motorOutputBuffer],sizeof(motorOutputBuffer[actuator.motorOutputBuffer]));
 
 	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.timerHandle], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.motorOutputBuffer], 1);
-    HAL_NVIC_SetPriority(actuator.timerIRQn, 0, 0);
+    HAL_NVIC_SetPriority(actuator.timerIRQn, 3, 0);
     HAL_NVIC_EnableIRQ(actuator.timerIRQn);
 
 }
@@ -901,61 +973,3 @@ void Ws2812LedInit( void )
 */
 }
 
-
-
-void TIM2_IRQHandler(void)
-{
-	//HAL_TIM_IRQHandler(&TimHandle);
-}
-
-void TIM3_IRQHandler(void)
-{
-	HAL_TIM_IRQHandler(&pwmTimers[board.motors[0].timerHandle]);
-}
-
-void TIM8_UP_TIM13_IRQHandler(void)
-{
-	HAL_TIM_IRQHandler(&softSerialClockTimer);
-//	if (inlineIsPinStatusHi(ports[board.motors[0].port], board.motors[0].pin))
-//		inlineDigitalHi(ports[board.motors[0].port], board.motors[0].pin);
-//	else
-//		inlineDigitalLo(ports[board.motors[0].port], board.motors[0].pin);
-}
-
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	if(htim->Instance == TIM8)
-	{
-		//HAL_TIM_IRQHandler(&softSerialClockTimer);
-		//if (inlineIsPinStatusHi(ports[board.motors[0].port], board.motors[0].pin))
-		//	inlineDigitalHi(ports[board.motors[0].port], board.motors[0].pin);
-		//else
-		//	inlineDigitalLo(ports[board.motors[0].port], board.motors[0].pin);
-		//HAL_TIM_Base_Stop_IT(htim);
-		//HAL_GPIO_WritePin(GPIOG,GPIO_PIN_2,GPIO_PIN_RESET);
-    }
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//TODO: add back support for DMA
-/*
-void DMA1_Stream1_IRQHandler(void) {
-	HAL_DMA_IRQHandler(&ws2812_led);
-	HAL_TIM_PWM_Stop(&pwmTimerBase, board.motors[3].timChannel);
-	dmaTriggered = 1;
-}
-*/

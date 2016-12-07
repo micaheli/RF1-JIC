@@ -234,7 +234,7 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 			if (board.motors[motorNum].enabled) {
 				if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) ) {
 					ThrottleToDshot(serialOutBuffer, motorOutput[motorNum], mainConfig.mixerConfig.idlePercent);
-					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1);
+					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1, 0);
 				} else {
 					*ccr[board.motors[motorNum].timCCR] = (uint16_t)(motorOutput[motorNum] * (float)pulseValueRange) + idlePulseValue;
 				}
@@ -263,7 +263,7 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 			if (board.motors[motorNum].enabled) {
 				if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) ) {
 					ThrottleToDshot(serialOutBuffer, 0, 0);
-					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1);
+					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1, 0);
 				} else {
 					*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
 				}
@@ -284,7 +284,7 @@ void ZeroActuators(uint32_t delayUs) {
 		if (board.motors[motorNum].enabled) {
 			if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) ) {
 				ThrottleToDshot(serialOutBuffer, 0, 0);
-				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1); //buffer with data, number of bytes, actuator to output on, msb
+				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1, 0); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
 			} else {
 				*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
 			}

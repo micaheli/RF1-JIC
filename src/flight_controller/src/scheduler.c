@@ -2,9 +2,32 @@
 
 extern uint8_t tOutBuffer[];
 extern uint8_t tInBuffer[];
-uint32_t skipTaskHandlePcComm = 0;
-uint32_t failsafeStage        = 0;
-uint32_t autoSaveTimer        = 0;
+uint32_t skipTaskHandlePcComm   = 0;
+uint32_t failsafeStage          = 0;
+uint32_t autoSaveTimer          = 0;
+uint32_t firstRun               = 1;
+volatile uint32_t lastTimeSPort = 0;
+volatile uint32_t okToSendSPort = 0;
+volatile uint32_t sPortExtiSet  = 0;
+
+//soft serial buffer handling. TODO: make a structure
+volatile uint32_t softSerialBuf[2][SOFT_SERIAL_BIT_TIME_ARRAY_SIZE];
+volatile uint32_t softSerialInd[2];
+volatile uint32_t softSerialCurBuf;
+volatile uint32_t softSerialLastByteProcessedLocation;
+volatile uint32_t softSerialSwitchBuffer;
+static uint8_t proccesedSoftSerial[25]; //25 byte buffer enough?
+static uint32_t proccesedSoftSerialIdx = 0;
+static uint32_t softSerialLineIdleSensed = 0;
+static uint32_t lastBitFound = 0;
+
+
+static void TaskProcessSoftSerial(void);
+static void TaskTelemtry(void);
+static void TaskAutoSaveConfig(void);
+static void TaskHandlePcComm(void);
+static void TaskLed(void);
+static void TaskBuzzer(void);
 
 void scheduler(int32_t count)
 {
@@ -12,20 +35,22 @@ void scheduler(int32_t count)
 	switch (count) {
 
 		case 0:
-			taskHandlePcComm();
+			TaskHandlePcComm();
 			break;
 		case 1:
-			taskLed();
+			TaskLed();
 			break;
 		case 2:
-			taskBuzzer();
+			TaskBuzzer();
 			break;
 		case 3:
-			taskAutoSaveConfig();
+			TaskAutoSaveConfig();
 			break;
 		case 4:
+			TaskProcessSoftSerial();
 			break;
 		case 5:
+			TaskTelemtry();
 			break;
 		case 6:
 			break;
@@ -40,6 +65,7 @@ void scheduler(int32_t count)
 		case 11:
 			break;
 		case 12:
+			firstRun = 0;
 			break;
 		default:
 			break;
@@ -48,7 +74,247 @@ void scheduler(int32_t count)
 
 }
 
-inline void taskAutoSaveConfig(void) {
+ void TaskProcessSoftSerial(void) {
+
+	uint32_t x;
+	uint32_t currentTime;
+	uint32_t bytesExist;
+	uint32_t currentBits[10];
+	uint32_t packetBitSize;
+	uint32_t totalBitSize;
+	uint32_t currentBitsIdx;
+	uint32_t currentBitsIdxCtr;
+	uint32_t timeToUse;
+	uint32_t bitTimeReplacement;
+	uint32_t bitIdx;
+	uint16_t byte;
+
+	currentTime = Micros();
+
+	//assuming 57600 BAUD for now. 17.25 us per bit on average, 1 stop bit, no parity. max number of interrupts for this byte would be 10, min number would be 2
+	//about 172 us per byte, assume the byte is complete 180 us after a pause of 200us
+	//a bit is going to be
+	packetBitSize = 10; //frame 1 then 8 bits of data in lsb format then frame 0
+	//assuming 200 us space between packets for now
+	//assuming inverted serial for now. Always starts with a high (0) after a long pause
+
+	if ((currentTime - lastBitFound > 200) && (proccesedSoftSerialIdx > 0) ) //we have data and line is at idle
+		softSerialLineIdleSensed = 1;
+
+	if (softSerialSwitchBuffer)
+		return;
+
+	if (softSerialInd[softSerialCurBuf] > 60) {
+		softSerialSwitchBuffer = 1;
+		return;
+	}
+
+	//look for bytes first:
+	bytesExist = 0;
+	for (x = softSerialLastByteProcessedLocation;x < softSerialInd[softSerialCurBuf]; x++) {
+
+		timeToUse = softSerialBuf[softSerialCurBuf][x+1];
+		if (timeToUse < softSerialBuf[softSerialCurBuf][x]) {
+			timeToUse = currentTime;
+		}
+
+		if ( (timeToUse - softSerialBuf[softSerialCurBuf][x] > 200) ) { //first bit, let look for end of byte
+			if (currentTime - timeToUse > 180) { //do we possibly have a full byte?
+				softSerialLastByteProcessedLocation = x+1;
+				bytesExist = 1;
+
+				break;
+			} else {
+				return;
+			}
+		}
+	}
+
+	if (bytesExist) {
+
+		currentBitsIdx = 0;
+		totalBitSize = 0;
+
+		for (x = 0;x < packetBitSize; x++) {
+
+			timeToUse = softSerialBuf[softSerialCurBuf][softSerialLastByteProcessedLocation+1];
+			if (timeToUse < softSerialBuf[softSerialCurBuf][softSerialLastByteProcessedLocation]) {
+				timeToUse = currentTime;
+			}
+
+			//			if (timeToUse == currentTime) //last bits are all zero
+
+			currentBits[currentBitsIdx] = (uint32_t)roundf( (float)( timeToUse - softSerialBuf[softSerialCurBuf][softSerialLastByteProcessedLocation] ) / 17.25 );
+			totalBitSize += currentBits[currentBitsIdx];
+
+
+
+			if (totalBitSize > packetBitSize) {
+				currentBits[currentBitsIdx] -= (packetBitSize - totalBitSize);
+				break;
+			} else if (totalBitSize == packetBitSize) {
+				break;
+			}
+			softSerialLastByteProcessedLocation++;
+			currentBitsIdx++;
+		}
+
+	} else {
+		return;
+	}
+
+	bitIdx = 0;
+	byte   = 0;
+	uint32_t high = 1;// high pulse is first when it's an inverted signal, but a high pulse is considered a 0;
+	//this record the bits in the order they come in. LSB or MSB are ignored.
+	for (currentBitsIdxCtr = 0; currentBitsIdxCtr < currentBitsIdx; currentBitsIdxCtr++) { //for each pack of bits, first is high then next is low
+		if (high) {
+			for (x = 0; x < currentBits[currentBitsIdxCtr]; x++)
+				byte |= ( (1 << bitIdx++) ); //for inverted signal a low pulse is a 1. We & it with the bit position;
+			high = 0; //set next operation to low
+		} else {
+			for (x = 0; x < currentBits[currentBitsIdxCtr]; x++)
+				bitIdx++; //byte |= ( (0 << bitIdx++) ); //for inverted signal a high pulse is a 0. We & it with the bit position;
+			high = 1; //set next operation to high
+		}
+	}
+
+
+	softSerialBuf[softSerialCurBuf][softSerialLastByteProcessedLocation] = bitTimeReplacement = softSerialBuf[softSerialCurBuf][softSerialLastByteProcessedLocation-currentBitsIdx]-30; //make processing next byte easier by making sure difference is greater than 200 (assuming 57600)
+
+
+	proccesedSoftSerial[proccesedSoftSerialIdx++] = ~(uint8_t)((byte >> 1) & 0xFF);
+	lastBitFound = currentTime;
+	if (proccesedSoftSerialIdx == 25) {
+		proccesedSoftSerialIdx = 0;
+		volatile uint32_t cat = proccesedSoftSerial[1];
+		if (cat == 55555555) {
+			return;
+		} else
+			return;
+	} else {
+		return;
+	}
+	//once done, byte should have our 10 bit frame
+
+
+}
+
+void SoftSerialCallback (void) {
+
+	uint32_t x;
+
+	/* EXTI line interrupt detected */
+	if(__HAL_GPIO_EXTI_GET_IT(board.motors[7].pin) != RESET)
+	{
+
+		__HAL_GPIO_EXTI_CLEAR_IT(board.motors[7].pin);
+
+
+		softSerialBuf[softSerialCurBuf][softSerialInd[softSerialCurBuf]++] = Micros();
+
+		if (softSerialSwitchBuffer) {
+
+			if (softSerialCurBuf == 1)
+			{
+				softSerialInd[0] = 0; //set next buffer index to 0
+
+				for (x = (softSerialLastByteProcessedLocation + 1); x < (softSerialCurBuf + 1); x++) {
+					softSerialBuf[0][softSerialInd[0]++] = softSerialBuf[1][x]; //load unprocessed data into new buffer
+				}
+				softSerialLastByteProcessedLocation = 0;
+				softSerialCurBuf = 0;
+				softSerialSwitchBuffer = 0;
+
+			}
+			else
+			{
+				softSerialInd[1] = 0; //set next buffer index to 0
+
+				for (x = (softSerialLastByteProcessedLocation + 1); x < (softSerialCurBuf + 1); x++) {
+					softSerialBuf[1][softSerialInd[1]++] = softSerialBuf[0][x]; //load unprocessed data into new buffer
+				}
+				softSerialLastByteProcessedLocation = 0;
+				softSerialCurBuf = 1;
+				softSerialSwitchBuffer = 0;
+
+			}
+
+		}
+
+	}
+
+}
+
+void TaskTelemtry(void) {
+
+	GPIO_InitTypeDef GPIO_InitStructure;
+	static uint32_t telemCount = 0;
+	volatile uint32_t currentTime;
+
+	if (softSerialLineIdleSensed) {
+
+		if ( (proccesedSoftSerial[0] == 0x7E) && (proccesedSoftSerial[1] == 0x1B) ) {
+			//send telemetry here
+			lastTimeSPort = InlineMillis();
+
+			HAL_GPIO_DeInit(ports[board.motors[7].port], board.motors[7].pin);
+
+			//Set pin to timer now that IRQ has occurred.
+			GPIO_InitStructure.Pin       = board.motors[7].pin;
+			GPIO_InitStructure.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP
+			GPIO_InitStructure.Pull      = GPIO_PULLUP; //GPIO_PULLUP //pull up for non inverted, pull down for inverted
+			GPIO_InitStructure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+			GPIO_InitStructure.Alternate = board.motors[7].AF;
+
+			HAL_GPIO_Init(ports[board.motors[7].port], &GPIO_InitStructure);
+			okToSendSPort = 1;
+			sPortExtiSet = 0;
+		}
+		for (uint32_t x=0;x<25;x++)
+			proccesedSoftSerial[x] = 0;
+
+		proccesedSoftSerialIdx   = 0;
+		softSerialLineIdleSensed = 0;
+		softSerialLineIdleSensed = 0;
+
+	}
+	currentTime = InlineMillis();
+	if ( ( currentTime - lastTimeSPort  > 2 ) && ( okToSendSPort ) ) { //interrupt 5 ms ago. (last updated is greater than 20)
+		okToSendSPort = 0; //latch sending s.port off. EXTI turns it back on.
+
+		if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT) {
+
+			switch(telemCount++) {
+				case 0:
+					SmartPortSendPackage(0x0700, (uint32_t)(filteredAccData[ACCX] * 100) );
+					//SmartPortSendPackage(0x0700, dataToSend );
+					break;
+				case 1:
+					SmartPortSendPackage(0x0710, (uint32_t)(filteredAccData[ACCY] * 100) );
+					//SmartPortSendPackage(0x0710, dataToSend );
+					break;
+				case 2:
+					SmartPortSendPackage(0x0720, (uint32_t)(filteredAccData[ACCZ] * 100) );
+					//SmartPortSendPackage(0x0720, dataToSend );
+					//break;
+				case 3:
+					telemCount = 0;
+					break;
+
+			}
+
+		}
+	}
+
+	if ( (currentTime - lastTimeSPort > 8) && (!sPortExtiSet) ) { //15 ms since EXTI occurred, let's look for another EXTI now
+		sPortExtiSet = 1;
+		EXTI_Init(ports[board.motors[7].port], board.motors[7].pin, EXTI9_5_IRQn, 0, 1, GPIO_MODE_IT_RISING_FALLING);
+	}
+
+}
+
+inline void TaskAutoSaveConfig(void) {
 	autoSaveTimer = 0;
 	return;
 	if (!boardArmed) {
@@ -59,7 +325,7 @@ inline void taskAutoSaveConfig(void) {
 	}
 }
 
-inline void taskHandlePcComm(void)
+inline void TaskHandlePcComm(void)
 {
 	if (skipTaskHandlePcComm)
 		return;
@@ -73,18 +339,18 @@ inline void taskHandlePcComm(void)
 
 }
 
-inline void taskLed(void)
+inline void TaskLed(void)
 {
-	static uint32_t lastUpdate = 0;
+	//static uint32_t lastUpdate = 0;
 	UpdateLeds();
 
-	if ( ( InlineMillis() - lastUpdate ) > 100 ) {
-		lastUpdate = InlineMillis();
-		ws2812_led_update(mainConfig.ledConfig.ledCount);
-	}
+	//if ( ( InlineMillis() - lastUpdate ) > 100 ) {
+	//	lastUpdate = InlineMillis();
+	//	ws2812_led_update(mainConfig.ledConfig.ledCount);
+	//}
 }
 
-inline void taskBuzzer(void)
+inline void TaskBuzzer(void)
 {
 	UpdateBuzzer();
 }

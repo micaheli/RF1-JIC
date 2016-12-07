@@ -97,55 +97,206 @@ void OTG_FS_IRQHandler(void)
 
 
 
+void TIM1_CC_IRQHandler(void)
+{
+	//HAL_TIM_IRQHandler(&TimHandle);
+}
+
+
+void TIM2_IRQHandler(void)
+{
+	//HAL_TIM_IRQHandler(&TimHandle);
+}
+
+void TIM3_IRQHandler(void)
+{
+//	HAL_TIM_IRQHandler(&pwmTimers[board.motors[0].timerHandle]);
+}
+
+void TIM8_UP_TIM13_IRQHandler(void)
+{
+//	HAL_TIM_IRQHandler(&softSerialClockTimer);
+//	if (inlineIsPinStatusHi(ports[board.motors[0].port], board.motors[0].pin))
+//		inlineDigitalHi(ports[board.motors[0].port], board.motors[0].pin);
+//	else
+//		inlineDigitalLo(ports[board.motors[0].port], board.motors[0].pin);
+}
+
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	(void)(htim);
+	//if(htim->Instance == TIM8)
+	//{
+		//HAL_TIM_IRQHandler(&softSerialClockTimer);
+		//if (inlineIsPinStatusHi(ports[board.motors[0].port], board.motors[0].pin))
+		//	inlineDigitalHi(ports[board.motors[0].port], board.motors[0].pin);
+		//else
+		//	inlineDigitalLo(ports[board.motors[0].port], board.motors[0].pin);
+		//HAL_TIM_Base_Stop_IT(htim);
+		//HAL_GPIO_WritePin(GPIOG,GPIO_PIN_2,GPIO_PIN_RESET);
+    //}
+
+}
+
+
+void DMA1_Stream0_IRQHandler(void) {
+	HAL_NVIC_ClearPendingIRQ(DMA1_Stream0_IRQn);
+	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_0]);
+	if (callbackFunctionArray[FP_DMA1_S0])
+		callbackFunctionArray[FP_DMA1_S0]();
+}
+
 void DMA1_Stream1_IRQHandler(void) {
 	HAL_NVIC_ClearPendingIRQ(DMA1_Stream1_IRQn);
 	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_1]);
-	//dma needs a function pointer
-	//HAL_TIM_PWM_Stop(&pwmTimers[board.motors[3].timerHandle], board.motors[3].timChannel);
+	if (callbackFunctionArray[FP_DMA1_S1])
+		callbackFunctionArray[FP_DMA1_S1]();
 }
 
 void DMA1_Stream2_IRQHandler(void) {
 	HAL_NVIC_ClearPendingIRQ(DMA1_Stream2_IRQn);
 	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_2]);
+	if (callbackFunctionArray[FP_DMA1_S2])
+		callbackFunctionArray[FP_DMA1_S2]();
 }
 
 void DMA1_Stream3_IRQHandler(void) {
 	HAL_NVIC_ClearPendingIRQ(DMA1_Stream3_IRQn);
 	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_3]);
+	if (callbackFunctionArray[FP_DMA1_S3])
+		callbackFunctionArray[FP_DMA1_S3]();
 }
 
 void DMA1_Stream4_IRQHandler(void) {
 	HAL_NVIC_ClearPendingIRQ(DMA1_Stream4_IRQn);
 	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_4]);
+	if (callbackFunctionArray[FP_DMA1_S4])
+		callbackFunctionArray[FP_DMA1_S4]();
 }
 
-//void DMA1_Stream5_IRQHandler(void) {
-//	HAL_NVIC_ClearPendingIRQ(DMA1_Stream5_IRQn);
-//	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_5]);
-//}
+void DMA1_Stream5_IRQHandler(void) {
+	HAL_NVIC_ClearPendingIRQ(DMA1_Stream5_IRQn);
+	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_5]);
+	if (callbackFunctionArray[FP_DMA1_S5])
+		callbackFunctionArray[FP_DMA1_S5]();
+}
 
 void DMA1_Stream6_IRQHandler(void) {
 	HAL_NVIC_ClearPendingIRQ(DMA1_Stream6_IRQn);
 	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_6]);
+	if (callbackFunctionArray[FP_DMA1_S6])
+		callbackFunctionArray[FP_DMA1_S6]();
 }
 
 void DMA1_Stream7_IRQHandler(void) {
 	HAL_NVIC_ClearPendingIRQ(DMA1_Stream7_IRQn);
 	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_7]);
+	if (callbackFunctionArray[FP_DMA1_S7])
+		callbackFunctionArray[FP_DMA1_S7]();
+}
+
+void DMA2_Stream0_IRQHandler(void) {
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream0_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_0]);
+    if (callbackFunctionArray[FP_DMA2_S0])
+   		callbackFunctionArray[FP_DMA2_S0]();
+}
+
+void DMA2_Stream1_IRQHandler(void) {
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream1_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_1]);
+    if (callbackFunctionArray[FP_DMA2_S1])
+		callbackFunctionArray[FP_DMA2_S1]();
 }
 
 void DMA2_Stream2_IRQHandler(void) {
     HAL_NVIC_ClearPendingIRQ(DMA2_Stream2_IRQn);
     HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_2]);
+    if (callbackFunctionArray[FP_DMA2_S2])
+		callbackFunctionArray[FP_DMA2_S2]();
 }
 
 void DMA2_Stream3_IRQHandler(void)
 {
     HAL_NVIC_ClearPendingIRQ(DMA2_Stream3_IRQn);
     HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_3]);
+    if (callbackFunctionArray[FP_DMA2_S3])
+		callbackFunctionArray[FP_DMA2_S3]();
+}
+
+void DMA2_Stream4_IRQHandler(void)
+{
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream4_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_4]);
+    if (callbackFunctionArray[FP_DMA2_S4])
+		callbackFunctionArray[FP_DMA2_S4]();
+}
+
+void DMA2_Stream5_IRQHandler(void)
+{
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream5_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_5]);
+    if (callbackFunctionArray[FP_DMA2_S5])
+		callbackFunctionArray[FP_DMA2_S5]();
+}
+
+void DMA2_Stream6_IRQHandler(void) {
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream6_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_6]);
+    if (callbackFunctionArray[FP_DMA2_S6])
+		callbackFunctionArray[FP_DMA2_S6]();
 }
 
 void DMA2_Stream7_IRQHandler(void) {
     HAL_NVIC_ClearPendingIRQ(DMA2_Stream7_IRQn);
     HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_7]);
+    if (callbackFunctionArray[FP_DMA2_S7])
+		callbackFunctionArray[FP_DMA2_S7]();
+}
+
+
+
+
+
+void EXTI0_IRQHandler(void)
+{
+	if (callbackFunctionArray[FP_EXTI0])
+		callbackFunctionArray[FP_EXTI0]();
+}
+
+void EXTI1_IRQHandler(void)
+{
+	if (callbackFunctionArray[FP_EXTI1])
+		callbackFunctionArray[FP_EXTI1]();
+}
+
+void EXTI2_IRQHandler(void)
+{
+	if (callbackFunctionArray[FP_EXTI2])
+		callbackFunctionArray[FP_EXTI2]();
+}
+
+void EXTI3_IRQHandler(void)
+{
+	if (callbackFunctionArray[FP_EXTI3])
+		callbackFunctionArray[FP_EXTI3]();
+}
+
+void EXTI4_IRQHandler(void)
+{
+	if (callbackFunctionArray[FP_EXTI4])
+		callbackFunctionArray[FP_EXTI4]();
+}
+
+void EXTI9_5_IRQHandler(void)
+{
+	if (callbackFunctionArray[FP_EXTI9_5])
+		callbackFunctionArray[FP_EXTI9_5]();
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+	if (callbackFunctionArray[FP_EXTI15_10])
+		callbackFunctionArray[FP_EXTI15_10]();
 }

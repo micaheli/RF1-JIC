@@ -85,6 +85,13 @@ const string_comp_rec stringCompTable[] = {
 		{"ACRO_PLUS",    ACRO_PLUS    },
 		{"NO_EXPO",      NO_EXPO      },
 
+		//rx.h
+//		{"USING_MANUAL",           USING_MANUAL},
+		{"USING_SPEKTRUM_ONE_WAY", USING_SPEKTRUM_ONE_WAY},
+		{"USING_SPEKTRUM_TWO_WAY", USING_SPEKTRUM_TWO_WAY},
+		{"USING_SBUS",             USING_SBUS},
+		{"USING_SBUS_SPORT",       USING_SBUS_SPORT},
+
 };
 
 const config_variables_rec valueTable[] = {
@@ -1276,7 +1283,7 @@ void ProcessCommand(char *inString)
 
 			mainConfig.rcControlsConfig.rcCalibrated         = 1;
 
-			mainConfig.rcControlsConfig.rxProtcol            = USING_SBUS; //this is used by serial.c
+			mainConfig.rcControlsConfig.rxProtcol            = USING_SBUS_SPORT; //this is used by serial.c
 
 			resetBoard = 1;
 

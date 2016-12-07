@@ -14,7 +14,7 @@
 #include "../../low_level_driver/boarddef.h"
 #include "mcu_include.h"
 #include "general_functions.h"
-
+#include "exti.h"
 
 //general includes
 #include "pid.h"
@@ -26,6 +26,7 @@
 #include "scheduler.h"
 #include "flight_logger.h"
 #include "rfbl_functions.h"
+#include "sPortTelemetry.h"
 
 
 //input
