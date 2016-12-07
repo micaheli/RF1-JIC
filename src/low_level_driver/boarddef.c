@@ -503,119 +503,124 @@ void getBoardHardwareDefs(void)
 
 
 	board.spis[ENUM_SPI2].enabled                              = SPI2_ENABLE;
-	board.spis[ENUM_SPI2].instance                             = ENUM_SPI2;
+	if (board.spis[ENUM_SPI2].enabled ) {
+		board.spis[ENUM_SPI2].instance                             = ENUM_SPI2;
 
-	board.spis[ENUM_SPI2].NSSPin                               = SPI2_NSS_PIN;
-	board.spis[ENUM_SPI2].SCKPin                               = SPI2_SCK_PIN;
-	board.spis[ENUM_SPI2].MISOPin                              = SPI2_MISO_PIN;
-	board.spis[ENUM_SPI2].MOSIPin                              = SPI2_MOSI_PIN;
+		board.spis[ENUM_SPI2].NSSPin                               = SPI2_NSS_PIN;
+		board.spis[ENUM_SPI2].SCKPin                               = SPI2_SCK_PIN;
+		board.spis[ENUM_SPI2].MISOPin                              = SPI2_MISO_PIN;
+		board.spis[ENUM_SPI2].MOSIPin                              = SPI2_MOSI_PIN;
 
-	board.spis[ENUM_SPI2].NSSPort                              = SPI2_NSS_GPIO_PORT;
-	board.spis[ENUM_SPI2].SCKPort                              = SPI2_SCK_GPIO_PORT;
-	board.spis[ENUM_SPI2].MISOPort                             = SPI2_MISO_GPIO_PORT;
-	board.spis[ENUM_SPI2].MOSIPort                             = SPI2_MOSI_GPIO_PORT;
+		board.spis[ENUM_SPI2].NSSPort                              = SPI2_NSS_GPIO_PORT;
+		board.spis[ENUM_SPI2].SCKPort                              = SPI2_SCK_GPIO_PORT;
+		board.spis[ENUM_SPI2].MISOPort                             = SPI2_MISO_GPIO_PORT;
+		board.spis[ENUM_SPI2].MOSIPort                             = SPI2_MOSI_GPIO_PORT;
+
+		board.spis[ENUM_SPI2].SCKAlternate                         = SPI2_SCK_AF;
+		board.spis[ENUM_SPI2].MISOAlternate                        = SPI2_MISO_AF;
+		board.spis[ENUM_SPI2].MOSIAlternate                        = SPI2_MOSI_AF;
+
+		board.spis[ENUM_SPI2].SPI_IRQn                             = SPI2_IRQn;
+		board.spis[ENUM_SPI2].spiHandle                            = ENUM_SPI2;
+
+		board.spis[ENUM_SPI2].TXDMA_IRQn                           = SPI2_TX_DMA_IRQn;
+		board.spis[ENUM_SPI2].RXDMA_IRQn                           = SPI2_RX_DMA_IRQn;
+
+		board.spis[ENUM_SPI2].TXDma 		                       = ENUM_DMA1_STREAM_5;
+		board.spis[ENUM_SPI2].RXDma 		                       = ENUM_DMA1_STREAM_2;
 	
-	board.spis[ENUM_SPI2].SCKAlternate                         = SPI2_SCK_AF;
-	board.spis[ENUM_SPI2].MISOAlternate                        = SPI2_MISO_AF;
-	board.spis[ENUM_SPI2].MOSIAlternate                        = SPI2_MOSI_AF;
+		board.dmas[board.spis[ENUM_SPI2].TXDma].enabled            = 0;
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaStream          = ENUM_DMA1_STREAM_5;   //diff between all SPIs
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaChannel         = DMA_CHANNEL_0;        //diff
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH; //same between all SPIs, diff between TX/RX
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;     //same
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaMemInc          = DMA_MINC_ENABLE;      //same
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;  //same
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;  //same
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaMode            = DMA_NORMAL;           //same
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaPriority        = DMA_PRIORITY_HIGH;    //same, maybe we should change them
+		board.dmas[board.spis[ENUM_SPI2].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE; //same
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaIRQn            = DMA1_Stream5_IRQn;    //diff
+		board.dmas[board.spis[ENUM_SPI2].TXDma].dmaHandle          = ENUM_DMA1_STREAM_5;   //diff
+		callbackFunctionArray[FP_DMA1_S5]                          = 0;
 	
-	board.spis[ENUM_SPI2].SPI_IRQn                             = SPI2_IRQn;
-	board.spis[ENUM_SPI2].spiHandle                            = ENUM_SPI2;
-
-	board.spis[ENUM_SPI2].TXDMA_IRQn                           = SPI2_TX_DMA_IRQn;
-	board.spis[ENUM_SPI2].RXDMA_IRQn                           = SPI2_RX_DMA_IRQn;
-
-	board.dmas[board.spis[ENUM_SPI2].TXDma].enabled            = 0;
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaStream          = ENUM_DMA1_STREAM_5;   //diff between all SPIs
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaChannel         = DMA_CHANNEL_0;        //diff
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH; //same between all SPIs, diff between TX/RX
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;     //same
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaMemInc          = DMA_MINC_ENABLE;      //same
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;  //same
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;  //same
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaMode            = DMA_NORMAL;           //same
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaPriority        = DMA_PRIORITY_HIGH;    //same, maybe we should change them
-	board.dmas[board.spis[ENUM_SPI2].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE; //same
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaIRQn            = DMA1_Stream5_IRQn;    //diff
-	board.dmas[board.spis[ENUM_SPI2].TXDma].dmaHandle          = ENUM_DMA1_STREAM_5;   //diff
-	callbackFunctionArray[FP_DMA1_S5]                          = 0;
-
-	board.dmas[board.spis[ENUM_SPI2].RXDma].enabled            = 0;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaStream          = ENUM_DMA1_STREAM_0;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaChannel         = DMA_CHANNEL_0;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaMemInc          = DMA_MINC_ENABLE;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaMode            = DMA_NORMAL;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaPriority        = DMA_PRIORITY_HIGH;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaIRQn            = DMA1_Stream0_IRQn;
-	board.dmas[board.spis[ENUM_SPI2].RXDma].dmaHandle          = ENUM_DMA1_STREAM_0;
-	callbackFunctionArray[FP_DMA1_S0]                          = 0;
-
+		board.dmas[board.spis[ENUM_SPI2].RXDma].enabled            = 0;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaStream          = ENUM_DMA1_STREAM_0;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaChannel         = DMA_CHANNEL_0;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaMemInc          = DMA_MINC_ENABLE;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaMode            = DMA_NORMAL;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaPriority        = DMA_PRIORITY_HIGH;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaIRQn            = DMA1_Stream0_IRQn;
+		board.dmas[board.spis[ENUM_SPI2].RXDma].dmaHandle          = ENUM_DMA1_STREAM_0;
+		callbackFunctionArray[FP_DMA1_S0]                          = 0;
+	}
 
 
 	board.spis[ENUM_SPI3].enabled                              = SPI3_ENABLE;
-	board.spis[ENUM_SPI3].instance                             = ENUM_SPI3;
+	if (board.spis[ENUM_SPI3].enabled) {
+		board.spis[ENUM_SPI3].instance                             = ENUM_SPI3;
 
-	board.spis[ENUM_SPI3].NSSPin                               = SPI3_NSS_PIN;
-	board.spis[ENUM_SPI3].SCKPin                               = SPI3_SCK_PIN;
-	board.spis[ENUM_SPI3].MISOPin                              = SPI3_MISO_PIN;
-	board.spis[ENUM_SPI3].MOSIPin                              = SPI3_MOSI_PIN;
+		board.spis[ENUM_SPI3].NSSPin                               = SPI3_NSS_PIN;
+		board.spis[ENUM_SPI3].SCKPin                               = SPI3_SCK_PIN;
+		board.spis[ENUM_SPI3].MISOPin                              = SPI3_MISO_PIN;
+		board.spis[ENUM_SPI3].MOSIPin                              = SPI3_MOSI_PIN;
 
-	board.spis[ENUM_SPI3].NSSPort                              = SPI3_NSS_GPIO_PORT;
-	board.spis[ENUM_SPI3].SCKPort                              = SPI3_SCK_GPIO_PORT;
-	board.spis[ENUM_SPI3].MISOPort                             = SPI3_MISO_GPIO_PORT;
-	board.spis[ENUM_SPI3].MOSIPort                             = SPI3_MOSI_GPIO_PORT;
+		board.spis[ENUM_SPI3].NSSPort                              = SPI3_NSS_GPIO_PORT;
+		board.spis[ENUM_SPI3].SCKPort                              = SPI3_SCK_GPIO_PORT;
+		board.spis[ENUM_SPI3].MISOPort                             = SPI3_MISO_GPIO_PORT;
+		board.spis[ENUM_SPI3].MOSIPort                             = SPI3_MOSI_GPIO_PORT;
+
+		board.spis[ENUM_SPI3].SCKAlternate                         = SPI3_SCK_AF;
+		board.spis[ENUM_SPI3].MISOAlternate                        = SPI3_MISO_AF;
+		board.spis[ENUM_SPI3].MOSIAlternate                        = SPI3_MOSI_AF;
+
+		board.spis[ENUM_SPI3].SPI_IRQn                             = SPI3_IRQn;
+		board.spis[ENUM_SPI3].spiHandle                            = ENUM_SPI3;
+
+		board.spis[ENUM_SPI3].TXDMA_IRQn                           = SPI3_TX_DMA_IRQn;
+		board.spis[ENUM_SPI3].RXDMA_IRQn                           = SPI3_RX_DMA_IRQn;
+
+		board.spis[ENUM_SPI3].TXDMA_IRQn                           = SPI3_TX_DMA_IRQn;
+		board.spis[ENUM_SPI3].RXDMA_IRQn                           = SPI3_RX_DMA_IRQn;
+
+		board.spis[ENUM_SPI3].TXDma 		                       = ENUM_DMA1_STREAM_5;
+		board.spis[ENUM_SPI3].RXDma 		                       = ENUM_DMA1_STREAM_2;
 	
-	board.spis[ENUM_SPI3].SCKAlternate                         = SPI3_SCK_AF;
-	board.spis[ENUM_SPI3].MISOAlternate                        = SPI3_MISO_AF;
-	board.spis[ENUM_SPI3].MOSIAlternate                        = SPI3_MOSI_AF;
+		board.dmas[board.spis[ENUM_SPI3].TXDma].enabled            = 1;
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaStream          = ENUM_DMA1_STREAM_5;   //diff between all SPIs
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaChannel         = DMA_CHANNEL_0;        //diff
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH; //same between all SPIs, diff between TX/RX
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;     //same
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaMemInc          = DMA_MINC_ENABLE;      //same
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;  //same
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;  //same
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaMode            = DMA_NORMAL;           //same
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaPriority        = DMA_PRIORITY_HIGH;    //same, maybe we should change them
+		board.dmas[board.spis[ENUM_SPI3].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE; //same
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaIRQn            = DMA1_Stream5_IRQn;    //diff
+		board.dmas[board.spis[ENUM_SPI3].TXDma].dmaHandle          = ENUM_DMA1_STREAM_5;   //diff
+		callbackFunctionArray[FP_DMA1_S5]                          = 0;
 	
-	board.spis[ENUM_SPI3].SPI_IRQn                             = SPI3_IRQn;
-	board.spis[ENUM_SPI3].spiHandle                            = ENUM_SPI3;
-
-	board.spis[ENUM_SPI3].TXDMA_IRQn                           = SPI3_TX_DMA_IRQn;
-	board.spis[ENUM_SPI3].RXDMA_IRQn                           = SPI3_RX_DMA_IRQn;
-
-	board.spis[ENUM_SPI3].TXDMA_IRQn                           = SPI3_TX_DMA_IRQn;
-	board.spis[ENUM_SPI3].RXDMA_IRQn                           = SPI3_RX_DMA_IRQn;
-
-	board.spis[ENUM_SPI3].TXDma 		                       = ENUM_DMA2_STREAM_3;
-	board.spis[ENUM_SPI3].RXDma 		                       = ENUM_DMA2_STREAM_0;
-
-	board.dmas[board.spis[ENUM_SPI3].TXDma].enabled            = 1;
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaStream          = ENUM_DMA1_STREAM_5;   //diff between all SPIs
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaChannel         = DMA_CHANNEL_0;        //diff
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH; //same between all SPIs, diff between TX/RX
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;     //same
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaMemInc          = DMA_MINC_ENABLE;      //same
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;  //same
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;  //same
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaMode            = DMA_NORMAL;           //same
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaPriority        = DMA_PRIORITY_HIGH;    //same, maybe we should change them
-	board.dmas[board.spis[ENUM_SPI3].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE; //same
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaIRQn            = DMA1_Stream5_IRQn;    //diff
-	board.dmas[board.spis[ENUM_SPI3].TXDma].dmaHandle          = ENUM_DMA1_STREAM_5;   //diff
-	callbackFunctionArray[FP_DMA1_S5]                          = 0;
-
-	board.dmas[board.spis[ENUM_SPI3].RXDma].enabled            = 1;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaStream          = ENUM_DMA1_STREAM_0;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaChannel         = DMA_CHANNEL_0;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaMemInc          = DMA_MINC_ENABLE;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaMode            = DMA_NORMAL;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaPriority        = DMA_PRIORITY_HIGH;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaIRQn            = DMA1_Stream0_IRQn;
-	board.dmas[board.spis[ENUM_SPI3].RXDma].dmaHandle          = ENUM_DMA1_STREAM_0;
-	callbackFunctionArray[FP_DMA1_S0]                          = FlashDmaRxCallback;
-
+		board.dmas[board.spis[ENUM_SPI3].RXDma].enabled            = 1;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaStream          = ENUM_DMA1_STREAM_0;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaChannel         = DMA_CHANNEL_0;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaMemInc          = DMA_MINC_ENABLE;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaMode            = DMA_NORMAL;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaPriority        = DMA_PRIORITY_HIGH;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaIRQn            = DMA1_Stream0_IRQn;
+		board.dmas[board.spis[ENUM_SPI3].RXDma].dmaHandle          = ENUM_DMA1_STREAM_0;
+		callbackFunctionArray[FP_DMA1_S0]                          = FlashDmaRxCallback;
+	}
 
 
 

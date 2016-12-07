@@ -1,12 +1,8 @@
 #include "includes.h"
 
-extern DMA_HandleTypeDef *dma_gyro_rx;
-//extern DMA_HandleTypeDef *dma_gyro_tx;
 extern DMA_HandleTypeDef *dma_flash_rx;
 extern DMA_HandleTypeDef *dma_flash_tx;
 
-DMA_HandleTypeDef dma_spi1_rx;
-//DMA_HandleTypeDef dma_spi1_tx;
 DMA_HandleTypeDef dma_spi2_rx;
 DMA_HandleTypeDef dma_spi2_tx;
 DMA_HandleTypeDef dma_spi3_rx;

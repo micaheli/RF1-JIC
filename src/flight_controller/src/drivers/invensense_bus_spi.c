@@ -106,7 +106,11 @@ void GyroExtiCallback(void)
 void GyroRxDmaCallback(void)
 {
 
-    if (HAL_DMA_GetState(&dmaHandles[board.dmas[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY) {
+	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_0]);
+    //HAL_NVIC_ClearPendingIRQ(DMA2_Stream0_IRQn);
+    //HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_0]);
+    //if (HAL_DMA_GetState(&dmaHandles[board.dmas[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY) {
+    if (HAL_DMA_GetState(&dmaHandles[ENUM_DMA2_STREAM_0]) == HAL_DMA_STATE_READY) {
         // reset chip select line
 	    inlineDigitalHi(ports[board.gyros[0].csPort], board.gyros[0].csPin);
 
