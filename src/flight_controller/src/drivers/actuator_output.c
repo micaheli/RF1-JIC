@@ -10,10 +10,10 @@ static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle
 
 //motor_output_array motorOutputArray[MAX_MOTOR_NUMBER];
 
-void DeinitActuators(void)  {
+void DeInitActuators(void)  {
 	uint32_t motorNum;
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		if (board.motors[motorNum].enabled)
+		if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 		{
 			if (board.motors[motorNum].polarity == TIM_OCPOLARITY_LOW)
 			{
@@ -25,8 +25,8 @@ void DeinitActuators(void)  {
 			}
 
 			HAL_GPIO_DeInit(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
-			HAL_TIM_Base_DeInit(&pwmTimers[board.motors[motorNum].timerHandle]);
-			HAL_TIM_PWM_DeInit(&pwmTimers[board.motors[motorNum].timerHandle]);
+			HAL_TIM_Base_DeInit(&pwmTimers[board.motors[motorNum].actuatorArrayNum]);
+			HAL_TIM_PWM_DeInit(&pwmTimers[board.motors[motorNum].actuatorArrayNum]);
 		}
 	}
 }
@@ -75,7 +75,7 @@ void InitActuators(void) {
 			idlePulseValue   = 48;
 			walledPulseValue = 2048;
 			pulseValueRange  = 2000;
-			InitDmaOutputOnMotors(mainConfig.mixerConfig.escProtcol);
+			InitDshotOutputOnMotors(mainConfig.mixerConfig.escProtcol);
 			return;
 			break;
 		case ESC_MULTISHOT:
@@ -101,7 +101,7 @@ void InitActuators(void) {
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		if (board.motors[motorNum].enabled) {
+		if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 			InitActuatorTimer(board.motors[motorNum], pwmHz, timerHz);
 		}
 	}
@@ -110,16 +110,9 @@ void InitActuators(void) {
 
 	// Start the timers
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		if (board.motors[motorNum].enabled) {
-//			HAL_TIM_Base_Start(&pwmTimers[board.motors[motorNum].timerHandle]);
-//			HAL_TIM_PWM_Start(&pwmTimers[board.motors[motorNum].timerHandle], board.motors[motorNum].timChannel);
-
-			//HAL_TIM_Base_Init(&pwmTimers[board.motors[motorNum].timerHandle]);
-
-			//HAL_TIM_PWM_Init(&pwmTimers[board.motors[motorNum].timerHandle]);
-
-			HAL_TIM_Base_Start(&pwmTimers[board.motors[motorNum].timerHandle]);
-			HAL_TIM_PWM_Start(&pwmTimers[board.motors[motorNum].timerHandle], board.motors[motorNum].timChannel);
+		if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+			HAL_TIM_Base_Start(&pwmTimers[board.motors[motorNum].actuatorArrayNum]);
+			HAL_TIM_PWM_Start(&pwmTimers[board.motors[motorNum].actuatorArrayNum], board.motors[motorNum].timChannel);
 		}
 	}
 
@@ -161,21 +154,21 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStruct);
 
 	// Initialize timer
-	pwmTimers[actuator.timerHandle].Instance           = timers[actuator.timer];
-	pwmTimers[actuator.timerHandle].Init.Prescaler     = timerPrescaler;
-	pwmTimers[actuator.timerHandle].Init.CounterMode   = TIM_COUNTERMODE_UP;
-	pwmTimers[actuator.timerHandle].Init.Period        = (timerHz / pwmHz) - 1;
-	pwmTimers[actuator.timerHandle].Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]);
+	pwmTimers[actuator.actuatorArrayNum].Instance           = timers[actuator.timer];
+	pwmTimers[actuator.actuatorArrayNum].Init.Prescaler     = timerPrescaler;
+	pwmTimers[actuator.actuatorArrayNum].Init.CounterMode   = TIM_COUNTERMODE_UP;
+	pwmTimers[actuator.actuatorArrayNum].Init.Period        = (timerHz / pwmHz) - 1;
+	pwmTimers[actuator.actuatorArrayNum].Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	HAL_TIM_Base_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-	HAL_TIM_ConfigClockSource(&pwmTimers[actuator.timerHandle], &sClockSourceConfig);
+	HAL_TIM_ConfigClockSource(&pwmTimers[actuator.actuatorArrayNum], &sClockSourceConfig);
 
-	HAL_TIM_PWM_Init(&pwmTimers[actuator.timerHandle]);
+	HAL_TIM_PWM_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.timerHandle], &sMasterConfig);
+	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sMasterConfig);
 
 	// Initialize timer pwm channel
 
@@ -185,7 +178,7 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
 	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
 
-	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.timerHandle], &sConfigOC, actuator.timChannel);
+	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfigOC, actuator.timChannel);
 
 }
 
@@ -222,7 +215,8 @@ inline void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle
 
 }
 
-inline void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
+void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
+//inline void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 {
 	(void)servoOutput;
 
@@ -231,8 +225,8 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 
 	if (boardArmed) {
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-			if (board.motors[motorNum].enabled) {
-				if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) ) {
+			if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+				if ( IsDshotEnabled() ) {
 					ThrottleToDshot(serialOutBuffer, motorOutput[motorNum], mainConfig.mixerConfig.idlePercent);
 					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1, 0);
 				} else {
@@ -243,16 +237,16 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 	} else if (calibrateMotors) {
 		if (motorOutput[0] < 0.1) {
 			for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-				if (board.motors[motorNum].enabled) {
-					if ( (mainConfig.mixerConfig.escProtcol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT150) ) {
+				if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+					if ( !IsDshotEnabled() ) {
 						*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
 					}
 				}
 			}
 		} else {
 			for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-				if (board.motors[motorNum].enabled) {
-					if ( (mainConfig.mixerConfig.escProtcol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT150) ) {
+				if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+					if ( !IsDshotEnabled() ) {
 						*ccr[board.motors[motorNum].timCCR] = pulseValueRange + idlePulseValue;
 					}
 				}
@@ -260,8 +254,8 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 		}
 	} else {
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-			if (board.motors[motorNum].enabled) {
-				if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) ) {
+			if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+				if ( IsDshotEnabled() ) {
 					ThrottleToDshot(serialOutBuffer, 0, 0);
 					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1, 0);
 				} else {
@@ -281,7 +275,7 @@ void ZeroActuators(uint32_t delayUs) {
 		__disable_irq();
 
 	for (uint32_t motorNum=0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		if (board.motors[motorNum].enabled) {
+		if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 			if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) ) {
 				ThrottleToDshot(serialOutBuffer, 0, 0);
 				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1, 0); //buffer with data, number of bytes, actuator to output on, msb, no serial frame

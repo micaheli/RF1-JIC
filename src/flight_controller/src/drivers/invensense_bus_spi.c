@@ -37,25 +37,29 @@ void AccGyroDeinit(void) {
     DelayMs(125);
 
 	//TODO: get rid of these defines
-#ifdef GYRO_EXTI
     // ensure the interrupt is not running
 	HAL_NVIC_DisableIRQ(board.gyros[0].extiIRQn);
-#endif
 
-
-	HAL_NVIC_DisableIRQ(board.dmas[board.spis[board.gyros[0].spiNumber].TXDma].dmaIRQn);
-	HAL_NVIC_DisableIRQ(board.dmas[board.spis[board.gyros[0].spiNumber].RXDma].dmaIRQn);
-
-    HAL_SPI_DeInit(&spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle]); //TODO: Remove all HAL and place these functions in the stm32.c file so we can support other MCU families.
+	//set CS high
     inlineDigitalHi(ports[board.gyros[0].csPort], board.gyros[0].csPin);
-	HAL_GPIO_DeInit(ports[board.gyros[0].csPort], board.gyros[0].csPin);
 
+    //SPI DeInit will disable the GPIOs, DMAs, IRQs and SPIs attached to this SPI handle
+    HAL_SPI_DeInit(&spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle]); //TODO: Remove all HAL and place these functions in the stm32.c file so we can support other MCU families.
+
+	//Deinit the EXTI
 	EXTI_Deinit(ports[board.gyros[0].extiPort], board.gyros[0].extiPin, board.gyros[0].extiIRQn);
 
 }
 
 uint32_t AccGyroInit(loopCtrl_e loopCtrl)
 {
+
+	if (board.dmasSpi[board.spis[board.gyros[0].spiNumber].RXDma].enabled) {
+		memcpy( &board.dmasActive[board.spis[board.gyros[0].spiNumber].RXDma], &board.dmasSpi[board.spis[board.gyros[0].spiNumber].RXDma], sizeof(board_dma) );
+	}
+	if (board.dmasSpi[board.spis[board.gyros[0].spiNumber].TXDma].enabled) {
+		memcpy( &board.dmasActive[board.spis[board.gyros[0].spiNumber].TXDma], &board.dmasSpi[board.spis[board.gyros[0].spiNumber].TXDma], sizeof(board_dma) );
+	}
 
 	AccGyroDeinit();
 
@@ -106,11 +110,7 @@ void GyroExtiCallback(void)
 void GyroRxDmaCallback(void)
 {
 
-	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_0]);
-    //HAL_NVIC_ClearPendingIRQ(DMA2_Stream0_IRQn);
-    //HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_0]);
-    //if (HAL_DMA_GetState(&dmaHandles[board.dmas[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY) {
-    if (HAL_DMA_GetState(&dmaHandles[ENUM_DMA2_STREAM_0]) == HAL_DMA_STATE_READY) {
+    if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY) {
         // reset chip select line
 	    inlineDigitalHi(ports[board.gyros[0].csPort], board.gyros[0].csPin);
 
@@ -219,7 +219,7 @@ uint32_t AccGyroSlowReadData(uint8_t reg, uint8_t *data, uint8_t length)
 uint32_t AccGyroDMAReadWriteData(uint8_t *txData, uint8_t *rxData, uint8_t length)
 {
     // ensure that both SPI and DMA resources are available, but don't block if they are not
-    if (HAL_DMA_GetState(&dmaHandles[board.dmas[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY) {
+    if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY) {
     	inlineDigitalLo(ports[board.gyros[0].csPort], board.gyros[0].csPin);
 
         HAL_SPI_TransmitReceive_DMA(&spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle], txData, rxData, length);

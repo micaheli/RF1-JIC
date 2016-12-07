@@ -6,11 +6,15 @@ uint32_t skipTaskHandlePcComm   = 0;
 uint32_t failsafeStage          = 0;
 uint32_t autoSaveTimer          = 0;
 uint32_t firstRun               = 1;
+
+//telem variables
+volatile uint32_t telemEnabled = 0;
 volatile uint32_t lastTimeSPort = 0;
 volatile uint32_t okToSendSPort = 0;
 volatile uint32_t sPortExtiSet  = 0;
 
 //soft serial buffer handling. TODO: make a structure
+volatile uint32_t softSerialEnabled = 0;
 volatile uint32_t softSerialBuf[2][SOFT_SERIAL_BIT_TIME_ARRAY_SIZE];
 volatile uint32_t softSerialInd[2];
 volatile uint32_t softSerialCurBuf;
@@ -76,6 +80,7 @@ void scheduler(int32_t count)
 
  void TaskProcessSoftSerial(void) {
 
+	//TODO: Move to softSerial.c or serial.c
 	uint32_t x;
 	uint32_t currentTime;
 	uint32_t bytesExist;
@@ -88,6 +93,10 @@ void scheduler(int32_t count)
 	uint32_t bitTimeReplacement;
 	uint32_t bitIdx;
 	uint16_t byte;
+	uint32_t high;
+
+	if (!softSerialEnabled)
+		return;
 
 	currentTime = Micros();
 
@@ -165,7 +174,7 @@ void scheduler(int32_t count)
 
 	bitIdx = 0;
 	byte   = 0;
-	uint32_t high = 1;// high pulse is first when it's an inverted signal, but a high pulse is considered a 0;
+	high   = 1;// high pulse is first when it's an inverted signal, but a high pulse is considered a 0;
 	//this record the bits in the order they come in. LSB or MSB are ignored.
 	for (currentBitsIdxCtr = 0; currentBitsIdxCtr < currentBitsIdx; currentBitsIdxCtr++) { //for each pack of bits, first is high then next is low
 		if (high) {
@@ -184,24 +193,19 @@ void scheduler(int32_t count)
 
 
 	proccesedSoftSerial[proccesedSoftSerialIdx++] = ~(uint8_t)((byte >> 1) & 0xFF);
+
 	lastBitFound = currentTime;
+
 	if (proccesedSoftSerialIdx == 25) {
 		proccesedSoftSerialIdx = 0;
-		volatile uint32_t cat = proccesedSoftSerial[1];
-		if (cat == 55555555) {
-			return;
-		} else
-			return;
-	} else {
-		return;
 	}
-	//once done, byte should have our 10 bit frame
 
 
 }
 
 void SoftSerialCallback (void) {
 
+	//TODO: Move to softSerial.c or serial.c
 	uint32_t x;
 
 	/* EXTI line interrupt detected */
@@ -252,6 +256,9 @@ void TaskTelemtry(void) {
 	static uint32_t telemCount = 0;
 	volatile uint32_t currentTime;
 
+	if (!telemEnabled)
+		return;
+
 	if (softSerialLineIdleSensed) {
 
 		if ( (proccesedSoftSerial[0] == 0x7E) && (proccesedSoftSerial[1] == 0x1B) ) {
@@ -287,15 +294,15 @@ void TaskTelemtry(void) {
 
 			switch(telemCount++) {
 				case 0:
-					SmartPortSendPackage(0x0700, (uint32_t)(filteredAccData[ACCX] * 100) );
+					SmartPortSendPackage(0x0700, (int32_t)(filteredAccData[ACCX] * 100) );
 					//SmartPortSendPackage(0x0700, dataToSend );
 					break;
 				case 1:
-					SmartPortSendPackage(0x0710, (uint32_t)(filteredAccData[ACCY] * 100) );
+					SmartPortSendPackage(0x0710, (int32_t)(filteredAccData[ACCY] * 100) );
 					//SmartPortSendPackage(0x0710, dataToSend );
 					break;
 				case 2:
-					SmartPortSendPackage(0x0720, (uint32_t)(filteredAccData[ACCZ] * 100) );
+					SmartPortSendPackage(0x0720, (int32_t)(filteredAccData[ACCZ] * 100) );
 					//SmartPortSendPackage(0x0720, dataToSend );
 					//break;
 				case 3:
@@ -307,6 +314,7 @@ void TaskTelemtry(void) {
 		}
 	}
 
+	//TODO: Soft serial needs to be similar to serial. I think soft serial needs to go into serial.c
 	if ( (currentTime - lastTimeSPort > 8) && (!sPortExtiSet) ) { //15 ms since EXTI occurred, let's look for another EXTI now
 		sPortExtiSet = 1;
 		EXTI_Init(ports[board.motors[7].port], board.motors[7].pin, EXTI9_5_IRQn, 0, 1, GPIO_MODE_IT_RISING_FALLING);

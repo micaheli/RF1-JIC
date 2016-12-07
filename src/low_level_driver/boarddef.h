@@ -4,6 +4,17 @@
 #include "mcu_include.h"
 
 
+#define ENUM_ACTUATOR_TYPE_DISABLED		0
+#define ENUM_ACTUATOR_TYPE_SERVO		1
+#define ENUM_ACTUATOR_TYPE_MOTOR		2
+#define ENUM_ACTUATOR_TYPE_SOFT_SERIAL	3
+#define ENUM_ACTUATOR_TYPE_WS2812		4
+#define ENUM_ACTUATOR_TYPE_SPORT		5
+
+
+#define ENUM_SS_BAUD_19200_STD	0
+#define ENUM_SS_BAUD_57600_INV	1
+
 #define MAX_MOTOR_NUMBER 8
 #define MAX_SERVO_NUMBER 8
 #define MAX_USARTS       6
@@ -234,6 +245,7 @@ typedef struct {
 	
 	uint32_t				SPI_IRQn;
 	uint32_t 				spiHandle;
+	uint32_t 				priority;
 
 	uint32_t				TXDma;
 	uint32_t				RXDma;
@@ -298,6 +310,7 @@ typedef struct {
 	uint32_t				PeriphBurst;
 	uint32_t				dmaIRQn;
 	uint32_t				dmaHandle;
+	uint32_t				priority;
 } board_dma;
 
 typedef struct {
@@ -343,14 +356,11 @@ typedef struct {
 	uint32_t				activeTim;
 	uint32_t				timCCR;
 	uint32_t				polarity;
-	uint32_t				dmaHandle;
-	uint32_t				timerHandle;
+	uint32_t				actuatorArrayNum;
 	uint32_t				Dma;
 	uint32_t				CcDmaHandle;
 	uint32_t				timerIRQn;
-	uint32_t				motorOutputBuffer;
  	uint32_t				motorOutputLength;
- 	uint32_t				sConfigOCHandle;
  	uint32_t				EXTIn;
 } motor_type;
 
@@ -370,6 +380,7 @@ typedef struct {
 	
 
 	gyro_type				gyros[3];
+	gyro_type				flash[3];
 	
 	motor_type				motors[MAX_MOTOR_NUMBER];
 	motor_type				servos[MAX_SERVO_NUMBER];
@@ -380,9 +391,13 @@ typedef struct {
 
 	board_serial			serials[6];
 
-	board_dma				dmas[16];
+	board_dma				dmasSerial[16]; //TODO: Make work based on serial enum number
 
-	board_dma				dmasMotor[16];
+	board_dma				dmasSpi[16]; //TODO: Make work based on Spi enum number
+
+	board_dma				dmasMotor[16]; //TODO: Rename dmasActuators
+
+	board_dma				dmasActive[16];
 
 } board_type;
 

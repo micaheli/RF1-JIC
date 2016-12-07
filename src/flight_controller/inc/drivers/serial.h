@@ -15,10 +15,10 @@ extern uint32_t lastRXPacket;
 unsigned char txTransimissionReady;
 
 void UsartInit(uint32_t serialNumber);
-void UsartDeinit(uint32_t serialNumber);
+void UsartDeInit(uint32_t serialNumber);
 void UsartDmaInit(uint32_t serialNumber);
-void BoardUsartInit(void);
-void BoardUsartDeinit(void);
+void InitBoardUsarts(void);
+void DeInitBoardUsarts(void);
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void USARTx_DMA_RX_IRQHandler(void);
 void USARTx_DMA_TX_IRQHandler(void);

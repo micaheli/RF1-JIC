@@ -28,6 +28,7 @@ int main(void)
 
     int32_t count = 16;
 
+    //TODO: Make automatic
 	VectorIrqInit(ADDRESS_RFFW_START);
 
 	//TODO Needs to pull parameters from flash here. For now we use defines
@@ -51,21 +52,18 @@ int main(void)
     //TODO: Only init if we have USB. Some F3s are serial only.
     InitUsb();
 
-    //TODO: only init if board config has flash chip selected.
-    //#ifndef STM32F446xx
-//TODO: Add flash to boarddef.c
-//	InitFlashChip();
-//  InitFlightLogger();
-    //#endif
+    //TODO: move the check into the init functions.
+    if (board.flash[0].enabled) {
+//    	InitFlashChip();
+//    	InitFlightLogger();
+    }
 
     InitRcData();
     InitMixer();
     InitFlightCode(); //flight code before PID code is a must since flight.c contains loop time settings the pid.c uses.
     InitPid();        //Relies on InitFlightCode for proper activations.
 
-    BoardUsartInit(); //most important thing is activated last, the ability to control the craft.
-
-    DeinitActuators();
+    DeInitActuators();
     InitActuators();      //Actuator init should happen after soft serial init.
     ZeroActuators(32000); //output actuators to idle after timers are stable;
 
@@ -79,6 +77,11 @@ int main(void)
     //if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT) {
 
 
+    InitAllowedSoftOutputs();
+
+    InitBoardUsarts(); //most important thing is activated last, the ability to control the craft.
+
+/*
 
 		InitDmaOutputForSoftSerial(DMA_OUTPUT_SPORT, board.motors[7]); //Enable S.Port on actuator 7, in place of USART 1 RX pin
 		uint32_t currentTime = Micros();
@@ -91,7 +94,7 @@ int main(void)
 		//prepare soft serial buffer and index
 		__enable_irq();
     //}
-
+*/
 
 
 

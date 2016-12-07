@@ -349,7 +349,7 @@ void SaveConfig (uint32_t addresConfigStart)
 	uint32_t addressOffset;
 
 	if (resetBoard) {
-		BoardUsartInit();
+		InitBoardUsarts();
 		InitRcData();
 	    InitMixer();
 	    InitFlightCode();

@@ -110,7 +110,7 @@ void TIM2_IRQHandler(void)
 
 void TIM3_IRQHandler(void)
 {
-//	HAL_TIM_IRQHandler(&pwmTimers[board.motors[0].timerHandle]);
+//	HAL_TIM_IRQHandler(&pwmTimers[board.motors[0].actuatorArrayNum]);
 }
 
 void TIM8_UP_TIM13_IRQHandler(void)
@@ -197,8 +197,8 @@ void DMA1_Stream7_IRQHandler(void) {
 }
 
 void DMA2_Stream0_IRQHandler(void) {
-    //HAL_NVIC_ClearPendingIRQ(DMA2_Stream0_IRQn);
-    //HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_0]);
+    HAL_NVIC_ClearPendingIRQ(DMA2_Stream0_IRQn);
+    HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA2_STREAM_0]);
     if (callbackFunctionArray[FP_DMA2_S0])
    		callbackFunctionArray[FP_DMA2_S0]();
 }

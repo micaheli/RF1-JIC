@@ -113,8 +113,8 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 
 	tempBuffer[bufferIdx] = NO_PULSE;
 
-    //HAL_TIM_PWM_Stop(&pwmTimers[actuator.timerHandle], actuator.timChannel);
-	//HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.timerHandle], &sConfigOCHandles[actuator.sConfigOCHandle], actuator.timChannel); //todo: array of sConfigOC
+    //HAL_TIM_PWM_Stop(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+	//HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfigOCHandles[actuator.actuatorArrayNum], actuator.timChannel); //todo: array of sConfigOC
 
 //#define DMA_SxCR_TEIE                        ((uint32_t)0x00000004)
 //#define DMA_SxCR_DMEIE                       ((uint32_t)0x00000002)
@@ -125,43 +125,43 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 //	DMAy_Streamx->CR &= ~((uint32_t)0x00000001);
 
 //	TIM_TypeDef            *htim;
-//	htim = pwmTimers[actuator.timerHandle];
+//	htim = pwmTimers[actuator.actuatorArrayNum];
 //	htim->hdma[handlerIndex]
 //	htim->hdma[actuator.CcDmaHandle]->XferCpltCallback = TIM_DMADelayPulseCplt;
 //	htim->hdma[actuator.CcDmaHandle]->XferErrorCallback = TIM_DMAError;
-//  HAL_DMA_Start_IT(htim->hdma[actuator.CcDmaHandle], (uint32_t)motorOutputBuffer[actuator.motorOutputBuffer], (uint32_t)&htim->Instance->CCR3,bufferIdx);
+//  HAL_DMA_Start_IT(htim->hdma[actuator.CcDmaHandle], (uint32_t)motorOutputBuffer[actuator.actuatorArrayNum], (uint32_t)&htim->Instance->CCR3,bufferIdx);
 
-//zeroPulseWidth[actuator.timerHandle+1]
+//zeroPulseWidth[actuator.actuatorArrayNum+1]
 
 
-    motorOutputBuffer[actuator.motorOutputBuffer][0] = 0;
-    motorOutputBuffer[actuator.motorOutputBuffer][bufferIdx] = 0;
+    motorOutputBuffer[actuator.actuatorArrayNum][0] = 0;
+    motorOutputBuffer[actuator.actuatorArrayNum][bufferIdx] = 0;
 
     for (uint32_t x = 1; x < (bufferIdx - 1); x++) { //first bit is always a 0, last bit is always a 0
 
     	if (tempBuffer[x] == HI_PULSE) { //this is a high bit high bit
     		if (tempBuffer[x+1] == HI_PULSE) //After bit is high so this is a normal bit
     		{
-				motorOutputBuffer[actuator.motorOutputBuffer][x] = normalPulseWidth[actuator.timerHandle+1];
+				motorOutputBuffer[actuator.actuatorArrayNum][x] = normalPulseWidth[actuator.actuatorArrayNum+1];
 			} else
 			if ( ( tempBuffer[x-1] < HI_PULSE ) && (tempBuffer[x+1] < HI_PULSE) ) //B4 bit is low and AR bit low, so this is an ALONE BIT
 			{
-				motorOutputBuffer[actuator.motorOutputBuffer][x] = alonePulseWidth[actuator.timerHandle+1];;
+				motorOutputBuffer[actuator.actuatorArrayNum][x] = alonePulseWidth[actuator.actuatorArrayNum+1];;
 			} else
 			if ( ( tempBuffer[x-1] == HI_PULSE ) && (tempBuffer[x+1] < HI_PULSE) ) //B4 bit is high and AR bit low, so this is an END BIT
 			{
-				motorOutputBuffer[actuator.motorOutputBuffer][x] = endPulseWidth[actuator.timerHandle+1];
+				motorOutputBuffer[actuator.actuatorArrayNum][x] = endPulseWidth[actuator.actuatorArrayNum+1];
 			} else
 			{
-				motorOutputBuffer[actuator.motorOutputBuffer][x] = normalPulseWidth[actuator.timerHandle+1];
+				motorOutputBuffer[actuator.actuatorArrayNum][x] = normalPulseWidth[actuator.actuatorArrayNum+1];
 			}
     	} else {
-    		motorOutputBuffer[actuator.motorOutputBuffer][x] = loPulseWidth[actuator.timerHandle+1];
+    		motorOutputBuffer[actuator.actuatorArrayNum][x] = loPulseWidth[actuator.actuatorArrayNum+1];
     	}
 
     }
 
-	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.timerHandle], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.motorOutputBuffer], bufferIdx);
+	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], bufferIdx);
 
 //	inlineDigitalLo(ports[board.motors[3].port], board.motors[3].pin);
 }
@@ -172,7 +172,8 @@ void TIM8_CC_IRQHandler(void) {
 }
 
 void InitOdd(motor_type actuator) {
-
+	(void)(actuator);
+/*
 	//GPIO_InitTypeDef        GPIO_InitStruct;
 	TIM_TypeDef            *timer;
 	//TIM_IC_InitTypeDef      sConfig;
@@ -213,13 +214,13 @@ void InitOdd(motor_type actuator) {
 	softSerialClockTimer.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	softSerialClockTimer.Init.CounterMode 	= TIM_COUNTERMODE_UP;
 
-	sConfigOCHandles[actuator.sConfigOCHandle].OCMode      = TIM_OCMODE_TIMING;
-	sConfigOCHandles[actuator.sConfigOCHandle].Pulse       = 350; //trigger 250 counts in
-	sConfigOCHandles[actuator.sConfigOCHandle].OCPolarity  = TIM_OCPOLARITY_LOW;
-	sConfigOCHandles[actuator.sConfigOCHandle].OCFastMode  = TIM_OCFAST_ENABLE;
-	sConfigOCHandles[actuator.sConfigOCHandle].OCIdleState = TIM_OCIDLESTATE_SET;
+	sConfigOCHandles[actuator.actuatorArrayNum].OCMode      = TIM_OCMODE_TIMING;
+	sConfigOCHandles[actuator.actuatorArrayNum].Pulse       = 350; //trigger 250 counts in
+	sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity  = TIM_OCPOLARITY_LOW;
+	sConfigOCHandles[actuator.actuatorArrayNum].OCFastMode  = TIM_OCFAST_ENABLE;
+	sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState = TIM_OCIDLESTATE_SET;
 
-	HAL_TIM_OC_ConfigChannel(&softSerialClockTimer, &sConfigOCHandles[actuator.sConfigOCHandle], TIM_CHANNEL_3);
+	HAL_TIM_OC_ConfigChannel(&softSerialClockTimer, &sConfigOCHandles[actuator.actuatorArrayNum], TIM_CHANNEL_3);
 	HAL_TIM_PWM_Init(&softSerialClockTimer);
 	return;
 //	if (HAL_TIM_Base_Init(&softSerialClockTimer) != HAL_OK) {
@@ -252,10 +253,10 @@ void InitOdd(motor_type actuator) {
 	//softSerialDmaHandle.XferCpltCallback  = dmaComplete;
 	//softSerialDmaHandle.XferErrorCallback = dmaError;
 
-    /* Configure DMA Stream destination address */
+    // Configure DMA Stream destination address
 	softSerialDmaHandle.Instance->PAR = (uint32_t)&ports[actuator.port]->IDR; //input is GPIO Input Data Register //(uint32_t)&GPIOC->IDR;
 
-    /* Configure DMA Stream source address */
+    // Configure DMA Stream source address
 	softSerialDmaHandle.Instance->M0AR = (uint32_t)&testBuffer; //output is the buffer
 
 	HAL_NVIC_SetPriority(DMA2_Stream4_IRQn, 5, 0);
@@ -281,10 +282,10 @@ void InitOdd(motor_type actuator) {
     //  ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
     //}
 
-    /* Configure DMA Stream destination address */
+    // Configure DMA Stream destination address
 	softSerialDmaHandle.Instance->PAR = (uint32_t)&ports[actuator.port]->IDR; //input is GPIO Input Data Register //(uint32_t)&GPIOC->IDR;
 
-    /* Configure DMA Stream source address */
+    // Configure DMA Stream source address
 	softSerialDmaHandle.Instance->M0AR = (uint32_t)&testBuffer; //output is the buffer
 
 	return;
@@ -330,45 +331,46 @@ void InitOdd(motor_type actuator) {
 
 	//TIM8_UP_TIM13_IRQn
     // GPIO Init
-	/*
-    HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
 
-    GPIO_InitStruct.Pin       = actuator.pin;
-    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP
-    GPIO_InitStruct.Pull      = GPIO_PULLUP; //GPIO_PULLUP //pull up for non inverted, pull down for inverted
-    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = actuator.AF;
+//    HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
 
-    HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStruct);
-*/
-    /*##-2- Configure the NVIC for TIMx #########################################*/
-    HAL_TIM_Base_DeInit(&pwmTimers[actuator.timerHandle]);
-	pwmTimers[actuator.timerHandle].Instance           	= timer;
-	pwmTimers[actuator.timerHandle].Init.Period     	= (timerHz/pwmHz)-1;
-	pwmTimers[actuator.timerHandle].Init.Prescaler   	= timerPrescaler;
-	pwmTimers[actuator.timerHandle].Init.ClockDivision 	= TIM_CLOCKDIVISION_DIV1;
-	pwmTimers[actuator.timerHandle].Init.CounterMode 	= TIM_COUNTERMODE_UP;
-    if (HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]) != HAL_OK) {
+//    GPIO_InitStruct.Pin       = actuator.pin;
+//    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP
+//    GPIO_InitStruct.Pull      = GPIO_PULLUP; //GPIO_PULLUP //pull up for non inverted, pull down for inverted
+//    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
+//    GPIO_InitStruct.Alternate = actuator.AF;
+
+//    HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStruct);
+
+    //##-2- Configure the NVIC for TIMx #########################################
+    HAL_TIM_Base_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
+	pwmTimers[actuator.actuatorArrayNum].Instance           	= timer;
+	pwmTimers[actuator.actuatorArrayNum].Init.Period     	= (timerHz/pwmHz)-1;
+	pwmTimers[actuator.actuatorArrayNum].Init.Prescaler   	= timerPrescaler;
+	pwmTimers[actuator.actuatorArrayNum].Init.ClockDivision 	= TIM_CLOCKDIVISION_DIV1;
+	pwmTimers[actuator.actuatorArrayNum].Init.CounterMode 	= TIM_COUNTERMODE_UP;
+    if (HAL_TIM_Base_Init(&pwmTimers[actuator.actuatorArrayNum]) != HAL_OK) {
         ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
     }
 
-    if (HAL_TIM_Base_Start_IT(&pwmTimers[actuator.timerHandle]) != HAL_OK) {
+    if (HAL_TIM_Base_Start_IT(&pwmTimers[actuator.actuatorArrayNum]) != HAL_OK) {
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
-//    if (HAL_TIM_Base_Start_DMA(&pwmTimers[actuator.timerHandle]) != HAL_OK) {
+//    if (HAL_TIM_Base_Start_DMA(&pwmTimers[actuator.actuatorArrayNum]) != HAL_OK) {
 //		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 //	}
 
     return;
+*/
     /*
     sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-	if (HAL_TIM_ConfigClockSource(&pwmTimers[actuator.timerHandle], &sClockSourceConfig) != HAL_OK) {
+	if (HAL_TIM_ConfigClockSource(&pwmTimers[actuator.actuatorArrayNum], &sClockSourceConfig) != HAL_OK) {
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
 
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.timerHandle], &sMasterConfig) != HAL_OK) {
+    if (HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sMasterConfig) != HAL_OK) {
     	ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
 
@@ -376,10 +378,10 @@ void InitOdd(motor_type actuator) {
 	HAL_NVIC_EnableIRQ(actuator.timerIRQn);
 
 
-	pwmTimers[actuator.timerHandle].State = HAL_TIM_STATE_RESET;
+	pwmTimers[actuator.actuatorArrayNum].State = HAL_TIM_STATE_RESET;
 	__TIM3_CLK_ENABLE();
-	HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]);
-	HAL_TIM_IC_Init(&pwmTimers[actuator.timerHandle]);
+	HAL_TIM_Base_Init(&pwmTimers[actuator.actuatorArrayNum]);
+	HAL_TIM_IC_Init(&pwmTimers[actuator.actuatorArrayNum]);
 */
 
 }
@@ -409,17 +411,17 @@ void InitDmaInputOnMotors(motor_type actuator) {
     //HAL_NVIC_SetPriority(actuator.timerIRQn, 5, 0);
     //HAL_NVIC_EnableIRQ(actuator.timerIRQn);
 
-    HAL_TIM_Base_DeInit(&pwmTimers[actuator.timerHandle]);
-	pwmTimers[actuator.timerHandle].Instance           	= timer;
-	pwmTimers[actuator.timerHandle].Init.Period     	= 0xFFFF;
-	pwmTimers[actuator.timerHandle].Init.Prescaler   	= 191; //1MHz
-	pwmTimers[actuator.timerHandle].Init.ClockDivision 	= TIM_CLOCKDIVISION_DIV1;
-	pwmTimers[actuator.timerHandle].Init.CounterMode 	= TIM_COUNTERMODE_UP;
+    HAL_TIM_Base_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
+	pwmTimers[actuator.actuatorArrayNum].Instance           	= timer;
+	pwmTimers[actuator.actuatorArrayNum].Init.Period     	= 0xFFFF;
+	pwmTimers[actuator.actuatorArrayNum].Init.Prescaler   	= 191; //1MHz
+	pwmTimers[actuator.actuatorArrayNum].Init.ClockDivision 	= TIM_CLOCKDIVISION_DIV1;
+	pwmTimers[actuator.actuatorArrayNum].Init.CounterMode 	= TIM_COUNTERMODE_UP;
 
-	pwmTimers[actuator.timerHandle].State               = HAL_TIM_STATE_RESET;
+	pwmTimers[actuator.actuatorArrayNum].State               = HAL_TIM_STATE_RESET;
 	__TIM3_CLK_ENABLE();
-	HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]);
-	HAL_TIM_IC_Init(&pwmTimers[actuator.timerHandle]);
+	HAL_TIM_Base_Init(&pwmTimers[actuator.actuatorArrayNum]);
+	HAL_TIM_IC_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
 	// Configure the Input Capture channels
 	sConfig.ICPrescaler = TIM_ICPSC_DIV1;
@@ -429,7 +431,7 @@ void InitDmaInputOnMotors(motor_type actuator) {
 	//TIM_ICPOLARITY_RISING
 	//TIM_ICPOLARITY_BOTHEDGE
 	sConfig.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-	if(HAL_TIM_IC_ConfigChannel(&pwmTimers[actuator.timerHandle], &sConfig, actuator.timChannelC) != HAL_OK)
+	if(HAL_TIM_IC_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfig, actuator.timChannelC) != HAL_OK)
 	{
 		/* Configuration Error */
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
@@ -437,7 +439,7 @@ void InitDmaInputOnMotors(motor_type actuator) {
 
 	sConfig.ICPolarity = TIM_ICPOLARITY_RISING;
 	sConfig.ICSelection = TIM_ICSELECTION_DIRECTTI;
-	if(HAL_TIM_IC_ConfigChannel(&pwmTimers[actuator.timerHandle], &sConfig, actuator.timChannel) != HAL_OK)
+	if(HAL_TIM_IC_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfig, actuator.timChannel) != HAL_OK)
 	{
 		/* Configuration Error */
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
@@ -446,7 +448,7 @@ void InitDmaInputOnMotors(motor_type actuator) {
 	/* Select the slave Mode: Reset Mode */
 	sSlaveConfig.SlaveMode     = TIM_SLAVEMODE_RESET;
 	sSlaveConfig.InputTrigger  = TIM_TS_TI2FP2;
-	if(HAL_TIM_SlaveConfigSynchronization(&pwmTimers[actuator.timerHandle], &sSlaveConfig) != HAL_OK)
+	if(HAL_TIM_SlaveConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sSlaveConfig) != HAL_OK)
 	{
 		/* Configuration Error */
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
@@ -455,14 +457,14 @@ void InitDmaInputOnMotors(motor_type actuator) {
 	HAL_NVIC_SetPriority(actuator.timerIRQn,5,1);
 	HAL_NVIC_EnableIRQ(actuator.timerIRQn);
 	/*##-4- Start the Input Capture in interrupt mode ##########################*/
-	if(HAL_TIM_IC_Start_IT(&pwmTimers[actuator.timerHandle], actuator.timChannel) != HAL_OK)
+	if(HAL_TIM_IC_Start_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel) != HAL_OK)
 	{
 		/* Starting Error */
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
 
 	/*##-5- Start the Input Capture in interrupt mode ##########################*/
-	if(HAL_TIM_IC_Start_IT(&pwmTimers[actuator.timerHandle], actuator.timChannelC) != HAL_OK)
+	if(HAL_TIM_IC_Start_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannelC) != HAL_OK)
 	{
 		/* Starting Error */
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
@@ -470,7 +472,7 @@ void InitDmaInputOnMotors(motor_type actuator) {
 
 
 	return;
-	if(HAL_TIM_IC_Init(&pwmTimers[actuator.timerHandle]) != HAL_OK)
+	if(HAL_TIM_IC_Init(&pwmTimers[actuator.actuatorArrayNum]) != HAL_OK)
 	{
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
@@ -490,7 +492,7 @@ void InitDmaInputOnMotors(motor_type actuator) {
 	//TIM_ICSELECTION_TRC
 	//TIM_ICSELECTION_INDIRECTTI
 	//TIM_ICSELECTION_DIRECTTI
-	if(HAL_TIM_IC_ConfigChannel(&pwmTimers[actuator.timerHandle], &sConfig, actuator.timChannel) != HAL_OK)
+	if(HAL_TIM_IC_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfig, actuator.timChannel) != HAL_OK)
 	{
 		/* Configuration Error */
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
@@ -506,26 +508,106 @@ void InitDmaInputOnMotors(motor_type actuator) {
 	//TIM_SLAVEMODE_EXTERNAL1
 	sSlaveConfig.InputTrigger  = TIM_TS_TI2FP2;
 	//sSlaveConfig.TriggerPolarity
-	if(HAL_TIM_SlaveConfigSynchronization(&pwmTimers[actuator.timerHandle], &sSlaveConfig) != HAL_OK)
+	if(HAL_TIM_SlaveConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sSlaveConfig) != HAL_OK)
 	{
 		/* Configuration Error */
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
 
 	/*##-4- Start the Input Capture in interrupt mode ##########################*/
-	if(HAL_TIM_IC_Start_IT(&pwmTimers[actuator.timerHandle], actuator.timChannel) != HAL_OK)
+	if(HAL_TIM_IC_Start_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel) != HAL_OK)
 	{
 		/* Starting Error */
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
 
-	HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]);
+	HAL_TIM_Base_Init(&pwmTimers[actuator.actuatorArrayNum]);
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
 	(void)(htim);
 	return;
+}
+
+uint32_t IsDshotEnabled() {
+	if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) ) {
+		return(1);
+	}
+	return(0);
+}
+
+uint32_t IsDshotActiveOnActuator(motor_type actuator) {
+
+	if ( !IsDshotEnabled() )
+		return 0;
+
+	if ( (actuator.enabled == ENUM_ACTUATOR_TYPE_MOTOR) )
+		return 1;
+
+	return 0;
+
+}
+
+uint32_t DoesDmaConflictWithDshot(motor_type dShotActuator, motor_type actuator) {
+
+	if (dShotActuator.Dma == actuator.Dma)
+		return 1;
+
+	return 0;
+}
+
+void SetActiveDmaToActuatorDma(motor_type actuator) {
+
+	memcpy( &board.dmasActive[actuator.Dma], &board.dmasMotor[actuator.actuatorArrayNum], sizeof(board_dma) );
+
+}
+
+//TODO: make sure EXTIs don't conflict
+void InitAllowedSoftOutputs() {
+
+	uint32_t actuatorNumOutput;
+	uint32_t actuatorNumCheck;
+	uint32_t okayToEnable = 1;
+
+	//TODO: We need more actuators, no more max motor number, instead we use max_actuator number.
+	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++) {
+		switch (board.motors[actuatorNumOutput].enabled) {
+			case ENUM_ACTUATOR_TYPE_WS2812:
+			case ENUM_ACTUATOR_TYPE_SPORT:
+				for (actuatorNumCheck = 0; actuatorNumCheck < MAX_MOTOR_NUMBER; actuatorNumCheck++) { //make sure soft sport and soft ws2812 don't interfer with active motor configuration
+					if (IsDshotActiveOnActuator(board.motors[actuatorNumCheck])) {
+						if (DoesDmaConflictWithDshot(board.motors[actuatorNumCheck], board.motors[actuatorNumOutput])) {
+							okayToEnable = 0;
+						}
+					}
+				}
+				if (okayToEnable) {
+					if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_SPORT) {
+						//TODO: make telemetry and soft serial setup smarter
+						softSerialEnabled = 1;
+						telemEnabled      = 1;
+						uint32_t currentTime = Micros();
+						__disable_irq();
+				    	//prepare soft serial buffer and index
+						softSerialLastByteProcessedLocation = 0;
+						softSerialCurBuf = 0;
+						softSerialInd[softSerialCurBuf] = 0;
+						softSerialBuf[softSerialCurBuf][softSerialInd[softSerialCurBuf]++] = currentTime;
+						//prepare soft serial buffer and index
+						__enable_irq();
+
+						SetActiveDmaToActuatorDma(board.motors[actuatorNumOutput]);
+						InitDmaOutputForSoftSerial(board.motors[actuatorNumOutput].enabled, board.motors[actuatorNumOutput]);
+					}
+				}
+				break;
+			default:
+				break;
+		}
+
+	}
+
 }
 
 void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator) {
@@ -540,56 +622,7 @@ void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator) {
 
 	if (usedFor == DMA_OUTPUT_WS2812_LEDS) {
 
-		timerHz   = 24000000;
-		pwmHz     = 800000;
-		//onePulse  = 17;
-		//zeroPulse = 8;
-
-		normalPulse = 17;
-		alonePulse  = 17;
-		endPulse    = 17;
-		loPulse     = 8;
-
-		inverted  = 1;
-
-	} else if (usedFor == DMA_OUTPUT_SPORT) {
-
-		timerHz   = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833
-		pwmHz     = 57600;   //baudrate
-
-		normalPulse = 833; //833 max, but we can't fill the CCR
-		alonePulse  = 820;
-		endPulse    = 1;
-		loPulse     = 0;
-
-		inverted    = 1;
-
-	}
-
-	alonePulseWidth[actuator.timerHandle+1]  = alonePulse;
-	normalPulseWidth[actuator.timerHandle+1] = normalPulse;
-	endPulseWidth[actuator.timerHandle+1]    = endPulse;
-	loPulseWidth[actuator.timerHandle+1]     = loPulse;
-
-	InitOutputForDma(actuator, pwmHz, timerHz, inverted);
-
-}
-
-void InitDmaOutputOnMotors(uint32_t usedFor) {
-
-	uint32_t timerHz;
-	uint32_t pwmHz;
-	uint32_t onePulse;
-	uint32_t zeroPulse;
-	uint32_t inverted;
-
-	if (usedFor == DMA_OUTPUT_WS2812_LEDS) {
-		timerHz   = 24000000;
-		pwmHz     = 800000;
-		onePulse  = 17;
-		zeroPulse = 8;
-		inverted  = 1;
-	} else if (usedFor == DMA_OUTPUT_ESC_1WIRE) {
+	} else if (usedFor == ENUM_ACTUATOR_TYPE_WS2812) {
 		//17 / 24 = 0.708 us
 	    // note that the timer is running at 24 MHZ, with a period of 30 cycles
 	    // a "1" must be high for ~700 ns, which corresponds to roughly 17 timer cycles
@@ -607,11 +640,11 @@ void InitDmaOutputOnMotors(uint32_t usedFor) {
 		//zeroPulse = 2490; //2500 max, but we can't fill the CCR
 
 		//57600KBAUD
-		timerHz   = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833
-		pwmHz     = 57600;   //baudrate
-		onePulse  = 0;
-		zeroPulse = 832; //833 max, but we can't fill the CCR
-		inverted  = 1;
+		//timerHz   = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833
+		//pwmHz     = 57600;   //baudrate
+		//onePulse  = 0;
+		//zeroPulse = 832; //833 max, but we can't fill the CCR
+		//inverted  = 1;
 
 		//100KBAUD
 		//timerHz   = 48000000; //48 MHz frequency is perfectly fine for 19200 Baud.
@@ -624,15 +657,49 @@ void InitDmaOutputOnMotors(uint32_t usedFor) {
 		//pwmHz     = 200000;   //baudrate
 		//onePulse  = 1;
 		//zeroPulse = 230; //240 max, but we can't fill the CCR
-	} else if (usedFor == ESC_DSHOT600) {
-		//pwmHz     = 600000;
-		//onePulse  = 30;
-		//zeroPulse = 15;
-		//24,000,000 / 600,000 = 40 ticks per cycle
-		//1/24 = 0.04166666 us
-		//0.04166666 * 40 = 1.66666 us cycles
-		//(1/24)*x = 1.250; x=30;
-		//(1/24)*x = 0.625; x=15;
+		timerHz   = 24000000;
+		pwmHz     = 800000;
+		//onePulse  = 17;
+		//zeroPulse = 8;
+		normalPulse = 17;
+		alonePulse  = 17;
+		endPulse    = 17;
+		loPulse     = 8;
+
+		inverted  = 1;
+
+	} else if (usedFor == ENUM_ACTUATOR_TYPE_SPORT) {
+
+		timerHz   = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833
+		pwmHz     = 57600;   //baudrate
+
+		normalPulse = 833; //833 max, but we can't fill the CCR
+		alonePulse  = 820;
+		endPulse    = 1;
+		loPulse     = 0;
+
+		inverted    = 1;
+
+	}
+
+	alonePulseWidth[actuator.actuatorArrayNum+1]  = alonePulse;
+	normalPulseWidth[actuator.actuatorArrayNum+1] = normalPulse;
+	endPulseWidth[actuator.actuatorArrayNum+1]    = endPulse;
+	loPulseWidth[actuator.actuatorArrayNum+1]     = loPulse;
+
+	InitOutputForDma(actuator, pwmHz, timerHz, inverted);
+
+}
+
+void InitDshotOutputOnMotors(uint32_t usedFor) {
+
+	uint32_t timerHz;
+	uint32_t pwmHz;
+	uint32_t onePulse;
+	uint32_t zeroPulse;
+	uint32_t inverted;
+
+	if (usedFor == ESC_DSHOT600) {
 		timerHz   = 24000000;
 		pwmHz     = 600000;
 		onePulse  = 30;
@@ -653,24 +720,22 @@ void InitDmaOutputOnMotors(uint32_t usedFor) {
 	}
 
 	for (uint32_t motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		if ( (board.motors[motorNum].enabled) && (board.dmasMotor[board.motors[motorNum].Dma].enabled) ) {
-			onePulseWidth[board.motors[motorNum].timerHandle+1]  = onePulse;
-			zeroPulseWidth[board.motors[motorNum].timerHandle+1] = zeroPulse;
+		if ( (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (board.dmasMotor[board.motors[motorNum].Dma].enabled) ) {
+			SetActiveDmaToActuatorDma(board.motors[motorNum]);
+			onePulseWidth[board.motors[motorNum].actuatorArrayNum+1]  = onePulse;
+			zeroPulseWidth[board.motors[motorNum].actuatorArrayNum+1] = zeroPulse;
 			InitOutputForDma(board.motors[motorNum], pwmHz, timerHz, inverted);
 		}
 	}
 
-	//test
-//    HAL_GPIO_DeInit(ports[board.motors[3].port], board.motors[3].pin);
-
-//    GPIO_InitTypeDef GPIO_InitStructure;
-//    GPIO_InitStructure.Pin       = board.motors[3].pin;
-//    GPIO_InitStructure.Mode      = GPIO_MODE_OUTPUT_PP; //GPIO_MODE_AF_PP
-//    GPIO_InitStructure.Pull      = GPIO_PULLDOWN; //GPIO_PULLUP //pull up for non inverted, pull down for inverted
-//    GPIO_InitStructure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
-//    GPIO_InitStructure.Alternate = board.motors[3].AF;
-
-//    HAL_GPIO_Init(ports[board.motors[3].port], &GPIO_InitStructure);
+	//pwmHz     = 600000;
+	//onePulse  = 30;
+	//zeroPulse = 15;
+	//24,000,000 / 600,000 = 40 ticks per cycle
+	//1/24 = 0.04166666 us
+	//0.04166666 * 40 = 1.66666 us cycles
+	//(1/24)*x = 1.250; x=30;
+	//(1/24)*x = 0.625; x=15;
 }
 
 static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timerHz, uint32_t inverted) {
@@ -715,43 +780,43 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 		timerPrescaler = (SystemCoreClock / 2 / timerHz) - 1;
 	}
 
-	pwmTimers[actuator.timerHandle].Instance           	= timer;
-	pwmTimers[actuator.timerHandle].Init.Prescaler     	= timerPrescaler;
-	pwmTimers[actuator.timerHandle].Init.CounterMode   	= TIM_COUNTERMODE_UP;
-	pwmTimers[actuator.timerHandle].Init.Period        	= (timerHz/pwmHz)-1;
-	pwmTimers[actuator.timerHandle].Init.ClockDivision 	= TIM_CLOCKDIVISION_DIV1;
-	HAL_TIM_Base_Init(&pwmTimers[actuator.timerHandle]);
+	pwmTimers[actuator.actuatorArrayNum].Instance           	= timer;
+	pwmTimers[actuator.actuatorArrayNum].Init.Prescaler     	= timerPrescaler;
+	pwmTimers[actuator.actuatorArrayNum].Init.CounterMode   	= TIM_COUNTERMODE_UP;
+	pwmTimers[actuator.actuatorArrayNum].Init.Period        	= (timerHz/pwmHz)-1;
+	pwmTimers[actuator.actuatorArrayNum].Init.ClockDivision 	= TIM_CLOCKDIVISION_DIV1;
+	HAL_TIM_Base_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
 //	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-//	HAL_TIM_ConfigClockSource(&pwmTimers[actuator.timerHandle], &sClockSourceConfig);
+//	HAL_TIM_ConfigClockSource(&pwmTimers[actuator.actuatorArrayNum], &sClockSourceConfig);
 
-	HAL_TIM_PWM_Init(&pwmTimers[actuator.timerHandle]);
+	HAL_TIM_PWM_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
 //	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 //	sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
-//	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.timerHandle], &sMasterConfig);
+//	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sMasterConfig);
 
-	sConfigOCHandles[actuator.sConfigOCHandle].OCMode       = TIM_OCMODE_PWM1;
-	sConfigOCHandles[actuator.sConfigOCHandle].Pulse        = 400;
+	sConfigOCHandles[actuator.actuatorArrayNum].OCMode       = TIM_OCMODE_PWM1;
+	sConfigOCHandles[actuator.actuatorArrayNum].Pulse        = 0;
 	//inverted serial and PWM use TIM_OCPOLARITY_HIGH, normal serial uses TIM_OCPOLARITY_LOW
-	sConfigOCHandles[actuator.sConfigOCHandle].OCPolarity   = TIM_OCPOLARITY_HIGH;
-	//sConfigOCHandles[actuator.sConfigOCHandle].OCPolarity  = TIM_OCPOLARITY_LOW;
-	//sConfigOCHandles[actuator.sConfigOCHandle].OCFastMode  = TIM_OCFAST_ENABLE;
+	sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity   = TIM_OCPOLARITY_HIGH;
+	//sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity  = TIM_OCPOLARITY_LOW;
+	//sConfigOCHandles[actuator.actuatorArrayNum].OCFastMode  = TIM_OCFAST_ENABLE;
     //inverted serial and PWM use TIM_OCIDLESTATE_RESET, normal serial uses TIM_OCIDLESTATE_SET
-	//sConfigOCHandles[actuator.sConfigOCHandle].OCIdleState = TIM_OCIDLESTATE_RESET;
-	sConfigOCHandles[actuator.sConfigOCHandle].OCIdleState  = TIM_OCIDLESTATE_RESET;
-	sConfigOCHandles[actuator.sConfigOCHandle].OCNIdleState = TIM_OCNIDLESTATE_RESET;
-	sConfigOCHandles[actuator.sConfigOCHandle].OCFastMode   = TIM_OCFAST_DISABLE;
+	//sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState = TIM_OCIDLESTATE_RESET;
+	sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_RESET;
+	sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = TIM_OCNIDLESTATE_RESET;
+	sConfigOCHandles[actuator.actuatorArrayNum].OCFastMode   = TIM_OCFAST_DISABLE;
 
-	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.timerHandle], &sConfigOCHandles[actuator.sConfigOCHandle], actuator.timChannel);
+	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfigOCHandles[actuator.actuatorArrayNum], actuator.timChannel);
 
 
 	//DMA INIT
-	TimDmaInit(&pwmTimers[actuator.timerHandle], actuator.CcDmaHandle, board.dmasMotor[actuator.Dma]);
+	TimDmaInit(&pwmTimers[actuator.actuatorArrayNum], actuator.CcDmaHandle, board.dmasActive[actuator.Dma]);
 
-	bzero(motorOutputBuffer[actuator.motorOutputBuffer],sizeof(motorOutputBuffer[actuator.motorOutputBuffer]));
+	bzero(motorOutputBuffer[actuator.actuatorArrayNum],sizeof(motorOutputBuffer[actuator.actuatorArrayNum]));
 
-	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.timerHandle], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.motorOutputBuffer], 1);
+	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], 1);
     HAL_NVIC_SetPriority(actuator.timerIRQn, 3, 0);
     HAL_NVIC_EnableIRQ(actuator.timerIRQn);
 
@@ -840,7 +905,7 @@ void ws2812_led_update(uint32_t nLeds) {
     //134392657
 
     if (dmaTriggered) {
-    	//HAL_TIM_PWM_ConfigChannel(&pwmTimerBase, &sConfigOCHandles[actuator.sConfigOCHandle], board.motors[3].timChannel);
+    	//HAL_TIM_PWM_ConfigChannel(&pwmTimerBase, &sConfigOCHandles[actuator.actuatorArrayNum], board.motors[3].timChannel);
     	//HAL_TIM_PWM_Start_DMA(&pwmTimerBase, board.motors[3].timChannel, (uint32_t *) WS2812_IO_framedata, WS2812_BUFSIZE);
 
     	//timer = timers[board.motors[3].timer];
@@ -850,7 +915,7 @@ void ws2812_led_update(uint32_t nLeds) {
 
 
 //		HAL_TIM_PWM_Stop(&pwmTimerBase, board.motors[3].timChannel);
-//    	HAL_TIM_PWM_ConfigChannel(&pwmTimerBase, &sConfigOCHandles[actuator.sConfigOCHandle], board.motors[3].timChannel);
+//    	HAL_TIM_PWM_ConfigChannel(&pwmTimerBase, &sConfigOCHandles[actuator.actuatorArrayNum], board.motors[3].timChannel);
 //    	HAL_TIM_PWM_Start_DMA(&pwmTimerBase, board.motors[3].timChannel, (uint32_t *)WS2812_IO_framedata, WS2812_BUFSIZE);
 
     	dmaTriggered = 0;
@@ -951,15 +1016,15 @@ void Ws2812LedInit( void )
 	sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
 	HAL_TIMEx_MasterConfigSynchronization(&pwmTimerBase, &sMasterConfig);
 
-//	sConfigOCHandles[actuator.sConfigOCHandle].OCMode      = TIM_OCMODE_PWM1;
-//	sConfigOCHandles[actuator.sConfigOCHandle].Pulse       = 54;
-//	sConfigOCHandles[actuator.sConfigOCHandle].OCPolarity  = TIM_OCPOLARITY_HIGH; //board.motors[3].polarity
-//	//sConfigOCHandles[actuator.sConfigOCHandle].OCFastMode  = TIM_OCFAST_ENABLE;
-//	sConfigOCHandles[actuator.sConfigOCHandle].OCIdleState = TIM_OCIDLESTATE_SET;
+//	sConfigOCHandles[actuator.actuatorArrayNum].OCMode      = TIM_OCMODE_PWM1;
+//	sConfigOCHandles[actuator.actuatorArrayNum].Pulse       = 54;
+//	sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity  = TIM_OCPOLARITY_HIGH; //board.motors[3].polarity
+//	//sConfigOCHandles[actuator.actuatorArrayNum].OCFastMode  = TIM_OCFAST_ENABLE;
+//	sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState = TIM_OCIDLESTATE_SET;
 
     SetLEDColor(mainConfig.ledConfig.ledColor);
 
-//	HAL_TIM_PWM_ConfigChannel(&pwmTimerBase, &sConfigOCHandles[actuator.sConfigOCHandle], timerChannel);
+//	HAL_TIM_PWM_ConfigChannel(&pwmTimerBase, &sConfigOCHandles[actuator.actuatorArrayNum], timerChannel);
 
 
 	//DMA INIT

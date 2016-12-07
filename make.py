@@ -137,6 +137,7 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
         STM32F4_ARCH_FLAGS_ADD = ""
+        #STM32F4_ARCH_FLAGS_ADD = "-s -fdata-sections -ffunction-sections -flto"
 
     elif TARGET == "stm32f405xx_rfbl":
         PROJECT = "boot_loader"
@@ -144,8 +145,9 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
-        STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
+        OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD = "-fdata-sections -ffunction-sections -flto"
+        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f405xx_rfbll":
         PROJECT = "recovery_loader"
@@ -153,8 +155,9 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
-        STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
+        OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD = "-fdata-sections -ffunction-sections -flto"
+        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f411xe":
         PROJECT = "flight_controller"

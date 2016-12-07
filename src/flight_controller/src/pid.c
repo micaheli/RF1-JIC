@@ -12,33 +12,12 @@ float kiError[AXIS_NUMBER];
 float kiErrorLimit[AXIS_NUMBER];
 
 
-//1000000 114
 pid_terms  pidsUsed[AXIS_NUMBER];
-
 
 
 uint32_t uhOhRecover = 0;
 
 
-/*
- *     LOOP_L1,
-    LOOP_M1,
-    LOOP_M2,
-    LOOP_M4,
-    LOOP_M8,
-    LOOP_H1,
-    LOOP_H2,
-    LOOP_H4,
-    LOOP_H8,
-    LOOP_H16,
-    LOOP_H32,
-    LOOP_UH1,
-    LOOP_UH2,
-    LOOP_UH4,
-    LOOP_UH8,
-    LOOP_UH16,
-    LOOP_UH32,
- */
 void InitPid (void) {
 
 	bzero(kiError,sizeof(kiError));
@@ -67,26 +46,6 @@ void InitPid (void) {
 
 }
 
-//inline void InlineInitPidFilters (void) {
-
-	//static int onlyOnce = 1;
-	//int32_t axis;
-
-	//for (axis = 2; axis >= 0; --axis) {
-
-		//kdFilterState[axis] = InitPaf( mainConfig.filterConfig[axis].kd.q, mainConfig.filterConfig[axis].kd.r, mainConfig.filterConfig[axis].kd.p, kdDelta[axis]);
-		//currentKdFilterConfig[axis] = mainConfig.filterConfig[axis].kd.r;
-
-		//if (onlyOnce) { //biquad can't be reinitialized.
-		//	//mainConfig.filterConfig[axis].kdBq.lpfHz
-		//	InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, 0);
-		//}
-
-	//}
-
-	//onlyOnce = 0;
-
-//}
 
 inline void InlinePidController (float filteredGyroData[], float filteredGyroDataKd[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[]) {
 

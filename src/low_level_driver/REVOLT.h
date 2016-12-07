@@ -84,11 +84,11 @@
 
 //Gyro Config
 #define GYRO_SPI_NUMBER			ENUM_SPI1
+#define GYRO_SPI_TX_ENUM		ENUM_DMA2_STREAM_3
+#define GYRO_SPI_RX_ENUM		ENUM_DMA2_STREAM_0
+#define GYRO_SPI_NUMBER			ENUM_SPI1
 #define GYRO_SPI_CS_GPIO_Port   _PORTA
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_4
-
-#define GYRO_CS_GPIO_Pin		GPIO_PIN_4
-#define GYRO_CS_GPIO_Port		_PORTA
 
 #define GYRO_SPI_FAST_BAUD      SPI_BAUDRATEPRESCALER_2
 #define GYRO_SPI_SLOW_BAUD      SPI_BAUDRATEPRESCALER_128
@@ -98,10 +98,7 @@
 #define GYRO_EXTI_GPIO_Pin      GPIO_PIN_4
 #define GYRO_EXTI_IRQn          EXTI4_IRQn
 
-#define GYRO_TX_DMA_IRQn        DMA2_Stream3_IRQn
-#define GYRO_TX_DMA_IRQHandler  DMA2_Stream3_IRQHandler
-#define GYRO_RX_DMA_IRQn        DMA2_Stream0_IRQn
-#define GYRO_RX_DMA_IRQHandler  DMA2_Stream0_IRQHandler
+
 
 
 #define RECEIVER_UART			2 //UART number starting from 0. 4 = UART5
@@ -137,14 +134,16 @@
 #define SPI1_MISO_AF				GPIO_AF5_SPI1
 #define SPI1_MOSI_AF				GPIO_AF5_SPI1
 #define SPI1_SCK_AF					GPIO_AF5_SPI1
-#define SPI1_TX_DMA_STREAM			DMA2_Stream3
+#define SPI1_PRIORITY				1
+#define SPI1_TX_DMA_STREAM			ENUM_DMA2_STREAM_3
 #define SPI1_TX_DMA_CHANNEL			DMA_CHANNEL_3
 #define SPI1_TX_DMA_IRQn			DMA2_Stream3_IRQn
-#define SPI1_TX_DMA_IRQHandler		DMA2_Stream3_IRQHandler
-#define SPI1_RX_DMA_STREAM			DMA2_Stream0
+#define SPI1_TX_DMA_PRIORITY		1
+#define SPI1_RX_DMA_STREAM			ENUM_DMA2_STREAM_0
 #define SPI1_RX_DMA_CHANNEL			DMA_CHANNEL_3
 #define SPI1_RX_DMA_IRQn			DMA2_Stream0_IRQn
-#define SPI1_RX_DMA_IRQHandler		DMA2_Stream0_IRQHandler
+#define SPI1_RX_DMA_PRIORITY		1
+
 
 #define SPI2_ENABLE					0
 #define SPI2_NSS_PIN				GPIO_PIN_12
@@ -159,14 +158,16 @@
 #define SPI2_MISO_AF				GPIO_AF5_SPI2
 #define SPI2_MOSI_AF				GPIO_AF5_SPI2
 #define SPI2_SCK_AF					GPIO_AF5_SPI2
-#define SPI2_TX_DMA_STREAM			DMA1_Stream4
+#define SPI2_PRIORITY				8
+#define SPI2_TX_DMA_STREAM			ENUM_DMA1_STREAM_4
 #define SPI2_TX_DMA_CHANNEL			DMA_CHANNEL_0
 #define SPI2_TX_DMA_IRQn			DMA1_Stream4_IRQn
-#define SPI2_TX_DMA_IRQHandler		DMA1_Stream4_IRQHandler
-#define SPI2_RX_DMA_STREAM			DMA1_Stream3
+#define SPI2_TX_DMA_PRIORITY		8
+#define SPI2_RX_DMA_STREAM			ENUM_DMA1_STREAM_3
 #define SPI2_RX_DMA_CHANNEL			DMA_CHANNEL_0
 #define SPI2_RX_DMA_IRQn			DMA1_Stream3_IRQn
-#define SPI2_RX_DMA_IRQHandler		DMA1_Stream3_IRQHandler
+#define SPI2_RX_DMA_PRIORITY		8
+
 
 #define SPI3_ENABLE					1
 #define SPI3_NSS_PIN				GPIO_PIN_3
@@ -181,14 +182,15 @@
 #define SPI3_MISO_AF				GPIO_AF6_SPI3
 #define SPI3_MOSI_AF				GPIO_AF6_SPI3
 #define SPI3_SCK_AF					GPIO_AF6_SPI3
-#define SPI3_TX_DMA_STREAM			DMA1_Stream5
+#define SPI3_PRIORITY				4
+#define SPI3_TX_DMA_STREAM			ENUM_DMA1_STREAM_5
 #define SPI3_TX_DMA_CHANNEL			DMA_CHANNEL_0
 #define SPI3_TX_DMA_IRQn			DMA1_Stream5_IRQn
-#define SPI3_TX_DMA_IRQHandler		DMA1_Stream5_IRQHandler
-#define SPI3_RX_DMA_STREAM			DMA1_Stream0
+#define SPI3_TX_DMA_PRIORITY		4
+#define SPI3_RX_DMA_STREAM			ENUM_DMA1_STREAM_0
 #define SPI3_RX_DMA_CHANNEL			DMA_CHANNEL_0
-#define SPI3_RX_DMA_IRQn			DMA1_Stream0_IRQn
-#define SPI3_RX_DMA_IRQHandler		DMA1_Stream0_IRQHandler
+#define SPI3_RX_DMA_IRQn			ENUM_DMA1_STREAM_0
+#define SPI3_RX_DMA_PRIORITY		4
 
 //END SPI defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -446,7 +448,7 @@
 
 
 //Flash Config
-#define FLASH_SPI					SPI3
+#define FLASH_SPI_NUMBER			ENUM_SPI3
 #define FLASH_SPI_CS_GPIO_Pin		SPI3_NSS_PIN
 #define FLASH_SPI_CS_GPIO_Port		SPI3_NSS_GPIO_PORT
 #define FLASH_SPI_SCK_PIN			SPI3_SCK_PIN
@@ -459,7 +461,9 @@
 #define FLASH_SPI_MOSI_GPIO_PORT	SPI3_MOSI_GPIO_PORT
 #define FLASH_SPI_MOSI_AF			SPI3_MOSI_AF
 
-#define FLASH_SPI_BAUD				SPI_BAUDRATEPRESCALER_2
+#define FLASH_SPI_FAST_BAUD			SPI_BAUDRATEPRESCALER_2
+#define FLASH_SPI_SLOW_BAUD			SPI_BAUDRATEPRESCALER_2
+
 
 #define FLASH_DMA_TX_IRQn			SPI3_TX_DMA_IRQn
 #define FLASH_DMA_TX_IRQHandler		SPI3_TX_DMA_IRQHandler

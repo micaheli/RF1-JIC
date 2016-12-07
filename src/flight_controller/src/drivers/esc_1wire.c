@@ -8,8 +8,8 @@ void OneWireInit(void) {
 	//need to reinit all this crap at the end.
 	DisarmBoard();      //sets WD to 32S
 	AccGyroDeinit();    //takes about 200ms maybe to run, this will also stop the flight code from running so no reason to stop that.
-	BoardUsartDeinit(); //deinit all the USARTs.
-	DeinitActuators();  //deinit all the Actuators.
+	DeInitBoardUsarts(); //deinit all the USARTs.
+	DeInitActuators();  //deinit all the Actuators.
 
 //	InitDmaOutputOnMotors(DMA_OUTPUT_ESC_1WIRE);
 
@@ -67,7 +67,10 @@ int OneWireMain(void) {
 
 }
 void OneWireDeinit(void) {
-	BoardUsartInit(); //deinit all the USARTs.
+	DeInitBoardUsarts(); //deinit all the USARTs.
+	DeInitActuators();  //deinit all the Actuators.
+	InitActuators();    //init all the Actuators.
+	InitBoardUsarts();   //init all the USARTs.
 	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl)) {
 		ErrorHandler(GYRO_INIT_FAILIURE);
 	}

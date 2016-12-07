@@ -42,8 +42,6 @@ void UsartInit(uint32_t serialNumber) {
 			rxPin  = board.serials[serialNumber].RXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].RXPort];
-			board.dmas[board.serials[serialNumber].TXDma].enabled = 1;
-			board.dmas[board.serials[serialNumber].RXDma].enabled = 1;
 			break;
 		case USING_SPEKTRUM_TWO_WAY:
 			board.serials[serialNumber].FrameSize  = 16;
@@ -57,8 +55,6 @@ void UsartInit(uint32_t serialNumber) {
 			rxPin  = board.serials[serialNumber].TXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].TXPort];
-			board.dmas[board.serials[serialNumber].TXDma].enabled = 1;
-			board.dmas[board.serials[serialNumber].RXDma].enabled = 1;
 			break;
 		case USING_SBUS:
 		case USING_SBUS_SPORT:
@@ -73,8 +69,6 @@ void UsartInit(uint32_t serialNumber) {
 			rxPin  = board.serials[serialNumber].RXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].RXPort];
-			board.dmas[board.serials[serialNumber].TXDma].enabled = 0;
-			board.dmas[board.serials[serialNumber].RXDma].enabled = 1;
 			break;
 		case USING_MANUAL:
 		default:
@@ -146,7 +140,7 @@ void UsartInit(uint32_t serialNumber) {
 
 }
 
-void UsartDeinit(uint32_t serialNumber) {
+void UsartDeInit(uint32_t serialNumber) {
 
 
 	if (board.serials[serialNumber].serialTxBuffer)
@@ -196,19 +190,21 @@ void UsartDeinit(uint32_t serialNumber) {
 	if (huart->hdmarx != 0)
 	{
 		HAL_DMA_DeInit(huart->hdmarx);
+		HAL_NVIC_DisableIRQ(board.dmasActive[board.serials[serialNumber].RXDma].dmaIRQn);
 	}
 	/* De-Initialize the DMA channel associated to transmission process */
 	if (huart->hdmatx != 0)
 	{
 		HAL_DMA_DeInit(huart->hdmatx);
+		HAL_NVIC_DisableIRQ(board.dmasActive[board.serials[serialNumber].TXDma].dmaIRQn);
 	}
 
-	/*##-4- Disable the NVIC for DMA ###########################################*/
-	if (board.dmas[board.serials[serialNumber].TXDma].enabled)
-		HAL_NVIC_DisableIRQ(board.dmas[board.serials[serialNumber].TXDma].dmaIRQn);
+	/*##-4- Disable the NVIC for Active DMA ###########################################*/
+	//if (board.dmas[board.serials[serialNumber].TXDma].enabled) //only mess with the Active DMA is the current serial device was using it or needs it
+	//	HAL_NVIC_DisableIRQ(board.dmasActive[board.serials[serialNumber].TXDma].dmaIRQn);
 
-	if (board.dmas[board.serials[serialNumber].RXDma].enabled)
-		HAL_NVIC_DisableIRQ(board.dmas[board.serials[serialNumber].RXDma].dmaIRQn);
+//	if (board.dmas[board.serials[serialNumber].RXDma].enabled) //only mess with the Active DMA is the current serial device was using it or needs it
+//		HAL_NVIC_DisableIRQ(board.dmasActive[board.serials[serialNumber].RXDma].dmaIRQn);
 
 }
 
@@ -217,17 +213,18 @@ void UsartDmaInit(uint32_t serialNumber)
 
 	/*##-3- Configure the DMA ##################################################*/
 	/* Configure the DMA handler for Transmission process */
-	if (board.dmas[board.serials[serialNumber].TXDma].enabled) {
-		dmaUartTx[serialNumber].Instance                 = dmaStream[board.dmas[board.serials[serialNumber].TXDma].dmaStream];
-		dmaUartTx[serialNumber].Init.Channel             = board.dmas[board.serials[serialNumber].TXDma].dmaChannel;
-		dmaUartTx[serialNumber].Init.Direction           = board.dmas[board.serials[serialNumber].TXDma].dmaDirection;
-		dmaUartTx[serialNumber].Init.PeriphInc           = board.dmas[board.serials[serialNumber].TXDma].dmaPeriphInc;
-		dmaUartTx[serialNumber].Init.MemInc              = board.dmas[board.serials[serialNumber].TXDma].dmaMemInc;
-		dmaUartTx[serialNumber].Init.PeriphDataAlignment = board.dmas[board.serials[serialNumber].TXDma].dmaPeriphAlignment;
-		dmaUartTx[serialNumber].Init.MemDataAlignment    = board.dmas[board.serials[serialNumber].TXDma].dmaMemAlignment;
-		dmaUartTx[serialNumber].Init.Mode                = board.dmas[board.serials[serialNumber].TXDma].dmaMode;
-		dmaUartTx[serialNumber].Init.Priority            = board.dmas[board.serials[serialNumber].TXDma].dmaPriority;
-		dmaUartTx[serialNumber].Init.FIFOMode            = board.dmas[board.serials[serialNumber].TXDma].fifoMode;
+	if (board.dmasSerial[board.serials[serialNumber].TXDma].enabled) { //only mess with the DMA is the current serial device needs it
+
+		dmaUartTx[serialNumber].Instance                 = dmaStream[board.dmasActive[board.serials[serialNumber].TXDma].dmaStream];
+		dmaUartTx[serialNumber].Init.Channel             = board.dmasActive[board.serials[serialNumber].TXDma].dmaChannel;
+		dmaUartTx[serialNumber].Init.Direction           = board.dmasActive[board.serials[serialNumber].TXDma].dmaDirection;
+		dmaUartTx[serialNumber].Init.PeriphInc           = board.dmasActive[board.serials[serialNumber].TXDma].dmaPeriphInc;
+		dmaUartTx[serialNumber].Init.MemInc              = board.dmasActive[board.serials[serialNumber].TXDma].dmaMemInc;
+		dmaUartTx[serialNumber].Init.PeriphDataAlignment = board.dmasActive[board.serials[serialNumber].TXDma].dmaPeriphAlignment;
+		dmaUartTx[serialNumber].Init.MemDataAlignment    = board.dmasActive[board.serials[serialNumber].TXDma].dmaMemAlignment;
+		dmaUartTx[serialNumber].Init.Mode                = board.dmasActive[board.serials[serialNumber].TXDma].dmaMode;
+		dmaUartTx[serialNumber].Init.Priority            = board.dmasActive[board.serials[serialNumber].TXDma].dmaPriority;
+		dmaUartTx[serialNumber].Init.FIFOMode            = board.dmasActive[board.serials[serialNumber].TXDma].fifoMode;
 
 		HAL_DMA_Init(&dmaUartTx[serialNumber]);
 
@@ -235,58 +232,74 @@ void UsartDmaInit(uint32_t serialNumber)
 		__HAL_LINKDMA(&uartHandles[board.serials[serialNumber].usartHandle], hdmatx, dmaUartTx[serialNumber]);
 
 	    /* DMA interrupt init */
-		HAL_NVIC_SetPriority(board.dmas[board.serials[serialNumber].TXDma].dmaIRQn, 1, 1);
-		HAL_NVIC_EnableIRQ(board.dmas[board.serials[serialNumber].TXDma].dmaIRQn);
+		HAL_NVIC_SetPriority(board.dmasActive[board.serials[serialNumber].TXDma].dmaIRQn, 1, 1);
+		HAL_NVIC_EnableIRQ(board.dmasActive[board.serials[serialNumber].TXDma].dmaIRQn);
 	}
 
 	/* Configure the DMA handler for reception process */
-	if (board.dmas[board.serials[serialNumber].RXDma].enabled) {
+	if (board.dmasSerial[board.serials[serialNumber].RXDma].enabled) { //only mess with the DMA is the current serial device needs it
 
-		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Instance                 = dmaStream[board.dmas[board.serials[serialNumber].RXDma].dmaStream];
-		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.Channel             = board.dmas[board.serials[serialNumber].RXDma].dmaChannel;
-		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.Direction           = board.dmas[board.serials[serialNumber].RXDma].dmaDirection;
-		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.PeriphInc           = board.dmas[board.serials[serialNumber].RXDma].dmaPeriphInc;
-		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.MemInc              = board.dmas[board.serials[serialNumber].RXDma].dmaMemInc;
-		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.PeriphDataAlignment = board.dmas[board.serials[serialNumber].RXDma].dmaPeriphAlignment;
-		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.MemDataAlignment    = board.dmas[board.serials[serialNumber].RXDma].dmaMemAlignment;
-		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.Mode                = board.dmas[board.serials[serialNumber].RXDma].dmaMode;
-		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.Priority            = board.dmas[board.serials[serialNumber].RXDma].dmaPriority;
-		dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle].Init.FIFOMode            = board.dmas[board.serials[serialNumber].RXDma].fifoMode;
+		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Instance                 = dmaStream[board.dmasActive[board.serials[serialNumber].RXDma].dmaStream];
+		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.Channel             = board.dmasActive[board.serials[serialNumber].RXDma].dmaChannel;
+		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.Direction           = board.dmasActive[board.serials[serialNumber].RXDma].dmaDirection;
+		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.PeriphInc           = board.dmasActive[board.serials[serialNumber].RXDma].dmaPeriphInc;
+		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.MemInc              = board.dmasActive[board.serials[serialNumber].RXDma].dmaMemInc;
+		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.PeriphDataAlignment = board.dmasActive[board.serials[serialNumber].RXDma].dmaPeriphAlignment;
+		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.MemDataAlignment    = board.dmasActive[board.serials[serialNumber].RXDma].dmaMemAlignment;
+		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.Mode                = board.dmasActive[board.serials[serialNumber].RXDma].dmaMode;
+		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.Priority            = board.dmasActive[board.serials[serialNumber].RXDma].dmaPriority;
+		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.FIFOMode            = board.dmasActive[board.serials[serialNumber].RXDma].fifoMode;
 
-		HAL_DMA_Init(&dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle]);
+		HAL_DMA_Init(&dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle]);
 
 		/* Associate the initialized DMA handle to the the UART handle */
-		__HAL_LINKDMA(&uartHandles[board.serials[serialNumber].usartHandle], hdmarx, dmaHandles[board.dmas[board.serials[serialNumber].RXDma].dmaHandle]);
+		__HAL_LINKDMA(&uartHandles[board.serials[serialNumber].usartHandle], hdmarx, dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle]);
 
 	    /* DMA interrupt init */
-		HAL_NVIC_SetPriority(board.dmas[board.serials[serialNumber].RXDma].dmaIRQn, 1, 1);
-		HAL_NVIC_EnableIRQ(board.dmas[board.serials[serialNumber].RXDma].dmaIRQn);
+		HAL_NVIC_SetPriority(board.dmasActive[board.serials[serialNumber].RXDma].dmaIRQn, board.dmasActive[board.serials[serialNumber].RXDma].priority, 1);
+		HAL_NVIC_EnableIRQ(board.dmasActive[board.serials[serialNumber].RXDma].dmaIRQn);
 	}
 
 }
 
-void BoardUsartInit (void) {
+void InitBoardUsarts (void) {
 
     //TODO: change this up, for ability to set usarts now on revolt
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_ONE_WAY) {
     	board.serials[ENUM_USART1].enabled  = 0;
     	board.serials[ENUM_USART3].enabled  = 1;
     	board.serials[ENUM_USART3].Protocol = USING_SPEKTRUM_ONE_WAY;
+    	board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 1;
+		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[ENUM_USART1].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 0;
     } else
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY) {
 		board.serials[ENUM_USART3].enabled  = 0;
 		board.serials[ENUM_USART1].enabled  = 1;
 		board.serials[ENUM_USART1].Protocol = USING_SPEKTRUM_TWO_WAY;
+		board.dmasSerial[board.serials[ENUM_USART1].TXDma].enabled = 1;
+		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 0;
 	} else
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS) {
 		board.serials[ENUM_USART3].enabled  = 0;
 		board.serials[ENUM_USART1].enabled  = 1;
 		board.serials[ENUM_USART1].Protocol = USING_SBUS;
+		board.dmasSerial[board.serials[ENUM_USART1].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 0;
 	} else
 	if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT) {
 		board.serials[ENUM_USART3].enabled  = 0;
-		board.serials[ENUM_USART1].enabled  = 0;
+		board.serials[ENUM_USART1].enabled  = 1;
 		board.serials[ENUM_USART1].Protocol = USING_SBUS_SPORT;
+		board.dmasSerial[board.serials[ENUM_USART1].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 0;
 	}
 
 	lastRXPacket = InlineMillis();
@@ -295,18 +308,25 @@ void BoardUsartInit (void) {
 	// starting serial ENUM_USART1 which is serial 0
 	for (uint32_t serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++) {
 		if (board.serials[serialNumber].enabled) {
-			UsartDeinit(serialNumber); //deinits serial and associated pins and DMAs
+
+			if (board.dmasSerial[board.serials[serialNumber].TXDma].enabled) //only move the DMA into the Active DMA if the serial needs it
+		    	memcpy( &board.dmasActive[board.serials[serialNumber].TXDma], &board.dmasSerial[board.serials[serialNumber].TXDma], sizeof(board_dma) ); //TODO: Add dmasUsart
+
+		    if (board.dmasSerial[board.serials[serialNumber].RXDma].enabled) //only move the DMA into the Active DMA if the serial needs it
+		    	memcpy( &board.dmasActive[board.serials[serialNumber].RXDma], &board.dmasSerial[board.serials[serialNumber].RXDma], sizeof(board_dma) );
+
+			UsartDeInit(serialNumber); //deinits serial and associated pins and DMAs
 			UsartInit(serialNumber); //inits serial and associated pins and DMAs
 		}
 	}
 
 }
 
-void BoardUsartDeinit (void) {
+void DeInitBoardUsarts (void) {
 
 	for (uint32_t serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++) {
 		if (board.serials[serialNumber].enabled) {
-			UsartDeinit(serialNumber); //deinits serial and associated pins and DMAs
+			UsartDeInit(serialNumber); //deinits serial and associated pins and DMAs
 		}
 	}
 
