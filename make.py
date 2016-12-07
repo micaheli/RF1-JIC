@@ -162,7 +162,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f411.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O3"
+        OPTIMIZE_FLAGS = "-O3 --gc-sections"
 
     elif TARGET == "stm32f746xx":
         PROJECT = "flight_controller"
