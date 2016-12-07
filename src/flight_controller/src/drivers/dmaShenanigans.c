@@ -111,7 +111,7 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 
     }
 
-	tempBuffer[bufferIdx] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
 
     //HAL_TIM_PWM_Stop(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
 	//HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfigOCHandles[actuator.actuatorArrayNum], actuator.timChannel); //todo: array of sConfigOC
@@ -695,35 +695,51 @@ void InitDshotOutputOnMotors(uint32_t usedFor) {
 
 	uint32_t timerHz;
 	uint32_t pwmHz;
-	uint32_t onePulse;
-	uint32_t zeroPulse;
+	uint32_t loPulse;
+	uint32_t endPulse;
+	uint32_t normalPulse;
+	uint32_t alonePulse;
 	uint32_t inverted;
 
 	if (usedFor == ESC_DSHOT600) {
-		timerHz   = 24000000;
-		pwmHz     = 600000;
-		onePulse  = 30;
-		zeroPulse = 15;
-		inverted  = 1;
+
+		timerHz     = 24000000;
+		pwmHz       = 600000;
+		normalPulse = 15;
+		alonePulse  = 15;
+		endPulse    = 15;
+		loPulse     = 30;
+		inverted    = 1;
+
 	} else if (usedFor == ESC_DSHOT300) {
-		timerHz   = 24000000;
-		pwmHz     = 300000;
-		onePulse  = 60;
-		zeroPulse = 30;
-		inverted  = 1;
+
+		timerHz     = 24000000;
+		pwmHz       = 300000;
+		normalPulse = 30;
+		alonePulse  = 30;
+		endPulse    = 30;
+		loPulse     = 60;
+		inverted    = 1;
+
 	} else if (usedFor == ESC_DSHOT150) {
-		timerHz   = 24000000;
-		pwmHz     = 150000;
-		onePulse  = 120;
-		zeroPulse = 60;
-		inverted  = 1;
+
+		timerHz     = 24000000;
+		pwmHz       = 150000;
+		normalPulse = 60;
+		alonePulse  = 60;
+		endPulse    = 60;
+		loPulse     = 120;
+		inverted    = 1;
+
 	}
 
 	for (uint32_t motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
 		if ( (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (board.dmasMotor[board.motors[motorNum].Dma].enabled) ) {
 			SetActiveDmaToActuatorDma(board.motors[motorNum]);
-			onePulseWidth[board.motors[motorNum].actuatorArrayNum+1]  = onePulse;
-			zeroPulseWidth[board.motors[motorNum].actuatorArrayNum+1] = zeroPulse;
+			alonePulseWidth[board.motors[motorNum].actuatorArrayNum+1]  = alonePulse;
+			normalPulseWidth[board.motors[motorNum].actuatorArrayNum+1] = normalPulse;
+			endPulseWidth[board.motors[motorNum].actuatorArrayNum+1]    = endPulse;
+			loPulseWidth[board.motors[motorNum].actuatorArrayNum+1]     = loPulse;
 			InitOutputForDma(board.motors[motorNum], pwmHz, timerHz, inverted);
 		}
 	}
