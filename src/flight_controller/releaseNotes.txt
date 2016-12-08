@@ -1,0 +1,70 @@
+Version 0.090.030:
+
+	Made a copy of my Taranis model that will work with a new command called taranisdefaultsrf1 if anyone's interested.
+	Added spekdefaults1 and spekdefaults3 based on whichever usart you use.
+	spekdefaults 3 will not work with dshot
+	I changed the version as well. Next version is 0.090.030.  MAJOR.MINOR.CONFIG
+	If config gets incremented you'll know you have to run setup again. The plan is to change that in the future.
+	Commands Added:
+		taranisdefaultsrf1
+		spekdefaults1
+		spekdefaults3
+	Commands Removed:	
+		spekdefaults
+
+Version 0.091.030:
+
+	Added new expo mode called FAST_EXPO. Set it like so:
+		set pitch_curve=3
+		set yaw_curve=3
+		set roll_curve=3
+	Default expo is 1, Fast Expo is 3, Taranis style expo is 2
+	Better Dshot support. Try it out at loop_ctrl=8 or rf_loop_ctrl=15 or rf_loop_ctrl=14 only for now.
+	All rf_loop_ctrl is now supported.
+	Added value string table:
+		ESC_MULTISHOT
+		ESC_ONESHOT
+		ESC_PWM
+		ESC_ONESHOT42
+		ESC_DSHOT600
+		ESC_DSHOT300
+		ESC_DSHOT150
+		MIXER_X1234RY
+		MIXER_X1234
+		MIXER_CUSTOM
+		LOOP_L1
+		LOOP_M1
+		LOOP_M2
+		LOOP_M4
+		LOOP_M8
+		LOOP_H1
+		LOOP_H2
+		LOOP_H4
+		LOOP_H8
+		LOOP_H16
+		LOOP_H32
+		LOOP_UH1
+		LOOP_UH2
+		LOOP_UH4
+		LOOP_UH8
+		LOOP_UH16
+		LOOP_UH32
+		NO_EXPO
+		SKITZO_EXPO
+		TARANIS_EXPO
+		FAST_EXPO
+		ACRO_PLUS
+		NO_EXPO
+
+Version 0.100.030:
+	Spektrum Telemetry support
+	S.Port support
+	Lots and lots of code cleanup.
+
+Version 0.101.030:
+	More code cleanup.
+	Adding new telemetry logic.
+	Fixed inverted wiz calb.
+	Gyro filter changes.
+
+Version 0.102.030:
