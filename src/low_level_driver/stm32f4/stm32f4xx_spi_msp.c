@@ -113,6 +113,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 	HAL_NVIC_SetPriority(board.spis[spiInx].SPI_IRQn, board.spis[spiInx].priority, 0);
 	HAL_NVIC_EnableIRQ(board.spis[spiInx].SPI_IRQn);
 
+	board.dmasActive[board.spis[spiInx].TXDma].enabled = 1;
+	board.dmasActive[board.spis[spiInx].RXDma].enabled = 1;
 
 }
 
@@ -155,5 +157,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
     HAL_NVIC_DisableIRQ(board.spis[spiInx].SPI_IRQn);
     HAL_NVIC_DisableIRQ(board.dmasActive[board.spis[spiInx].TXDma].dmaIRQn);
     HAL_NVIC_DisableIRQ(board.dmasActive[board.spis[spiInx].RXDma].dmaIRQn);
+    board.dmasActive[board.spis[spiInx].TXDma].enabled = 0;
+    board.dmasActive[board.spis[spiInx].RXDma].enabled = 0;
 
 }

@@ -76,11 +76,14 @@ int main(void)
 //    }
     //if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT) {
 
+   	InitBoardUsarts(); //most important thing is activated last, the ability to control the craft.
 
-    InitAllowedSoftOutputs();
+   	//only works for sport right now
+    if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
+    	InitAllowedSoftOutputs();
 
-    InitBoardUsarts(); //most important thing is activated last, the ability to control the craft.
-
+    if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
+    	InitSpektrumTelemetry();
 /*
 
 		InitDmaOutputForSoftSerial(DMA_OUTPUT_SPORT, board.motors[7]); //Enable S.Port on actuator 7, in place of USART 1 RX pin

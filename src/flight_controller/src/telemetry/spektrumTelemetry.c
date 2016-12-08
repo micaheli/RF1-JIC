@@ -17,6 +17,10 @@ extern uint32_t progMode;
 
 #define UINT16_ENDIAN(a)  (((a) >> 8) | ((a) << 8) )
 
+void InitSpektrumTelemetry(void) {
+	return;
+}
+
 void sendSpektrumTelem(void)
 {
 	if (telemetryState >= NUM_TELEM_STATES)

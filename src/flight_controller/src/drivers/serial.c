@@ -191,12 +191,14 @@ void UsartDeInit(uint32_t serialNumber) {
 	{
 		HAL_DMA_DeInit(huart->hdmarx);
 		HAL_NVIC_DisableIRQ(board.dmasActive[board.serials[serialNumber].RXDma].dmaIRQn);
+		board.dmasActive[board.serials[serialNumber].RXDma].enabled = 0;
 	}
 	/* De-Initialize the DMA channel associated to transmission process */
 	if (huart->hdmatx != 0)
 	{
 		HAL_DMA_DeInit(huart->hdmatx);
 		HAL_NVIC_DisableIRQ(board.dmasActive[board.serials[serialNumber].TXDma].dmaIRQn);
+		board.dmasActive[board.serials[serialNumber].TXDma].enabled = 0;
 	}
 
 	/*##-4- Disable the NVIC for Active DMA ###########################################*/
@@ -234,6 +236,7 @@ void UsartDmaInit(uint32_t serialNumber)
 	    /* DMA interrupt init */
 		HAL_NVIC_SetPriority(board.dmasActive[board.serials[serialNumber].TXDma].dmaIRQn, 1, 1);
 		HAL_NVIC_EnableIRQ(board.dmasActive[board.serials[serialNumber].TXDma].dmaIRQn);
+		board.dmasActive[board.serials[serialNumber].TXDma].enabled = 1;
 	}
 
 	/* Configure the DMA handler for reception process */
@@ -258,6 +261,7 @@ void UsartDmaInit(uint32_t serialNumber)
 	    /* DMA interrupt init */
 		HAL_NVIC_SetPriority(board.dmasActive[board.serials[serialNumber].RXDma].dmaIRQn, board.dmasActive[board.serials[serialNumber].RXDma].priority, 1);
 		HAL_NVIC_EnableIRQ(board.dmasActive[board.serials[serialNumber].RXDma].dmaIRQn);
+		board.dmasActive[board.serials[serialNumber].RXDma].enabled = 1;
 	}
 
 }

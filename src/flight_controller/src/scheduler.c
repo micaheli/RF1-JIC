@@ -7,11 +7,6 @@ uint32_t failsafeStage          = 0;
 uint32_t autoSaveTimer          = 0;
 uint32_t firstRun               = 1;
 
-//telem variables
-volatile uint32_t telemEnabled = 0;
-volatile uint32_t lastTimeSPort = 0;
-volatile uint32_t okToSendSPort = 0;
-volatile uint32_t sPortExtiSet  = 0;
 
 //soft serial buffer handling. TODO: make a structure
 volatile uint32_t softSerialEnabled = 0;
@@ -20,10 +15,10 @@ volatile uint32_t softSerialInd[2];
 volatile uint32_t softSerialCurBuf;
 volatile uint32_t softSerialLastByteProcessedLocation;
 volatile uint32_t softSerialSwitchBuffer;
-static uint8_t proccesedSoftSerial[25]; //25 byte buffer enough?
-static uint32_t proccesedSoftSerialIdx = 0;
-static uint32_t softSerialLineIdleSensed = 0;
-static uint32_t lastBitFound = 0;
+static uint8_t    proccesedSoftSerial[25]; //25 byte buffer enough?
+static uint32_t   proccesedSoftSerialIdx = 0;
+static uint32_t   softSerialLineIdleSensed = 0;
+static uint32_t   lastBitFound = 0;
 
 
 static void TaskProcessSoftSerial(void);
@@ -252,6 +247,8 @@ void SoftSerialCallback (void) {
 
 void TaskTelemtry(void) {
 
+	//TODO: Move all this to telemetry.c
+
 	GPIO_InitTypeDef GPIO_InitStructure;
 	static uint32_t telemCount = 0;
 	volatile uint32_t currentTime;
@@ -295,17 +292,24 @@ void TaskTelemtry(void) {
 			switch(telemCount++) {
 				case 0:
 					SmartPortSendPackage(0x0700, (int32_t)(filteredAccData[ACCX] * 100) );
-					//SmartPortSendPackage(0x0700, dataToSend );
 					break;
 				case 1:
 					SmartPortSendPackage(0x0710, (int32_t)(filteredAccData[ACCY] * 100) );
-					//SmartPortSendPackage(0x0710, dataToSend );
 					break;
 				case 2:
 					SmartPortSendPackage(0x0720, (int32_t)(filteredAccData[ACCZ] * 100) );
-					//SmartPortSendPackage(0x0720, dataToSend );
-					//break;
+					break;
 				case 3:
+					SmartPortSendPackage(0x0701, (int32_t)(filteredGyroData[PITCH]) );
+					break;
+				case 4:
+					SmartPortSendPackage(0x0711, (int32_t)(filteredGyroData[ROLL]) );
+					break;
+				case 5:
+					SmartPortSendPackage(0x0721, (int32_t)(filteredGyroData[YAW]) );
+					telemCount = 0;
+					break;
+				case 6:
 					telemCount = 0;
 					break;
 

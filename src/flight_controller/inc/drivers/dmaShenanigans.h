@@ -29,6 +29,7 @@ extern void SetLEDColor(uint8_t newColor);
 extern void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_type actuator, uint32_t msb, uint32_t sendFrame);
 extern void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator);
 
-extern uint32_t IsDshotEnabled();
+extern uint32_t IsDshotEnabled(void);
 extern uint32_t IsDshotActiveOnActuator(motor_type actuator);
-extern void     InitAllowedSoftOutputs();
+extern void     InitAllowedSoftOutputs(void);
+extern uint32_t DoesDmaConflictWithActiveDmas(motor_type actuator);

@@ -563,6 +563,20 @@ void SetActiveDmaToActuatorDma(motor_type actuator) {
 
 }
 
+
+uint32_t DoesDmaConflictWithActiveDmas(motor_type actuator) {
+
+	uint32_t x;
+
+	for (x=0;x<16;x++)
+		if (board.dmasActive[actuator.Dma].enabled)
+			if (board.dmasActive[actuator.Dma].dmaStream == board.dmasActive[x].dmaStream)
+				return 0;
+
+	return(1);
+
+}
+
 //TODO: make sure EXTIs don't conflict
 void InitAllowedSoftOutputs() {
 
@@ -576,11 +590,11 @@ void InitAllowedSoftOutputs() {
 			case ENUM_ACTUATOR_TYPE_WS2812:
 			case ENUM_ACTUATOR_TYPE_SPORT:
 				for (actuatorNumCheck = 0; actuatorNumCheck < MAX_MOTOR_NUMBER; actuatorNumCheck++) { //make sure soft sport and soft ws2812 don't interfer with active motor configuration
-					if (IsDshotActiveOnActuator(board.motors[actuatorNumCheck])) {
-						if (DoesDmaConflictWithDshot(board.motors[actuatorNumCheck], board.motors[actuatorNumOutput])) {
-							okayToEnable = 0;
-						}
+
+					if (!DoesDmaConflictWithActiveDmas(board.motors[actuatorNumOutput])) {
+						okayToEnable = 0;
 					}
+
 				}
 				if (okayToEnable) {
 					if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_SPORT) {
@@ -865,8 +879,11 @@ static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma
 	HAL_NVIC_SetPriority(actuatorDma.dmaIRQn, 0, 3);
 	HAL_NVIC_EnableIRQ(actuatorDma.dmaIRQn);
 
+
 	if (HAL_DMA_Init(&dmaHandles[actuatorDma.dmaHandle]) != HAL_OK) {
 		ErrorHandler(WS2812_LED_INIT_FAILIURE);
+	} else {
+		board.dmasActive[actuatorDma.dmaHandle].enabled = 1;
 	}
 
 }

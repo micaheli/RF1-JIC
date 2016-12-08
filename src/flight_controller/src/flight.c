@@ -123,7 +123,7 @@ int SetCalibrate2(void) {
 				return (1); //calibration looks good
 			} else {
 				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW0_INV; //
+				mainConfig.gyroConfig.gyroRotation = CW180_INV; //
 				boardOrientation1 = 0; //calibration done, reset check
 				return (1); //calibration looks good
 			}
@@ -135,7 +135,7 @@ int SetCalibrate2(void) {
 				return (1); //calibration looks good
 			} else {
 				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW180_INV;
+				mainConfig.gyroConfig.gyroRotation = CW0_INV;
 				boardOrientation1 = 0; //calibration done, reset check
 				return (1); //calibration looks good
 			}
@@ -152,7 +152,7 @@ int SetCalibrate2(void) {
 				return (1); //calibration looks good
 			} else {
 				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW90_INV;
+				mainConfig.gyroConfig.gyroRotation = CW270_INV;
 				boardOrientation1 = 0; //calibration done, reset check
 				return (1); //calibration looks good
 			}
@@ -164,7 +164,7 @@ int SetCalibrate2(void) {
 				return (1); //calibration looks good
 			} else {
 				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW270_INV;
+				mainConfig.gyroConfig.gyroRotation = CW90_INV;
 				boardOrientation1 = 0; //calibration done, reset check
 				return (1); //calibration looks good
 			}
@@ -306,9 +306,9 @@ inline void InlineInitGyroFilters(void)  {
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		InitBiquad(mainConfig.filterConfig[axis].gyro.r, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.92f);
+		//InitBiquad(mainConfig.filterConfig[axis].gyro.r, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.92f);
 
-		//pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
+		pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
 
 		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].gyro.r;
 
@@ -439,6 +439,7 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	static float kdAverage[3];
 	static uint32_t kdAverageCounter = 0;
 	int32_t axis;
+	float averagedGyro;
 	//cycle time
 	//flightcodeTimeStart = Micros();
 
@@ -464,13 +465,14 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	//update gyro filter, every time there's an interrupt
 	for (axis = 2; axis >= 0; --axis) {
-		float averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
-		filteredGyroData[axis] = BiquadUpdate(averagedGyro, &lpfFilterState[axis]);
+		averagedGyro             = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
 		filteredGyroDataKd[axis] = BiquadUpdate(averagedGyro, &lpfFilterStateKd[axis]);
+		PafUpdate(&pafGyroStates[axis], AverageGyroADCbuffer(axis, dpsGyroArray[axis]) );
+		filteredGyroData[axis]    = pafGyroStates[axis].x;
+		//filteredGyroData[axis] = BiquadUpdate(averagedGyro, &lpfFilterState[axis]);
 		//filteredGyroData[axis] = BiquadUpdate(dpsGyroArray[axis], &lpfFilterState[axis]);
 		//filteredGyroDataKd[axis] = BiquadUpdate(dpsGyroArray[axis], &lpfFilterStateKd[axis]);
 		//PafUpdate(&pafGyroStates[axis], AverageGyroADCbuffer(axis, dpsGyroArray[axis]) );
-		//filteredGyroData[axis]    = pafGyroStates[axis].x;
 	}
 
 	if (gyroLoopCounter-- == 0) {

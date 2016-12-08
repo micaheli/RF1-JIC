@@ -26,7 +26,12 @@
 #include "scheduler.h"
 #include "flight_logger.h"
 #include "rfbl_functions.h"
+
+//telemetry includes
 #include "sPortTelemetry.h"
+#include "telemetry.h"
+#include "mspTelemetry.h"
+#include "spektrumTelemetry.h"
 
 
 //input
@@ -36,7 +41,6 @@
 
 
 //all drivers
-#include "drivers/spektrumTelemetry.h"
 #include "drivers/serial.h"
 #include "drivers/leds.h"
 #include "drivers/buzzer.h"

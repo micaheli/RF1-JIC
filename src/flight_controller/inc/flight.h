@@ -12,7 +12,7 @@ typedef struct {
 } loop_speed_record;
 
 extern loop_speed_record loopSpeed;
-
+extern float filteredGyroData[];
 extern volatile uint32_t boardArmed, calibrateMotors, fullKiLatched;
 extern float pitchAttitude, rollAttitude, yawAttitude;
 extern volatile uint32_t SKIP_GYRO;

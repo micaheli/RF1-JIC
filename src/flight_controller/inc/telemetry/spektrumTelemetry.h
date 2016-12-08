@@ -199,6 +199,7 @@ typedef struct {
 	const char *strDefault;
 } interface_table;
 
+void InitSpektrumTelemetry(void);
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize);
 void sendSpektrumTelem(void);
 void sendSpektrumBind(void);
