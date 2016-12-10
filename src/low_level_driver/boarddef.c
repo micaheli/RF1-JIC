@@ -604,7 +604,7 @@ void getBoardHardwareDefs(void)
 	board.spis[ENUM_SPI3].RXDma 		                       = ENUM_DMA1_STREAM_2;
 
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].enabled            = 1;
-	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaStream          = SPI3_TX_DMA_STREAM;   //diff between all SPIs
+	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaStream          = board.spis[ENUM_SPI3].TXDma;   //diff between all SPIs
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaChannel         = SPI3_TX_DMA_CHANNEL;  //diff
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH; //same between all SPIs, diff between TX/RX
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;     //same
@@ -615,12 +615,12 @@ void getBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaPriority        = DMA_PRIORITY_HIGH;    //same, maybe we should change them
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE; //same
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaIRQn            = SPI3_TX_DMA_IRQn;     //diff
-	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaHandle          = SPI3_TX_DMA_STREAM;   //diff
+	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaHandle          = board.spis[ENUM_SPI3].TXDma;   //diff
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].priority           = SPI3_TX_DMA_PRIORITY;
-	callbackFunctionArray[FP_DMA1_S5]                             = 0;
+	callbackFunctionArray[FP_DMA1_S5]                             = 0;//FlashDmaTxCallback;
 
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].enabled            = 1;
-	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaStream          = SPI3_RX_DMA_STREAM;
+	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaStream          = board.spis[ENUM_SPI3].RXDma;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaChannel         = SPI3_RX_DMA_CHANNEL;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
@@ -631,7 +631,7 @@ void getBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaPriority        = DMA_PRIORITY_HIGH;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaIRQn            = SPI3_RX_DMA_IRQn;
-	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaHandle          = SPI3_RX_DMA_STREAM;
+	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaHandle          = board.spis[ENUM_SPI3].RXDma;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].priority           = SPI3_RX_DMA_PRIORITY;
 	callbackFunctionArray[FP_DMA1_S2]                             = FlashDmaRxCallback;
 

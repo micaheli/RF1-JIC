@@ -407,7 +407,7 @@ inline void WriteEnableDataFlash(void) {
 	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
 	HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], c, 1, 100);
 	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
-	simpleDelay_ASM(1);
+	simpleDelay_ASM(3); //give port time to change
 
 }
 
@@ -546,7 +546,7 @@ static int FlashChipReadWriteDataSpiDma(uint8_t *txData, uint8_t *rxData, uint16
 void FlashDmaRxCallback(void)
 {
 
-	if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[ENUM_SPI3].RXDma].dmaHandle]) == HAL_DMA_STATE_READY) {
+	if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY) {
         // reset chip select line
     	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
     	bzero(flashInfo.commandTxBuffer, sizeof(flashInfo.commandTxBuffer));

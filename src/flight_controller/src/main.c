@@ -83,7 +83,7 @@ int main(void)
     	InitAllowedSoftOutputs();
 
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
-//    	InitSpektrumTelemetry();
+    	InitSpektrumTelemetry();
 /*
 
 		InitDmaOutputForSoftSerial(DMA_OUTPUT_SPORT, board.motors[7]); //Enable S.Port on actuator 7, in place of USART 1 RX pin
@@ -99,12 +99,12 @@ int main(void)
     //}
 */
 
+	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl)) {
+		ErrorHandler(GYRO_INIT_FAILIURE);
+	}
 
 
 
-    if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl)) {
-        ErrorHandler(GYRO_INIT_FAILIURE);
-    }
 
     InitWatchdog(WATCHDOG_TIMEOUT_32S);
 

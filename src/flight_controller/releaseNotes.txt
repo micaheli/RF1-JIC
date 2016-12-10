@@ -76,4 +76,9 @@ Version 0.102.032:
 
 Version 0.103.033:
 	Upped config version and changed defaults.
-	
+	More Code Cleanup.
+
+Version 0.104.033:
+	More Code Cleanup.
+	Preparing for 1wire support.
+	Fixed flash logger. Made slightly more intelligent.

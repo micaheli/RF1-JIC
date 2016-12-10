@@ -187,9 +187,9 @@
 #define SPI3_TX_DMA_CHANNEL			DMA_CHANNEL_0
 #define SPI3_TX_DMA_IRQn			DMA1_Stream5_IRQn
 #define SPI3_TX_DMA_PRIORITY		4
-#define SPI3_RX_DMA_STREAM			ENUM_DMA1_STREAM_0
+#define SPI3_RX_DMA_STREAM			ENUM_DMA1_STREAM_2
 #define SPI3_RX_DMA_CHANNEL			DMA_CHANNEL_0
-#define SPI3_RX_DMA_IRQn			ENUM_DMA1_STREAM_0
+#define SPI3_RX_DMA_IRQn			DMA1_Stream2_IRQn
 #define SPI3_RX_DMA_PRIORITY		4
 
 //END SPI defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -461,8 +461,8 @@
 #define FLASH_SPI_MOSI_GPIO_PORT	SPI3_MOSI_GPIO_PORT
 #define FLASH_SPI_MOSI_AF			SPI3_MOSI_AF
 
-#define FLASH_SPI_FAST_BAUD			SPI_BAUDRATEPRESCALER_2
-#define FLASH_SPI_SLOW_BAUD			SPI_BAUDRATEPRESCALER_2
+#define FLASH_SPI_FAST_BAUD			SPI_BAUDRATEPRESCALER_4
+#define FLASH_SPI_SLOW_BAUD			SPI_BAUDRATEPRESCALER_4
 
 
 #define FLASH_DMA_TX_IRQn			SPI3_TX_DMA_IRQn

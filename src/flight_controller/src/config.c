@@ -1629,8 +1629,8 @@ void ProcessCommand(char *inString)
 										RfCustomReply(rf_custom_out_buffer);
 										smallerPointer = 0;
 										bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-										//if (!strcmp("dlflslow", inString))
-											//DelayMs(1);
+										if (!strcmp("dlflslow", inString))
+											DelayMs(3);
 									}
 
 								}
