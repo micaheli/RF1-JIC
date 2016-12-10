@@ -577,8 +577,38 @@ uint32_t DoesDmaConflictWithActiveDmas(motor_type actuator) {
 
 }
 
+//TODO: Always DISABLE whatever is attached to a DMA before reusing the DMA for something else. We may need a way to track what's using a DMA.
+void DeInitAllowedSoftOutputs(void) {
+
+	uint32_t x;
+	uint32_t actuatorNumOutput;
+
+	softSerialEnabled = 0; //todo: make this better, this is pretty ghetto.
+	telemEnabled      = 0;
+
+	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++)
+	{
+		switch (board.motors[actuatorNumOutput].enabled)
+		{
+
+			case ENUM_ACTUATOR_TYPE_WS2812:
+			case ENUM_ACTUATOR_TYPE_SPORT:
+
+				DeInitDmaOutputForSoftSerial(board.motors[actuatorNumOutput]); //disable DMA for motor if it's active and set to one of the above cases. This assume the DMA doesn't get deactivated somehow.
+
+				break;
+
+			default:
+				break;
+
+		}
+
+	}
+
+}
+
 //TODO: make sure EXTIs don't conflict
-void InitAllowedSoftOutputs() {
+void InitAllowedSoftOutputs(void) {
 
 	uint32_t actuatorNumOutput;
 	uint32_t actuatorNumCheck;
@@ -624,7 +654,22 @@ void InitAllowedSoftOutputs() {
 
 }
 
-void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator) {
+void DeInitDmaOutputForSoftSerial(motor_type actuator) {
+
+	if (pwmTimers[actuator.actuatorArrayNum].hdma[actuator.CcDmaHandle] != 0)
+	{
+		//keep timer and GPIO settings as they were.
+		//HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
+		//HAL_TIM_PWM_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
+		//HAL_TIM_Base_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
+		EXTI_Deinit(ports[actuator.port], actuator.pin, actuator.EXTIn); //disable EXTI
+		HAL_DMA_DeInit(pwmTimers[actuator.actuatorArrayNum].hdma[actuator.CcDmaHandle]); //disable DMA
+	}
+
+}
+
+void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator)
+{
 
 	uint32_t timerHz;
 	uint32_t pwmHz;
@@ -634,9 +679,12 @@ void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator) {
 	uint32_t loPulse;
 	uint32_t inverted;
 
-	if (usedFor == DMA_OUTPUT_WS2812_LEDS) {
+	if (usedFor == DMA_OUTPUT_WS2812_LEDS)
+	{
 
-	} else if (usedFor == ENUM_ACTUATOR_TYPE_WS2812) {
+	}
+	else if (usedFor == ENUM_ACTUATOR_TYPE_WS2812)
+	{
 		//17 / 24 = 0.708 us
 	    // note that the timer is running at 24 MHZ, with a period of 30 cycles
 	    // a "1" must be high for ~700 ns, which corresponds to roughly 17 timer cycles
@@ -671,8 +719,8 @@ void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator) {
 		//pwmHz     = 200000;   //baudrate
 		//onePulse  = 1;
 		//zeroPulse = 230; //240 max, but we can't fill the CCR
-		timerHz   = 24000000;
-		pwmHz     = 800000;
+		timerHz     = 24000000;
+		pwmHz       = 800000;
 		//onePulse  = 17;
 		//zeroPulse = 8;
 		normalPulse = 17;
@@ -682,12 +730,28 @@ void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator) {
 
 		inverted  = 1;
 
-	} else if (usedFor == ENUM_ACTUATOR_TYPE_SPORT) {
+	}
+	else if (usedFor == DMA_OUTPUT_ESC_1WIRE)
+	{
 
-		timerHz   = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833
-		pwmHz     = 57600;   //baudrate
+		timerHz     = 48000000; //48 MHz frequency
+		pwmHz       = 19200;    //baudrate
 
-		normalPulse = 833; //833 max, but we can't fill the CCR
+		normalPulse = 2500;     //2500 max
+		alonePulse  = 2490;
+		endPulse    = 1;
+		loPulse     = 0;
+
+		inverted    = 0;
+
+	}
+	else if (usedFor == ENUM_ACTUATOR_TYPE_SPORT)
+	{
+
+		timerHz     = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833
+		pwmHz       = 57600;    //baudrate
+
+		normalPulse = 833;      //833 max, but we can't fill the CCR
 		alonePulse  = 820;
 		endPulse    = 1;
 		loPulse     = 0;
@@ -705,7 +769,8 @@ void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator) {
 
 }
 
-void InitDshotOutputOnMotors(uint32_t usedFor) {
+void InitDshotOutputOnMotors(uint32_t usedFor)
+{
 
 	uint32_t timerHz;
 	uint32_t pwmHz;
@@ -785,7 +850,11 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 
     GPIO_InitStructure.Pin       = actuator.pin;
     GPIO_InitStructure.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP
-    GPIO_InitStructure.Pull      = GPIO_PULLUP; //GPIO_PULLUP //pull up for non inverted, pull down for inverted
+	if (inverted) {
+		GPIO_InitStructure.Pull      = GPIO_PULLDOWN; //GPIO_PULLUP //pull up for non inverted, pull down for inverted
+	} else {
+		GPIO_InitStructure.Pull      = GPIO_PULLUP; //GPIO_PULLUP //pull up for non inverted, pull down for inverted
+	}
     GPIO_InitStructure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStructure.Alternate = actuator.AF;
 
@@ -810,6 +879,7 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 		timerPrescaler = (SystemCoreClock / 2 / timerHz) - 1;
 	}
 
+	HAL_TIM_PWM_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
 	pwmTimers[actuator.actuatorArrayNum].Instance           	= timer;
 	pwmTimers[actuator.actuatorArrayNum].Init.Prescaler     	= timerPrescaler;
 	pwmTimers[actuator.actuatorArrayNum].Init.CounterMode   	= TIM_COUNTERMODE_UP;
@@ -829,13 +899,20 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 	sConfigOCHandles[actuator.actuatorArrayNum].OCMode       = TIM_OCMODE_PWM1;
 	sConfigOCHandles[actuator.actuatorArrayNum].Pulse        = 0;
 	//inverted serial and PWM use TIM_OCPOLARITY_HIGH, normal serial uses TIM_OCPOLARITY_LOW
-	sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity   = TIM_OCPOLARITY_HIGH;
-	//sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity  = TIM_OCPOLARITY_LOW;
+	if (inverted) {
+		sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity  = TIM_OCPOLARITY_HIGH;
+	} else {
+		sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity  = TIM_OCPOLARITY_LOW;
+	}
 	//sConfigOCHandles[actuator.actuatorArrayNum].OCFastMode  = TIM_OCFAST_ENABLE;
     //inverted serial and PWM use TIM_OCIDLESTATE_RESET, normal serial uses TIM_OCIDLESTATE_SET
 	//sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState = TIM_OCIDLESTATE_RESET;
-	sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_RESET;
-	sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = TIM_OCNIDLESTATE_RESET;
+	if (inverted) {
+		sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_RESET;
+	} else {
+		sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_SET;
+	}
+	//sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = TIM_OCNIDLESTATE_SET;
 	sConfigOCHandles[actuator.actuatorArrayNum].OCFastMode   = TIM_OCFAST_DISABLE;
 
 	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfigOCHandles[actuator.actuatorArrayNum], actuator.timChannel);
@@ -844,9 +921,9 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 	//DMA INIT
 	TimDmaInit(&pwmTimers[actuator.actuatorArrayNum], actuator.CcDmaHandle, board.dmasActive[actuator.Dma]);
 
-	bzero(motorOutputBuffer[actuator.actuatorArrayNum],sizeof(motorOutputBuffer[actuator.actuatorArrayNum]));
+	//bzero(motorOutputBuffer[actuator.actuatorArrayNum],sizeof(motorOutputBuffer[actuator.actuatorArrayNum]));
 
-	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], 1);
+	//HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], 1);
     HAL_NVIC_SetPriority(actuator.timerIRQn, 3, 0);
     HAL_NVIC_EnableIRQ(actuator.timerIRQn);
 

@@ -61,10 +61,19 @@ Version 0.100.030:
 	S.Port support
 	Lots and lots of code cleanup.
 
-Version 0.101.030:
+Version 0.101.031:
 	More code cleanup.
 	Adding new telemetry logic.
 	Fixed inverted wiz calb.
 	Gyro filter changes.
 
-Version 0.102.030:
+Version 0.102.032:
+	Fixed bug in Sbus failsafe.
+	Fixed flash logging
+	Add abilitiy to switch between gyro filter types.
+		set gyro_filter_type=0
+		set kd_filter_type=0
+
+Version 0.103.033:
+	Upped config version and changed defaults.
+	

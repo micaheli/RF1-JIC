@@ -38,7 +38,7 @@ int InitializeMCUSettings() {
 	bzero(spiInstance, sizeof(spiInstance));
 	spiInstance[0] = SPI1;
 	spiInstance[1] = SPI2;
-	spiInstance[3] = SPI3;//TODO: Add enum for other SPIs so all boards can use what they have avilable.
+	spiInstance[2] = SPI3;//TODO: Add enum for other SPIs so all boards can use what they have avilable.
 
 	bzero(dmaStream, sizeof(dmaStream));
 	dmaStream[0]  = DMA1_Stream0;
@@ -221,6 +221,7 @@ void getBoardHardwareDefs(void)
  	board.motors[0].timerIRQn         = TIM3_IRQn;
  	board.motors[0].motorOutputLength = 16; //bits
  	board.motors[0].EXTIn             = EXTI0_IRQn; //used for input
+ 	board.motors[0].EXTICallback      = FP_EXTI0; //used for input
 
 	board.dmasMotor[0].enabled            = 1;
 	board.dmasMotor[0].dmaStream          = ENUM_DMA1_STREAM_7;    //motor out
@@ -256,6 +257,7 @@ void getBoardHardwareDefs(void)
  	board.motors[1].timerIRQn         = TIM3_IRQn;
  	board.motors[1].motorOutputLength = 16; //bits
  	board.motors[1].EXTIn             = EXTI1_IRQn; //used for input
+ 	board.motors[0].EXTICallback      = FP_EXTI1; //used for input
 
 	board.dmasMotor[1].enabled            = 1;
 	board.dmasMotor[1].dmaStream          = ENUM_DMA1_STREAM_2;    //motor out
@@ -291,6 +293,7 @@ void getBoardHardwareDefs(void)
 	board.motors[2].timerIRQn         = TIM2_IRQn;
 	board.motors[2].motorOutputLength = 16; //bits
 	board.motors[2].EXTIn             = EXTI3_IRQn; //used for input
+ 	board.motors[0].EXTICallback      = FP_EXTI3; //used for input
 
 	board.dmasMotor[2].enabled            = 1;
 	board.dmasMotor[2].dmaStream          = ENUM_DMA1_STREAM_6;    //motor out
@@ -326,6 +329,7 @@ void getBoardHardwareDefs(void)
 	board.motors[3].timerIRQn         = TIM2_IRQn;
 	board.motors[3].motorOutputLength = 16; //bits
 	board.motors[3].EXTIn             = EXTI2_IRQn; //used for input
+ 	board.motors[0].EXTICallback      = FP_EXTI2; //used for input
 
 	board.dmasMotor[3].enabled            = 1;
 	board.dmasMotor[3].dmaStream          = ENUM_DMA1_STREAM_1;    //motor out
@@ -442,33 +446,35 @@ void getBoardHardwareDefs(void)
 	board.flash[0].spiSlowBaud = FLASH_SPI_SLOW_BAUD;
 
 	//SPI settings ------------------------------------------------------------------------------------------------------------------------------------------------------------
-	board.spis[ENUM_SPI1].enabled                              = SPI1_ENABLE;
-	board.spis[ENUM_SPI1].instance                             = ENUM_SPI1;
+	board.spis[ENUM_SPI1].enabled                                 = SPI1_ENABLE;
+	board.spis[ENUM_SPI1].instance                                = ENUM_SPI1;
 
-	board.spis[ENUM_SPI1].NSSPin                               = SPI1_NSS_PIN;
-	board.spis[ENUM_SPI1].SCKPin                               = SPI1_SCK_PIN;
-	board.spis[ENUM_SPI1].MISOPin                              = SPI1_MISO_PIN;
-	board.spis[ENUM_SPI1].MOSIPin                              = SPI1_MOSI_PIN;
+	board.spis[ENUM_SPI1].NSSPin                                  = SPI1_NSS_PIN;
+	board.spis[ENUM_SPI1].SCKPin                                  = SPI1_SCK_PIN;
+	board.spis[ENUM_SPI1].MISOPin                                 = SPI1_MISO_PIN;
+	board.spis[ENUM_SPI1].MOSIPin                                 = SPI1_MOSI_PIN;
 
-	board.spis[ENUM_SPI1].NSSPort                              = SPI1_NSS_GPIO_PORT;
-	board.spis[ENUM_SPI1].SCKPort                              = SPI1_SCK_GPIO_PORT;
-	board.spis[ENUM_SPI1].MISOPort                             = SPI1_MISO_GPIO_PORT;
-	board.spis[ENUM_SPI1].MOSIPort                             = SPI1_MOSI_GPIO_PORT;
+	board.spis[ENUM_SPI1].NSSPort                                 = SPI1_NSS_GPIO_PORT;
+	board.spis[ENUM_SPI1].SCKPort                                 = SPI1_SCK_GPIO_PORT;
+	board.spis[ENUM_SPI1].MISOPort                                = SPI1_MISO_GPIO_PORT;
+	board.spis[ENUM_SPI1].MOSIPort                                = SPI1_MOSI_GPIO_PORT;
 
-	board.spis[ENUM_SPI1].SCKAlternate                         = SPI1_SCK_AF;
-	board.spis[ENUM_SPI1].MISOAlternate                        = SPI1_MISO_AF;
-	board.spis[ENUM_SPI1].MOSIAlternate                        = SPI1_MOSI_AF;
+	board.spis[ENUM_SPI2].SCKPull                                 = GPIO_PULLDOWN;
 
-	board.spis[ENUM_SPI1].SPI_IRQn                             = SPI1_IRQn;
-	board.spis[ENUM_SPI1].spiHandle                            = ENUM_SPI1;
-	board.spis[ENUM_SPI1].priority                             = SPI1_PRIORITY;
+	board.spis[ENUM_SPI1].SCKAlternate                            = SPI1_SCK_AF;
+	board.spis[ENUM_SPI1].MISOAlternate                           = SPI1_MISO_AF;
+	board.spis[ENUM_SPI1].MOSIAlternate                           = SPI1_MOSI_AF;
+
+	board.spis[ENUM_SPI1].SPI_IRQn                                = SPI1_IRQn;
+	board.spis[ENUM_SPI1].spiHandle                               = ENUM_SPI1;
+	board.spis[ENUM_SPI1].priority                                = SPI1_PRIORITY;
 
 
-	board.spis[ENUM_SPI1].TXDMA_IRQn                           = SPI1_TX_DMA_IRQn;
-	board.spis[ENUM_SPI1].RXDMA_IRQn                           = SPI1_RX_DMA_IRQn;
+	board.spis[ENUM_SPI1].TXDMA_IRQn                              = SPI1_TX_DMA_IRQn;
+	board.spis[ENUM_SPI1].RXDMA_IRQn                              = SPI1_RX_DMA_IRQn;
 
-	board.spis[ENUM_SPI1].TXDma 		                       = ENUM_DMA2_STREAM_3;
-	board.spis[ENUM_SPI1].RXDma 		                       = ENUM_DMA2_STREAM_0;
+	board.spis[ENUM_SPI1].TXDma 		                          = ENUM_DMA2_STREAM_3;
+	board.spis[ENUM_SPI1].RXDma 		                          = ENUM_DMA2_STREAM_0;
 
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].enabled            = 1;
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaStream          = SPI1_TX_DMA_STREAM;
@@ -503,32 +509,34 @@ void getBoardHardwareDefs(void)
 	callbackFunctionArray[FP_DMA2_S0]                             = GyroRxDmaCallback;
 
 
-	board.spis[ENUM_SPI2].enabled                              = SPI2_ENABLE;
-	board.spis[ENUM_SPI2].instance                             = ENUM_SPI2;
+	board.spis[ENUM_SPI2].enabled                                 = SPI2_ENABLE;
+	board.spis[ENUM_SPI2].instance                                = ENUM_SPI2;
 
-	board.spis[ENUM_SPI2].NSSPin                               = SPI2_NSS_PIN;
-	board.spis[ENUM_SPI2].SCKPin                               = SPI2_SCK_PIN;
-	board.spis[ENUM_SPI2].MISOPin                              = SPI2_MISO_PIN;
-	board.spis[ENUM_SPI2].MOSIPin                              = SPI2_MOSI_PIN;
+	board.spis[ENUM_SPI2].NSSPin                                  = SPI2_NSS_PIN;
+	board.spis[ENUM_SPI2].SCKPin                                  = SPI2_SCK_PIN;
+	board.spis[ENUM_SPI2].MISOPin                                 = SPI2_MISO_PIN;
+	board.spis[ENUM_SPI2].MOSIPin                                 = SPI2_MOSI_PIN;
 
-	board.spis[ENUM_SPI2].NSSPort                              = SPI2_NSS_GPIO_PORT;
-	board.spis[ENUM_SPI2].SCKPort                              = SPI2_SCK_GPIO_PORT;
-	board.spis[ENUM_SPI2].MISOPort                             = SPI2_MISO_GPIO_PORT;
-	board.spis[ENUM_SPI2].MOSIPort                             = SPI2_MOSI_GPIO_PORT;
+	board.spis[ENUM_SPI2].NSSPort                                 = SPI2_NSS_GPIO_PORT;
+	board.spis[ENUM_SPI2].SCKPort                                 = SPI2_SCK_GPIO_PORT;
+	board.spis[ENUM_SPI2].MISOPort                                = SPI2_MISO_GPIO_PORT;
+	board.spis[ENUM_SPI2].MOSIPort                                = SPI2_MOSI_GPIO_PORT;
 
-	board.spis[ENUM_SPI2].SCKAlternate                         = SPI2_SCK_AF;
-	board.spis[ENUM_SPI2].MISOAlternate                        = SPI2_MISO_AF;
-	board.spis[ENUM_SPI2].MOSIAlternate                        = SPI2_MOSI_AF;
+	board.spis[ENUM_SPI2].SCKPull                                 = GPIO_PULLDOWN;
 
-	board.spis[ENUM_SPI2].SPI_IRQn                             = SPI2_IRQn;
-	board.spis[ENUM_SPI2].spiHandle                            = ENUM_SPI2;
-	board.spis[ENUM_SPI2].priority                            = SPI2_PRIORITY;
+	board.spis[ENUM_SPI2].SCKAlternate                            = SPI2_SCK_AF;
+	board.spis[ENUM_SPI2].MISOAlternate                           = SPI2_MISO_AF;
+	board.spis[ENUM_SPI2].MOSIAlternate                           = SPI2_MOSI_AF;
 
-	board.spis[ENUM_SPI2].TXDMA_IRQn                           = SPI2_TX_DMA_IRQn;
-	board.spis[ENUM_SPI2].RXDMA_IRQn                           = SPI2_RX_DMA_IRQn;
+	board.spis[ENUM_SPI2].SPI_IRQn                                = SPI2_IRQn;
+	board.spis[ENUM_SPI2].spiHandle                               = ENUM_SPI2;
+	board.spis[ENUM_SPI2].priority                                = SPI2_PRIORITY;
 
-	board.spis[ENUM_SPI2].TXDma 		                       = ENUM_DMA1_STREAM_5;
-	board.spis[ENUM_SPI2].RXDma 		                       = ENUM_DMA1_STREAM_2;
+	board.spis[ENUM_SPI2].TXDMA_IRQn                              = SPI2_TX_DMA_IRQn;
+	board.spis[ENUM_SPI2].RXDMA_IRQn                              = SPI2_RX_DMA_IRQn;
+
+	board.spis[ENUM_SPI2].TXDma 		                          = SPI2_TX_DMA_STREAM;
+	board.spis[ENUM_SPI2].RXDma 		                          = SPI2_RX_DMA_STREAM;
 
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].enabled            = 0;
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaStream          = SPI2_TX_DMA_STREAM;   //diff between all SPIs
@@ -544,7 +552,7 @@ void getBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaIRQn            = SPI2_TX_DMA_IRQn;     //diff
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaHandle          = SPI2_TX_DMA_STREAM;   //diff
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].priority           = SPI2_RX_DMA_PRIORITY;
-	callbackFunctionArray[FP_DMA1_S5]                          = 0;
+	callbackFunctionArray[FP_DMA1_S4]                             = 0;
 
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].enabled            = 0;
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].dmaStream          = SPI2_RX_DMA_STREAM;
@@ -560,7 +568,7 @@ void getBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].dmaIRQn            = SPI2_RX_DMA_IRQn;
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].dmaHandle          = SPI2_RX_DMA_STREAM;
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].priority           = SPI2_RX_DMA_PRIORITY;
-	callbackFunctionArray[FP_DMA1_S0]                          = 0;
+	callbackFunctionArray[FP_DMA1_S3]                             = 0;
 
 
 	board.spis[ENUM_SPI3].enabled                              = SPI3_ENABLE;
@@ -570,6 +578,8 @@ void getBoardHardwareDefs(void)
 	board.spis[ENUM_SPI3].SCKPin                               = SPI3_SCK_PIN;
 	board.spis[ENUM_SPI3].MISOPin                              = SPI3_MISO_PIN;
 	board.spis[ENUM_SPI3].MOSIPin                              = SPI3_MOSI_PIN;
+
+	board.spis[ENUM_SPI3].SCKPull                              = GPIO_PULLUP;
 
 	board.spis[ENUM_SPI3].NSSPort                              = SPI3_NSS_GPIO_PORT;
 	board.spis[ENUM_SPI3].SCKPort                              = SPI3_SCK_GPIO_PORT;
@@ -595,7 +605,7 @@ void getBoardHardwareDefs(void)
 
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].enabled            = 1;
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaStream          = SPI3_TX_DMA_STREAM;   //diff between all SPIs
-	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaChannel         = SPI3_TX_DMA_CHANNEL;        //diff
+	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaChannel         = SPI3_TX_DMA_CHANNEL;  //diff
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH; //same between all SPIs, diff between TX/RX
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;     //same
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaMemInc          = DMA_MINC_ENABLE;      //same
@@ -604,7 +614,7 @@ void getBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaMode            = DMA_NORMAL;           //same
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaPriority        = DMA_PRIORITY_HIGH;    //same, maybe we should change them
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE; //same
-	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaIRQn            = SPI3_TX_DMA_IRQn;    //diff
+	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaIRQn            = SPI3_TX_DMA_IRQn;     //diff
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaHandle          = SPI3_TX_DMA_STREAM;   //diff
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].priority           = SPI3_TX_DMA_PRIORITY;
 	callbackFunctionArray[FP_DMA1_S5]                             = 0;
@@ -623,7 +633,7 @@ void getBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaIRQn            = SPI3_RX_DMA_IRQn;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaHandle          = SPI3_RX_DMA_STREAM;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].priority           = SPI3_RX_DMA_PRIORITY;
-	callbackFunctionArray[FP_DMA1_S0]                             = FlashDmaRxCallback;
+	callbackFunctionArray[FP_DMA1_S2]                             = FlashDmaRxCallback;
 
 
 

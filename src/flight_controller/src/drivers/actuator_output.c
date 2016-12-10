@@ -15,18 +15,19 @@ void DeInitActuators(void)  {
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
 		if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 		{
-			if (board.motors[motorNum].polarity == TIM_OCPOLARITY_LOW)
-			{
-				inlineDigitalLo(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
-			}
-			else
-			{
-				inlineDigitalHi(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
-			}
+			//if (board.motors[motorNum].polarity == TIM_OCPOLARITY_LOW)
+			//{
+			//	inlineDigitalLo(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
+			//}
+			//else
+			//{
+			//	inlineDigitalHi(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
+			//}
 
 			HAL_GPIO_DeInit(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
-			HAL_TIM_Base_DeInit(&pwmTimers[board.motors[motorNum].actuatorArrayNum]);
 			HAL_TIM_PWM_DeInit(&pwmTimers[board.motors[motorNum].actuatorArrayNum]);
+			HAL_TIM_Base_DeInit(&pwmTimers[board.motors[motorNum].actuatorArrayNum]);
+
 		}
 	}
 }

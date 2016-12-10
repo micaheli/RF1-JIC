@@ -343,7 +343,7 @@ int InitFlashChip(void)
 		memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma], sizeof(board_dma) );
 	}
 
-	FlashDeinit();
+	//FlashDeinit();
 
     SpiInit(board.flash[0].spiFastBaud);
 
@@ -407,7 +407,7 @@ inline void WriteEnableDataFlash(void) {
 	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
 	HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], c, 1, 100);
 	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
-	simpleDelay_ASM(3);
+	simpleDelay_ASM(1);
 
 }
 

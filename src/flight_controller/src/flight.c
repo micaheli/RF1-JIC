@@ -17,6 +17,7 @@ float filteredGyroData[AXIS_NUMBER];
 float filteredGyroDataKd[AXIS_NUMBER];
 float filteredAccData[VECTOR_NUMBER];
 paf_state pafGyroStates[AXIS_NUMBER];
+paf_state pafKdStates[AXIS_NUMBER];
 paf_state pafAccStates[AXIS_NUMBER];
 float actuatorRange;
 float flightSetPoints[AXIS_NUMBER];
@@ -306,9 +307,11 @@ inline void InlineInitGyroFilters(void)  {
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		//InitBiquad(mainConfig.filterConfig[axis].gyro.r, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.92f);
-
-		pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
+		if (mainConfig.gyroConfig.filterTypeGyro == 0) {
+			pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
+		} else {
+			InitBiquad(mainConfig.filterConfig[axis].gyro.r, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.92f);
+		}
 
 		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].gyro.r;
 
@@ -322,9 +325,11 @@ inline void InlineInitKdFilters(void)  {
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		InitBiquad(kdFiltUsed[axis], &lpfFilterStateKd[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterStateKd[axis], 1.0f);
-
-		//pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
+		if (mainConfig.gyroConfig.filterTypeKd == 0) {
+			pafKdStates[axis]   = InitPaf( mainConfig.filterConfig[axis].kd.q, mainConfig.filterConfig[axis].kd.r, mainConfig.filterConfig[axis].kd.p, filteredGyroData[axis]);
+		} else {
+			InitBiquad(kdFiltUsed[axis], &lpfFilterStateKd[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterStateKd[axis], 1.0f);
+		}
 
 		currentKdFilterConfig[axis] = kdFiltUsed[axis];
 
@@ -465,14 +470,23 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 	//update gyro filter, every time there's an interrupt
 	for (axis = 2; axis >= 0; --axis) {
+
 		averagedGyro             = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
-		filteredGyroDataKd[axis] = BiquadUpdate(averagedGyro, &lpfFilterStateKd[axis]);
-		PafUpdate(&pafGyroStates[axis], AverageGyroADCbuffer(axis, dpsGyroArray[axis]) );
-		filteredGyroData[axis]    = pafGyroStates[axis].x;
-		//filteredGyroData[axis] = BiquadUpdate(averagedGyro, &lpfFilterState[axis]);
-		//filteredGyroData[axis] = BiquadUpdate(dpsGyroArray[axis], &lpfFilterState[axis]);
-		//filteredGyroDataKd[axis] = BiquadUpdate(dpsGyroArray[axis], &lpfFilterStateKd[axis]);
-		//PafUpdate(&pafGyroStates[axis], AverageGyroADCbuffer(axis, dpsGyroArray[axis]) );
+
+		if (mainConfig.gyroConfig.filterTypeKd == 0) {
+			PafUpdate(&pafKdStates[axis], averagedGyro );
+			filteredGyroDataKd[axis] = pafKdStates[axis].x;
+		} else {
+			filteredGyroDataKd[axis] = BiquadUpdate(averagedGyro, &lpfFilterStateKd[axis]);
+		}
+
+		if (mainConfig.gyroConfig.filterTypeGyro == 0) {
+			PafUpdate(&pafGyroStates[axis], averagedGyro );
+			filteredGyroData[axis] = pafGyroStates[axis].x;
+		} else {
+			filteredGyroData[axis] = BiquadUpdate(averagedGyro, &lpfFilterState[axis]);
+		}
+
 	}
 
 	if (gyroLoopCounter-- == 0) {
@@ -526,34 +540,38 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 		ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
-		kdAverage[YAW]   += filteredGyroData[YAW];
-		kdAverage[ROLL]  += filteredGyroData[ROLL];
-		kdAverage[PITCH] += filteredGyroData[PITCH];
+		if (mainConfig.gyroConfig.filterTypeKd == 1) {
+			kdAverage[YAW]   += filteredGyroData[YAW];
+			kdAverage[ROLL]  += filteredGyroData[ROLL];
+			kdAverage[PITCH] += filteredGyroData[PITCH];
+		}
 		//MAX_KD
 		if (khzLoopCounter-- == 0) {
 			khzLoopCounter=loopSpeed.khzDivider;
 
-			kdAverageCounter++;
-			if (kdAverageCounter == 8) {
+			if (mainConfig.gyroConfig.filterTypeKd == 1) {
+				kdAverageCounter++;
+				if (kdAverageCounter == 8) {
 
-				kdAverageCounter=0;
-				kdAverage[YAW]   = kdAverage[YAW] / (loopSpeed.khzDivider * 8);
-				kdAverage[ROLL]  = kdAverage[ROLL] / (loopSpeed.khzDivider * 8);
-				kdAverage[PITCH] = kdAverage[PITCH] / (loopSpeed.khzDivider * 8);
+					kdAverageCounter=0;
+					kdAverage[YAW]   = kdAverage[YAW] / (loopSpeed.khzDivider * 8);
+					kdAverage[ROLL]  = kdAverage[ROLL] / (loopSpeed.khzDivider * 8);
+					kdAverage[PITCH] = kdAverage[PITCH] / (loopSpeed.khzDivider * 8);
 
-				kdAverage[YAW]   = InlineConstrainf(kdAverage[YAW],  0, 300);
-				kdAverage[ROLL]  = InlineConstrainf(kdAverage[ROLL], 0, 300);
-				kdAverage[PITCH] = InlineConstrainf(kdAverage[PITCH],0, 300);
+					kdAverage[YAW]   = InlineConstrainf(kdAverage[YAW],  0, 300);
+					kdAverage[ROLL]  = InlineConstrainf(kdAverage[ROLL], 0, 300);
+					kdAverage[PITCH] = InlineConstrainf(kdAverage[PITCH],0, 300);
 
-				//experimental auto filter
-				kdFiltUsed[YAW]   = InlineChangeRangef(ABS(kdAverage[YAW]),   300, 0, mainConfig.filterConfig[YAW].kd.r+10,   mainConfig.filterConfig[YAW].kd.r);
-				kdFiltUsed[ROLL]  = InlineChangeRangef(ABS(kdAverage[ROLL]),  300, 0, mainConfig.filterConfig[ROLL].kd.r+15,  mainConfig.filterConfig[ROLL].kd.r);
-				kdFiltUsed[PITCH] = InlineChangeRangef(ABS(kdAverage[PITCH]), 300, 0, mainConfig.filterConfig[PITCH].kd.r+15, mainConfig.filterConfig[PITCH].kd.r);
+					//experimental auto filter
+					kdFiltUsed[YAW]   = InlineChangeRangef(ABS(kdAverage[YAW]),   300, 0, mainConfig.filterConfig[YAW].kd.r+10,   mainConfig.filterConfig[YAW].kd.r);
+					kdFiltUsed[ROLL]  = InlineChangeRangef(ABS(kdAverage[ROLL]),  300, 0, mainConfig.filterConfig[ROLL].kd.r+15,  mainConfig.filterConfig[ROLL].kd.r);
+					kdFiltUsed[PITCH] = InlineChangeRangef(ABS(kdAverage[PITCH]), 300, 0, mainConfig.filterConfig[PITCH].kd.r+15, mainConfig.filterConfig[PITCH].kd.r);
 
-				kdAverage[YAW]   = 0;
-				kdAverage[ROLL]  = 0;
-				kdAverage[PITCH] = 0;
+					kdAverage[YAW]   = 0;
+					kdAverage[ROLL]  = 0;
+					kdAverage[PITCH] = 0;
 
+				}
 			}
 
 			CheckFailsafe();

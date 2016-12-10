@@ -9,9 +9,9 @@ uint32_t bootDirection;
 
 void HandleRfbl (void) {
     ReadRfblBkRegs();
-	//if (rfblVersion < RFBL_VERSION) {
-	//	upgradeRfbl();
-	//}
+#ifdef DEBUG
+    HandleRfblDisasterPrevention();
+#endif
 }
 
 void HandleRfblDisasterPrevention (void) {

@@ -49,7 +49,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
 	GPIO_InitStruct.Pin   = board.spis[spiInx].SCKPin;
 	GPIO_InitStruct.Mode  = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+	GPIO_InitStruct.Pull  = board.spis[spiInx].SCKPull;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
 	GPIO_InitStruct.Alternate = board.spis[spiInx].SCKAlternate;
 	HAL_GPIO_Init(ports[board.spis[spiInx].SCKPort], &GPIO_InitStruct);

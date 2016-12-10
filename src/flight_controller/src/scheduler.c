@@ -321,7 +321,7 @@ void TaskTelemtry(void) {
 	//TODO: Soft serial needs to be similar to serial. I think soft serial needs to go into serial.c
 	if ( (currentTime - lastTimeSPort > 8) && (!sPortExtiSet) ) { //15 ms since EXTI occurred, let's look for another EXTI now
 		sPortExtiSet = 1;
-		EXTI_Init(ports[board.motors[7].port], board.motors[7].pin, EXTI9_5_IRQn, 0, 1, GPIO_MODE_IT_RISING_FALLING);
+		EXTI_Init(ports[board.motors[7].port], board.motors[7].pin, EXTI9_5_IRQn, 0, 1, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLDOWN);
 	}
 
 }

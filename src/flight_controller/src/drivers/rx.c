@@ -176,7 +176,7 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 	if (1) // here is where we check which rx we are using probably use case
 	{
 
-		if (outChannel == THROTTLE)
+		if ( (outChannel == THROTTLE) && (usingSpektrum) )
 			rx_timeout = 0;
 	}
 
@@ -297,9 +297,9 @@ inline void InlineCollectRcCommand (void) {
 	for (axis = 0; axis < MAXCHANNELS; axis++) {
 
 		if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[axis], mainConfig.rcControlsConfig.minRc[axis], 0.0, -1.0); //-1 to 0
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[axis], mainConfig.rcControlsConfig.minRc[axis], 0 + mainConfig.rcControlsConfig.deadBand[axis], -1.0); //-1 to 0
 		else
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[axis], mainConfig.rcControlsConfig.midRc[axis], 1.0, 0.0); //0 to +1
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[axis], mainConfig.rcControlsConfig.midRc[axis], 1.0, 0 - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
 
 
 

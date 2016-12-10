@@ -228,6 +228,7 @@ typedef struct {
 
 	uint32_t				NSSPin;
 	uint32_t				SCKPin;
+	uint32_t				SCKPull;
 	uint32_t				MISOPin;
 	uint32_t				MOSIPin;
 
@@ -362,6 +363,7 @@ typedef struct {
 	uint32_t				timerIRQn;
  	uint32_t				motorOutputLength;
  	uint32_t				EXTIn;
+ 	uint32_t				EXTICallback;
 } motor_type;
 
 

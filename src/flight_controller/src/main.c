@@ -54,8 +54,8 @@ int main(void)
 
     //TODO: move the check into the init functions.
     if (board.flash[0].enabled) {
-//    	InitFlashChip();
-//    	InitFlightLogger();
+    	InitFlashChip();
+    	InitFlightLogger();
     }
 
     InitRcData();
@@ -83,7 +83,7 @@ int main(void)
     	InitAllowedSoftOutputs();
 
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
-    	InitSpektrumTelemetry();
+//    	InitSpektrumTelemetry();
 /*
 
 		InitDmaOutputForSoftSerial(DMA_OUTPUT_SPORT, board.motors[7]); //Enable S.Port on actuator 7, in place of USART 1 RX pin
@@ -106,7 +106,7 @@ int main(void)
         ErrorHandler(GYRO_INIT_FAILIURE);
     }
 
-    InitWatchdog(WATCHDOG_TIMEOUT_16S);
+    InitWatchdog(WATCHDOG_TIMEOUT_32S);
 
     buzzerStatus.status = STATE_BUZZER_OFF;
     ledStatus.status = LEDS_SLOW_BLINK;

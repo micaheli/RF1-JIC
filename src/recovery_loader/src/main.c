@@ -21,6 +21,21 @@ char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
 FwInfo_t FwInfo;
 cfg1_t cfg1;
 
+//GPIO_TypeDef       *ports[11];
+//serial_type         usarts[6];
+//spi_type            spis[6];
+//TIM_TypeDef        *timers[14];
+//volatile uint32_t  *ccr[56];
+//board_type          board;
+//DMA_Stream_TypeDef *dmaStream[16];
+//UART_HandleTypeDef  uartHandles[6];
+DMA_HandleTypeDef   dmaHandles[16];
+//TIM_HandleTypeDef   pwmTimers[16];
+//TIM_OC_InitTypeDef  sConfigOCHandles[16];
+//SPI_HandleTypeDef   spiHandles[6];
+//SPI_TypeDef        *spiInstance[6];
+
+function_pointer callbackFunctionArray[IRQH_FP_TOT];
 
 /* Private function prototypes -----------------------------------------------*/
 

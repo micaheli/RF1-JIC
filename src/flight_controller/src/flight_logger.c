@@ -95,7 +95,11 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[], float dpsGy
 	int finishX;
 	static int loggingStartedLatch = 0;
 
+#ifdef DEBUG
 	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (trueRcCommandF[AUX2] > 0.5) && (flashInfo.enabled == FLASH_ENABLED) ) {
+#else
+		if ( (trueRcCommandF[AUX2] > 0.5) && (flashInfo.enabled == FLASH_ENABLED) ) {
+#endif
 		ledStatus.status = LEDS_FASTER_BLINK;
 		LoggingEnabled = 1;
 		loggingStartedLatch = 1;
