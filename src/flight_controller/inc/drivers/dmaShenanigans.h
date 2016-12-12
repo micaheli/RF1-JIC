@@ -28,7 +28,9 @@ typedef struct {
 } led_config;
 
 
+
 extern ws2812Led_t WS2812_IO_colors[];
+
 
 extern void InitDshotOutputOnMotors(uint32_t usedFor);
 extern void InitOdd(motor_type actuator);
@@ -38,6 +40,7 @@ extern void Ws2812LedInit(void);
 extern void ws2812_led_update(uint32_t nLeds);
 extern void SetLEDColor(uint8_t newColor);
 extern void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_type actuator, uint32_t msb, uint32_t sendFrame);
+
 
 extern void     InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator);
 extern void     DeInitDmaOutputForSoftSerial(motor_type actuator);

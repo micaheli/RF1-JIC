@@ -111,7 +111,7 @@ int main(void)
     buzzerStatus.status = STATE_BUZZER_OFF;
     ledStatus.status = LEDS_SLOW_BLINK;
 
-//    OneWireInit();
+    OneWireInit();
 
     while (1) {
 

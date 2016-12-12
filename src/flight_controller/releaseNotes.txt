@@ -69,10 +69,14 @@ Version 0.101.031:
 
 Version 0.102.032:
 	Fixed bug in Sbus failsafe.
-	Fixed flash logging
+	Changed how Deadband and Expo work.
 	Add abilitiy to switch between gyro filter types.
 		set gyro_filter_type=0
 		set kd_filter_type=0
+		Kd scale has changed when filter_type=0 is selected.
+		0 - 100 is a normal range.
+		filter_type=1 creates a range around 400 to 4000.
+		I do not recomend using filter_type=1
 
 Version 0.103.033:
 	Upped config version and changed defaults.

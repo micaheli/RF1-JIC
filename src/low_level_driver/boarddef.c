@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #include "../flight_controller/inc/rf_math.h"
 #include "includes.h"
+
 
 GPIO_TypeDef       *ports[11];
 serial_type         usarts[6];
@@ -20,12 +22,13 @@ TIM_OC_InitTypeDef  sConfigOCHandles[16];
 SPI_HandleTypeDef   spiHandles[6];
 SPI_TypeDef        *spiInstance[6];
 
+
 unsigned char serialRxBuffer[3][RXBUFFERSIZE];
 unsigned char serialTxBuffer[3][TXBUFFERSIZE];
-uint32_t motorOutputBuffer[8][128];
+uint32_t motorOutputBuffer[8][256];
 
 
-function_pointer callbackFunctionArray[IRQH_FP_TOT];
+volatile function_pointer callbackFunctionArray[IRQH_FP_TOT];
 
 
 int InitializeMCUSettings() {
@@ -221,7 +224,8 @@ void getBoardHardwareDefs(void)
  	board.motors[0].timerIRQn         = TIM3_IRQn;
  	board.motors[0].motorOutputLength = 16; //bits
  	board.motors[0].EXTIn             = EXTI0_IRQn; //used for input
- 	board.motors[0].EXTICallback      = FP_EXTI0; //used for input
+ 	board.motors[0].EXTICallback      = FP_EXTI0;   //used for input
+ 	board.motors[0].DmaCallback       = FP_DMA1_S7; //used for input
 
 	board.dmasMotor[0].enabled            = 1;
 	board.dmasMotor[0].dmaStream          = ENUM_DMA1_STREAM_7;    //motor out
@@ -257,7 +261,8 @@ void getBoardHardwareDefs(void)
  	board.motors[1].timerIRQn         = TIM3_IRQn;
  	board.motors[1].motorOutputLength = 16; //bits
  	board.motors[1].EXTIn             = EXTI1_IRQn; //used for input
- 	board.motors[0].EXTICallback      = FP_EXTI1; //used for input
+ 	board.motors[1].EXTICallback      = FP_EXTI1; //used for input
+ 	board.motors[1].DmaCallback       = FP_DMA1_S2; //used for input
 
 	board.dmasMotor[1].enabled            = 1;
 	board.dmasMotor[1].dmaStream          = ENUM_DMA1_STREAM_2;    //motor out
@@ -293,7 +298,8 @@ void getBoardHardwareDefs(void)
 	board.motors[2].timerIRQn         = TIM2_IRQn;
 	board.motors[2].motorOutputLength = 16; //bits
 	board.motors[2].EXTIn             = EXTI3_IRQn; //used for input
- 	board.motors[0].EXTICallback      = FP_EXTI3; //used for input
+ 	board.motors[2].EXTICallback      = FP_EXTI3; //used for input
+ 	board.motors[2].DmaCallback       = FP_DMA1_S6; //used for input
 
 	board.dmasMotor[2].enabled            = 1;
 	board.dmasMotor[2].dmaStream          = ENUM_DMA1_STREAM_6;    //motor out
@@ -329,7 +335,8 @@ void getBoardHardwareDefs(void)
 	board.motors[3].timerIRQn         = TIM2_IRQn;
 	board.motors[3].motorOutputLength = 16; //bits
 	board.motors[3].EXTIn             = EXTI2_IRQn; //used for input
- 	board.motors[0].EXTICallback      = FP_EXTI2; //used for input
+ 	board.motors[3].EXTICallback      = FP_EXTI2; //used for input
+ 	board.motors[3].DmaCallback       = FP_DMA1_S1; //used for input
 
 	board.dmasMotor[3].enabled            = 1;
 	board.dmasMotor[3].dmaStream          = ENUM_DMA1_STREAM_1;    //motor out
@@ -367,6 +374,7 @@ void getBoardHardwareDefs(void)
 	board.motors[6].timerIRQn         = TIM4_IRQn;
 	board.motors[6].motorOutputLength = 64; //bits
 	board.motors[6].EXTIn             = EXTI4_IRQn;
+	board.motors[6].DmaCallback       = FP_DMA1_S0; //used for input
 
 	board.dmasMotor[6].enabled            = 1;
 	board.dmasMotor[6].dmaStream          = ENUM_DMA1_STREAM_0;    //motor out
@@ -402,6 +410,7 @@ void getBoardHardwareDefs(void)
 	board.motors[7].timerIRQn         = TIM1_CC_IRQn; //TIM1_CC_IRQn //TIM1_UP_TIM10_IRQn //TIM1_BRK_TIM9_IRQn //TIM1_TRG_COM_TIM11_IRQn
 	board.motors[7].motorOutputLength = 64; //bits
 	board.motors[7].EXTIn             = EXTI9_5_IRQn;
+	board.motors[7].DmaCallback       = FP_DMA2_S2; //used for input
 	callbackFunctionArray[FP_EXTI9_5] = SoftSerialCallback;
 
 	board.dmasMotor[7].enabled            = 1;

@@ -1630,7 +1630,7 @@ void ProcessCommand(char *inString)
 										smallerPointer = 0;
 										bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 										if (!strcmp("dlflslow", inString))
-											DelayMs(3);
+											DelayMs(6);
 									}
 
 								}

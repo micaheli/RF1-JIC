@@ -364,6 +364,7 @@ typedef struct {
  	uint32_t				motorOutputLength;
  	uint32_t				EXTIn;
  	uint32_t				EXTICallback;
+ 	uint32_t				DmaCallback;
 } motor_type;
 
 
@@ -451,7 +452,7 @@ typedef struct
 
 typedef void (*function_pointer)(void);
 
-extern function_pointer callbackFunctionArray[];
+extern volatile function_pointer callbackFunctionArray[];
 
 extern board_type          board;
 extern GPIO_TypeDef       *ports[];
@@ -468,7 +469,7 @@ extern SPI_TypeDef        *spiInstance[];
 
 extern unsigned char serialTxBuffer[][TXBUFFERSIZE];
 extern unsigned char serialRxBuffer[][RXBUFFERSIZE];
-extern uint32_t motorOutputBuffer[][128];
+extern uint32_t motorOutputBuffer[][256];
 
 extern int InitializeMCUSettings();
 void getBoardHardwareDefs();
