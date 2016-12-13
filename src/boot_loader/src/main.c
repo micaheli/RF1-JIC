@@ -41,7 +41,7 @@ DMA_HandleTypeDef   dmaHandles[16];
 //SPI_HandleTypeDef   spiHandles[6];
 //SPI_TypeDef        *spiInstance[6];
 
-function_pointer callbackFunctionArray[IRQH_FP_TOT];
+volatile function_pointer callbackFunctionArray[IRQH_FP_TOT];
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -89,7 +89,7 @@ int main(void)
 		boot_to_app();
 	}
 
-	bootDirection = checkOldConfigDirection (bootDirection, bootCycles);
+	//bootDirection = checkOldConfigDirection (bootDirection, bootCycles);
 
 
 	if (bootDirection == BOOT_TO_RECOVERY_COMMAND) {

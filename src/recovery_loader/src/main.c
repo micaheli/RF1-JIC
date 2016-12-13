@@ -35,7 +35,7 @@ DMA_HandleTypeDef   dmaHandles[16];
 //SPI_HandleTypeDef   spiHandles[6];
 //SPI_TypeDef        *spiInstance[6];
 
-function_pointer callbackFunctionArray[IRQH_FP_TOT];
+volatile function_pointer callbackFunctionArray[IRQH_FP_TOT];
 
 /* Private function prototypes -----------------------------------------------*/
 

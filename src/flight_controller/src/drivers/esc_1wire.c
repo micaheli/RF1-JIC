@@ -373,6 +373,10 @@ static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator) {
 
 }
 
+static uint32_t CheckCrc(uint8_t inBuffer[], uint32_t length, uint16_t crc) {
+
+}
+
 static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length) {
 
 	uint8_t cmdBuffer[] = {cmd,(length & 0xff), 0, 0};
@@ -384,9 +388,11 @@ static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t addre
 
 	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 4, oneWireInBuffer, actuator, 150); //19200, reading 258 bytes should take around 135 ms
 
-	//fills oneWireInBuffer to length 256 + 1 crc byte
-	if ( oneWireInBufferIdx == (length + 1) )
-		if (CheckCrc(oneWireInBuffer, length, oneWireInBuffer[length])) {
+	//fills oneWireInBuffer to length 256 + 2 crc bytes
+	if ( oneWireInBufferIdx == (length + 2) ) { //did we get the amount of data we expected?
+		if (CheckCrc(oneWireInBuffer, length, (uint16_t)(oneWireInBuffer[length-1] >> 8) | (oneWireInBuffer[length] & 0xff) ) ) {
+			//check the CRC
+//cruiser
 		}
 	}
 
