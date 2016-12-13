@@ -726,7 +726,7 @@ def main():
     for thread in threads:
         thread.join()
 
-    exit(1);
+    exit(0);
 
 if __name__ == "__main__":
     main()
