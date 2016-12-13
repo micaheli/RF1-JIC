@@ -145,8 +145,9 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O1"
-        STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
+        OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD  = ""
+        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
         #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f405xx_rfbll":
@@ -155,8 +156,9 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O1"
-        STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
+        OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD  = ""
+        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
         #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f411xe":
@@ -189,7 +191,11 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f446_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
+        OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD  = ""
+        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
+        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
+
 
     elif TARGET == "stm32f446xx_rfbll":
         PROJECT = "recovery_loader"
@@ -197,7 +203,11 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f446_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
+        OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD  = ""
+        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
+        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
+
     
     else:
         print("ERROR: NOT VALID TARGET: ", TARGET, file=sys.stderr)
