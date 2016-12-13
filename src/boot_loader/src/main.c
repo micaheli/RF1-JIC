@@ -66,7 +66,6 @@ int main(void)
     	boot_to_app();
     }
 
-
     bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
     if (!(bootDirection))
     	rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,   BOOT_TO_APP_COMMAND);
@@ -105,6 +104,16 @@ int main(void)
 
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
+
+    if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM5) { //FC crashed while inflight. Imediately jump into program
+		skipDelay = 1;
+		boot_to_app();
+	}
+
+    if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM9) { //FC crashed while inflight. Imediately jump into program
+		skipDelay = 1;
+		boot_to_app();
+	}
 
 	if (!bootToRfbl) {
 		//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
@@ -335,7 +344,7 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 void boot_to_app (void) {
 
 	if (!(skipDelay))
-		DelayMs(1000); //600 ms delay before booting into app to allow PDB power to stabilize
+		DelayMs(155); //600 ms delay before booting into app to allow PDB power to stabilize
 
 	if (usbStarted) {
 		USB_DEVICE_DeInit();
