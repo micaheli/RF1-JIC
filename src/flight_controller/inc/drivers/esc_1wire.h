@@ -11,4 +11,5 @@ extern void     OneWireInit(void);
 extern void     OneWireDeinit(void);
 extern void     SoftSerialExtiCallback(void);
 extern void     SoftSerialDmaCallback(void);
-extern uint32_t HandleEscOneWire(uint8_t *serialBuffer, uint32_t outputLength);
+extern uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength);
+extern uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t serialOutBufferLength, uint8_t inBuffer[], motor_type actuator, uint32_t timeoutMs);
