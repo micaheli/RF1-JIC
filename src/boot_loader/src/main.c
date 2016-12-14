@@ -16,7 +16,6 @@ uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 uint32_t StartSector = 0, EndSector = 0, Address = 0, i = 0 ;
 __IO uint32_t data32 = 0 , MemoryProgramStatus = 0 ;
 uint32_t toggle_led = 0;
-bool bootToRfbl = false;
 int usbStarted = 0;
 uint32_t ApplicationAddress = 0x08020000;
 uint8_t bindSpektrum = 0;
@@ -115,35 +114,33 @@ int main(void)
 		boot_to_app();
 	}
 
-	if (!bootToRfbl) {
-		//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
-		//the inside of these brackets means the RFBL pins are not shorted
-		switch (bootDirection) {
-			case BOOT_TO_SPEKTRUM5:
-			case BOOT_TO_SPEKTRUM9:
-				skipDelay = 1;
-			case BOOT_TO_APP_COMMAND:
-				//simpleDelay_ASM(100000);
-				boot_to_app();  //jump to application
-				break;
-			case BOOT_TO_ADDRESS:
-				//simpleDelay_ASM(100000);
-				ApplicationAddress = rebootAddress;
-				boot_to_app();  //jump to application
-				break;
-			case BOOT_TO_DFU_COMMAND:
-				SystemResetToDfuBootloader(); //reset to DFU
-				break;
-			case BOOT_TO_RFBL_COMMAND:
-			default:
-			    usbStarted=1;
-			    USB_DEVICE_Init(); //start USB
-			    InitLeds();
-				startupBlink(20, 20);
-				//simpleDelay_ASM(100000);
-				//default is to do nothing, continue to RFBL
-				break;
-		}
+	//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
+	//the inside of these brackets means the RFBL pins are not shorted
+	switch (bootDirection) {
+		case BOOT_TO_SPEKTRUM5:
+		case BOOT_TO_SPEKTRUM9:
+			skipDelay = 1;
+		case BOOT_TO_APP_COMMAND:
+			//simpleDelay_ASM(100000);
+			boot_to_app();  //jump to application
+			break;
+		case BOOT_TO_ADDRESS:
+			//simpleDelay_ASM(100000);
+			ApplicationAddress = rebootAddress;
+			boot_to_app();  //jump to application
+			break;
+		case BOOT_TO_DFU_COMMAND:
+			SystemResetToDfuBootloader(); //reset to DFU
+			break;
+		case BOOT_TO_RFBL_COMMAND:
+		default:
+			usbStarted=1;
+			USB_DEVICE_Init(); //start USB
+			InitLeds();
+			startupBlink(20, 20);
+			//simpleDelay_ASM(100000);
+			//default is to do nothing, continue to RFBL
+			break;
 	}
 
 

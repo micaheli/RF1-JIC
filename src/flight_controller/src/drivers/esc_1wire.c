@@ -38,9 +38,9 @@ typedef struct {
 typedef struct {
 //    uint32_t (*Disconnect)(void);
 //    uint32_t (*PollReadReady)(void);
-    uint32_t (*ReadFlash)(motor_type*, uint32_t timeout);
+    uint32_t (*ReadFlash)(motor_type actuator, uint16_t address, uint32_t timeout);
 //    uint32_t (*WriteFlash)(ioMem_t*);
-    uint32_t (*ReadEEprom)(motor_type*, uint32_t timeout);
+    uint32_t (*ReadEEprom)(motor_type actuator, uint32_t timeout);
 //    uint32_t (*WriteEEprom)(ioMem_t*);
 //    uint32_t (*PageErase)(ioMem_t*);
 //    uint32_t (*EepromErase)(ioMem_t*);
@@ -52,7 +52,7 @@ typedef struct {
 	uint32_t            bootVersion;
 	uint32_t            bootPages;
 	esc_bootloader_mode escBootloaderMode;
-	esc1WireProtocol_t  esc1WireProtocol;
+	const esc1WireProtocol_t  *esc1WireProtocol;
 
 	enum {
 		OW_IDLE                   = 0,
@@ -109,28 +109,28 @@ static const uint16_t signaturesSilabs[] = {0xF310, 0xF330, 0xF410, 0xF390, 0xF8
 
 
 static uint32_t OneWireMain(void);
-static uint32_t SignatureMatch(uint16_t signature, uint16_t *list, uint32_t listSize);
+static uint32_t SignatureMatch(uint16_t signature, const uint16_t *list, uint32_t listSize);
 static void     AppendBlHeliCrc(uint8_t outBuffer[], uint32_t len);
-static void     SendHello(void);
+//static void     SendHello(void);
 static uint16_t Crc16Byte(uint16_t from, uint8_t byte);
-static uint32_t DisconnectBLHeli(void);
-static uint32_t PollReadReadyBLHeli(void);
-static uint32_t ReadFlashAtmelBLHeli(ioMem_t *ioMem);
-static uint32_t ReadFlashSiLabsBLHeli(ioMem_t *ioMem);
-static uint32_t WriteFlashBLHeli(ioMem_t *ioMem);
-static uint32_t ReadEEpromAtmelBLHeli(ioMem_t *ioMem);
-static uint32_t ReadEEpromSiLabsBLHeli(ioMem_t *ioMem);
-static uint32_t WriteEEpromAtmelBLHeli(ioMem_t *ioMem);
-static uint32_t WriteEEpromSiLabsBLHeli(ioMem_t *ioMem);
-static uint32_t PageEraseAtmelBLHeli(ioMem_t *ioMem);
-static uint32_t PageEraseSiLabsBLHeli(ioMem_t *ioMem);
-static uint32_t EepromEraseSiLabsBLHeli(ioMem_t *ioMem);
+//static uint32_t DisconnectBLHeli(void);
+//static uint32_t PollReadReadyBLHeli(void);
+//static uint32_t ReadFlashAtmelBLHeli(ioMem_t *ioMem);
+//static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint32_t timeout);
+//static uint32_t WriteFlashBLHeli(ioMem_t *ioMem);
+//static uint32_t ReadEEpromAtmelBLHeli(ioMem_t *ioMem);
+//static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout);
+//static uint32_t WriteEEpromAtmelBLHeli(ioMem_t *ioMem);
+//static uint32_t WriteEEpromSiLabsBLHeli(ioMem_t *ioMem);
+//static uint32_t PageEraseAtmelBLHeli(ioMem_t *ioMem);
+//static uint32_t PageEraseSiLabsBLHeli(ioMem_t *ioMem);
+//static uint32_t EepromEraseSiLabsBLHeli(ioMem_t *ioMem);
 
 
 static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout);
-static uint32_t SendReadCommand(motor_type actuator, uint16_t address, uint32_t timeout);
+static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length, uint32_t timeout);
 static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout);
-static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint32_t timeout);
+static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint32_t timeout);
 
 /*
 
@@ -158,23 +158,25 @@ const esc1WireProtocol_t BLHeliSiLabsProtocol = {
 
 */
 
+/*
 const esc1WireProtocol_t BLHeliAtmelProtocol = {
 //    .disconnect    = DisconnectBLHeli,
 //    .pollReadReady = PollReadReadyBLHeli,
-    .readFlash     = ReadFlashAtmelBLHeli,
+    .ReadFlash     = ReadFlashAtmelBLHeli,
 //    .writeFlash    = WriteFlashBLHeli,
-    .readEEprom    = ReadEEpromAtmelBLHeli,
+    .ReadEEprom    = ReadEEpromAtmelBLHeli,
 //    .writeEEprom   = WriteEEpromAtmelBLHeli,
 //    .pageErase     = PageEraseAtmelBLHeli,
 //    .eepromErase   = PageEraseAtmelBLHeli,
 };
+*/
 
 const esc1WireProtocol_t BLHeliSiLabsProtocol = {
 //    .disconnect    = DisconnectBLHeli,
 //    .pollReadReady = PollReadReadyBLHeli,
-    .readFlash     = ReadFlashSiLabsBLHeli,
+    .ReadFlash     = ReadFlashSiLabsBLHeli,
 //    .writeFlash    = WriteFlashBLHeli,
-    .readEEprom    = ReadEEpromSiLabsBLHeli,
+    .ReadEEprom    = ReadEEpromSiLabsBLHeli,
 //    .writeEEprom   = WriteEEpromSiLabsBLHeli,
 //    .pageErase     = PageEraseSiLabsBLHeli,
 //    .eepromErase   = EepromEraseSiLabsBLHeli,
@@ -230,12 +232,12 @@ volatile uint32_t timeInBufferIdx = 0;
 
 
 
-
+static void     PutSoftSerialActuatorInReceiveState(void);
 static float    FindSoftSerialBitWidth(uint32_t baudRate);
 static float    FindSoftSerialByteWidth(float bitWidth, uint32_t bitsPerByte);
 static float    FindSoftSerialLineIdleTime(float byteWidth);
 static void     SendSoftSerialActuator(motor_type actuator);
-static void     ProcessSoftSerialLineIdle(void);
+static void     ProcessSoftSerialLineIdle(uint32_t useCallback);
 static void     NumberOfBits(uint32_t time2, uint32_t time1, uint32_t bitsInByte, float bitWidth, uint16_t *numberOfBits, uint32_t workingOnByte);
 static uint32_t ProcessSerialBits(void);
 static uint32_t IsSoftSerialLineIdle(void);
@@ -261,7 +263,7 @@ void OneWireInit(void)
 	for (x=0;x<sizeof(timeInBuffer);x++)
 		timeInBuffer[x] = 0;
 
-	softserialCallbackFunctionArray[0] = HandleEscOneWire;
+	//softserialCallbackFunctionArray[0] = HandleEscOneWire;
 
 	DelayMs(100); //delay while debugging since motors need time to startup.
 	OneWireMain(); //enter OneWireMain loop.
@@ -281,12 +283,12 @@ void SendOutput(void) {
 
 }
 
-static uint32_t ConnectToBlheliBootloader(motor_type actuator) {
+static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout) {
 
 	//connect to ESC and get bootloader info
 
 	memcpy(oneWireOutBuffer, bootInit, sizeof(bootInit));
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, sizeof(bootInit), oneWireInBuffer, actuator, 100);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, sizeof(bootInit), oneWireInBuffer, actuator, timeout);
 
 	escOneWireStatus[actuator.actuatorArrayNum].escBootloaderMode = 0;
 
@@ -299,16 +301,16 @@ static uint32_t ConnectToBlheliBootloader(motor_type actuator) {
 		escOneWireStatus[actuator.actuatorArrayNum].bootVersion  = oneWireInBuffer[6];
 		escOneWireStatus[actuator.actuatorArrayNum].bootPages    = oneWireInBuffer[7];
 
-		if (SignatureMatch(escOneWireStatus[actuator.actuatorArrayNum].escSignature, &signaturesSilabs, (sizeof(signaturesSilabs)/2)))
+		if (SignatureMatch(escOneWireStatus[actuator.actuatorArrayNum].escSignature, signaturesSilabs, (sizeof(signaturesSilabs)/2)))
 		{
 			escOneWireStatus[actuator.actuatorArrayNum].escBootloaderMode = BLHBLM_BLHELI_SILABS;
 			escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol  = &BLHeliSiLabsProtocol;
 
 		}
-		else if (SignatureMatch(escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].escSignature, &signaturesAtmel, (sizeof(signaturesAtmel)/2)))
+		else if (SignatureMatch(escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].escSignature, signaturesAtmel, (sizeof(signaturesAtmel)/2)))
 		{
 			escOneWireStatus[actuator.actuatorArrayNum].escBootloaderMode = BLHBLM_BLHELI_ATMEL;
-			escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol  = &BLHeliAtmelProtocol;
+//			escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol  = &BLHeliAtmelProtocol;
 		}
 		else
 		{
@@ -366,18 +368,18 @@ static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint1
 	return (0);
 }
 
-static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator) {
+static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
 
 	// SiLabs has no EEPROM, just a flash section at 0x1A00
-    return (ReadFlashSiLabsBLHeli(actuator, 0x1A00));
+    return (ReadFlashSiLabsBLHeli(actuator, 0x1A00, timeout));
 
 }
 
-static uint32_t CheckCrc(uint8_t inBuffer[], uint32_t length, uint16_t crc) {
+//static uint32_t CheckCrc(uint8_t inBuffer[], uint32_t length, uint16_t crc) {
+//
+//}
 
-}
-
-static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length) {
+static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length, uint32_t timeout) {
 
 	uint8_t cmdBuffer[] = {cmd,(length & 0xff), 0, 0};
 
@@ -386,21 +388,22 @@ static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t addre
 
 	AppendBlHeliCrc(cmdBuffer, 2);
 
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 4, oneWireInBuffer, actuator, 150); //19200, reading 258 bytes should take around 135 ms
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 4, oneWireInBuffer, actuator, timeout); //19200, reading 258 bytes should take around 135 ms
 
 	//fills oneWireInBuffer to length 256 + 2 crc bytes
-	if ( oneWireInBufferIdx == (length + 2) ) { //did we get the amount of data we expected?
-		if (CheckCrc(oneWireInBuffer, length, (uint16_t)(oneWireInBuffer[length-1] >> 8) | (oneWireInBuffer[length] & 0xff) ) ) {
+	if ( oneWireInBufferIdx == (uint32_t)(length + 2) ) { //did we get the amount of data we expected?
+//		if (CheckCrc(oneWireInBuffer, length, (uint16_t)(oneWireInBuffer[length-1] >> 8) | (oneWireInBuffer[length] & 0xff) ) ) {
 			//check the CRC
+
 //cruiser
-		}
+//		}
 	}
 
 //    return readBufBLHeli(esc, ioMem->data, len, true);
 
 }
 
-static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address) {
+static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint32_t timeout) {
 
 	if (!SendCmdSetAddress(actuator, address))
 		return (0);
@@ -412,7 +415,7 @@ static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address) {
 
 	AppendBlHeliCrc(oneWireOutBuffer, 4);
 
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 6, oneWireInBuffer, actuator, 25); //25ms timeout is way more than we need
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 6, oneWireInBuffer, actuator, timeout); //25ms timeout is way more than we need
 
 	return (oneWireInBufferIdx);
 }
@@ -471,9 +474,11 @@ uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t seria
 		}
 	}
 
+	return (0);
+
 }
 
-void SoftSerilDmaCallback(void) {
+void SoftSerialDmaCallback(void) {
 
 	//DMA is done sending, let's switch GPIO to EXTI mode
 	PutSoftSerialActuatorInReceiveState();
@@ -501,7 +506,7 @@ void ProcessSoftSerialLineIdle(uint32_t useCallback) {
 }
 
 
-void PutSoftSerialActuatorInReceiveState(void) {
+static void PutSoftSerialActuatorInReceiveState(void) {
 
 	GPIO_InitTypeDef        GPIO_InitStruct;
 
@@ -734,7 +739,7 @@ static uint32_t HandleSoftSerial(void) {
 
 		case SS_RECEIVING_DATA:         //Actuator is in the reception state. We keep checking until we sense a line idle.
 			if ( IsSoftSerialLineIdle() ) {
-				ProcessSoftSerialLineIdle();
+				ProcessSoftSerialLineIdle(1);
 			}
 			return (1);
 			break;
@@ -771,16 +776,16 @@ uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength) {
 				escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].bootPages    = serialBuffer[7];
 				escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].oneWireState = OW_AWAITING_READ_EEPROM;
 
-				if (SignatureMatch(escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].escSignature, &signaturesSilabs, (sizeof(signaturesSilabs)/2)))
+				if (SignatureMatch(escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].escSignature, signaturesSilabs, (sizeof(signaturesSilabs)/2)))
 				{
 					escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].escBootloaderMode = BLHBLM_BLHELI_SILABS;
 					escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].esc1WireProtocol  = &BLHeliSiLabsProtocol;
 
 				}
-				else if (SignatureMatch(escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].escSignature, &signaturesAtmel, (sizeof(signaturesAtmel)/2)))
+				else if (SignatureMatch(escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].escSignature, signaturesAtmel, (sizeof(signaturesAtmel)/2)))
 				{
 					escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].escBootloaderMode = BLHBLM_BLHELI_ATMEL;
-					escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].esc1WireProtocol  = &BLHeliAtmelProtocol;
+//					escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].esc1WireProtocol  = &BLHeliAtmelProtocol;
 				}
 				else
 				{
@@ -796,12 +801,12 @@ uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength) {
 			break;
 
 		case OW_AWAITING_READ_EEPROM:
-			ioMem_t ioMem = {
-				.addr = 0,
-				.len  = ESC_BUF_SIZE,
-				.data = serialOutBuffer,
-			};
-			escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].esc1WireProtocol->readEEprom(&ioMem);
+			//ioMem_t ioMem = {
+			//	.addr = 0,
+			//	.len  = ESC_BUF_SIZE,
+			//	.data = serialOutBuffer,
+			//};
+			//escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].esc1WireProtocol->readEEprom(&ioMem);
 			break;
 
 		case OW_CONNECT_TO_BOOTLOADER:
@@ -830,18 +835,17 @@ static uint32_t OneWireMain(void) {
 		//1. connect to all ESCs and ask for bootloader and config info
 		//2. wait for further information.
 		//for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++) {
-		actuatorNumOutput = 0;
-		if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+//		actuatorNumOutput = 0;
+//		if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 
 			//
-			if (ConnectToBlheliBootloader(board.motors[actuatorNumOutput])) {
-				//TODO: Make work with the protocol struct
-				escOneWireStatus[board.motors[actuatorNumOutput]].esc1WireProtocol.readEEprom();
-				if (GetEscConfig(board.motors[actuatorNumOutput])) {
-					//put ESC config into structure;
-					volatile uint32_t cat = 1;
-				}
-			}
+//			if (ConnectToBlheliBootloader(board.motors[actuatorNumOutput], 25)) {
+//				//TODO: Make work with the protocol struct
+//				//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
+//				//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
+//				escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[actuatorNumOutput], 25);
+//
+//			}
 
 //			while ( HandleSoftSerial() ); //wait until actuator is idle;
 //			GetEscConfig(board.motors[actuatorNumOutput]);
@@ -851,28 +855,38 @@ static uint32_t OneWireMain(void) {
 //				.data = serialOutBuffer,
 //			};
 //			escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol->readEEprom(&ioMem);
-		}
+//		}
 
 
 		for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++) {
 
-			escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].oneWireState = OW_AWAITING_BOOT_MESSAGE;
-
-			//soft serial is in the IDLE state, let's switch to another actuator and prepare it for soft serial
 			if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+				if (ConnectToBlheliBootloader(board.motors[actuatorNumOutput], 25)) {
+					//TODO: Make work with the protocol struct
+					//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
+					//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
+					escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[actuatorNumOutput], 25);
 
-
-
-				softSerialStatus.currentActuator = board.motors[actuatorNumOutput];
-				escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].oneWireState = OW_CONNECT_TO_BOOTLOADER;
-				while ( HandleEscOneWire() );
-
-				while ( HandleSoftSerial() );
-				//Actuator is Idle. At this point we either DeInit it and move on or do something with it again.
-				//It's currently in the RX state, but a line idle has occurred so we consider it IDLE
-
-				//HandleEscOneWire(); //does nothing right now.
+				}
 			}
+
+//			escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].oneWireState = OW_AWAITING_BOOT_MESSAGE;
+//
+//			//soft serial is in the IDLE state, let's switch to another actuator and prepare it for soft serial
+//			if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+//
+//
+//
+//				softSerialStatus.currentActuator = board.motors[actuatorNumOutput];
+//				escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].oneWireState = OW_CONNECT_TO_BOOTLOADER;
+//				//while ( HandleEscOneWire() );
+//
+//				//while ( HandleSoftSerial() );
+//				//Actuator is Idle. At this point we either DeInit it and move on or do something with it again.
+//				//It's currently in the RX state, but a line idle has occurred so we consider it IDLE//
+//
+//				//HandleEscOneWire(); //does nothing right now.
+//			}
 
 		}
 
@@ -930,18 +944,19 @@ void OneWireDeinit(void) {
 
 
 
-static uint32_t SignatureMatch(uint16_t signature, uint16_t *list, uint32_t listSize)
+static uint32_t SignatureMatch(uint16_t signature, const uint16_t *list, uint32_t listSize)
 {
 
 	uint32_t x;
 
 	for (x=0;x<listSize;x++)
+	{
 	    if (signature == list[x]) {
             return(x+1);
         }
     }
 
-return(0);
+	return(0);
 
 }
 

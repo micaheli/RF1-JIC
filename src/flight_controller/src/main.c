@@ -34,13 +34,13 @@ int main(void)
 	//TODO Needs to pull parameters from flash here. For now we use defines
 	getBoardHardwareDefs();
 
+    InitializeMCUSettings();
+
     BoardInit();
 
     HandleRfbl();
 
     LoadConfig(ADDRESS_CONFIG_START);
-
-    InitializeMCUSettings();
 
     HandleFcStartupReg();
 

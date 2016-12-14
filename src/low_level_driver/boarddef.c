@@ -7,13 +7,12 @@
 #include "../flight_controller/inc/rf_math.h"
 #include "includes.h"
 
-
+board_type          board;
 GPIO_TypeDef       *ports[11];
 serial_type         usarts[6];
 spi_type            spis[6];
 TIM_TypeDef        *timers[14];
 volatile uint32_t  *ccr[56];
-board_type          board;
 DMA_Stream_TypeDef *dmaStream[16];
 UART_HandleTypeDef  uartHandles[6];
 DMA_HandleTypeDef   dmaHandles[16];
