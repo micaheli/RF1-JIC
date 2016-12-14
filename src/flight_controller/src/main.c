@@ -111,9 +111,7 @@ int main(void)
     buzzerStatus.status = STATE_BUZZER_OFF;
     ledStatus.status = LEDS_SLOW_BLINK;
 
-    if (board.motors[0].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-        OneWireInit();
-	}
+    OneWireInit();
 
     while (1) {
 

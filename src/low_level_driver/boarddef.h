@@ -42,30 +42,32 @@
 #define ENUM_SPI5 4
 #define ENUM_SPI6 5
 
-#define FP_EXTI0     0
-#define FP_EXTI1     1
-#define FP_EXTI2     2
-#define FP_EXTI3     3
-#define FP_EXTI4     4
-#define FP_EXTI9_5   5
-#define FP_EXTI15_10 6
-#define FP_DMA1_S0   7
-#define FP_DMA1_S1   8
-#define FP_DMA1_S2   9
-#define FP_DMA1_S3   10
-#define FP_DMA1_S4   11
-#define FP_DMA1_S5   12
-#define FP_DMA1_S6   13
-#define FP_DMA1_S7   14
-#define FP_DMA2_S0   15
-#define FP_DMA2_S1   16
-#define FP_DMA2_S2   17
-#define FP_DMA2_S3   18
-#define FP_DMA2_S4   19
-#define FP_DMA2_S5   20
-#define FP_DMA2_S6   21
-#define FP_DMA2_S7   22
-#define IRQH_FP_TOT  23
+enum {
+	FP_EXTI0     = 0,
+	FP_EXTI1     = 1,
+	FP_EXTI2     = 2,
+	FP_EXTI3     = 3,
+	FP_EXTI4     = 4,
+	FP_EXTI9_5   = 5,
+	FP_EXTI15_10 = 6,
+	FP_DMA1_S0   = 7,
+	FP_DMA1_S1   = 8,
+	FP_DMA1_S2   = 9,
+	FP_DMA1_S3   = 10,
+	FP_DMA1_S4   = 11,
+	FP_DMA1_S5   = 12,
+	FP_DMA1_S6   = 13,
+	FP_DMA1_S7   = 14,
+	FP_DMA2_S0   = 15,
+	FP_DMA2_S1   = 16,
+	FP_DMA2_S2   = 17,
+	FP_DMA2_S3   = 18,
+	FP_DMA2_S4   = 19,
+	FP_DMA2_S5   = 20,
+	FP_DMA2_S6   = 21,
+	FP_DMA2_S7   = 22,
+	IRQH_FP_TOT  = 23,
+};
 
 
 #define _PORTA 0

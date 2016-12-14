@@ -94,7 +94,7 @@ uint8_t  oneWireOutBuffer[ESC_BUF_SIZE];
 uint8_t  oneWireInBuffer[ESC_BUF_SIZE];
 uint32_t oneWireInBufferIdx;
 
-static const uint8_t  bootInit[] = {0, 0, 0, 0, 0x0D, 'B', 'L', 'H', 'e', 'l', 'i', 0xF4, 0x7D};
+static const uint8_t  bootInit[] = {0, 0, 0, 0, 0, 0, 0, 0, 0x0D, 'B', 'L', 'H', 'e', 'l', 'i', 0xF4, 0x7D};
 static const uint16_t signaturesAtmel[]  = {0x9307, 0x930A, 0x930F, 0x940B, 0};
 static const uint16_t signaturesSilabs[] = {0xF310, 0xF330, 0xF410, 0xF390, 0xF850, 0xE8B1, 0xE8B2, 0};
 
@@ -207,20 +207,19 @@ void OneWireInit(void)
 	//softserialCallbackFunctionArray[0] = HandleEscOneWire;
 
 
-	if (board.motors[0].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 	DelayMs(100); //delay while debugging since motors need time to startup.
-	}
+
 	//OneWireMain(); //enter OneWireMain loop.
 
 	while (1) {
 		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
 
 			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-				if (ConnectToBlheliBootloader(board.motors[x], 25)) {
+				if (ConnectToBlheliBootloader(board.motors[x], 35)) {
 					//TODO: Make work with the protocol struct
 					//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
 					//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
-					escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 25);
+					escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
 
 				}
 			}
