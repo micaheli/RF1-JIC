@@ -1,15 +1,6 @@
 #include "includes.h"
 
 
-
-//todo: need to move the soft serial stuff to a soft serial or the serial driver.
-//Soft Serial relies entirely on the Micros() function... which seems very accurate in RF1.
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////1wire header above, soft serial header below... todo: split them up into two files
-/////////////////////////////////////////blheli 1wire header
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 typedef enum {
     BLHBLM_BLHELI_SILABS = 1,
 	BLHBLM_BLHELI_ATMEL  = 2,
@@ -108,7 +99,7 @@ static const uint16_t signaturesAtmel[]  = {0x9307, 0x930A, 0x930F, 0x940B, 0};
 static const uint16_t signaturesSilabs[] = {0xF310, 0xF330, 0xF410, 0xF390, 0xF850, 0xE8B1, 0xE8B2, 0};
 
 
-static uint32_t OneWireMain(void);
+static uint32_t OneWireMain() __attribute__ ((unused));
 static uint32_t SignatureMatch(uint16_t signature, const uint16_t *list, uint32_t listSize);
 static void     AppendBlHeliCrc(uint8_t outBuffer[], uint32_t len);
 //static void     SendHello(void);
@@ -128,9 +119,12 @@ static uint16_t Crc16Byte(uint16_t from, uint8_t byte);
 
 
 static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout);
-static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length, uint32_t timeout);
+static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length, uint32_t timeout) __attribute__ ((unused));
 static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout);
 static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint32_t timeout);
+static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint16_t length) __attribute__ ((unused));
+static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address) __attribute__ ((unused));
+static uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength)  __attribute__ ((unused));
 
 /*
 
@@ -186,67 +180,6 @@ esc_one_wire_status escOneWireStatus[16];
 
 
 
-
-
-//ss
-typedef struct {
-
-	motor_type	      currentActuator;
-	volatile uint32_t actuatorState; //can be changed by an ISR, so it's volatile.
-	float             bitWidth;
-	float             byteWidth;
-	float		      lineIdleTime;
-	uint32_t          buadRate;
-	uint32_t          bitsPerByte; //including frame bits
-	uint32_t          inverted;
-	volatile uint32_t dataInBuffer;
-	volatile uint32_t timeOfActivation;   //Anything time related should be made volatile.
-	volatile uint32_t timeOfLastActivity; //do we need this? //can be changed by an ISR, so it's volatile if we need it.
-
-	enum {
-		SS_IDLE                    = 0,
-		SS_PREPARING_ACTUATOR      = 1,
-		SS_ACTUATOR_READY_TO_SEND  = 2,
-		SS_SENDING_DATA            = 3,
-		SS_RECEIVING_DATA          = 4,
-		SS_ERROR_TIME_IN_BUFFER_OF = 5,
-	} softSerialState;
-
-} soft_serial_status;
-
-
-
-#define SOFT_SERIAL_BUF_SIZE 256
-#define SOFT_SERIAL_TIME_BUFFER_SIZE (SOFT_SERIAL_BUF_SIZE * 10) //This is huge! Can probably do smaller than this size safely since the chance that nothing but 0xAA is sent is next to 0;
-
-
-
-soft_serial_status softSerialStatus;
-static const uint16_t bitLookup[] = {0x0000, 0x0001, 0x0003, 0x0007, 0x000F, 0x001F, 0x003F, 0x007F, 0x00FF, 0x01FF, 0x03FF, 0x07FF, 0x0FFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF};
-volatile softserial_function_pointer softserialCallbackFunctionArray[1];
-uint8_t  serialOutBuffer[SOFT_SERIAL_BUF_SIZE];
-uint8_t  serialInBuffer[SOFT_SERIAL_BUF_SIZE];
-uint8_t  serialInBufferIdx=0;
-volatile uint32_t timeInBuffer[SOFT_SERIAL_TIME_BUFFER_SIZE];
-volatile uint32_t timeInBufferIdx = 0;
-
-
-
-static void     PutSoftSerialActuatorInReceiveState(void);
-static float    FindSoftSerialBitWidth(uint32_t baudRate);
-static float    FindSoftSerialByteWidth(float bitWidth, uint32_t bitsPerByte);
-static float    FindSoftSerialLineIdleTime(float byteWidth);
-static void     SendSoftSerialActuator(motor_type actuator);
-static void     ProcessSoftSerialLineIdle(uint32_t useCallback);
-static void     NumberOfBits(uint32_t time2, uint32_t time1, uint32_t bitsInByte, float bitWidth, uint16_t *numberOfBits, uint32_t workingOnByte);
-static uint32_t ProcessSerialBits(void);
-static uint32_t IsSoftSerialLineIdle(void);
-static uint32_t HandleSoftSerial(void);
-
-
-
-
-
 void OneWireInit(void)
 {
 
@@ -258,30 +191,56 @@ void OneWireInit(void)
 	AccGyroDeinit();            //takes about 200ms maybe to run, this will also stop the flight code from running so no reason to stop that.
 	DeInitBoardUsarts();        //deinit all the USARTs.
 	DeInitActuators();          //deinit all the Actuators.
+
 	DeInitAllowedSoftOutputs(); //deinit all the soft outputs
 
-	for (x=0;x<sizeof(timeInBuffer);x++)
-		timeInBuffer[x] = 0;
+
+//	motor_type actuator = board.motors[0];
+//				if (actuator.enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+//					volatile uint32_t cat = 0;
+//					DelayMs(100); //delay while debugging since motors need time to startup.
+//
+//				}
+//	for (x=0;x<sizeof(timeInBuffer);x++)
+//		timeInBuffer[x] = 0;
 
 	//softserialCallbackFunctionArray[0] = HandleEscOneWire;
 
+
+	if (board.motors[0].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 	DelayMs(100); //delay while debugging since motors need time to startup.
-	OneWireMain(); //enter OneWireMain loop.
+	}
+	//OneWireMain(); //enter OneWireMain loop.
+
+	while (1) {
+		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
+
+			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+				if (ConnectToBlheliBootloader(board.motors[x], 25)) {
+					//TODO: Make work with the protocol struct
+					//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
+					//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
+					escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 25);
+
+				}
+			}
+		}
+	}
 
 }
 
-void SendOutput(void) {
-
-	//set softSerialStatus to SENDING_DATA state
-	softSerialStatus.softSerialState = SS_SENDING_DATA;
-
-	//set the DMA callback function to the OneWireDmaCallback
-	callbackFunctionArray[softSerialStatus.currentActuator.DmaCallback] = SoftSerialDmaCallback;
-
-	//set the data to be sent
-	OutputSerialDmaByte(serialOutBuffer, softSerialStatus.dataInBuffer, softSerialStatus.currentActuator, 0, 1);
-
-}
+//void SendOutput(void) {
+//
+//	//set softSerialStatus to SENDING_DATA state
+//	softSerialStatus.softSerialState = SS_SENDING_DATA;
+//
+//	//set the DMA callback function to the OneWireDmaCallback
+//	callbackFunctionArray[softSerialStatus.currentActuator.DmaCallback] = SoftSerialDmaCallback;
+//
+//	//set the data to be sent
+//	OutputSerialDmaByte(serialOutBuffer, softSerialStatus.dataInBuffer, softSerialStatus.currentActuator, 0, 1);
+//
+//}
 
 static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout) {
 
@@ -307,7 +266,7 @@ static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout)
 			escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol  = &BLHeliSiLabsProtocol;
 
 		}
-		else if (SignatureMatch(escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].escSignature, signaturesAtmel, (sizeof(signaturesAtmel)/2)))
+		else if (SignatureMatch(escOneWireStatus[actuator.actuatorArrayNum].escSignature, signaturesAtmel, (sizeof(signaturesAtmel)/2)))
 		{
 			escOneWireStatus[actuator.actuatorArrayNum].escBootloaderMode = BLHBLM_BLHELI_ATMEL;
 //			escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol  = &BLHeliAtmelProtocol;
@@ -420,350 +379,11 @@ static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uin
 	return (oneWireInBufferIdx);
 }
 
-void SoftSerialExtiCallback(void) {
-
-	// EXTI line interrupt detected
-	if(__HAL_GPIO_EXTI_GET_IT(softSerialStatus.currentActuator.pin) != RESET)
-	{
-
-		//record time of IRQ in microseconds
-		timeInBuffer[timeInBufferIdx++] = Micros();
-		if (timeInBufferIdx == SOFT_SERIAL_TIME_BUFFER_SIZE) {
-			timeInBufferIdx = 0;
-			softSerialStatus.softSerialState = SS_ERROR_TIME_IN_BUFFER_OF;
-		}
-
-		__HAL_GPIO_EXTI_CLEAR_IT(softSerialStatus.currentActuator.pin);
-
-	}
-
-}
-
-uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t serialOutBufferLength, uint8_t inBuffer[], motor_type actuator, uint32_t timeoutMs) {
-
-	uint32_t timeout = timeoutMs + InlineMillis();
-
-	//send serial, block until we get line idle, fill in buffer with the reply
-	SendSoftSerialActuator(actuator);
-
-	//set softSerialStatus to SENDING_DATA state
-	softSerialStatus.softSerialState = SS_SENDING_DATA;
-
-	//set the DMA callback function to the OneWireDmaCallback
-	callbackFunctionArray[softSerialStatus.currentActuator.DmaCallback] = SoftSerialDmaCallback;
-
-	//set the data to be sent
-	OutputSerialDmaByte(serialOutBuffer, serialOutBufferLength, actuator, 0, 1); //send outbuffer, xx bytes, this actuator, 0=LSB, 1=serial frame
-
-	//SS state is in SS_SENDING_DATA. Once data output completes it goes to SS_RECEIVING_DATA. While SS_SENDING_DATA we check to see if timeout time has passed.
-	while (softSerialStatus.softSerialState == SS_SENDING_DATA) {
-		if (timeout > InlineMillis()) {
-			return (0); //timeout occurred, return failure
-		}
-	}
-
-	//When in RECEIVING we wait for a line idle to occur. We allow up to timeout for this to happen.
-	while (softSerialStatus.softSerialState == SS_RECEIVING_DATA) {
-		if (timeout > InlineMillis()) {
-			return (0); //timeout occurred, return failure
-		}
-		if ( IsSoftSerialLineIdle() ) {
-			ProcessSoftSerialLineIdle(0); //proccess
-			memcpy(inBuffer, serialInBuffer, serialInBufferIdx);
-			return (serialInBufferIdx);
-		}
-	}
-
-	return (0);
-
-}
-
-void SoftSerialDmaCallback(void) {
-
-	//DMA is done sending, let's switch GPIO to EXTI mode
-	PutSoftSerialActuatorInReceiveState();
-
-}
-
-void ProcessSoftSerialLineIdle(uint32_t useCallback) {
-
-	timeInBuffer[timeInBufferIdx] = timeInBuffer[timeInBufferIdx - 1] + lrintf(softSerialStatus.bitWidth); //put in last time so we can get the last byte. We need the last byte to calculate the frame.
-	timeInBufferIdx++;
-
-	//Process the serial data received and disabled the IRQ if there's a line idle sensed AFTER data has been received
-	if ( ProcessSerialBits() ) {
-		//data exit and we're in a line idle
-		//Set Soft Serial Status to IDLE Set input buffers back to zero state and process the received data
-		softSerialStatus.softSerialState = SS_IDLE;
-		//process the received data
-		if ( (useCallback) && (softserialCallbackFunctionArray[0]) )
-			softserialCallbackFunctionArray[0](serialInBuffer, serialInBufferIdx);
-	} else {
-		//line idle exits, but no data found, how to handle this issue?
-		//do not DeInit actuator and only error out if time since activation > greater than XX time
-	}
-
-}
-
-
-static void PutSoftSerialActuatorInReceiveState(void) {
-
-	GPIO_InitTypeDef        GPIO_InitStruct;
-
-	//switch GPIO from timer output to EXTI input without doing a deinit.
-	GPIO_InitStruct.Pin  = softSerialStatus.currentActuator.pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-	GPIO_InitStruct.Pull = softSerialStatus.inverted ? GPIO_PULLDOWN : GPIO_PULLUP;
-    HAL_GPIO_Init(ports[softSerialStatus.currentActuator.port], &GPIO_InitStruct);
-
-    //set DMA callback to disabled since we're in EXTI mode now.
-	callbackFunctionArray[softSerialStatus.currentActuator.DmaCallback] = 0;
-	softSerialStatus.softSerialState = SS_RECEIVING_DATA;
-
-	//reset reception buffer.
-	timeInBufferIdx = 0;
-
-}
-
-static uint32_t IsSoftSerialLineIdle(void) {
-	volatile float timeNow;
-
-	timeNow = (float)Micros();
-
-	if ( (timeNow - (float)timeInBuffer[timeInBufferIdx-1]) > softSerialStatus.lineIdleTime) {
-	//have to use millis because micros can't be running constantly as it disables IRQs to function properly. We loose some precision so we have to ceil the bytewidth
-	//if (InlineMillis() - lrintf((float)timeInBuffer[timeInBufferIdx] * 0.001) > ceilf(softSerialStatus.byteWidth * 0.001) )
-		if (timeInBufferIdx > 3)
-			return(1);
-	}
-	return(0);
-}
-
-
-static void NumberOfBits(uint32_t time2, uint32_t time1, uint32_t bitsInByte, float bitWidth, uint16_t *numberOfBits, uint32_t workingOnByte) {
-
-	float timeD;
-	float maxWidthPossible;
-
-	*numberOfBits = 0;
-
-	if (time2 <= time1) //no bits
-	{
-		return;
-	}
-
-	timeD = (float)(time2 - time1);
-	maxWidthPossible = (bitWidth * (float)bitsInByte);
-
-	if ( workingOnByte || (timeD < maxWidthPossible) ) //working on byte, so return line idle, or bits exist and this is a new byte
-	{
-		*numberOfBits = lrintf(round(timeD/(float)bitWidth));
-	}
-
-	return;
-
-}
-
-static uint32_t ProcessSerialBits(void) {
-
-	uint32_t x;
-	uint32_t fails;
-	uint16_t bits;
-	uint32_t currentBit;
-	uint32_t bitsInByte;
-	volatile uint32_t byte;
-	uint16_t totalBitsFound;
-	float    bitWidth;
-	uint32_t byteFound;
-
-	volatile uint32_t timeNow = Micros();
-	byteFound  = 0;
-	bitWidth   = 51.45;
-	bitsInByte = 10;
-
-	//bit time for 19200 is 51.45 us
-	//max byte time including frames is 514.45 us. Call it 535 to be safe.
-
-	//max byte size is
-
-	fails=0;
-	byte = 0;
-	currentBit = 1;
-
-	for (x = 0; x < timeInBufferIdx; x++) {
-
-		NumberOfBits(timeInBuffer[x+1], timeInBuffer[x], bitsInByte, bitWidth, &bits, totalBitsFound);
-
-		totalBitsFound = 0;
-
-		if (totalBitsFound == 0) { //starting new byte string from line idle.
-
-			currentBit = 1;
-
-			while (totalBitsFound < bitsInByte) {
-
-				if (currentBit) {
-
-					if (!bits) {
-						x++;
-						NumberOfBits(timeInBuffer[x+1], timeInBuffer[x], bitsInByte, bitWidth, &bits, totalBitsFound);
-					}
-
-					if (bits > 0) {
-						bits = CONSTRAIN(bits,1,(bitsInByte-totalBitsFound));
-						//byte |= (bitLookup[ bits ] << totalBitsFound);
-						byte &= ~(bitLookup[ bits ] << totalBitsFound);
-						totalBitsFound += bits;
-						currentBit=0;
-						bits = 0;
-					} else {
-						//ignore this time as a corruption
-						fails++;
-					}
-
-				} else {
-
-					if (!bits) {
-						x++;
-						NumberOfBits(timeInBuffer[x+1], timeInBuffer[x], bitsInByte, bitWidth, &bits, totalBitsFound);
-					}
-
-					if (bits > 0) {
-						bits = CONSTRAIN(bits,1,(bitsInByte-totalBitsFound));
-
-						//byte &= ~(bitLookup[ bits ] << totalBitsFound);
-						byte |= (bitLookup[ bits ] << totalBitsFound);
-						totalBitsFound += bits;
-						currentBit=1;
-						bits = 0;
-					} else {
-						//ignore this time as a corruption
-						fails++;
-					}
-
-				}
-
-				if(fails > 10) {
-					totalBitsFound = 0;
-					break;
-				}
-
-				if (totalBitsFound >= 10) {
-					//trim off frames
-					serialInBuffer[serialInBufferIdx++] = (uint8_t)( (byte >> 1) & 0xFF );
-					if (timeNow > 1) {
-						totalBitsFound = 0;
-					}
-					byteFound = 1;
-					break;
-				}
-
-			}
-
-		}
-
-	}
-
-	return(byteFound);
-
-}
-
-
-inline static float FindSoftSerialBitWidth(uint32_t baudRate) {
-	return ( (1.0 / (float)baudRate) * 1000.0 * 1000.0 );
-}
-
-inline static float FindSoftSerialByteWidth(float bitWidth, uint32_t bitsPerByte) {
-	return (bitWidth * (float)bitsPerByte);
-}
-
-inline static float FindSoftSerialLineIdleTime(float byteWidth) {
-	return (byteWidth * 1.10);
-}
-
-
-static void SendSoftSerialActuator(motor_type actuator) {
-
-	//Prepares the soft serial actuator. Places it into SS_ACTUATOR_READY_TO_SEND state.
-
-	//set current actuator
-	softSerialStatus.currentActuator    = actuator;
-	softSerialStatus.timeOfActivation   = Micros();
-	softSerialStatus.softSerialState    = SS_PREPARING_ACTUATOR;
-	softSerialStatus.buadRate           = 19200; //baud rate
-	softSerialStatus.bitsPerByte        = 10;    //including frame bits
-	softSerialStatus.inverted           = 0;     //including frame bits
-
-	//calculate these values now and store the results. Stored as floats.
-	softSerialStatus.bitWidth           = FindSoftSerialBitWidth(softSerialStatus.buadRate); //bit length in us
-	softSerialStatus.byteWidth          = FindSoftSerialByteWidth(softSerialStatus.bitWidth, softSerialStatus.bitsPerByte);
-	softSerialStatus.lineIdleTime       = FindSoftSerialLineIdleTime(softSerialStatus.byteWidth);
-
-
-	//activate DMA output on actuator
-	SetActiveDmaToActuatorDma(actuator);
-
-	//Set EXTI callback function to the SoftSerialExtiCallback
-	callbackFunctionArray[actuator.EXTICallback] = SoftSerialExtiCallback;
-
-	//init EXTI, we immediately put the Actuator into output mode, but this saves a bit of time for when the actuator needs to receive.
-	EXTI_Init(ports[actuator.port], actuator.pin, actuator.EXTIn, 1, 2, GPIO_MODE_IT_RISING_FALLING, softSerialStatus.inverted ? GPIO_PULLDOWN : GPIO_PULLUP); //pulldown if inverted, pullup if normal serial
-
-	//Put actuator into Output state.
-	InitDmaOutputForSoftSerial(DMA_OUTPUT_ESC_1WIRE, actuator);
-
-}
-
-static uint32_t HandleSoftSerial(void) {
-
-	//return 1 to run this function again, return 0 to move onto the next actuator or finish up.
-	//I think we need a timeout check here.
-
-	FeedTheDog(); //don't allow a watchdog reboot to happen.
-
-	switch (softSerialStatus.softSerialState) {
-
-		case SS_IDLE:                  //Actuator is Idle
-			return (0);
-			break;
-
-		case SS_PREPARING_ACTUATOR:    //Actuator is being prepared, after 200 us has passed (allow time for actuator to stabilize. We can send data.
-			if (Micros() - softSerialStatus.timeOfActivation > 20)
-				softSerialStatus.softSerialState = SS_ACTUATOR_READY_TO_SEND;
-			return (1);
-			break;
-
-		case SS_ACTUATOR_READY_TO_SEND: //Actuator is prepared and ready to send data. Let's send init then return 1 to keep checking.
-			return (1);
-			break;
-
-		case SS_RECEIVING_DATA:         //Actuator is in the reception state. We keep checking until we sense a line idle.
-			if ( IsSoftSerialLineIdle() ) {
-				ProcessSoftSerialLineIdle(1);
-			}
-			return (1);
-			break;
-
-		case SS_SENDING_DATA:           //Actuator is in the sending state. We keep checking until DMA does a callback or until error time elapses
-			return (1);
-			break;
-
-		case SS_ERROR_TIME_IN_BUFFER_OF:
-			//We received more IRQs than we can deal with, buffer is too small or there's a problem.
-			//TODO: better handle this situation.
-			DeInitDmaOutputForSoftSerial(softSerialStatus.currentActuator);
-			return (0);
-			break;
-
-		default:
-			return (1);
-
-	}
-
-}
-
-uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength) {
-
+static uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength) {
+
+	(void)(serialBuffer);
+	(void)(outputLength);
+	/*
 	switch (escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].oneWireState) {
 
 		case OW_AWAITING_BOOT_MESSAGE:
@@ -792,7 +412,7 @@ uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength) {
 					escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].escBootloaderMode = 0;
 				}
 
-				HandleEscOneWire(serialBuffer, outputLength);
+				//HandleEscOneWire(serialBuffer, outputLength);
 			}
 			else
 			{
@@ -821,13 +441,15 @@ uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength) {
 
 	}
 
+*/
 	return (0);
 }
 
 
-static uint32_t OneWireMain(void) {
+static uint32_t OneWireMain() {
 
 	uint32_t actuatorNumOutput;
+
 
 	while (1) {
 
@@ -907,30 +529,6 @@ void OneWireDeinit(void) {
 	}
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -41,6 +41,8 @@
 
 
 //all drivers
+#include "drivers/esc_1wire.h"
+#include "drivers/softSerial.h"
 #include "drivers/serial.h"
 #include "drivers/leds.h"
 #include "drivers/buzzer.h"
@@ -51,7 +53,6 @@
 #include "drivers/invensense_device.h"
 #include "drivers/invensense_register_map.h"
 #include "drivers/dmaShenanigans.h"
-#include "drivers/esc_1wire.h"
 
 
 //config
