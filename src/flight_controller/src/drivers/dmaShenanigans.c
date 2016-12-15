@@ -626,11 +626,13 @@ void InitAllowedSoftOutputs(void) {
 
 				}
 				if (okayToEnable) {
+
 					if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_SPORT) {
 						//TODO: make telemetry and soft serial setup smarter
 						softSerialEnabled = 1;
 						telemEnabled      = 1;
 						uint32_t currentTime = Micros();
+
 						__disable_irq();
 				    	//prepare soft serial buffer and index
 						softSerialLastByteProcessedLocation = 0;
@@ -643,6 +645,7 @@ void InitAllowedSoftOutputs(void) {
 						SetActiveDmaToActuatorDma(board.motors[actuatorNumOutput]);
 						InitDmaOutputForSoftSerial(board.motors[actuatorNumOutput].enabled, board.motors[actuatorNumOutput]);
 					}
+
 				}
 				break;
 			default:
@@ -655,14 +658,17 @@ void InitAllowedSoftOutputs(void) {
 
 void DeInitDmaOutputForSoftSerial(motor_type actuator) {
 
+	EXTI_Deinit(ports[actuator.port], actuator.pin, actuator.EXTIn); //disable EXTI
+	//HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
+	//HAL_TIM_PWM_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
+	//HAL_TIM_Base_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
+
 	if (pwmTimers[actuator.actuatorArrayNum].hdma[actuator.CcDmaHandle] != 0)
 	{
 		//keep timer and GPIO settings as they were.
-		//HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
-		//HAL_TIM_PWM_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
-		//HAL_TIM_Base_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
-		EXTI_Deinit(ports[actuator.port], actuator.pin, actuator.EXTIn); //disable EXTI
+
 		HAL_DMA_DeInit(pwmTimers[actuator.actuatorArrayNum].hdma[actuator.CcDmaHandle]); //disable DMA
+		board.dmasActive[board.dmasMotor[actuator.actuatorArrayNum].dmaHandle].enabled = 0;
 	}
 
 }
@@ -836,24 +842,18 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 
     GPIO_InitTypeDef GPIO_InitStructure;
 	uint16_t timerPrescaler;
-//	TIM_MasterConfigTypeDef sMasterConfig;
-//	TIM_ClockConfigTypeDef  sClockSourceConfig;
+	TIM_MasterConfigTypeDef sMasterConfig;
+	TIM_ClockConfigTypeDef  sClockSourceConfig;
 	TIM_TypeDef *timer;
 
 	(void)(inverted);
 
+
     // GPIO Init
-    HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
+    // HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
 
     //inverted serial and PWM use GPIO_PULLDOWN, normal serial uses GPIO_PULLUP
 
-    GPIO_InitStructure.Pin       = actuator.pin;
-    GPIO_InitStructure.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP
-    GPIO_InitStructure.Pull      = inverted ? GPIO_PULLDOWN : GPIO_PULLUP; //pull down for inverted, pull up for non inverted
-    GPIO_InitStructure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStructure.Alternate = actuator.AF;
-
-    HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStructure);
 
     //Timer Init
     timer = timers[actuator.timer];
@@ -877,9 +877,9 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 
 	HAL_TIM_PWM_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
-//	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-//	sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
-//	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sMasterConfig);
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sMasterConfig);
 
 	sConfigOCHandles[actuator.actuatorArrayNum].OCMode       = TIM_OCMODE_PWM1;
 	sConfigOCHandles[actuator.actuatorArrayNum].Pulse        = 0;
@@ -895,6 +895,17 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
     HAL_NVIC_SetPriority(actuator.timerIRQn, 3, 0);
     HAL_NVIC_EnableIRQ(actuator.timerIRQn);
 
+    HAL_TIM_Base_Start(&pwmTimers[actuator.actuatorArrayNum]);
+    HAL_TIM_PWM_Start(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+
+
+    GPIO_InitStructure.Pin       = actuator.pin;
+    GPIO_InitStructure.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP
+    GPIO_InitStructure.Pull      = inverted ? GPIO_PULLDOWN : GPIO_PULLUP; //pull down for inverted, pull up for non inverted
+    GPIO_InitStructure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStructure.Alternate = actuator.AF;
+
+    HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStructure);
 }
 
 static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma actuatorDma) {
@@ -902,6 +913,7 @@ static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma
 	if (htim->hdma[handlerIndex] != 0)
 	{
 		HAL_DMA_DeInit(htim->hdma[handlerIndex]);
+		board.dmasActive[actuatorDma.dmaHandle].enabled = 0;
 	}
 
 	dmaHandles[actuatorDma.dmaHandle].Instance                 = dmaStream[actuatorDma.dmaStream];
@@ -921,9 +933,8 @@ static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma
 	/* Associate the initialized DMA handle to the TIM handle */
 	__HAL_LINKDMA(htim, hdma[handlerIndex], dmaHandles[actuatorDma.dmaHandle]);
 
-	HAL_NVIC_SetPriority(actuatorDma.dmaIRQn, 0, 3);
+	HAL_NVIC_SetPriority(actuatorDma.dmaIRQn, actuatorDma.priority, 3);
 	HAL_NVIC_EnableIRQ(actuatorDma.dmaIRQn);
-
 
 	if (HAL_DMA_Init(&dmaHandles[actuatorDma.dmaHandle]) != HAL_OK) {
 		ErrorHandler(WS2812_LED_INIT_FAILIURE);

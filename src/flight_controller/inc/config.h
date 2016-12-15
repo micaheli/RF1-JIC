@@ -41,9 +41,10 @@ typedef struct {
 extern main_config mainConfig;
 extern const config_variables_rec valueTable[];
 
+extern char *CleanupNumberString(char *inString);
 extern void SaveConfig (uint32_t addresConfigStart);
 extern uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length);
-int ValidateConfig (uint32_t addresConfigStart);
+int    ValidateConfig (uint32_t addresConfigStart);
 extern void LoadConfig (uint32_t addresConfigStart);
 extern void GenerateConfig(void);
 extern void ProcessCommand(char *inString);

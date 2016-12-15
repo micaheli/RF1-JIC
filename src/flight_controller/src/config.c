@@ -453,6 +453,29 @@ char *StripSpaces(char *inString)
 	return (inString);
 }
 
+char *CleanupNumberString(char *inString)
+{
+	uint16_t head = 0;
+	uint16_t position = 0;
+	uint16_t inStringLength = strlen(inString);
+
+	for (position = 0; position < inStringLength; position++)
+	{
+		if (inString[position] == ' ') // removes multiple spaces in a row
+			continue;
+
+		if (isdigit((unsigned char)inString[position]))
+		{
+			inString[head++] = inString[position];
+		}
+	}
+
+
+	inString[head] = 0;
+
+	return (inString);
+}
+
 char *CleanupString(char *inString)
 {
 	char last_char = ' ';
@@ -484,6 +507,8 @@ void SetValueOrString(uint32_t position, char *value)
 	uint32_t x;
 	char stringBuffer[10];
 
+	value = CleanupNumberString(value);
+
 	//compare args with strings in stringCompTable
 	for (x=0;x<(sizeof(stringCompTable)/sizeof(string_comp_rec));x++)
 	{
@@ -499,7 +524,7 @@ void SetValueOrString(uint32_t position, char *value)
 
 	SetValue(position, value);
 }
-
+//here
 void SetValue(uint32_t position, char *value)
 {
 
@@ -870,7 +895,7 @@ void SetupWizard(char *inString) {
 			memcpy(rf_custom_out_buffer, "setLOGSWITCHoff", sizeof("setLOGSWITCHoff"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "stTHROTTLEbottom", sizeof("stTHROTTLEbottom"));
+			memcpy(rf_custom_out_buffer, "setTHROTTLEbottom", sizeof("setTHROTTLEbottom"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "runwizrcc", sizeof("runwizrcc"));
@@ -1035,6 +1060,7 @@ int32_t SetVariable(char *inString) {
 	for (x = 0; x < strlen(inString); x++)
 		inString[x] = tolower((unsigned char)inString[x]);
 
+	//TODO: Remove
 	if (!strcmp("board_calibrated", inString)) {
 		memcpy(rf_custom_out_buffer, "board_calibrated cannot be set manually. Please run the board calibration routine.\0", sizeof("board_calibrated cannot be set manually. Please run the board calibration routine.\0"));
 		RfCustomReply(rf_custom_out_buffer);

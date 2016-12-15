@@ -2,6 +2,15 @@
 
 
 
+enum {
+	SS_IDLE                    = 0,
+	SS_PREPARING_ACTUATOR      = 1,
+	SS_ACTUATOR_READY_TO_SEND  = 2,
+	SS_SENDING_DATA            = 3,
+	SS_RECEIVING_DATA          = 4,
+	SS_ERROR_TIME_IN_BUFFER_OF = 5,
+};
+
 typedef struct {
 
 	motor_type	      currentActuator;
@@ -15,15 +24,7 @@ typedef struct {
 	volatile uint32_t dataInBuffer;
 	volatile uint32_t timeOfActivation;   //Anything time related should be made volatile.
 	volatile uint32_t timeOfLastActivity; //do we need this? //can be changed by an ISR, so it's volatile if we need it.
-
-	enum {
-		SS_IDLE                    = 0,
-		SS_PREPARING_ACTUATOR      = 1,
-		SS_ACTUATOR_READY_TO_SEND  = 2,
-		SS_SENDING_DATA            = 3,
-		SS_RECEIVING_DATA          = 4,
-		SS_ERROR_TIME_IN_BUFFER_OF = 5,
-	} softSerialState;
+	volatile uint32_t softSerialState;
 
 } soft_serial_status;
 
@@ -81,13 +82,16 @@ void SoftSerialExtiCallback(void) {
 
 void SoftSerialDmaCallback(void) {
 
-	//DMA is done sending, let's switch GPIO to EXTI mode
-	PutSoftSerialActuatorInReceiveState(softSerialStatus.currentActuator);
+	 if (dmaHandles[softSerialStatus.currentActuator.Dma].State == HAL_DMA_STATE_READY) {
+			//DMA is done sending, let's switch GPIO to EXTI mode
+			PutSoftSerialActuatorInReceiveState(softSerialStatus.currentActuator);
+	 }
 
 }
 
 uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t serialOutBufferLength, uint8_t inBuffer[], motor_type actuator, uint32_t timeoutMs) {
 
+	uint32_t returnNumber;
 	volatile uint32_t timeout;
 
 	timeout = timeoutMs + InlineMillis();
@@ -116,9 +120,13 @@ uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t seria
 			return (0); //timeout occurred, return failure
 		}
 		if ( IsSoftSerialLineIdle() ) {
+			softSerialStatus.softSerialState = SS_IDLE;
 			ProcessSoftSerialLineIdle(0); //proccess
 			memcpy(inBuffer, serialInBuffer, serialInBufferIdx);
-			return (serialInBufferIdx);
+			returnNumber = serialInBufferIdx;
+			timeInBufferIdx   = 0;
+			serialInBufferIdx = 0;//reset buffer idx
+			return (returnNumber);
 		}
 	}
 
@@ -127,6 +135,7 @@ uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t seria
 }
 
 static uint32_t IsSoftSerialLineIdle() {
+
 	volatile float timeNow;
 
 	timeNow = (float)Micros();
@@ -137,20 +146,21 @@ static uint32_t IsSoftSerialLineIdle() {
 		if (timeInBufferIdx > 3)
 			return(1);
 	}
+
 	return(0);
+
 }
 
 
 void ProcessSoftSerialLineIdle(uint32_t useCallback) {
 
-	timeInBuffer[timeInBufferIdx] = timeInBuffer[timeInBufferIdx - 1] + lrintf(softSerialStatus.bitWidth); //put in last time so we can get the last byte. We need the last byte to calculate the frame.
-	timeInBufferIdx++;
+	timeInBuffer[timeInBufferIdx] = timeInBuffer[timeInBufferIdx - 1] + lrintf(softSerialStatus.bitWidth*2); //put in last time so we can get the last byte. We need the last byte to calculate the frame.
 
 	//Process the serial data received and disabled the IRQ if there's a line idle sensed AFTER data has been received
 	if ( ProcessSoftSerialBits() ) {
 		//data exit and we're in a line idle
 		//Set Soft Serial Status to IDLE Set input buffers back to zero state and process the received data
-		softSerialStatus.softSerialState = SS_IDLE;
+		//softSerialStatus.softSerialState = SS_IDLE;
 		//process the received data
 		if ( (useCallback) && (softserialCallbackFunctionArray[0]) )
 			softserialCallbackFunctionArray[0](serialInBuffer, serialInBufferIdx);
@@ -163,32 +173,46 @@ void ProcessSoftSerialLineIdle(uint32_t useCallback) {
 
 static void PutSoftSerialActuatorInReceiveState(motor_type actuator) {
 
-	uint32_t x;
-	GPIO_InitTypeDef        GPIO_InitStruct;
-
-	//switch GPIO from timer output to EXTI input without doing a deinit.
-	GPIO_InitStruct.Pin  = actuator.pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-	GPIO_InitStruct.Pull = softSerialStatus.inverted ? GPIO_PULLDOWN : GPIO_PULLUP;
-    HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStruct);
-
-    //Set EXTI callback function to the SoftSerialExtiCallback
-    callbackFunctionArray[actuator.EXTICallback] = SoftSerialExtiCallback;
-    //set DMA callback to disabled since we're in RX mode now.
-	callbackFunctionArray[actuator.DmaCallback] = SoftSerialDmaCallback;
-
+	//Put softSerialDevice into RX mode
 	softSerialStatus.softSerialState = SS_RECEIVING_DATA;
 
-	//reset reception buffer.
+	//Init the EXTI
+    EXTI_Init(ports[actuator.port], actuator.pin, actuator.EXTIn, 1, 2, GPIO_MODE_IT_RISING_FALLING, softSerialStatus.inverted ? GPIO_PULLDOWN : GPIO_PULLUP, 0); //pulldown if inverted, pullup if normal serial
+
+    //Set the IRQ callback functions
+    callbackFunctionArray[actuator.EXTICallback] = SoftSerialExtiCallback;
+    callbackFunctionArray[actuator.DmaCallback]  = SoftSerialDmaCallback;
+
+	//reset reception buffer index.
 	timeInBufferIdx = 0;
-	//for (x=0;x<sizeof(timeInBuffer);x++) //do we need to zero buffer?
-	//	timeInBuffer[x] = 0;
 
 }
 
 static void PutSoftSerialActuatorInSendState(motor_type actuator) {
 
+	//Will always assume this actuator has the right away to a DMA. Need to check this for some items, not needed to check for 1wire.
+
+	//TODO: If current tim base is already enabled there's no need to reinit.
+
+//	static uint32_t once = 0;
+//	GPIO_InitTypeDef GPIO_InitStructure;
+//
+//	if (once) {
+//		HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
+//
+//		//Set pin to timer now that IRQ has occurred.
+//		GPIO_InitStructure.Pin       = actuator.pin;
+//		GPIO_InitStructure.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP
+//		GPIO_InitStructure.Pull      = GPIO_PULLUP; //GPIO_PULLUP //pull up for non inverted, pull down for inverted
+//		GPIO_InitStructure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+//		GPIO_InitStructure.Alternate = actuator.AF;
+//
+//		HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStructure);
+//	}
+//	once = 1;
+
 	//Prepares the soft serial actuator. Places it into SS_ACTUATOR_READY_TO_SEND state.
+
 
 	//set current actuator
 	softSerialStatus.currentActuator    = actuator;
@@ -203,17 +227,13 @@ static void PutSoftSerialActuatorInSendState(motor_type actuator) {
 	softSerialStatus.byteWidth          = FindSoftSerialByteWidth(softSerialStatus.bitWidth, softSerialStatus.bitsPerByte);
 	softSerialStatus.lineIdleTime       = FindSoftSerialLineIdleTime(softSerialStatus.byteWidth);
 
-
-	//activate DMA output on actuator
-	SetActiveDmaToActuatorDma(actuator);
-
     //Set DMA callback function to the SoftSerialDmaCallback
-    callbackFunctionArray[actuator.DmaCallback] = SoftSerialDmaCallback;
+    callbackFunctionArray[actuator.DmaCallback]  = SoftSerialDmaCallback;
     //set EXTI callback to disabled since we're in TX mode now.
 	callbackFunctionArray[actuator.EXTICallback] = SoftSerialExtiCallback;
 
-	//init EXTI, we immediately put the Actuator into output mode, but this saves a bit of time for when the actuator needs to receive.
-	EXTI_Init(ports[actuator.port], actuator.pin, actuator.EXTIn, 1, 2, GPIO_MODE_IT_RISING_FALLING, softSerialStatus.inverted ? GPIO_PULLDOWN : GPIO_PULLUP, 0); //pulldown if inverted, pullup if normal serial
+	//activate DMA output on actuator
+	SetActiveDmaToActuatorDma(actuator);
 
 	//Put actuator into Output state.
 	InitDmaOutputForSoftSerial(DMA_OUTPUT_ESC_1WIRE, actuator);

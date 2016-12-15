@@ -92,7 +92,7 @@ typedef struct {
 
 uint8_t  oneWireOutBuffer[ESC_BUF_SIZE];
 uint8_t  oneWireInBuffer[ESC_BUF_SIZE];
-uint32_t oneWireInBufferIdx;
+volatile uint32_t oneWireInBufferIdx;
 
 static const uint8_t  bootInit[] = {0, 0, 0, 0, 0, 0, 0, 0, 0x0D, 'B', 'L', 'H', 'e', 'l', 'i', 0xF4, 0x7D};
 static const uint16_t signaturesAtmel[]  = {0x9307, 0x930A, 0x930F, 0x940B, 0};
@@ -121,7 +121,7 @@ static uint16_t Crc16Byte(uint16_t from, uint8_t byte);
 static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout);
 static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length, uint32_t timeout) __attribute__ ((unused));
 static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout);
-static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint32_t timeout);
+static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
 static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint16_t length) __attribute__ ((unused));
 static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address) __attribute__ ((unused));
 static uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength)  __attribute__ ((unused));
@@ -207,24 +207,7 @@ void OneWireInit(void)
 	//softserialCallbackFunctionArray[0] = HandleEscOneWire;
 
 
-	DelayMs(100); //delay while debugging since motors need time to startup.
-
-	//OneWireMain(); //enter OneWireMain loop.
-
-	while (1) {
-		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
-
-			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-				if (ConnectToBlheliBootloader(board.motors[x], 35)) {
-					//TODO: Make work with the protocol struct
-					//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
-					//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
-					escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
-
-				}
-			}
-		}
-	}
+	OneWireMain(); //enter OneWireMain loop.
 
 }
 
@@ -295,7 +278,7 @@ static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address) {
 	//write to ESC, wait for ACK.
 	AppendBlHeliCrc(oneWireOutBuffer, 4);
 
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 6, oneWireInBuffer, actuator, 150); //150ms timeout is way more than we need
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 6, oneWireInBuffer, actuator, 10); //150ms timeout is way more than we need
 
 	if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
 		return (1);
@@ -329,7 +312,7 @@ static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint1
 static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
 
 	// SiLabs has no EEPROM, just a flash section at 0x1A00
-    return (ReadFlashSiLabsBLHeli(actuator, 0x1A00, timeout));
+    return (ReadFlashSiLabsBLHeli(actuator, 0x1A00, 256, timeout));
 
 }
 
@@ -361,17 +344,15 @@ static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t addre
 
 }
 
-static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint32_t timeout) {
+static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout) {
 
 	if (!SendCmdSetAddress(actuator, address))
 		return (0);
 
 	oneWireOutBuffer[0] = CMD_READ_FLASH_SIL;
-	oneWireOutBuffer[1] = 0;
-	oneWireOutBuffer[2] = (address >> 8);
-	oneWireOutBuffer[3] = (address & 0xff);
+	oneWireOutBuffer[1] = (length & 0xff);
 
-	AppendBlHeliCrc(oneWireOutBuffer, 4);
+	AppendBlHeliCrc(oneWireOutBuffer, 2);
 
 	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 6, oneWireInBuffer, actuator, timeout); //25ms timeout is way more than we need
 
@@ -447,70 +428,21 @@ static uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength) 
 
 static uint32_t OneWireMain() {
 
-	uint32_t actuatorNumOutput;
-
+	uint32_t x;
 
 	while (1) {
+		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
 
-		//scheduler for 1wire.
-		//1. connect to all ESCs and ask for bootloader and config info
-		//2. wait for further information.
-		//for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++) {
-//		actuatorNumOutput = 0;
-//		if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-
-			//
-//			if (ConnectToBlheliBootloader(board.motors[actuatorNumOutput], 25)) {
-//				//TODO: Make work with the protocol struct
-//				//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
-//				//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
-//				escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[actuatorNumOutput], 25);
-//
-//			}
-
-//			while ( HandleSoftSerial() ); //wait until actuator is idle;
-//			GetEscConfig(board.motors[actuatorNumOutput]);
-//			ioMem_t ioMem = {
-//				.addr = 0,
-//				.len  = ESC_BUF_SIZE,
-//				.data = serialOutBuffer,
-//			};
-//			escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol->readEEprom(&ioMem);
-//		}
-
-
-		for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++) {
-
-			if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-				if (ConnectToBlheliBootloader(board.motors[actuatorNumOutput], 25)) {
+			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+				if (ConnectToBlheliBootloader(board.motors[x], 35)) {
 					//TODO: Make work with the protocol struct
 					//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
 					//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
-					escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[actuatorNumOutput], 25);
+					escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
 
 				}
 			}
-
-//			escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].oneWireState = OW_AWAITING_BOOT_MESSAGE;
-//
-//			//soft serial is in the IDLE state, let's switch to another actuator and prepare it for soft serial
-//			if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-//
-//
-//
-//				softSerialStatus.currentActuator = board.motors[actuatorNumOutput];
-//				escOneWireStatus[softSerialStatus.currentActuator.actuatorArrayNum].oneWireState = OW_CONNECT_TO_BOOTLOADER;
-//				//while ( HandleEscOneWire() );
-//
-//				//while ( HandleSoftSerial() );
-//				//Actuator is Idle. At this point we either DeInit it and move on or do something with it again.
-//				//It's currently in the RX state, but a line idle has occurred so we consider it IDLE//
-//
-//				//HandleEscOneWire(); //does nothing right now.
-//			}
-
 		}
-
 	}
 
 	return (0);
@@ -580,8 +512,8 @@ static void AppendBlHeliCrc(uint8_t outBuffer[], uint32_t len) {
         crc = Crc16Byte(crc, outBuffer[i]);
     }
 
-	outBuffer[i+1] = (crc & 0xff);
-	outBuffer[i+2] = (crc >> 8);
+	outBuffer[i] = (crc & 0xff);
+	outBuffer[i+1] = (crc >> 8);
 
 }
 
