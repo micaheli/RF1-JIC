@@ -1263,7 +1263,7 @@ void ProcessCommand(char *inString)
 		inString[x] = tolower((unsigned char)inString[x]);
 
 	//ignore any string that starts with #
-	if (inString[0] == "#")
+	if (inString[0] == '#')
 		return;
 
 	if (!strcmp("set", inString))
