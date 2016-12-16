@@ -86,3 +86,11 @@ Version 0.104.033:
 	More Code Cleanup.
 	Preparing for 1wire support.
 	Fixed flash logger. Made slightly more intelligent.
+
+Version 0.105.034:
+	Add 1wire support Stage 1
+	Add "dump back" command
+	Fix some config set issues.
+	FrSky and Spektrum Telemtry temporarily disabled.
+	Better bootloader/recovery loader support. This bootloader works with BB420+ and 0.015.034+
+	Add version to the top of a dump.

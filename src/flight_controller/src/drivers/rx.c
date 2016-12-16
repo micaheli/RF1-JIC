@@ -296,11 +296,21 @@ inline void InlineCollectRcCommand (void) {
 	//rc data is taken from RX and using the map is put into the correct "axis"
 	for (axis = 0; axis < MAXCHANNELS; axis++) {
 
-		if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[axis], mainConfig.rcControlsConfig.minRc[axis], 0 + mainConfig.rcControlsConfig.deadBand[axis], -1.0); //-1 to 0
+		if (axis == THROTTLE)
+		{
+			if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
+				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[axis], mainConfig.rcControlsConfig.minRc[axis], 0 + mainConfig.rcControlsConfig.deadBand[axis], -1.0); //-1 to 0
+			else
+				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[axis], mainConfig.rcControlsConfig.midRc[axis], 1.0, 0 - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
+		}
 		else
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[axis], mainConfig.rcControlsConfig.midRc[axis], 1.0, 0 - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
+		{
+			if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
+				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[axis], mainConfig.rcControlsConfig.minRc[axis], 0 + mainConfig.rcControlsConfig.deadBand[axis], -1.0); //-1 to 0
+			else
+				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[axis], mainConfig.rcControlsConfig.midRc[axis], 0.9, 0 - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
 
+		}
 
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes

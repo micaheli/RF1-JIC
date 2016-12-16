@@ -1,11 +1,8 @@
 #include "includes.h"
 
 
-typedef enum {
-    BLHBLM_BLHELI_SILABS = 1,
-	BLHBLM_BLHELI_ATMEL  = 2,
-	BLHBLM_SIMONK_ATMEL  = 3,
-} esc_bootloader_mode;
+volatile esc_one_wire_status escOneWireStatus[16];
+
 
 typedef struct {
     uint16_t len;
@@ -13,86 +10,102 @@ typedef struct {
     uint8_t *data;
 } ioMem_t;
 
-/*
-typedef struct {
-    uint32_t (*Disconnect)(void);
-    uint32_t (*PollReadReady)(void);
-    uint32_t (*ReadFlash)(ioMem_t*);
-    uint32_t (*WriteFlash)(ioMem_t*);
-    uint32_t (*ReadEEprom)(ioMem_t*);
-    uint32_t (*WriteEEprom)(ioMem_t*);
-    uint32_t (*PageErase)(ioMem_t*);
-    uint32_t (*EepromErase)(ioMem_t*);
-} esc1WireProtocol_t;
-*/
-
-typedef struct {
-//    uint32_t (*Disconnect)(void);
-//    uint32_t (*PollReadReady)(void);
-    uint32_t (*ReadFlash)(motor_type actuator, uint16_t address, uint32_t timeout);
-//    uint32_t (*WriteFlash)(ioMem_t*);
-    uint32_t (*ReadEEprom)(motor_type actuator, uint32_t timeout);
-//    uint32_t (*WriteEEprom)(ioMem_t*);
-//    uint32_t (*PageErase)(ioMem_t*);
-//    uint32_t (*EepromErase)(ioMem_t*);
-} esc1WireProtocol_t;
-
-typedef struct {
-
-	uint32_t            escSignature;
-	uint32_t            bootVersion;
-	uint32_t            bootPages;
-	esc_bootloader_mode escBootloaderMode;
-	const esc1WireProtocol_t  *esc1WireProtocol;
-
-	enum {
-		OW_IDLE                   = 0,
-		OW_AWAITING_BOOT_MESSAGE  = 1,
-		OW_AWAITING_READ_EEPROM   = 2,
-		OW_PREPARING_ACTUATOR     = 3,
-		OW_ACTUATOR_READY_TO_SEND = 4,
-		OW_SENDING_DATA           = 5,
-		OW_RECEIVING_DATA         = 6,
-		OW_ERROR_UNKNOWN_BOOT_MSG = 7,
-		OW_CONNECT_TO_BOOTLOADER  = 8,
-	} oneWireState;
-
-} esc_one_wire_status;
 
 
-//buffer size, 256 plus two bytes for CRC
-#define ESC_BUF_SIZE 256+2
-
-// Bootloader commands
-#define RestartBootloader  0
-#define ExitBootloader     1
-
-#define CMD_RUN            0x00
-#define CMD_PROG_FLASH     0x01
-#define CMD_ERASE_FLASH    0x02
-#define CMD_READ_FLASH_SIL 0x03
-#define CMD_VERIFY_FLASH   0x03
-#define CMD_READ_EEPROM    0x04
-#define CMD_PROG_EEPROM    0x05
-#define CMD_READ_SRAM      0x06
-#define CMD_READ_FLASH_ATM 0x07
-#define CMD_KEEP_ALIVE     0xFD
-#define CMD_SET_ADDRESS    0xFF
-#define CMD_SET_BUFFER     0xFE
-#define CMD_BOOTINIT       0x07
-#define CMD_BOOTSIGN       0x08
-
-// Bootloader result codes
-#define RET_SUCCESS        0x30
-#define RET_ERRORCOMMAND   0xC1
-#define RET_ERRORCRC       0xC2
-#define RET_NONE           0xFF
+// EEPROM layout - BLHeli rev 20, bumped in 14.0
+const BLHeli_EEprom_t BLHeli20_EEprom = {
+    .BL_GOV_P_GAIN = 0,
+    .BL_GOV_I_GAIN = 1,
+    .BL_GOV_MODE = 2,
+    .BL_MOT_GAIN = 4,
+    .BL_STARTUP_PWR = 6,
+    .BL_PWM_FREQ = 7,
+    .BL_DIRECTION = 8,
+    .BL_INPUT_POL = 9,
+    .BL_INIT_L = 10,
+    .BL_INIT_H = 11,
+    .BL_ENABLE_TX = 12,
+    .BL_COMM_TIMING = 18,
+    .BL_PPM_MIN_THROTLE = 22,
+    .BL_PPM_MAX_THROTLE = 23,
+    .BL_BEEP_STRENGTH = 24,
+    .BL_BEACON_STRENGTH = 25,
+    .BL_BEACON_DELAY = 26,
+    .BL_DEMAG_COMP = 28,
+    .BL_BEC_VOLTAGE_HIGH = 29,
+    .BL_PPM_CENTER = 30,
+    .BL_TEMP_PROTECTION = 32,
+    .BL_ENABLE_POWER_PROT = 33,
+    .BL_ENABLE_PWM_INPUT = 34,
+    .BL_PWM_DITHER = 35,
+    .BL_BRAKE_ON_STOP = NO_CMD,
+    .BL_LED_CONTROL = NO_CMD,
+};
+// EEPROM layout - BLHeli rev 21, bumped in 14.5
+const BLHeli_EEprom_t BLHeli21_EEprom = {
+    .BL_GOV_P_GAIN = 0,
+    .BL_GOV_I_GAIN = 1,
+    .BL_GOV_MODE = 2,
+    .BL_MOT_GAIN = 4,
+    .BL_STARTUP_PWR = 6,
+    .BL_PWM_FREQ = 7,
+    .BL_DIRECTION = 8,
+    .BL_INPUT_POL = 9,
+    .BL_INIT_L = 10,
+    .BL_INIT_H = 11,
+    .BL_ENABLE_TX = 12,
+    .BL_COMM_TIMING = 18,
+    .BL_PPM_MIN_THROTLE = 22,
+    .BL_PPM_MAX_THROTLE = 23,
+    .BL_BEEP_STRENGTH = 24,
+    .BL_BEACON_STRENGTH = 25,
+    .BL_BEACON_DELAY = 26,
+    .BL_DEMAG_COMP = 28,
+    .BL_BEC_VOLTAGE_HIGH = 29,
+    .BL_PPM_CENTER = 30,
+    .BL_TEMP_PROTECTION = 32,
+    .BL_ENABLE_POWER_PROT = 33,
+    .BL_ENABLE_PWM_INPUT = 34,
+    .BL_PWM_DITHER = 35,
+    .BL_BRAKE_ON_STOP = 36,
+    .BL_LED_CONTROL = NO_CMD,
+};
+// EEPROM layout - BLHeli_S rev 32
+const BLHeli_EEprom_t BLHeliS32_EEprom = {
+    .BL_GOV_P_GAIN = NO_CMD,
+    .BL_GOV_I_GAIN = NO_CMD,
+    .BL_GOV_MODE = NO_CMD,
+    .BL_MOT_GAIN = NO_CMD,
+    .BL_STARTUP_PWR = 6,
+    .BL_PWM_FREQ = NO_CMD,
+    .BL_DIRECTION = 8,
+    .BL_INPUT_POL = NO_CMD,
+    .BL_INIT_L = 10,
+    .BL_INIT_H = 11,
+    .BL_ENABLE_TX = 12,
+    .BL_COMM_TIMING = 18,
+    .BL_PPM_MIN_THROTLE = 22,
+    .BL_PPM_MAX_THROTLE = 23,
+    .BL_BEEP_STRENGTH = 24,
+    .BL_BEACON_STRENGTH = 25,
+    .BL_BEACON_DELAY = 26,
+    .BL_DEMAG_COMP = 28,
+    .BL_BEC_VOLTAGE_HIGH = NO_CMD,
+    .BL_PPM_CENTER = 30,
+    .BL_TEMP_PROTECTION = 32,
+    .BL_ENABLE_POWER_PROT = 33,
+    .BL_ENABLE_PWM_INPUT = 34,
+    .BL_PWM_DITHER = NO_CMD,
+    .BL_BRAKE_ON_STOP = 36,
+    .BL_LED_CONTROL = 37,
+};
 
 
 
 uint8_t  oneWireOutBuffer[ESC_BUF_SIZE];
 uint8_t  oneWireInBuffer[ESC_BUF_SIZE];
 volatile uint32_t oneWireInBufferIdx;
+volatile uint32_t oneWireOngoing;
 
 static const uint8_t  bootInit[] = {0, 0, 0, 0, 0, 0, 0, 0, 0x0D, 'B', 'L', 'H', 'e', 'l', 'i', 0xF4, 0x7D};
 static const uint16_t signaturesAtmel[]  = {0x9307, 0x930A, 0x930F, 0x940B, 0};
@@ -126,6 +139,7 @@ static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint1
 static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address) __attribute__ ((unused));
 static uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength)  __attribute__ ((unused));
 
+const BLHeli_EEprom_t* GetBLHeliEEpromLayout(uint8_t data[], uint32_t dataLength);
 /*
 
 const esc1WireProtocol_t BLHeliAtmelProtocol = {
@@ -176,15 +190,15 @@ const esc1WireProtocol_t BLHeliSiLabsProtocol = {
 //    .eepromErase   = EepromEraseSiLabsBLHeli,
 };
 
-esc_one_wire_status escOneWireStatus[16];
 
 
 
-void OneWireInit(void)
+uint32_t OneWireInit(void)
 {
 
 	uint32_t x;
 
+	oneWireOngoing = 1;
 	//need to deinit RX, Gyro, Flash... basically anything that uses DMA. Should make a skip for USART if it's being used for communication
 	//need to reinit all this crap at the end.
 	DisarmBoard();              //sets WD to 32S
@@ -207,8 +221,83 @@ void OneWireInit(void)
 	//softserialCallbackFunctionArray[0] = HandleEscOneWire;
 
 
-	OneWireMain(); //enter OneWireMain loop.
+	//OneWireMain(); //enter OneWireMain loop.
 
+	uint32_t tries = 0;
+	uint32_t allWork = 1;
+	uint32_t atLeastOneWorks = 0;
+
+	while (tries < 5) {
+		allWork = 1;
+		tries++;
+		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
+			InitDmaOutputForSoftSerial(DMA_OUTPUT_ESC_1WIRE, board.motors[x]);
+		}
+		DelayMs(600);
+		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
+			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+				escOneWireStatus[board.motors[x].actuatorArrayNum].enabled = 0;
+				if (ConnectToBlheliBootloader(board.motors[x], 35)) {
+					atLeastOneWorks++;
+					escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
+				} else {
+					allWork = 0;
+				}
+				DeInitDmaOutputForSoftSerial(board.motors[x]);
+			}
+		}
+		if (allWork) //all active motors returned
+		{
+			return (atLeastOneWorks);
+		}
+		else if (atLeastOneWorks || tries < 2) //try at least twice, even if not a single ESC detected
+		{
+			InitActuators();
+			DelayMs(7000);
+			DeInitActuators();
+		}
+		else if (atLeastOneWorks == 0 && tries == 2 ) //tried twice, not a single ESC detected
+		{
+			return (0);
+		}
+	}
+
+	return (atLeastOneWorks); //tried all used up, return what we've found.
+
+	for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
+		//ConnectToBlheliBootloader(DMA_OUTPUT_ESC_1WIRE, board.motors[x]);
+	}
+
+	for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
+
+		//InitDmaOutputForSoftSerial(board.motors[x]);
+		if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+			escOneWireStatus[board.motors[x].actuatorArrayNum].enabled = 0;
+			if (ConnectToBlheliBootloader(board.motors[x], 35)) {
+				//TODO: Make work with the protocol struct
+				//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
+				//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
+				escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
+			}
+			DeInitDmaOutputForSoftSerial(board.motors[x]);
+		}
+
+	}
+
+	/*
+	for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
+
+		escOneWireStatus[board.motors[x].actuatorArrayNum].enabled = 0;
+		if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+			if (ConnectToBlheliBootloader(board.motors[x], 35)) {
+				//TODO: Make work with the protocol struct
+				//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
+				//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
+				escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
+			}
+		}
+	}
+	*/
 }
 
 //void SendOutput(void) {
@@ -250,7 +339,7 @@ static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout)
 		}
 		else if (SignatureMatch(escOneWireStatus[actuator.actuatorArrayNum].escSignature, signaturesAtmel, (sizeof(signaturesAtmel)/2)))
 		{
-			escOneWireStatus[actuator.actuatorArrayNum].escBootloaderMode = BLHBLM_BLHELI_ATMEL;
+//			escOneWireStatus[actuator.actuatorArrayNum].escBootloaderMode = BLHBLM_BLHELI_ATMEL;
 //			escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol  = &BLHeliAtmelProtocol;
 		}
 		else
@@ -312,7 +401,32 @@ static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint1
 static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
 
 	// SiLabs has no EEPROM, just a flash section at 0x1A00
-    return (ReadFlashSiLabsBLHeli(actuator, 0x1A00, 256, timeout));
+
+	uint32_t hasData;
+
+	hasData = ReadFlashSiLabsBLHeli(actuator, 0x1A00, 112, timeout);
+
+	if (hasData > 109)
+	{
+
+		escOneWireStatus[actuator.actuatorArrayNum].enabled = 1;
+		bzero(escOneWireStatus[actuator.actuatorArrayNum].nameStr,      sizeof(escOneWireStatus[actuator.actuatorArrayNum].nameStr));
+		bzero(escOneWireStatus[actuator.actuatorArrayNum].fwStr,        sizeof(escOneWireStatus[actuator.actuatorArrayNum].fwStr));
+		bzero(escOneWireStatus[actuator.actuatorArrayNum].versionStr,   sizeof(escOneWireStatus[actuator.actuatorArrayNum].versionStr));
+		memcpy( escOneWireStatus[actuator.actuatorArrayNum].nameStr,    oneWireInBuffer + 64, 16 );
+		memcpy( escOneWireStatus[actuator.actuatorArrayNum].fwStr,      oneWireInBuffer + 80, 16 );
+		memcpy( escOneWireStatus[actuator.actuatorArrayNum].versionStr, oneWireInBuffer + 95, 16 );
+		escOneWireStatus[actuator.actuatorArrayNum].version = ( (oneWireInBuffer[0] << 8) | (oneWireInBuffer[1]) ) ;
+
+	}
+	else
+	{
+
+		escOneWireStatus[actuator.actuatorArrayNum].enabled = 0;
+
+	}
+
+	return(escOneWireStatus[actuator.actuatorArrayNum].enabled);
 
 }
 
@@ -351,10 +465,12 @@ static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uin
 
 	oneWireOutBuffer[0] = CMD_READ_FLASH_SIL;
 	oneWireOutBuffer[1] = (length & 0xff);
+	oneWireOutBuffer[2] = 0;
+	oneWireOutBuffer[3] = 0;
 
 	AppendBlHeliCrc(oneWireOutBuffer, 2);
 
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 6, oneWireInBuffer, actuator, timeout); //25ms timeout is way more than we need
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout);
 
 	return (oneWireInBufferIdx);
 }
@@ -426,7 +542,7 @@ static uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength) 
 }
 
 
-static uint32_t OneWireMain() {
+uint32_t OneWireMain() {
 
 	uint32_t x;
 
@@ -434,14 +550,21 @@ static uint32_t OneWireMain() {
 		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
 
 			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+				FeedTheDog(); //feed the dog each time we change motors
 				if (ConnectToBlheliBootloader(board.motors[x], 35)) {
-					//TODO: Make work with the protocol struct
-					//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
-					//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
 					escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
-
+				} else {
+					InitActuators();
+					DelayMs(5000);
+					DeInitActuators();
+					if (ConnectToBlheliBootloader(board.motors[x], 35)) {
+						escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
+					}
 				}
+			} else {
+				escOneWireStatus[board.motors[x].actuatorArrayNum].enabled = 0;
 			}
+			DeInitDmaOutputForSoftSerial(board.motors[x]);
 		}
 	}
 
@@ -451,10 +574,11 @@ static uint32_t OneWireMain() {
 
 void OneWireDeinit(void) {
 
-	DeInitBoardUsarts(); //deinit all the USARTs.
-	DeInitActuators();   //deinit all the Actuators.
-	InitActuators();     //init all the Actuators.
-	InitBoardUsarts();   //init all the USARTs.
+	oneWireOngoing = 0;
+	DeInitBoardUsarts(); //DeInit all the USARTs.
+	DeInitActuators();   //DeInit all the Actuators.
+	InitActuators();     //Init all the Actuators.
+	InitBoardUsarts();   //Init all the USARTs.
 	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl)) {
 		ErrorHandler(GYRO_INIT_FAILIURE);
 	}
@@ -471,7 +595,32 @@ void OneWireDeinit(void) {
 
 
 
+const BLHeli_EEprom_t* GetBLHeliEEpromLayout(uint8_t data[], uint32_t dataLength) {
 
+	uint32_t layoutVersion;
+
+    if (dataLength < BLHELI_EEPROM_HEAD) {
+        return 0;
+    }
+
+    layoutVersion = data[2];
+
+    if (layoutVersion == 32 || layoutVersion == 33)
+    {
+        return &BLHeliS32_EEprom;
+    }
+    else if (layoutVersion == 20)
+    {
+        return &BLHeli20_EEprom;
+    }
+    else if (layoutVersion == 21)
+    {
+        return &BLHeli21_EEprom;
+    }
+
+    return NULL;
+
+}
 
 static uint32_t SignatureMatch(uint16_t signature, const uint16_t *list, uint32_t listSize)
 {

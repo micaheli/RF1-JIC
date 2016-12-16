@@ -93,6 +93,19 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 	uint8_t tempBuffer[256];
 
 	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
+	tempBuffer[bufferIdx++] = NO_PULSE;
 
     for (outputIndex = 0; outputIndex < outputLength; outputIndex++) { //Send Data MSB by default
 
@@ -111,6 +124,7 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 
     }
 
+	tempBuffer[bufferIdx++] = NO_PULSE;
 	tempBuffer[bufferIdx++] = NO_PULSE;
 
     //HAL_TIM_PWM_Stop(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
@@ -842,8 +856,8 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 
     GPIO_InitTypeDef GPIO_InitStructure;
 	uint16_t timerPrescaler;
-	TIM_MasterConfigTypeDef sMasterConfig;
-	TIM_ClockConfigTypeDef  sClockSourceConfig;
+//	TIM_MasterConfigTypeDef sMasterConfig;
+//	TIM_ClockConfigTypeDef  sClockSourceConfig;
 	TIM_TypeDef *timer;
 
 	(void)(inverted);
@@ -877,9 +891,9 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 
 	HAL_TIM_PWM_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
-	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-	sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
-	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sMasterConfig);
+//	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+//	sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+//	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sMasterConfig);
 
 	sConfigOCHandles[actuator.actuatorArrayNum].OCMode       = TIM_OCMODE_PWM1;
 	sConfigOCHandles[actuator.actuatorArrayNum].Pulse        = 0;
@@ -896,7 +910,7 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
     HAL_NVIC_EnableIRQ(actuator.timerIRQn);
 
     HAL_TIM_Base_Start(&pwmTimers[actuator.actuatorArrayNum]);
-    HAL_TIM_PWM_Start(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+    //HAL_TIM_PWM_Start(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
 
 
     GPIO_InitStructure.Pin       = actuator.pin;
@@ -933,14 +947,14 @@ static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma
 	/* Associate the initialized DMA handle to the TIM handle */
 	__HAL_LINKDMA(htim, hdma[handlerIndex], dmaHandles[actuatorDma.dmaHandle]);
 
-	HAL_NVIC_SetPriority(actuatorDma.dmaIRQn, actuatorDma.priority, 3);
-	HAL_NVIC_EnableIRQ(actuatorDma.dmaIRQn);
-
 	if (HAL_DMA_Init(&dmaHandles[actuatorDma.dmaHandle]) != HAL_OK) {
 		ErrorHandler(WS2812_LED_INIT_FAILIURE);
 	} else {
 		board.dmasActive[actuatorDma.dmaHandle].enabled = 1;
 	}
+
+	HAL_NVIC_SetPriority(actuatorDma.dmaIRQn, actuatorDma.priority, 3);
+	HAL_NVIC_EnableIRQ(actuatorDma.dmaIRQn);
 
 }
 

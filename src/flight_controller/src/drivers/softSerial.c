@@ -98,6 +98,7 @@ uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t seria
 
 	//put actuator in send state. Only one actuator at a time can do this currently.
 	PutSoftSerialActuatorInSendState(actuator);
+	DelayMs(2);
 
 	//set softSerialStatus to SENDING_DATA state
 	softSerialStatus.softSerialState = SS_SENDING_DATA;
@@ -154,7 +155,7 @@ static uint32_t IsSoftSerialLineIdle() {
 
 void ProcessSoftSerialLineIdle(uint32_t useCallback) {
 
-	timeInBuffer[timeInBufferIdx] = timeInBuffer[timeInBufferIdx - 1] + lrintf(softSerialStatus.bitWidth*2); //put in last time so we can get the last byte. We need the last byte to calculate the frame.
+	//timeInBuffer[timeInBufferIdx] = timeInBuffer[timeInBufferIdx - 1] + lrintf(softSerialStatus.bitWidth*2); //put in last time so we can get the last byte. We need the last byte to calculate the frame.
 
 	//Process the serial data received and disabled the IRQ if there's a line idle sensed AFTER data has been received
 	if ( ProcessSoftSerialBits() ) {
@@ -176,12 +177,12 @@ static void PutSoftSerialActuatorInReceiveState(motor_type actuator) {
 	//Put softSerialDevice into RX mode
 	softSerialStatus.softSerialState = SS_RECEIVING_DATA;
 
-	//Init the EXTI
-    EXTI_Init(ports[actuator.port], actuator.pin, actuator.EXTIn, 1, 2, GPIO_MODE_IT_RISING_FALLING, softSerialStatus.inverted ? GPIO_PULLDOWN : GPIO_PULLUP, 0); //pulldown if inverted, pullup if normal serial
-
     //Set the IRQ callback functions
     callbackFunctionArray[actuator.EXTICallback] = SoftSerialExtiCallback;
     callbackFunctionArray[actuator.DmaCallback]  = SoftSerialDmaCallback;
+
+	//Init the EXTI
+    EXTI_Init(ports[actuator.port], actuator.pin, actuator.EXTIn, 1, 2, GPIO_MODE_IT_RISING_FALLING, softSerialStatus.inverted ? GPIO_PULLDOWN : GPIO_PULLUP, 0); //pulldown if inverted, pullup if normal serial
 
 	//reset reception buffer index.
 	timeInBufferIdx = 0;
@@ -377,7 +378,7 @@ inline static float FindSoftSerialByteWidth(float bitWidth, uint32_t bitsPerByte
 }
 
 inline static float FindSoftSerialLineIdleTime(float byteWidth) {
-	return (byteWidth * 1.10);
+	return (byteWidth * 1.20);
 }
 
 static uint32_t HandleSoftSerial(void) {

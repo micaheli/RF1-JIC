@@ -90,6 +90,11 @@ void scheduler(int32_t count)
 	uint16_t byte;
 	uint32_t high;
 
+	//soft serial task. Feed the dog while
+	if (oneWireOngoing) {
+		FeedTheDog();
+	}
+
 	if (!softSerialEnabled)
 		return;
 

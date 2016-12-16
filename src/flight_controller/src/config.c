@@ -31,6 +31,9 @@ uint32_t resetBoard = 0;
 
 static void SetValueOrString(uint32_t position, char *value);
 static void SetValue(uint32_t position, char *value);
+static void OneWire(char *inString);
+static void SetupWizard(char *inString);
+
 
 static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -178,32 +181,32 @@ const config_variables_rec valueTable[] = {
 
 		//spektrum is 1024
 		//sbus is 998
-		{ "pitch_midRc",		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[PITCH], 			0, 2148, 1024, "" },
-		{ "roll_midRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[ROLL], 			0, 2148, 1024, "" },
-		{ "yaw_midRc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[YAW], 			0, 2148, 1024, "" },
-		{ "throttle_midRc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[THROTTLE],		0, 2148, 1024, "" },
-		{ "aux1_midRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX1], 			0, 2148, 1024, "" },
-		{ "aux2_midRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX2], 			0, 2148, 1024, "" },
-		{ "aux3_midRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX3], 			0, 2148, 1024, "" },
-		{ "aux4_midRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX4], 			0, 2148, 1024, "" },
+		{ "pitch_midrc",		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[PITCH], 			0, 2148, 1024, "" },
+		{ "roll_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[ROLL], 			0, 2148, 1024, "" },
+		{ "yaw_midrc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[YAW], 			0, 2148, 1024, "" },
+		{ "throttle_midrc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[THROTTLE],		0, 2148, 1024, "" },
+		{ "aux1_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX1], 			0, 2148, 1024, "" },
+		{ "aux2_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX2], 			0, 2148, 1024, "" },
+		{ "aux3_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX3], 			0, 2148, 1024, "" },
+		{ "aux4_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX4], 			0, 2148, 1024, "" },
 
-		{ "pitch_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[PITCH], 			0, 2148, 0, "" },
-		{ "roll_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[ROLL], 			0, 2148, 0, "" },
-		{ "yaw_minRc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[YAW], 			0, 2148, 0, "" },
-		{ "throttle_minRc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[THROTTLE], 		0, 2148, 0, "" },
-		{ "aux1_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX1], 			0, 2148, 0, "" },
-		{ "aux2_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX2], 			0, 2148, 0, "" },
-		{ "aux3_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX3], 			0, 2148, 0, "" },
-		{ "aux4_minRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX4], 			0, 2148, 0, "" },
+		{ "pitch_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[PITCH], 			0, 2148, 0, "" },
+		{ "roll_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[ROLL], 			0, 2148, 0, "" },
+		{ "yaw_minrc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[YAW], 			0, 2148, 0, "" },
+		{ "throttle_minrc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[THROTTLE], 		0, 2148, 0, "" },
+		{ "aux1_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX1], 			0, 2148, 0, "" },
+		{ "aux2_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX2], 			0, 2148, 0, "" },
+		{ "aux3_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX3], 			0, 2148, 0, "" },
+		{ "aux4_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX4], 			0, 2148, 0, "" },
 
-		{ "pitch_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[PITCH], 			0, 2148, 2048, "" },
-		{ "roll_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[ROLL], 			0, 2148, 2048, "" },
-		{ "yaw_maxRc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[YAW], 			0, 2148, 2048, "" },
-		{ "throttle_maxRc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[THROTTLE], 		0, 2148, 2048, "" },
-		{ "aux1_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX1], 			0, 2148, 2048, "" },
-		{ "aux2_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX2], 			0, 2148, 2048, "" },
-		{ "aux3_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX3], 			0, 2148, 2048, "" },
-		{ "aux4_maxRc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX4], 			0, 2148, 2048, "" },
+		{ "pitch_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[PITCH], 			0, 2148, 2048, "" },
+		{ "roll_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[ROLL], 			0, 2148, 2048, "" },
+		{ "yaw_maxrc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[YAW], 			0, 2148, 2048, "" },
+		{ "throttle_maxrc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[THROTTLE], 		0, 2148, 2048, "" },
+		{ "aux1_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX1], 			0, 2148, 2048, "" },
+		{ "aux2_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX2], 			0, 2148, 2048, "" },
+		{ "aux3_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX3], 			0, 2148, 2048, "" },
+		{ "aux4_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX4], 			0, 2148, 2048, "" },
 
 		{ "pitch_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[PITCH], 		0, 1000, 2, "" },
 		{ "roll_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[ROLL], 		0, 1000, 1, "" },
@@ -789,7 +792,57 @@ int32_t CheckAndSetChannel(uint32_t outChannel) {
 	}
 }
 
-void SetupWizard(char *inString) {
+static void OneWire(char *inString) {
+
+	uint32_t x;
+
+	if (!strcmp("start", inString))
+	{
+		OneWireInit();
+	}
+	else if (!strcmp("read", inString))
+	{
+
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Reading ESCs...");
+		RfCustomReply(rf_custom_out_buffer);
+		if (OneWireInit() == 0)
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "No ESCs detected. Is your battery connected?");
+			RfCustomReply(rf_custom_out_buffer);
+		}
+		else
+		{
+			for (x = 0; x < MAX_MOTOR_NUMBER; x++)
+			{
+				if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+				{
+					if (escOneWireStatus[board.motors[x].actuatorArrayNum].enabled)
+					{
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %u: %u.%u, %s, %s, %s", x, ( (escOneWireStatus[board.motors[x].actuatorArrayNum].version >> 8) & 0xFF), (escOneWireStatus[board.motors[x].actuatorArrayNum].version & 0xFF), escOneWireStatus[board.motors[x].actuatorArrayNum].nameStr, escOneWireStatus[board.motors[x].actuatorArrayNum].fwStr, escOneWireStatus[board.motors[x].actuatorArrayNum].versionStr);
+						RfCustomReply(rf_custom_out_buffer);
+					}
+					else
+					{
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %u Unreadable", x);
+						RfCustomReply(rf_custom_out_buffer);
+					}
+				}
+				else
+				{
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %u Disabled", x);
+					RfCustomReply(rf_custom_out_buffer);
+				}
+			}
+		}
+	}
+	else if (!strcmp("stop", inString))
+	{
+		OneWireDeinit();
+	}
+
+}
+
+static void SetupWizard(char *inString) {
 
 	int32_t returnedValue = 0;
 
@@ -1087,6 +1140,33 @@ int32_t SetVariable(char *inString) {
 
 
 /**********************************************************************************************************/
+void OutputVarSet(uint32_t position)
+{
+	char fString[20];
+
+	bzero(rf_custom_out_buffer, RF_BUFFER_SIZE);
+	switch (valueTable[position].type) {
+
+	case typeUINT:
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+		break;
+
+
+	case typeINT:
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+		break;
+
+
+	case typeFLOAT:
+		ftoa(*(float *)valueTable[position].ptr, fString);
+		StripSpaces(fString);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%s\n", valueTable[position].name, fString);
+		break;
+	}
+
+	RfCustomReply(rf_custom_out_buffer);
+}
+
 void OutputVar(uint32_t position)
 {
 	char fString[20];
@@ -1181,6 +1261,10 @@ void ProcessCommand(char *inString)
 
 	for (x = 0; x < strlen(inString); x++)
 		inString[x] = tolower((unsigned char)inString[x]);
+
+	//ignore any string that starts with #
+	if (inString[0] == "#")
+		return;
 
 	if (!strcmp("set", inString))
 		{
@@ -1409,16 +1493,33 @@ void ProcessCommand(char *inString)
 
 			args = StripSpaces(args);
 
-			//DelayMs(1000);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "dumpstarted", sizeof("dumpstarted"));
-			RfCustomReply(rf_custom_out_buffer);
-			//DelayMs(1000);
+			if ( (!strcmp("back", args)) ) {
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "#dumpstarted", sizeof("#dumpstarted"));
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, FULL_VERSION_STRING "\0", sizeof(FULL_VERSION_STRING "\0"));
+				RfCustomReply(rf_custom_out_buffer);
+			}
+			else
+			{
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				memcpy(rf_custom_out_buffer, "dumpstarted", sizeof("dumpstarted"));
+				RfCustomReply(rf_custom_out_buffer);
+			}
+
+
 
 			if ( (!strcmp("", args)) || (!strcmp("all", args)) ) {
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
 					OutputVar(x);
+					argsOutputted++;
+				}
+			} else if ( (!strcmp("back", args)) ) {
+				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+				{
+					OutputVarSet(x);
 					argsOutputted++;
 				}
 			} else {
@@ -1443,20 +1544,37 @@ void ProcessCommand(char *inString)
 
 			//output flash here:
 			if ( (!strcmp("", args)) || (!strcmp("all", args)) || (!strcmp("flash", args)) ) {
+				if ( (!strcmp("back", args)) )
+				{
+
+				}
+				else
+				{
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflused=%u", (unsigned int)(flashInfo.currentWriteAddress));
+					RfCustomReply(rf_custom_out_buffer);
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlfltotal=%u", (unsigned int)(flashInfo.totalSize));
+					RfCustomReply(rf_custom_out_buffer);
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflsectors=%u", (unsigned int)(flashInfo.flashSectors));
+					RfCustomReply(rf_custom_out_buffer);
+				}
+			}
+
+			if ( (!strcmp("back", args)) )
+			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflused=%u", (unsigned int)(flashInfo.currentWriteAddress));
+				memcpy(rf_custom_out_buffer, "#dumpcomplete", sizeof("#dumpcomplete"));
 				RfCustomReply(rf_custom_out_buffer);
+			}
+			else
+			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlfltotal=%u", (unsigned int)(flashInfo.totalSize));
-				RfCustomReply(rf_custom_out_buffer);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflsectors=%u", (unsigned int)(flashInfo.flashSectors));
+				memcpy(rf_custom_out_buffer, "dumpcomplete", sizeof("dumpcomplete"));
 				RfCustomReply(rf_custom_out_buffer);
 			}
 
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "dumpcomplete", sizeof("dumpcomplete"));
-			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("eraseallflash", inString))
 		{
@@ -1842,6 +1960,11 @@ void ProcessCommand(char *inString)
 			memcpy(rf_custom_out_buffer, "rebootrecovery", sizeof("rebootrecovery"));
 			RfCustomReply(rf_custom_out_buffer);
 			SystemReset();
+		}
+	else if (!strcmp("1wire", inString))
+		{
+			args = StripSpaces(args);
+			OneWire(args);
 		}
 	else
 		{

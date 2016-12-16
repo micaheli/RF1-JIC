@@ -78,12 +78,14 @@ int main(void)
 
    	InitBoardUsarts(); //most important thing is activated last, the ability to control the craft.
 
-   	//only works for sport right now
-    if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
-    	InitAllowedSoftOutputs();
+//only works for sport right now
+//disabled while working on 1wire.
+//    if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
+//    	InitAllowedSoftOutputs();
+//
+//    if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
+//    	InitSpektrumTelemetry();
 
-    if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
-    	InitSpektrumTelemetry();
 /*
 
 		InitDmaOutputForSoftSerial(DMA_OUTPUT_SPORT, board.motors[7]); //Enable S.Port on actuator 7, in place of USART 1 RX pin
@@ -110,8 +112,6 @@ int main(void)
 
     buzzerStatus.status = STATE_BUZZER_OFF;
     ledStatus.status = LEDS_SLOW_BLINK;
-
-    OneWireInit();
 
     while (1) {
 
