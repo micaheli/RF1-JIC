@@ -198,8 +198,6 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
 inline float InlineApplyMotorMixer2(pid_output pids[], float curvedRcCommandF[], volatile float motorOutputHere[]) {
 
-	int x;
-
 	float highestMotor  = -100.0f;
 	float lowestMotor   =  100.0f;
 	float actuatorRange =    0.0f;
@@ -244,12 +242,13 @@ inline float InlineApplyMotorMixer2(pid_output pids[], float curvedRcCommandF[],
 	{
 		for (i = activeMotorCounter; i >= 0; i--)
 		{
-			motorOutputHere[i] *= (1 / actuatorRange);
+			motorOutputHere[i] /= actuatorRange;
 		}
 		throttle = 0.5f;
 	}
 	else
 	{
+		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
 		rangedThrottle = InlineChangeRangef(curvedRcCommandF[THROTTLE], 1.0, -1.0, 1.0, 0.0);
 		throttleOffset = actuatorRange / 2.0f;
 		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset);
@@ -257,11 +256,7 @@ inline float InlineApplyMotorMixer2(pid_output pids[], float curvedRcCommandF[],
 
 	for (i = activeMotorCounter; i >= 0; i--) {
 		motorOutputHere[i] += (throttle * motorMixer[i].throttle);  //add throttle
-	}
-
-	for(x=7; x>=0; x--)
-	{
-		motorOutputHere[x] = InlineConstrainf(motorOutputHere[x]+throttle,0.0f,1.0f);
+		InlineConstrainf(motorOutputHere[i],0.0f,1.0f);
 	}
 
 	return actuatorRange;

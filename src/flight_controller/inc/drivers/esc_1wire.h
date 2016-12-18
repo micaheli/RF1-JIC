@@ -8,6 +8,8 @@
 #define RestartBootloader  0
 #define ExitBootloader     1
 
+#define BLHELI_END_DATA 112
+
 #define NO_CMD             0xFF
 #define CMD_RUN            0x00
 #define CMD_PROG_FLASH     0x01
@@ -85,11 +87,11 @@ typedef struct {
     uint32_t (*Disconnect)(motor_type actuator, uint32_t timeout);
 //    uint32_t (*PollReadReady)(void);
     uint32_t (*ReadFlash)(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
-//    uint32_t (*WriteFlash)(ioMem_t*);
+    uint32_t (*WriteFlash)(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
     uint32_t (*ReadEEprom)(motor_type actuator, uint32_t timeout);
-//    uint32_t (*WriteEEprom)(ioMem_t*);
-//    uint32_t (*PageErase)(ioMem_t*);
-//    uint32_t (*EepromErase)(ioMem_t*);
+    uint32_t (*WriteEEprom)(motor_type actuator, uint32_t timeout);
+    uint32_t (*PageErase)(motor_type actuator, uint16_t address, uint32_t timeout);
+    uint32_t (*EepromErase)(motor_type actuator, uint16_t address, uint32_t timeout);
 } esc1WireProtocol_t;
 
 
@@ -106,7 +108,8 @@ typedef struct {
 	uint8_t                   versionStr[16];
 	uint16_t                  version;
 	uint32_t                  enabled;
-	uint8_t                   config;
+	uint8_t                   config[112];
+	BLHeli_EEprom_t          *BLHeliEEpromLayout;
 
 	enum {
 		OW_IDLE                   = 0,

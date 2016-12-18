@@ -109,3 +109,6 @@ Version 0.107.035:
 Version 0.108.036:
 	Added new motor mixer and command to change it (set motor_mixer=0). Old one is 0, new one is 1.
 	All "resetXYZ" commands now have "rebootXYZ" aliases. (i.e. resetdfu and rebootdfu do the same thing).
+
+Version 0.109.036:
+	Changed some dump output text.

@@ -118,46 +118,47 @@ const config_variables_rec valueTable[] = {
 		{ "gyro_filter_type",	typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeGyro, 				0, 2, 0, "" },
 		{ "kd_filter_type",		typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeKd, 				0, 2, 2, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 300, 250.00, "" }, //1000 18
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 300, 450.00, "" }, //1000 14
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 300, 50.00, "" }, //1000000 114
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 300, 420.00, "" }, //1000 18
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 300, 260.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 300, 300.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 300, 410.00, "" }, //1000 14
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 300, 330.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 300, 365.00, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 300, 80.00, "" }, //1000000 114
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 300, 290.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 300, 330.00, "" },
 		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 						0, 300, 4, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 300, 210.00, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 300, 350.00, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 300, 120.00, "" },
 		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 						0, 300, 4, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 300, 210.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 300, 375.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 300, 120.00, "" },
 		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 					0, 300, 4, "" },
 
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 6, "" },
-		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 6, "" },
-		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 6, "" },
+		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 3, "" },
+		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 3, "" },
+		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 3, "" },
 
 		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 10, 0.1000, "" },
-		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 10, 250.00, "" },
+		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 10, 260.00, "" },
 		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 				0, 10, 0.1500, "" },
 		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 10, 0.1000, "" },
-		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 10, 250.00, "" },
+		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 10, 260.00, "" },
 		{ "roll_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.p, 				0, 10, 0.1500, "" },
 		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 10, 0.1000, "" },
-		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 10, 250.00, "" },
+		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 10, 290.00, "" },
 		{ "pitch_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.p, 				0, 10, 0.1500, "" },
 
 		{ "yaw_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.q, 					0, 10, 0.1000, "" },
-		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 10, 75.000, "" },
+		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 10, 70.000, "" },
 		{ "yaw_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.p, 					0, 10, 0.1500, "" },
 		{ "roll_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.q, 				0, 10, 0.1000, "" },
-		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 10, 75.000, "" },
+		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 10, 85.000, "" },
 		{ "roll_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.p, 				0, 10, 0.1500, "" },
 		{ "pitch_kd_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.q, 				0, 10, 0.1000, "" },
-		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 10, 70.000, "" },
+		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 10, 85.000, "" },
 		{ "pitch_kd_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.p, 				0, 10, 0.1500, "" },
 
 		{ "yaw_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kdBq.lpfHz, 			0, 200, 68.00, "" },
 		{ "roll_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kdBq.lpfHz, 			0, 200, 68.00, "" },
 		{ "pitch_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kdBq.lpfHz, 			0, 200, 68.00, "" },
+
 
 		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 				0, 10, 0.1000, "" },
 		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 250.00, "" },
@@ -845,11 +846,11 @@ static void SetupWizard(char *inString) {
 		DelayMs(200); //need to reset calibration and give ACC data time to refresh
 		if (SetCalibrate1()) {
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrate1finished", sizeof("calibrate1finished"));
+			memcpy(rf_custom_out_buffer, "calibrate1finished\n", sizeof("calibrate1finished\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		} else {
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
+			memcpy(rf_custom_out_buffer, "calibrationfailed\n", sizeof("calibrationfailed\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	} else
@@ -857,15 +858,21 @@ static void SetupWizard(char *inString) {
 
 		if (SetCalibrate2()) {
 
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "calibrate2finished\n", sizeof("calibrate2finished\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
+			RfCustomReply(rf_custom_out_buffer);
 			SaveConfig(ADDRESS_CONFIG_START);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrate2finished", sizeof("calibrate2finished"));
+			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
 			RfCustomReply(rf_custom_out_buffer);
 
 		} else {
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
+			memcpy(rf_custom_out_buffer, "calibrationfailed\n", sizeof("calibrationfailed\n"));
 			RfCustomReply(rf_custom_out_buffer);
 
 		}
@@ -1402,14 +1409,14 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "settingdefaultstotaranisdefaultsrf1", sizeof("settingdefaultstotaranisdefaultsrf1"));
+			memcpy(rf_custom_out_buffer, "settingdefaultstotaranisdefaultsrf1\n", sizeof("settingdefaultstotaranisdefaultsrf1\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
+			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			SaveConfig(ADDRESS_CONFIG_START);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
+			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("spekdefaults3", inString) || !strcmp("spekdefaults1", inString))
@@ -1469,14 +1476,14 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "settingdefaultstospektrumsupport", sizeof("settingdefaultstospektrumsupport"));
+			memcpy(rf_custom_out_buffer, "settingdefaultstospektrumsupport\n", sizeof("settingdefaultstospektrumsupport\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
+			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			SaveConfig(ADDRESS_CONFIG_START);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
+			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("dump", inString))
@@ -1487,7 +1494,7 @@ void ProcessCommand(char *inString)
 
 			if ( (!strcmp("back", args)) ) {
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "#dumpstarted", sizeof("#dumpstarted"));
+				memcpy(rf_custom_out_buffer, "#dumpstarted\n", sizeof("#dumpstarted\n"));
 				RfCustomReply(rf_custom_out_buffer);
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				memcpy(rf_custom_out_buffer, FULL_VERSION_STRING "\0", sizeof(FULL_VERSION_STRING "\0"));
@@ -1496,7 +1503,7 @@ void ProcessCommand(char *inString)
 			else
 			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "dumpstarted", sizeof("dumpstarted"));
+				memcpy(rf_custom_out_buffer, "dumpstarted\n", sizeof("dumpstarted\n"));
 				RfCustomReply(rf_custom_out_buffer);
 			}
 
@@ -1530,7 +1537,7 @@ void ProcessCommand(char *inString)
 
 			if (argsOutputted == 0) {
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "noargumentsfoundforargument:%s", args);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "noargumentsfoundforargument:%s\n", args);
 				RfCustomReply(rf_custom_out_buffer);
 			}
 
@@ -1543,13 +1550,13 @@ void ProcessCommand(char *inString)
 				else
 				{
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflused=%u", (unsigned int)(flashInfo.currentWriteAddress));
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflused=%u\n", (unsigned int)(flashInfo.currentWriteAddress));
 					RfCustomReply(rf_custom_out_buffer);
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlfltotal=%u", (unsigned int)(flashInfo.totalSize));
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlfltotal=%u\n", (unsigned int)(flashInfo.totalSize));
 					RfCustomReply(rf_custom_out_buffer);
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflsectors=%u", (unsigned int)(flashInfo.flashSectors));
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflsectors=%u\n", (unsigned int)(flashInfo.flashSectors));
 					RfCustomReply(rf_custom_out_buffer);
 				}
 			}
@@ -1557,13 +1564,13 @@ void ProcessCommand(char *inString)
 			if ( (!strcmp("back", args)) )
 			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "#dumpcomplete", sizeof("#dumpcomplete"));
+				memcpy(rf_custom_out_buffer, "#dumpcomplete\n", sizeof("#dumpcomplete\n"));
 				RfCustomReply(rf_custom_out_buffer);
 			}
 			else
 			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "dumpcomplete", sizeof("dumpcomplete"));
+				memcpy(rf_custom_out_buffer, "dumpcomplete\n", sizeof("dumpcomplete\n"));
 				RfCustomReply(rf_custom_out_buffer);
 			}
 
@@ -1574,23 +1581,23 @@ void ProcessCommand(char *inString)
 			if (flashInfo.enabled) {
 
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "erasingflash", sizeof("erasingflash"));
+				memcpy(rf_custom_out_buffer, "erasingflash\n", sizeof("erasingflash\n"));
 				RfCustomReply(rf_custom_out_buffer);
 
 				if (MassEraseDataFlash(1)) {
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "flasherasecomplete", sizeof("flasherasecomplete"));
+					memcpy(rf_custom_out_buffer, "flasherasecomplete\n", sizeof("flasherasecomplete\n"));
 					RfCustomReply(rf_custom_out_buffer);
 				} else {
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "flasherasefailed", sizeof("flasherasefailed"));
+					memcpy(rf_custom_out_buffer, "flasherasefailed\n", sizeof("flasherasefailed\n"));
 					RfCustomReply(rf_custom_out_buffer);
 				}
 
 			} else {
 
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
+				memcpy(rf_custom_out_buffer, "flashchipnotdetected\n", sizeof("flashchipnotdetected\n"));
 				RfCustomReply(rf_custom_out_buffer);
 
 			}
@@ -1881,24 +1888,24 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("save", inString))
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
+			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			SaveConfig(ADDRESS_CONFIG_START);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
+			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("reboot", inString) || !strcmp("reset", inString))
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "rebooting", sizeof("rebooting"));
+			memcpy(rf_custom_out_buffer, "rebooting\n", sizeof("rebooting\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			SystemReset();
 		}
 	else if (!strcmp("resetdfu", inString)  || !strcmp("rebootdfu", inString))
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "rebootingdfu", sizeof("rebootingdfu"));
+			memcpy(rf_custom_out_buffer, "rebootingdfu\n", sizeof("rebootingdfu\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			SystemResetToDfuBootloader();
 		}
@@ -1907,19 +1914,18 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "resettingconfig", sizeof("resettingconfig"));
+			memcpy(rf_custom_out_buffer, "resettingconfig\n", sizeof("resettingconfig\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			GenerateConfig();
-			SaveConfig(ADDRESS_CONFIG_START);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "configreset", sizeof("configreset"));
+			memcpy(rf_custom_out_buffer, "configreset\n", sizeof("configreset\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
+			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			SaveConfig(ADDRESS_CONFIG_START);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
+			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("bind", inString))
@@ -1927,7 +1933,7 @@ void ProcessCommand(char *inString)
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
 			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "binding9", sizeof("binding9"));
+			memcpy(rf_custom_out_buffer, "binding9\n", sizeof("binding9\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("bind9", inString))
@@ -1935,30 +1941,32 @@ void ProcessCommand(char *inString)
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
 			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "binding9", sizeof("binding9"));
+			memcpy(rf_custom_out_buffer, "binding9\n", sizeof("binding9\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("bind5", inString))
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM5);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "binding5", sizeof("binding5"));
+			memcpy(rf_custom_out_buffer, "binding5\n", sizeof("binding5\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("rebootrfbl", inString) || !strcmp("resetrfbl", inString))
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "rebootrfbl", sizeof("rebootrfbl"));
+			memcpy(rf_custom_out_buffer, "rebootrfbl\n", sizeof("rebootrfbl\n"));
 			RfCustomReply(rf_custom_out_buffer);
+			DelayMs(100);
 			SystemReset();
 		}
 	else if (!strcmp("rebootrecovery", inString) || !strcmp("resetrecovery", inString))
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "rebootrecovery", sizeof("rebootrecovery"));
+			memcpy(rf_custom_out_buffer, "rebootrecovery\n", sizeof("rebootrecovery\n"));
 			RfCustomReply(rf_custom_out_buffer);
+			DelayMs(100);
 			SystemReset();
 		}
 	else if (!strcmp("1wire", inString))
@@ -1969,7 +1977,7 @@ void ProcessCommand(char *inString)
 	else
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "unknowncommand:%s", args);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "unknowncommand:%s\n", args);
 			RfCustomReply(rf_custom_out_buffer);
 		}
 /*
