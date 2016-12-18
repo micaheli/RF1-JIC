@@ -64,6 +64,7 @@ enum {
 #define USING_SPEKTRUM_TWO_WAY 2
 #define USING_SBUS             3
 #define USING_SBUS_SPORT       4
+#define USING_SUMD             5
 
 
 extern volatile uint32_t rx_timeout;
@@ -83,6 +84,7 @@ extern void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 
 extern void ProcessSpektrumPacket(uint32_t serialNumber);
 extern void ProcessSbusPacket(uint32_t serialNumber);
+extern void ProcessSumdPacket(uint32_t serialNumber);
 
 extern void RxUpdate(void);
 extern void CheckFailsafe(void);

@@ -2,31 +2,35 @@
 
 extern volatile uint32_t systemUsTicks;
 
-uint32_t InlineMillis(void);
-uint32_t Micros(void);
 
-void DelayMs(uint32_t mSec);
-void delayUs(uint32_t uSec);
-uint32_t rtc_read_backup_reg(uint32_t BackupRegister);
-void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data);
 
-void InitUsb(void);
 
-void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-void inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-int inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern uint32_t InlineMillis(void);
+extern uint32_t Micros(void);
 
-void InlineUpdateMillisClock (void);
+extern void DelayMs(uint32_t mSec);
+extern void delayUs(uint32_t uSec);
+extern uint32_t rtc_read_backup_reg(uint32_t BackupRegister);
+extern void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data);
 
-void VectorIrqInit(uint32_t address);
+extern void InitUsb(void);
 
-void SystemReset(void);
-void SystemResetToDfuBootloader(void);
+extern void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern void inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern int inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
-void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on);
-void InitializeGpioInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern void InlineUpdateMillisClock (void);
 
-void ErrorHandler(uint32_t error);
+extern void VectorIrqInit(uint32_t address);
+
+extern void SystemReset(void);
+extern void SystemResetToDfuBootloader(void);
+
+extern void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on);
+extern void InitializeGpioInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+
+extern void ErrorHandler(uint32_t error);
+extern void InitFlight(void);
 
 #define GYRO_INIT_FAILIURE                0
 #define SERIAL_INIT_FAILIURE              1

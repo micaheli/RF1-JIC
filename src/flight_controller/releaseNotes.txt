@@ -94,3 +94,18 @@ Version 0.105.034:
 	FrSky and Spektrum Telemtry temporarily disabled.
 	Better bootloader/recovery loader support. This bootloader works with BB420+ and 0.015.034+
 	Add version to the top of a dump.
+
+Version 0.106.034:
+	Proper disconnect from BLHeli.
+	Rearranged startup sequence.
+	Reticulated Splines.
+	Removed Herobrine.
+	Added SUMD protocol. Needs testing.
+
+Version 0.107.035:
+	Change filtering levels.
+	Fixed bug causing AXIS_ga to not set sometimes.
+
+Version 0.108.036:
+	Added new motor mixer and command to change it (set motor_mixer=0). Old one is 0, new one is 1.
+	All "resetXYZ" commands now have "rebootXYZ" aliases. (i.e. resetdfu and rebootdfu do the same thing).

@@ -66,6 +66,34 @@ volatile uint32_t rx_timeout=0;
 uint32_t spekPhase=1;
 uint32_t ignoreEcho = 0;
 
+static uint16_t CRC16(uint16_t crc, uint8_t value);
+
+
+
+
+#define CRC_POLYNOME 0x1021
+/*******************************************************************************
+* Function Name : CRC16
+* Description : crc calculation, adds a 8 bit unsigned to 16 bit crc
+*******************************************************************************/
+static uint16_t CRC16(uint16_t crc, uint8_t value)
+{
+	uint8_t i;
+	crc = crc ^ (int16_t)value<<8;
+
+	for(i=0; i<8; i++)
+	{
+		if (crc & 0x8000)
+		crc = (crc << 1) ^ CRC_POLYNOME;
+		else
+		crc = (crc << 1);
+	}
+
+	return crc;
+}
+
+
+
 
 inline void CheckFailsafe(void) {
 
@@ -262,6 +290,67 @@ void ProcessSbusPacket(uint32_t serialNumber)
 		RxUpdate();
 	} else {
 		outOfSync++;
+	}
+
+}
+
+void ProcessSumdPacket(uint32_t serialNumber)
+{
+	uint32_t x;
+	uint16_t value;
+	uint16_t numOfChannels;
+	uint16_t receivedCrc;
+	uint16_t calculatedCrc;
+
+																													// Make sure this is very first thing done in function, and its called first on interrupt
+	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SPEKTRUM_FRAME_SIZE);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+															   	   	   	   	   	   	   	   	   	   	   	   	   	   	// We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
+	calculatedCrc = 0;
+
+	if ( (copiedBufferData[0] == 0xA8) && (copiedBufferData[1] == 0x01) ) { //0 is graupner, //valid and live header 1 is 0x01, failsafe is 0x81, any other value is invalid
+
+		numOfChannels = rxData[2];
+
+		//check CRC
+		calculatedCrc = CRC16(calculatedCrc, copiedBufferData[0]);
+		calculatedCrc = CRC16(calculatedCrc, copiedBufferData[1]);
+		calculatedCrc = CRC16(calculatedCrc, copiedBufferData[2]);
+
+		if ( (numOfChannels < 0x20) && (numOfChannels > 0x01) )
+		{
+
+			receivedCrc = (uint32_t)((copiedBufferData[(numOfChannels + 1) * 2 + 1] << 8) & 0x0000FF00); //crc high byte
+			receivedCrc = (uint32_t)(copiedBufferData[(numOfChannels + 1) * 2 + 2] & 0x000000FF);        //crc low byte
+			for (x=0;x<(numOfChannels);x++)
+			{
+				calculatedCrc = CRC16(calculatedCrc, copiedBufferData[x * 2 + 1]);
+				calculatedCrc = CRC16(calculatedCrc, copiedBufferData[x * 2 + 2]);
+			}
+
+		}
+
+		if (receivedCrc == calculatedCrc)
+		{
+			if ( (numOfChannels < 0x20) && (numOfChannels > 0x01) )
+			{
+
+				for (x=0;x<numOfChannels;x++)
+				{
+
+					value = (uint32_t)( (uint16_t)((copiedBufferData[x * 2 + 1] << 8) & 0x0000FF00) | (uint8_t)(copiedBufferData[x * 2 + 2] & 0x000000FF) );
+					rxData[ChannelMap(x)] = value; //high byte
+
+				}
+
+				packetTime = 10;
+				rx_timeout = 0;
+				InlineCollectRcCommand();
+				RxUpdate();
+
+			}
+
+		}
+
 	}
 
 }

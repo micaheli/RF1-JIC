@@ -81,11 +81,10 @@ typedef struct {
     uint32_t (*EepromErase)(ioMem_t*);
 } esc1WireProtocol_t;
 */
-
 typedef struct {
-//    uint32_t (*Disconnect)(void);
+    uint32_t (*Disconnect)(motor_type actuator, uint32_t timeout);
 //    uint32_t (*PollReadReady)(void);
-    uint32_t (*ReadFlash)(motor_type actuator, uint16_t address, uint32_t timeout);
+    uint32_t (*ReadFlash)(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
 //    uint32_t (*WriteFlash)(ioMem_t*);
     uint32_t (*ReadEEprom)(motor_type actuator, uint32_t timeout);
 //    uint32_t (*WriteEEprom)(ioMem_t*);
@@ -107,6 +106,7 @@ typedef struct {
 	uint8_t                   versionStr[16];
 	uint16_t                  version;
 	uint32_t                  enabled;
+	uint8_t                   config;
 
 	enum {
 		OW_IDLE                   = 0,
@@ -122,14 +122,8 @@ typedef struct {
 
 } esc_one_wire_status;
 
-extern volatile esc_one_wire_status escOneWireStatus[];
+extern esc_one_wire_status escOneWireStatus[];
 extern volatile uint32_t oneWireOngoing;
-
-
-typedef void (*softserial_function_pointer)(uint8_t *serialBuffer, uint32_t outputLength);
-
-extern volatile softserial_function_pointer softserialCallbackFunctionArray[];
-
 
 extern uint32_t OneWireInit(void);
 extern void     OneWireDeinit(void);

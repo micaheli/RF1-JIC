@@ -1,15 +1,7 @@
 #include "includes.h"
 
 
-volatile esc_one_wire_status escOneWireStatus[16];
-
-
-typedef struct {
-    uint16_t len;
-    uint16_t addr;
-    uint8_t *data;
-} ioMem_t;
-
+esc_one_wire_status escOneWireStatus[16];
 
 
 // EEPROM layout - BLHeli rev 20, bumped in 14.0
@@ -117,7 +109,6 @@ static uint32_t SignatureMatch(uint16_t signature, const uint16_t *list, uint32_
 static void     AppendBlHeliCrc(uint8_t outBuffer[], uint32_t len);
 //static void     SendHello(void);
 static uint16_t Crc16Byte(uint16_t from, uint8_t byte);
-//static uint32_t DisconnectBLHeli(void);
 //static uint32_t PollReadReadyBLHeli(void);
 //static uint32_t ReadFlashAtmelBLHeli(ioMem_t *ioMem);
 //static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint32_t timeout);
@@ -132,6 +123,7 @@ static uint16_t Crc16Byte(uint16_t from, uint8_t byte);
 
 
 static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout);
+static uint32_t DisconnectBLHeli(motor_type actuator, uint32_t timeout);
 static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length, uint32_t timeout) __attribute__ ((unused));
 static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout);
 static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
@@ -140,31 +132,6 @@ static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address) __attri
 static uint32_t HandleEscOneWire(uint8_t serialBuffer[], uint32_t outputLength)  __attribute__ ((unused));
 
 const BLHeli_EEprom_t* GetBLHeliEEpromLayout(uint8_t data[], uint32_t dataLength);
-/*
-
-const esc1WireProtocol_t BLHeliAtmelProtocol = {
-    .disconnect    = DisconnectBLHeli,
-    .pollReadReady = PollReadReadyBLHeli,
-    .readFlash     = ReadFlashAtmelBLHeli,
-    .writeFlash    = WriteFlashBLHeli,
-    .readEEprom    = ReadEEpromAtmelBLHeli,
-    .writeEEprom   = WriteEEpromAtmelBLHeli,
-    .pageErase     = PageEraseAtmelBLHeli,
-    .eepromErase   = PageEraseAtmelBLHeli,
-};
-
-const esc1WireProtocol_t BLHeliSiLabsProtocol = {
-    .disconnect    = DisconnectBLHeli,
-    .pollReadReady = PollReadReadyBLHeli,
-    .readFlash     = ReadFlashSiLabsBLHeli,
-    .writeFlash    = WriteFlashBLHeli,
-    .readEEprom    = ReadEEpromSiLabsBLHeli,
-    .writeEEprom   = WriteEEpromSiLabsBLHeli,
-    .pageErase     = PageEraseSiLabsBLHeli,
-    .eepromErase   = EepromEraseSiLabsBLHeli,
-};
-
-*/
 
 /*
 const esc1WireProtocol_t BLHeliAtmelProtocol = {
@@ -180,7 +147,7 @@ const esc1WireProtocol_t BLHeliAtmelProtocol = {
 */
 
 const esc1WireProtocol_t BLHeliSiLabsProtocol = {
-//    .disconnect    = DisconnectBLHeli,
+    .Disconnect    = DisconnectBLHeli,
 //    .pollReadReady = PollReadReadyBLHeli,
     .ReadFlash     = ReadFlashSiLabsBLHeli,
 //    .writeFlash    = WriteFlashBLHeli,
@@ -277,7 +244,7 @@ uint32_t OneWireInit(void)
 				//TODO: Make work with the protocol struct
 				//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
 				//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
-				escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
+				escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 200);
 			}
 			DeInitDmaOutputForSoftSerial(board.motors[x]);
 		}
@@ -404,7 +371,7 @@ static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
 
 	uint32_t hasData;
 
-	hasData = ReadFlashSiLabsBLHeli(actuator, 0x1A00, 112, timeout);
+	hasData = ReadFlashSiLabsBLHeli(actuator, 0x1A00, 120, timeout);
 
 	if (hasData > 109)
 	{
@@ -458,6 +425,18 @@ static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t addre
 
 }
 
+static uint32_t DisconnectBLHeli(motor_type actuator, uint32_t timeout)
+{
+	oneWireOutBuffer[0] = CMD_RUN;
+	oneWireOutBuffer[1] = 0;
+
+	AppendBlHeliCrc(oneWireOutBuffer, 2);
+
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout);
+
+	return (oneWireInBufferIdx);
+}
+
 static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout) {
 
 	if (!SendCmdSetAddress(actuator, address))
@@ -465,8 +444,6 @@ static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uin
 
 	oneWireOutBuffer[0] = CMD_READ_FLASH_SIL;
 	oneWireOutBuffer[1] = (length & 0xff);
-	oneWireOutBuffer[2] = 0;
-	oneWireOutBuffer[3] = 0;
 
 	AppendBlHeliCrc(oneWireOutBuffer, 2);
 
@@ -574,14 +551,26 @@ uint32_t OneWireMain() {
 
 void OneWireDeinit(void) {
 
-	oneWireOngoing = 0;
-	DeInitBoardUsarts(); //DeInit all the USARTs.
-	DeInitActuators();   //DeInit all the Actuators.
-	InitActuators();     //Init all the Actuators.
-	InitBoardUsarts();   //Init all the USARTs.
-	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl)) {
-		ErrorHandler(GYRO_INIT_FAILIURE);
+	uint32_t x;
+
+	for (x = 0; x < MAX_MOTOR_NUMBER; x++)
+	{
+
+		//if ( (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[x].actuatorArrayNum].enabled) )
+		if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+		{
+
+			escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->Disconnect(board.motors[x], 22);
+
+			DeInitDmaOutputForSoftSerial(board.motors[x]);
+
+		}
+
 	}
+
+	DeInitAllowedSoftOutputs(); //deinit all the soft outputs
+
+	InitFlight();
 
 }
 

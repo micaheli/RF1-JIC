@@ -40,7 +40,7 @@ static const uint16_t bitLookup[] = {0x0000, 0x0001, 0x0003, 0x0007, 0x000F, 0x0
 volatile softserial_function_pointer softserialCallbackFunctionArray[1];
 uint8_t  serialOutBuffer[SOFT_SERIAL_BUF_SIZE];
 uint8_t  serialInBuffer[SOFT_SERIAL_BUF_SIZE];
-uint8_t  serialInBufferIdx=0;
+uint32_t  serialInBufferIdx=0;
 volatile uint32_t timeInBuffer[SOFT_SERIAL_TIME_BUFFER_SIZE];
 volatile uint32_t timeInBufferIdx = 0;
 
@@ -89,7 +89,30 @@ void SoftSerialDmaCallback(void) {
 
 }
 
-uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t serialOutBufferLength, uint8_t inBuffer[], motor_type actuator, uint32_t timeoutMs) {
+//TODO: Make this non blocking function 100% non blocking. 2ms wait is not safe during flight.
+uint32_t SoftSerialSendNonBlocking(volatile uint8_t serialOutBuffer[], uint32_t serialOutBufferLength, motor_type actuator)
+{
+	(void)(serialOutBuffer);
+	(void)(serialOutBufferLength);
+	(void)(actuator);
+	return(0);
+	//put actuator in send state. Only one actuator at a time can do this currently.
+	PutSoftSerialActuatorInSendState(actuator);
+	DelayMs(2); //need to put the next step in the scheduler.
+}
+
+uint32_t SoftSerialReceiveNonBlocking(volatile uint8_t inBuffer[], volatile uint32_t *inBufferIdx, motor_type actuator)
+{
+	(void)(inBuffer);
+	(void)(inBufferIdx);
+	(void)(actuator);
+	return(0);
+	softSerialStatus.softSerialState = SS_PREPARING_ACTUATOR;
+	PutSoftSerialActuatorInSendState(actuator);
+}
+
+uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t serialOutBufferLength, uint8_t inBuffer[], motor_type actuator, uint32_t timeoutMs)
+{
 
 	uint32_t returnNumber;
 	volatile uint32_t timeout;
@@ -98,7 +121,7 @@ uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t seria
 
 	//put actuator in send state. Only one actuator at a time can do this currently.
 	PutSoftSerialActuatorInSendState(actuator);
-	DelayMs(2);
+	DelayMs(2); //2ms for timer to stabilize. We can do this in blocking mode in this function
 
 	//set softSerialStatus to SENDING_DATA state
 	softSerialStatus.softSerialState = SS_SENDING_DATA;
@@ -164,7 +187,7 @@ void ProcessSoftSerialLineIdle(uint32_t useCallback) {
 		//softSerialStatus.softSerialState = SS_IDLE;
 		//process the received data
 		if ( (useCallback) && (softserialCallbackFunctionArray[0]) )
-			softserialCallbackFunctionArray[0](serialInBuffer, serialInBufferIdx);
+			softserialCallbackFunctionArray[0](serialInBuffer, &serialInBufferIdx);
 	} else {
 		//line idle exits, but no data found, how to handle this issue?
 		//do not DeInit actuator and only error out if time since activation > greater than XX time
@@ -182,7 +205,7 @@ static void PutSoftSerialActuatorInReceiveState(motor_type actuator) {
     callbackFunctionArray[actuator.DmaCallback]  = SoftSerialDmaCallback;
 
 	//Init the EXTI
-    EXTI_Init(ports[actuator.port], actuator.pin, actuator.EXTIn, 1, 2, GPIO_MODE_IT_RISING_FALLING, softSerialStatus.inverted ? GPIO_PULLDOWN : GPIO_PULLUP, 0); //pulldown if inverted, pullup if normal serial
+    EXTI_Init(ports[actuator.port], actuator.pin, actuator.EXTIn, 1, 2, GPIO_MODE_IT_RISING_FALLING, softSerialStatus.inverted ? GPIO_PULLDOWN : GPIO_PULLUP); //pulldown if inverted, pullup if normal serial
 
 	//reset reception buffer index.
 	timeInBufferIdx = 0;
@@ -228,7 +251,7 @@ static void PutSoftSerialActuatorInSendState(motor_type actuator) {
 	softSerialStatus.byteWidth          = FindSoftSerialByteWidth(softSerialStatus.bitWidth, softSerialStatus.bitsPerByte);
 	softSerialStatus.lineIdleTime       = FindSoftSerialLineIdleTime(softSerialStatus.byteWidth);
 
-    //Set DMA callback function to the SoftSerialDmaCallback
+    //Set DMA callback function to the SoftSerialDmaCallback //TODO: Allow more than one soft serial at a time.
     callbackFunctionArray[actuator.DmaCallback]  = SoftSerialDmaCallback;
     //set EXTI callback to disabled since we're in TX mode now.
 	callbackFunctionArray[actuator.EXTICallback] = SoftSerialExtiCallback;

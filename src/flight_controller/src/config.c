@@ -94,6 +94,7 @@ const string_comp_rec stringCompTable[] = {
 		{"USING_SPEKTRUM_TWO_WAY", USING_SPEKTRUM_TWO_WAY},
 		{"USING_SBUS",             USING_SBUS},
 		{"USING_SBUS_SPORT",       USING_SBUS_SPORT},
+		{"USING_SUMD",             USING_SUMD},
 
 };
 
@@ -103,6 +104,7 @@ const config_variables_rec valueTable[] = {
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtcol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 5, "" },
+		{ "motor_mixer", 		typeUINT,  "mixr", &mainConfig.mixerConfig.motorMixer,					0, 2, 1, "" },
 
 		{ "led_count",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledCount,						0, WS2812_MAX_LEDS, 8, "" },
 		{ "led_color",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledColor,						0, MAX_LED_COLORS, 1, "" },
@@ -114,7 +116,7 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		0, 10, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 		{ "gyro_filter_type",	typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeGyro, 				0, 2, 0, "" },
-		{ "kd_filter_type",		typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeKd, 				0, 2, 0, "" },
+		{ "kd_filter_type",		typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeKd, 				0, 2, 2, "" },
 
 		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 300, 250.00, "" }, //1000 18
 		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 300, 450.00, "" }, //1000 14
@@ -133,39 +135,39 @@ const config_variables_rec valueTable[] = {
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 6, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 6, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 10, 0.00100, "" },
-		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 10, 8.0000, "" },
-		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 				0, 10, 0.00150, "" },
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 10, 0.00100, "" },
-		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 10, 3.0000, "" },
-		{ "roll_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.p, 				0, 10, 0.00150, "" },
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 10, 0.00100, "" },
-		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 10, 3.0000, "" },
-		{ "pitch_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.p, 				0, 10, 0.00150, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 10, 0.1000, "" },
+		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 10, 250.00, "" },
+		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 				0, 10, 0.1500, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 10, 0.1000, "" },
+		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 10, 250.00, "" },
+		{ "roll_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.p, 				0, 10, 0.1500, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 10, 0.1000, "" },
+		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 10, 250.00, "" },
+		{ "pitch_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.p, 				0, 10, 0.1500, "" },
 
-		{ "yaw_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.q, 					0, 10, 0.00400, "" },
-		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 10, 50.0000, "" },
-		{ "yaw_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.p, 					0, 10, 0.00600, "" },
-		{ "roll_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.q, 				0, 10, 0.00400, "" },
-		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 10, 50.0000, "" },
-		{ "roll_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.p, 				0, 10, 0.00600, "" },
-		{ "pitch_kd_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.q, 				0, 10, 0.00400, "" },
-		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 10, 50.0000, "" },
-		{ "pitch_kd_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.p, 				0, 10, 0.00600, "" },
+		{ "yaw_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.q, 					0, 10, 0.1000, "" },
+		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 10, 75.000, "" },
+		{ "yaw_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.p, 					0, 10, 0.1500, "" },
+		{ "roll_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.q, 				0, 10, 0.1000, "" },
+		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 10, 75.000, "" },
+		{ "roll_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.p, 				0, 10, 0.1500, "" },
+		{ "pitch_kd_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.q, 				0, 10, 0.1000, "" },
+		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 10, 70.000, "" },
+		{ "pitch_kd_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.p, 				0, 10, 0.1500, "" },
 
-		{ "yaw_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kdBq.lpfHz, 			0, 200, 68.0000, "" },
-		{ "roll_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kdBq.lpfHz, 			0, 200, 68.0000, "" },
-		{ "pitch_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kdBq.lpfHz, 			0, 200, 68.0000, "" },
+		{ "yaw_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kdBq.lpfHz, 			0, 200, 68.00, "" },
+		{ "roll_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kdBq.lpfHz, 			0, 200, 68.00, "" },
+		{ "pitch_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kdBq.lpfHz, 			0, 200, 68.00, "" },
 
-		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 				0, 10, 0.04000, "" },
-		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 85.0000, "" },
-		{ "x_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.p, 				0, 10, 0.06000, "" },
-		{ "y_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.q, 				0, 10, 0.04000, "" },
-		{ "y_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.r, 				0, 10, 85.0000, "" },
-		{ "y_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.p, 				0, 10, 0.06000, "" },
-		{ "z_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.q, 				0, 10, 0.04000, "" },
-		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 85.0000, "" },
-		{ "z_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.p, 				0, 10, 0.06000, "" },
+		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 				0, 10, 0.1000, "" },
+		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 250.00, "" },
+		{ "x_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.p, 				0, 10, 0.1500, "" },
+		{ "y_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.q, 				0, 10, 0.1000, "" },
+		{ "y_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.r, 				0, 10, 250.00, "" },
+		{ "y_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.p, 				0, 10, 0.1500, "" },
+		{ "z_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.q, 				0, 10, 0.1000, "" },
+		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 250.00, "" },
+		{ "z_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.p, 				0, 10, 0.1500, "" },
 
 		{ "rx_protocol", 		typeUINT,  "rccf",  &mainConfig.rcControlsConfig.rxProtcol, 			0, 10, USING_SPEKTRUM_TWO_WAY, "" },
 		{ "rx_usart", 			typeUINT,  "rccf",  &mainConfig.rcControlsConfig.rxUsart, 				0, MAX_USARTS-1, ENUM_USART1, "" },
@@ -353,22 +355,12 @@ void SaveConfig (uint32_t addresConfigStart)
 
 	uint32_t addressOffset;
 
+	DisarmBoard();
+
 	if (resetBoard) {
 
-		InitBoardUsarts();
-		InitRcData();
-	    InitMixer();
-	    InitFlightCode();
-	    InitPid();
-	    InitActuators();
-
-	    if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
-	    	InitAllowedSoftOutputs();
-
-	    if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
-	    	InitSpektrumTelemetry();
-
-	    resetBoard=0;
+		//This function does a shotgun startup of the flight code.
+		InitFlight();
 
 	}
 
@@ -376,14 +368,13 @@ void SaveConfig (uint32_t addresConfigStart)
 	mainConfig.size     = sizeof(main_config);
 	mainConfig.czechsum = CalculateCzechsum((const uint8_t *) &mainConfig, sizeof(main_config));
 
-	InitWatchdog(WATCHDOG_TIMEOUT_16S);
 	EraseFlash(addresConfigStart, addresConfigStart+sizeof(main_config));
 	PrepareFlash();
 	for (addressOffset = 0; addressOffset < sizeof(main_config); addressOffset += 4) {
 		WriteFlash(*(uint32_t *) ((char *) &mainConfig + addressOffset), addresConfigStart+addressOffset );
 	}
 	FinishFlash();
-	InitWatchdog(WATCHDOG_TIMEOUT_2S);
+
 }
 
 uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length)
@@ -467,7 +458,7 @@ char *CleanupNumberString(char *inString)
 		if (inString[position] == ' ') // removes multiple spaces in a row
 			continue;
 
-		if (isdigit((unsigned char)inString[position]))
+		if (isdigit((unsigned char)inString[position]) || (unsigned char)inString[position] == '.' )
 		{
 			inString[head++] = inString[position];
 		}
@@ -818,18 +809,18 @@ static void OneWire(char *inString) {
 				{
 					if (escOneWireStatus[board.motors[x].actuatorArrayNum].enabled)
 					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %u: %u.%u, %s, %s, %s", x, ( (escOneWireStatus[board.motors[x].actuatorArrayNum].version >> 8) & 0xFF), (escOneWireStatus[board.motors[x].actuatorArrayNum].version & 0xFF), escOneWireStatus[board.motors[x].actuatorArrayNum].nameStr, escOneWireStatus[board.motors[x].actuatorArrayNum].fwStr, escOneWireStatus[board.motors[x].actuatorArrayNum].versionStr);
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu: %u.%u, %s, %s, %s", x, (uint8_t)( (escOneWireStatus[board.motors[x].actuatorArrayNum].version >> 8) & 0xFF), (uint8_t)(escOneWireStatus[board.motors[x].actuatorArrayNum].version & 0xFF), escOneWireStatus[board.motors[x].actuatorArrayNum].nameStr, escOneWireStatus[board.motors[x].actuatorArrayNum].fwStr, escOneWireStatus[board.motors[x].actuatorArrayNum].versionStr);
 						RfCustomReply(rf_custom_out_buffer);
 					}
 					else
 					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %u Unreadable", x);
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Unreadable", x);
 						RfCustomReply(rf_custom_out_buffer);
 					}
 				}
 				else
 				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %u Disabled", x);
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Disabled", x);
 					RfCustomReply(rf_custom_out_buffer);
 				}
 			}
@@ -838,6 +829,8 @@ static void OneWire(char *inString) {
 	else if (!strcmp("stop", inString))
 	{
 		OneWireDeinit();
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "1Wire Session Ended.");
+		RfCustomReply(rf_custom_out_buffer);
 	}
 
 }
@@ -1419,7 +1412,6 @@ void ProcessCommand(char *inString)
 			memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
-
 	else if (!strcmp("spekdefaults3", inString) || !strcmp("spekdefaults1", inString))
 		{
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
@@ -1840,15 +1832,23 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("readflash", inString))
 		{
+			uint32_t smallerPointer;
 			if (flashInfo.enabled) {
 
 				args = StripSpaces(args);
 
 				if ( M25p16ReadPage( atoi(args), flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer) ) {
 
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, &flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+0], 32);
-					RfCustomReply(rf_custom_out_buffer);
+					for (uint32_t x=0;x<256;x++) {
+
+						rf_custom_out_buffer[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
+						if (smallerPointer > 62) {
+							RfCustomReply(rf_custom_out_buffer);
+							smallerPointer = 0;
+							bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+						}
+
+					}
 
 				} else {
 
@@ -1888,14 +1888,14 @@ void ProcessCommand(char *inString)
 			memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
-	else if (!strcmp("reboot", inString))
+	else if (!strcmp("reboot", inString) || !strcmp("reset", inString))
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "rebooting", sizeof("rebooting"));
 			RfCustomReply(rf_custom_out_buffer);
 			SystemReset();
 		}
-	else if (!strcmp("resetdfu", inString))
+	else if (!strcmp("resetdfu", inString)  || !strcmp("rebootdfu", inString))
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "rebootingdfu", sizeof("rebootingdfu"));
@@ -1945,7 +1945,7 @@ void ProcessCommand(char *inString)
 			memcpy(rf_custom_out_buffer, "binding5", sizeof("binding5"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
-	else if (!strcmp("rebootrfbl", inString))
+	else if (!strcmp("rebootrfbl", inString) || !strcmp("resetrfbl", inString))
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -1953,7 +1953,7 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 			SystemReset();
 		}
-	else if (!strcmp("rebootrecovery", inString))
+	else if (!strcmp("rebootrecovery", inString) || !strcmp("resetrecovery", inString))
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));

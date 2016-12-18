@@ -10,7 +10,7 @@ uint32_t kdRingBufferPoint[AXIS_NUMBER];
 float kdDelta[AXIS_NUMBER];
 float kiError[AXIS_NUMBER];
 float kiErrorLimit[AXIS_NUMBER];
-
+biquad_state kdBqFilterState[AXIS_NUMBER];
 
 pid_terms  pidsUsed[AXIS_NUMBER];
 
@@ -26,6 +26,7 @@ void InitPid (void) {
 	bzero(kdRingBuffer, sizeof(kdRingBuffer));
 	bzero(kdRingBufferSum, sizeof(kdRingBufferSum));
 	bzero(kdRingBufferPoint, sizeof(kdRingBufferPoint));
+	bzero(kdBqFilterState, sizeof(kdBqFilterState));
 
 	uhOhRecover = 0; //unset recover mode
 
@@ -52,7 +53,9 @@ inline void InlinePidController (float filteredGyroData[], float filteredGyroDat
 	int32_t axis;
 	float pidError;
 	static float lastfilteredGyroDataKd[AXIS_NUMBER];
+	static float lastfilteredGyroData[AXIS_NUMBER];
 	static float usedFlightSetPoints[AXIS_NUMBER];
+	static uint32_t filterSetup[AXIS_NUMBER] = {0,0,0};
 
 	(void)(pidConfig);
 
@@ -122,10 +125,25 @@ inline void InlinePidController (float filteredGyroData[], float filteredGyroDat
 
 
 			// calculate Kd ////////////////////////// V
-			kdDelta[axis] = -(filteredGyroDataKd[axis] - lastfilteredGyroDataKd[axis]);
-			lastfilteredGyroDataKd[axis] = filteredGyroDataKd[axis];
+			if (mainConfig.gyroConfig.filterTypeKd == 2) {
 
-			InlineUpdateWitchcraft(pidsUsed);
+				kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);
+				lastfilteredGyroData[axis] = filteredGyroData[axis];
+
+				InlineUpdateWitchcraft(pidsUsed);
+
+				if (filterSetup[axis]) {
+					kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
+				} else {
+					filterSetup[axis] = 1;
+					InitBiquad(mainConfig.filterConfig[YAW].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 1.66f);
+				}
+			} else {
+				kdDelta[axis] = -(filteredGyroDataKd[axis] - lastfilteredGyroDataKd[axis]);
+				lastfilteredGyroDataKd[axis] = filteredGyroDataKd[axis];
+
+				InlineUpdateWitchcraft(pidsUsed);
+			}
 
 			//updated Kd filter(s)
 			//if (mainConfig.filterConfig[axis].kd.r > 40.0) {

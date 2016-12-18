@@ -44,29 +44,13 @@ int main(void)
 
     HandleFcStartupReg();
 
-    //InitDmaInputOnMotors(board.motors[0]);
-
     InitBuzzer();
     InitLeds();
 
     //TODO: Only init if we have USB. Some F3s are serial only.
     InitUsb();
 
-    //TODO: move the check into the init functions.
-    if (board.flash[0].enabled) {
-    	InitFlashChip();
-    	InitFlightLogger();
-    }
-
-    InitRcData();
-    InitMixer();
-    InitFlightCode(); //flight code before PID code is a must since flight.c contains loop time settings the pid.c uses.
-    InitPid();        //Relies on InitFlightCode for proper activations.
-
-    DeInitActuators();
-    InitActuators();      //Actuator init should happen after soft serial init.
-    ZeroActuators(32000); //output actuators to idle after timers are stable;
-
+    InitFlight();
 
     //TODO: Move these functions to an init function in DMA shenanigans. F3 and F7 won't need the SPORT function in DMA shenanigans.
     //LEDs don't work the same time as dshot. Actuator init should cancel out this activation if dshot is enabled, but for now we'll check the config
@@ -75,35 +59,6 @@ int main(void)
 //    	InitDmaOutputForSoftSerial(DMA_OUTPUT_WS2812_LEDS, board.motors[6]); //Enable LEDs on actuator 6
 //    }
     //if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT) {
-
-   	InitBoardUsarts(); //most important thing is activated last, the ability to control the craft.
-
-//only works for sport right now
-//disabled while working on 1wire.
-//    if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
-//    	InitAllowedSoftOutputs();
-//
-//    if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
-//    	InitSpektrumTelemetry();
-
-/*
-
-		InitDmaOutputForSoftSerial(DMA_OUTPUT_SPORT, board.motors[7]); //Enable S.Port on actuator 7, in place of USART 1 RX pin
-		uint32_t currentTime = Micros();
-		__disable_irq();
-    	//prepare soft serial buffer and index
-		softSerialLastByteProcessedLocation = 0;
-		softSerialCurBuf = 0;
-		softSerialInd[softSerialCurBuf] = 0;
-		softSerialBuf[softSerialCurBuf][softSerialInd[softSerialCurBuf]++] = currentTime;
-		//prepare soft serial buffer and index
-		__enable_irq();
-    //}
-*/
-
-	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl)) {
-		ErrorHandler(GYRO_INIT_FAILIURE);
-	}
 
 
 
@@ -122,6 +77,32 @@ int main(void)
     		count = 16;
 
     }
+
+}
+
+void InitFlight(void) {
+
+    //TODO: move the check into the init functions.
+    if (board.flash[0].enabled) {
+    	InitFlashChip();
+    	InitFlightLogger();
+    }
+
+    InitRcData();
+    InitMixer();
+    InitFlightCode();     //flight code before PID code is a must since flight.c contains loop time settings the pid.c uses.
+    InitPid();            //Relies on InitFlightCode for proper activations.
+    DeInitActuators();    //Deinit before Init is a shotgun startup
+    InitActuators();      //Actuator init should happen after soft serial init.
+    ZeroActuators(32000); //output actuators to idle after timers are stable;
+
+    InitBoardUsarts();    //most important thing is activated last, the ability to control the craft.
+
+	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl)) {
+		ErrorHandler(GYRO_INIT_FAILIURE);
+	}
+
+	InitTelemtry();
 
 }
 

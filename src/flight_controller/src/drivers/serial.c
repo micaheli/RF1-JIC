@@ -70,6 +70,19 @@ void UsartInit(uint32_t serialNumber) {
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].RXPort];
 			break;
+		case USING_SUMD:
+			board.serials[serialNumber].FrameSize  = 99; //variable packet size. Will be set based on data
+			board.serials[serialNumber].BaudRate   = 115200;
+			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
+			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
+			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
+			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
+			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
+			txPin  = board.serials[serialNumber].TXPin;
+			rxPin  = board.serials[serialNumber].RXPin;
+			txPort = ports[board.serials[serialNumber].TXPort];
+			rxPort = ports[board.serials[serialNumber].RXPort];
+			break;
 		case USING_MANUAL:
 		default:
 			txPin  = board.serials[serialNumber].TXPin;
@@ -304,6 +317,15 @@ void InitBoardUsarts (void) {
 		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 1;
 		board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 0;
 		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 0;
+	} else
+	if (mainConfig.rcControlsConfig.rxProtcol == USING_SUMD) {
+		board.serials[ENUM_USART1].enabled  = 0;
+		board.serials[ENUM_USART3].enabled  = 1;
+		board.serials[ENUM_USART3].Protocol = USING_SUMD;
+		board.dmasSerial[board.serials[ENUM_USART1].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 0;
+		board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 1;
+		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 1;
 	}
 
 	lastRXPacket = InlineMillis();
@@ -359,8 +381,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				dmaIndex[serialNumber] = 0;
 			}
 
-			serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][dmaIndex[serialNumber]++] = dmaRxBuffer; // Add that character to the string
+			if ( (board.serials[serialNumber].Protocol == USING_SUMD) && (dmaIndex[serialNumber] == 2) )
+			{
+				//Sumd packet 2 (third one) is number of channels.
+				//total frame length is header (3) + number of channels * 2 (variable) + crc length (2).
+				board.serials[serialNumber].FrameSize = CONSTRAIN( (5 + dmaRxBuffer), 7, 37); //sumd can be between 7 and 37 long
+			}
 
+			serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][dmaIndex[serialNumber]++] = dmaRxBuffer; // Add that character to the string
 
 			if (dmaIndex[serialNumber] >= board.serials[serialNumber].FrameSize) // User typing too much, we can't have commands that big
 			{
@@ -369,6 +397,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 					ProcessSpektrumPacket(serialNumber);
 				else if ((board.serials[serialNumber].Protocol == USING_SBUS) || (board.serials[serialNumber].Protocol == USING_SBUS_SPORT))
 					ProcessSbusPacket(serialNumber);
+				else if (board.serials[serialNumber].Protocol == USING_SUMD)
+					ProcessSumdPacket(serialNumber);
 			}
 			break;
 		}

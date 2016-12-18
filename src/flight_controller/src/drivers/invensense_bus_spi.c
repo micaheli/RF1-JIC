@@ -82,7 +82,7 @@ uint32_t AccGyroInit(loopCtrl_e loopCtrl)
 	SPI_Init(board.gyros[0].spiFastBaud);
 
     // after the gyro is started, start up the interrupt
-	EXTI_Init(ports[board.gyros[0].extiPort], board.gyros[0].extiPin, board.gyros[0].extiIRQn, 2, 0, GPIO_MODE_IT_RISING, GPIO_PULLDOWN, 1);
+	EXTI_Init(ports[board.gyros[0].extiPort], board.gyros[0].extiPin, board.gyros[0].extiIRQn, 2, 0, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
 
     skipGyro = 0;
 

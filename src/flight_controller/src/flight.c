@@ -41,7 +41,7 @@ float pitchAttitudeError = 0;
 float rollAttitudeErrorKi = 0;
 float pitchAttitudeErrorKi = 0;
 
-
+uint32_t usedGa[AXIS_NUMBER];
 
 //these numbers change based on loop_control
 loop_speed_record loopSpeed;
@@ -192,9 +192,14 @@ void InitFlightCode(void) {
 	bzero(filteredGyroDataKd,sizeof(filteredGyroDataKd));
 	bzero(averagedGyroDataPointer,sizeof(averagedGyroDataPointer));
 	bzero(&flightPids,sizeof(flightPids));
+
 	averagedGyroDataPointerMultiplier[YAW]   = (1.0 / (float)mainConfig.pidConfig[YAW].ga);
 	averagedGyroDataPointerMultiplier[ROLL]  = (1.0 / (float)mainConfig.pidConfig[ROLL].ga);
 	averagedGyroDataPointerMultiplier[PITCH] = (1.0 / (float)mainConfig.pidConfig[PITCH].ga);
+
+	usedGa[0] = mainConfig.pidConfig[0].ga;
+	usedGa[1] = mainConfig.pidConfig[1].ga;
+	usedGa[2] = mainConfig.pidConfig[2].ga;
 
 	switch (mainConfig.gyroConfig.loopCtrl) {
 		case LOOP_UH32:
@@ -373,9 +378,9 @@ inline void InlineUpdateAttitude(float geeForceAccArray[]) {
 	PafUpdate(&pafAccStates[ACCY], geeForceAccArray[ACCY]);
 	PafUpdate(&pafAccStates[ACCZ], geeForceAccArray[ACCZ]);
 
-	filteredAccData[ACCX] = pafAccStates[ACCX].x;
-	filteredAccData[ACCY] = pafAccStates[ACCY].x;
-	filteredAccData[ACCZ] = pafAccStates[ACCZ].x;
+	filteredAccData[ACCX] = pafAccStates[ACCX].output;
+	filteredAccData[ACCY] = pafAccStates[ACCY].output;
+	filteredAccData[ACCZ] = pafAccStates[ACCZ].output;
 
 	accNoise[0] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[0]);
 	accNoise[1] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[1]);
@@ -421,12 +426,12 @@ void ComplementaryFilterUpdateAttitude(void)
 inline float AverageGyroADCbuffer(uint32_t axis, float currentData)
 {
 
-	if (mainConfig.pidConfig[axis].ga) {
+	if (usedGa[axis]) {
 
 		averagedGyroData[axis][averagedGyroDataPointer[axis]++] = currentData;
 		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] += currentData;
 
-		if (averagedGyroDataPointer[axis] == mainConfig.pidConfig[axis].ga)
+		if (averagedGyroDataPointer[axis] == usedGa[axis])
 			averagedGyroDataPointer[axis] = 0;
 
 		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] -= averagedGyroData[axis][averagedGyroDataPointer[axis]];
@@ -475,14 +480,14 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 		if (mainConfig.gyroConfig.filterTypeKd == 0) {
 			PafUpdate(&pafKdStates[axis], averagedGyro );
-			filteredGyroDataKd[axis] = pafKdStates[axis].x;
+			filteredGyroDataKd[axis] = pafKdStates[axis].output;
 		} else {
 			filteredGyroDataKd[axis] = BiquadUpdate(averagedGyro, &lpfFilterStateKd[axis]);
 		}
 
 		if (mainConfig.gyroConfig.filterTypeGyro == 0) {
 			PafUpdate(&pafGyroStates[axis], averagedGyro );
-			filteredGyroData[axis] = pafGyroStates[axis].x;
+			filteredGyroData[axis] = pafGyroStates[axis].output;
 		} else {
 			filteredGyroData[axis] = BiquadUpdate(averagedGyro, &lpfFilterState[axis]);
 		}
@@ -518,8 +523,18 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 		   if (gyroCalibrationCycles != 0) {
 			   return;
 			}
+
 			//only run mixer if armed
-			actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
+		   switch (mainConfig.mixerConfig.motorMixer) {
+			   case 0:
+					actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
+				   break;
+			   case 1:
+			   default:
+					actuatorRange = InlineApplyMotorMixer2(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
+				   break;
+		   }
+
 		} else {
 			//otherwise we keep Ki zeroed.
 

@@ -7,6 +7,7 @@ typedef struct {
 	float x; //value
 	float p; //estimation error covariance
 	float k; //paf gain
+	float output; //paf gain
 } paf_state;
 
 //config structure which is loaded by config
