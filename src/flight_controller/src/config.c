@@ -827,6 +827,37 @@ static void OneWire(char *inString) {
 			}
 		}
 	}
+	else if (!strcmp("save", inString))
+	{
+
+		x = 2;
+		if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+		{
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Saving Motor %lu Config.\n", x);
+			RfCustomReply(rf_custom_out_buffer);
+
+			if (OneWireSaveConfig(board.motors[x]))
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Config Saved.\n", x);
+				RfCustomReply(rf_custom_out_buffer);
+			}
+			else
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Error Saving Motor %lu Config.\n", x);
+				RfCustomReply(rf_custom_out_buffer);
+			}
+
+		}
+		else
+		{
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Error Saving Motor %lu Config.\n", x);
+			RfCustomReply(rf_custom_out_buffer);
+
+		}
+
+	}
 	else if (!strcmp("stop", inString))
 	{
 		OneWireDeinit();

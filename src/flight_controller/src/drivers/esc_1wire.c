@@ -123,15 +123,15 @@ static uint16_t Crc16Byte(uint16_t from, uint8_t byte);
 
 static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout);
 static uint32_t DisconnectBLHeli(motor_type actuator, uint32_t timeout);
-static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length, uint32_t timeout) __attribute__ ((unused));
-static uint32_t WriteEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout);
+//static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length, uint32_t timeout);
+static uint32_t WriteEEpromSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout);
 static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout);
-static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
+static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[], uint16_t address, uint16_t length, uint32_t timeout);
 static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
 static uint32_t PageEraseSiLabsBLHeli(motor_type actuator, uint16_t address, uint32_t timeout);
 static uint32_t EepromEraseSiLabsBLHeli(motor_type actuator, uint32_t timeout);
-static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint16_t length) __attribute__ ((unused));
-static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address) __attribute__ ((unused));
+static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout)  __attribute__ ((unused));
+static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address)  __attribute__ ((unused));
 
 const BLHeli_EEprom_t* GetBLHeliEEpromLayout(uint8_t data[]);
 
@@ -152,11 +152,11 @@ const esc1WireProtocol_t BLHeliSiLabsProtocol = {
     .Disconnect    = DisconnectBLHeli,
 //    .pollReadReady = PollReadReadyBLHeli,
     .ReadFlash     = ReadFlashSiLabsBLHeli,
-    .WriteFlash    = WriteFlashBLHeli,
+    .WriteFlash    = WriteFlashSiLabsBLHeli,
     .ReadEEprom    = ReadEEpromSiLabsBLHeli,
     .WriteEEprom   = WriteEEpromSiLabsBLHeli,
-//    .pageErase     = PageEraseSiLabsBLHeli,
-//    .eepromErase   = EepromEraseSiLabsBLHeli,
+    .PageErase     = PageEraseSiLabsBLHeli,
+    .EepromErase   = EepromEraseSiLabsBLHeli,
 };
 
 
@@ -239,11 +239,15 @@ uint32_t OneWireInit(void)
 
 }
 
-void OneWireSaveConfig(motor_type actuator) {
+uint32_t OneWireSaveConfig(motor_type actuator) {
 
-	memcpy(oneWireOutBuffer, escOneWireStatus[actuator.actuatorArrayNum].config, 111);
-	escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->EepromErase(actuator, 1000);
-	escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteEEprom(actuator, 150);
+	if (escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->EepromErase(actuator, 1000))
+	{
+		memcpy(oneWireOutBuffer, escOneWireStatus[actuator.actuatorArrayNum].config, BLHELI_END_DATA);
+		return ( escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteEEprom(actuator, oneWireOutBuffer, (BLHELI_END_DATA - 1), 150) );
+	}
+
+	return (0);
 }
 
 
@@ -309,7 +313,7 @@ static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address) {
 	return (0);
 }
 
-static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint16_t length) {
+static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout) {
 
 	uint8_t cmdBuffer[] = {CMD_SET_BUFFER, 0, (length >> 8), (length & 0xff), 0, 0};
 
@@ -317,11 +321,11 @@ static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint1
 
 	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 6, oneWireInBuffer, actuator, 10);
 
-	if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] != RET_NONE) ) {
+	if ( oneWireInBufferIdx == 0 ) {
 
 		AppendBlHeliCrc(outBuffer, length);
 
-		oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, (length + 2), oneWireInBuffer, actuator, 150); //150ms timeout is way more than we need
+		oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, (length + 2), oneWireInBuffer, actuator, timeout); //150ms timeout is way more than we need
 
 		if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
 			return (1);
@@ -337,24 +341,39 @@ static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
 	// SiLabs has no EEPROM, just a flash section at 0x1A00
 
 	uint32_t hasData;
+	uint16_t checkCrc1;
+	uint16_t checkCrc2;
 
 	hasData = ReadFlashSiLabsBLHeli(actuator, 0x1A00, 120, timeout);
 
-	if (hasData > 109)
+	if ( (hasData > 121) && (oneWireInBuffer[122] == RET_SUCCESS) )
 	{
 
-		escOneWireStatus[actuator.actuatorArrayNum].enabled = 1;
-		bzero(escOneWireStatus[actuator.actuatorArrayNum].nameStr,      sizeof(escOneWireStatus[actuator.actuatorArrayNum].nameStr));
-		bzero(escOneWireStatus[actuator.actuatorArrayNum].fwStr,        sizeof(escOneWireStatus[actuator.actuatorArrayNum].fwStr));
-		bzero(escOneWireStatus[actuator.actuatorArrayNum].versionStr,   sizeof(escOneWireStatus[actuator.actuatorArrayNum].versionStr));
-		memcpy( escOneWireStatus[actuator.actuatorArrayNum].nameStr,    oneWireInBuffer + 64, 16 );
-		memcpy( escOneWireStatus[actuator.actuatorArrayNum].fwStr,      oneWireInBuffer + 80, 16 );
-		memcpy( escOneWireStatus[actuator.actuatorArrayNum].versionStr, oneWireInBuffer + 95, 16 );
-		escOneWireStatus[actuator.actuatorArrayNum].version = ( (oneWireInBuffer[0] << 8) | (oneWireInBuffer[1]) ) ;
+		//check CRC:
+		checkCrc1 = (uint16_t)( ( (oneWireInBuffer[120] & 0xFF) << 8) | ((oneWireInBuffer[121] >> 8) & 0xFF));
+		AppendBlHeliCrc(oneWireInBuffer, 120);
+		checkCrc2 = (uint16_t)( ( (oneWireInBuffer[120] & 0xFF) << 8) | ((oneWireInBuffer[121] >> 8) & 0xFF));
 
-		memcpy(escOneWireStatus[actuator.actuatorArrayNum].config, oneWireInBuffer, (BLHELI_END_DATA - 1));
+		//if CRC is valid we have good data
+		if (checkCrc1 == checkCrc2)
+		{
+			escOneWireStatus[actuator.actuatorArrayNum].enabled = 1;
+			bzero(escOneWireStatus[actuator.actuatorArrayNum].nameStr,      sizeof(escOneWireStatus[actuator.actuatorArrayNum].nameStr));
+			bzero(escOneWireStatus[actuator.actuatorArrayNum].fwStr,        sizeof(escOneWireStatus[actuator.actuatorArrayNum].fwStr));
+			bzero(escOneWireStatus[actuator.actuatorArrayNum].versionStr,   sizeof(escOneWireStatus[actuator.actuatorArrayNum].versionStr));
+			memcpy( escOneWireStatus[actuator.actuatorArrayNum].nameStr,    oneWireInBuffer + 64, 16 );
+			memcpy( escOneWireStatus[actuator.actuatorArrayNum].fwStr,      oneWireInBuffer + 80, 16 );
+			memcpy( escOneWireStatus[actuator.actuatorArrayNum].versionStr, oneWireInBuffer + 95, 16 );
+			escOneWireStatus[actuator.actuatorArrayNum].version = ( (oneWireInBuffer[0] << 8) | (oneWireInBuffer[1]) ) ;
 
-		escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout = GetBLHeliEEpromLayout(oneWireInBuffer);
+			memcpy(escOneWireStatus[actuator.actuatorArrayNum].config, oneWireInBuffer, (BLHELI_END_DATA - 1));
+
+			escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout = GetBLHeliEEpromLayout(oneWireInBuffer);
+		}
+		else
+		{
+			escOneWireStatus[actuator.actuatorArrayNum].enabled = 0;
+		}
 	}
 	else
 	{
@@ -367,7 +386,7 @@ static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
 
 }
 
-
+/*
 static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length, uint32_t timeout) {
 
 	uint8_t cmdBuffer[] = {cmd,(length & 0xff), 0, 0};
@@ -391,6 +410,7 @@ static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t addre
 //    return readBufBLHeli(esc, ioMem->data, len, true);
 
 }
+*/
 
 static uint32_t DisconnectBLHeli(motor_type actuator, uint32_t timeout)
 {
@@ -451,13 +471,13 @@ static uint32_t EepromEraseSiLabsBLHeli(motor_type actuator, uint32_t timeout)
 	return( PageEraseSiLabsBLHeli(actuator, 0x1A00, timeout) );
 }
 
-static uint32_t WriteEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout)
+static uint32_t WriteEEpromSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout)
 {
 	// SiLabs has no EEPROM, just a flash section at 0x1A00
-	return ( WriteFlashSiLabsBLHeli(actuator, 0x1A00, (BLHELI_END_DATA - 1), timeout) );
+	return ( WriteFlashSiLabsBLHeli(actuator, outBuffer, 0x1A00, length, timeout) );
 }
 
-static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout)
+static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[], uint16_t address, uint16_t length, uint32_t timeout)
 {
 
 	//set address we want to write to
@@ -465,7 +485,7 @@ static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint16_t address, ui
 		return (0);
 
 	//send length of data as well as data to be sent. This sends two commands.
-	if (!sendCmdSetBuffer(actuator, length, timeout))
+	if (!SendCmdSetBuffer(actuator, outBuffer, length, timeout))
 		return (0);
 
 	return (1);

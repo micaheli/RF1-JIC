@@ -87,11 +87,11 @@ typedef struct {
     uint32_t (*Disconnect)(motor_type actuator, uint32_t timeout);
 //    uint32_t (*PollReadReady)(void);
     uint32_t (*ReadFlash)(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
-    uint32_t (*WriteFlash)(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
+    uint32_t (*WriteFlash)(motor_type actuator, uint8_t outBuffer[], uint16_t address, uint16_t length, uint32_t timeout);
     uint32_t (*ReadEEprom)(motor_type actuator, uint32_t timeout);
-    uint32_t (*WriteEEprom)(motor_type actuator, uint32_t timeout);
+    uint32_t (*WriteEEprom)(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout);
     uint32_t (*PageErase)(motor_type actuator, uint16_t address, uint32_t timeout);
-    uint32_t (*EepromErase)(motor_type actuator, uint16_t address, uint32_t timeout);
+    uint32_t (*EepromErase)(motor_type actuator, uint32_t timeout);
 } esc1WireProtocol_t;
 
 
@@ -109,7 +109,7 @@ typedef struct {
 	uint16_t                  version;
 	uint32_t                  enabled;
 	uint8_t                   config[112];
-	BLHeli_EEprom_t          *BLHeliEEpromLayout;
+	const BLHeli_EEprom_t    *BLHeliEEpromLayout;
 
 	enum {
 		OW_IDLE                   = 0,
@@ -130,3 +130,4 @@ extern volatile uint32_t oneWireOngoing;
 
 extern uint32_t OneWireInit(void);
 extern void     OneWireDeinit(void);
+extern uint32_t OneWireSaveConfig(motor_type actuator);
