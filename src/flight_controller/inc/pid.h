@@ -27,6 +27,6 @@ extern float currentKdFilterConfig[AXIS_NUMBER];
 
 void InitPid (void);
 //void InlineInitPidFilters(void);
-void InlinePidController (float filteredGyroData[], float filteredGyroDataKd[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[]);
+uint32_t InlinePidController (float filteredGyroData[], float filteredGyroDataKd[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[]);
 uint32_t SpinStopper(int32_t axis, float pidError);
 void InlineUpdateWitchcraft(pid_terms pidConfig[]);

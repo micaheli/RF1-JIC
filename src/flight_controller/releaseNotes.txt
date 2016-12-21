@@ -112,3 +112,9 @@ Version 0.108.036:
 
 Version 0.109.036:
 	Changed some dump output text.
+	Updated failsafe methods.
+	updated motor mixer.
+	changed default pids and filter settings. Please try defaults before changing anything.
+
+Version 0.110.036:
+	Finished making SUMD work.

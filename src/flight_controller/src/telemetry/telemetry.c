@@ -27,11 +27,11 @@ void ProcessTelemtry(void) {
 
 void InitTelemtry(void) {
 
-	if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
-		InitAllowedSoftOutputs();
+	//if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
+	//	InitAllowedSoftOutputs();
 
-	if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
-		InitSpektrumTelemetry();
+	//if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
+	//	InitSpektrumTelemetry();
 
 }
 

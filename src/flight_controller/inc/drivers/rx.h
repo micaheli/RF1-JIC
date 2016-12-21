@@ -84,7 +84,7 @@ extern void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 
 extern void ProcessSpektrumPacket(uint32_t serialNumber);
 extern void ProcessSbusPacket(uint32_t serialNumber);
-extern void ProcessSumdPacket(uint32_t serialNumber);
+extern void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize);
 
 extern void RxUpdate(void);
 extern void CheckFailsafe(void);

@@ -108,7 +108,7 @@ typedef struct {
 	uint8_t                   versionStr[16];
 	uint16_t                  version;
 	uint32_t                  enabled;
-	uint8_t                   config[112];
+	uint8_t                   config[128];
 	const BLHeli_EEprom_t    *BLHeliEEpromLayout;
 
 	enum {

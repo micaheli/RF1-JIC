@@ -180,21 +180,33 @@ uint32_t OneWireInit(void)
 
 	DeInitAllowedSoftOutputs(); //deinit all the soft outputs
 
+	DelayMs(200);
+
 	while (tries < 5) {
 		allWork = 1;
 		tries++;
 		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
 			InitDmaOutputForSoftSerial(DMA_OUTPUT_ESC_1WIRE, board.motors[x]);
+			DelayMs(10);
 		}
-		DelayMs(600);
+		DelayMs(1000);
 		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
 			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 				escOneWireStatus[board.motors[x].actuatorArrayNum].enabled = 0;
 				if (ConnectToBlheliBootloader(board.motors[x], 35)) {
-					atLeastOneWorks++;
-					escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
+					if ( escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125) ) {
+						atLeastOneWorks++;
+					} else {
+						allWork = 0;
+					}
 				} else {
-					allWork = 0;
+					if (ConnectToBlheliBootloader(board.motors[x], 35)) {
+						if ( escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125) ) {
+							atLeastOneWorks++;
+						} else {
+							allWork = 0;
+						}
+					}
 				}
 				DeInitDmaOutputForSoftSerial(board.motors[x]);
 			}
@@ -203,7 +215,7 @@ uint32_t OneWireInit(void)
 		{
 			return (atLeastOneWorks);
 		}
-		else if (atLeastOneWorks || tries < 2) //try at least twice, even if not a single ESC detected
+		else if (atLeastOneWorks || tries < 3) //try at least twice, even if not a single ESC detected
 		{
 			InitActuators();
 			DelayMs(7000);
@@ -243,8 +255,7 @@ uint32_t OneWireSaveConfig(motor_type actuator) {
 
 	if (escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->EepromErase(actuator, 1000))
 	{
-		memcpy(oneWireOutBuffer, escOneWireStatus[actuator.actuatorArrayNum].config, BLHELI_END_DATA);
-		return ( escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteEEprom(actuator, oneWireOutBuffer, (BLHELI_END_DATA - 1), 150) );
+		return ( escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteEEprom(actuator, escOneWireStatus[actuator.actuatorArrayNum].config, (BLHELI_END_DATA - 1), 150) );
 	}
 
 	return (0);
@@ -319,6 +330,32 @@ static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint1
 
 	AppendBlHeliCrc(cmdBuffer, 4);
 
+	//send the command to write to buffer
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 6, oneWireInBuffer, actuator, 10);
+
+	if ( oneWireInBufferIdx == 0 ) {
+
+		AppendBlHeliCrc(outBuffer, length);
+
+		//send the data
+		oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, (length + 2), oneWireInBuffer, actuator, timeout); //150ms timeout is way more than we need
+
+		if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
+			return (1);
+		}
+
+	}
+
+	return (0);
+}
+
+/*
+static uint32_t SendWriteCommand(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout) {
+
+	uint8_t cmdBuffer[] = {CMD_PROG_FLASH, 0x01, 0, 0};
+
+	AppendBlHeliCrc(cmdBuffer, 4);
+
 	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 6, oneWireInBuffer, actuator, 10);
 
 	if ( oneWireInBufferIdx == 0 ) {
@@ -335,6 +372,7 @@ static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint1
 
 	return (0);
 }
+*/
 
 static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
 
@@ -488,7 +526,18 @@ static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[],
 	if (!SendCmdSetBuffer(actuator, outBuffer, length, timeout))
 		return (0);
 
-	return (1);
+	uint8_t cmdBuffer[] = {CMD_PROG_FLASH, 0x01, 0, 0};
+
+	AppendBlHeliCrc(cmdBuffer, 2);
+
+	//Send the actual write command
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 4, oneWireInBuffer, actuator, 30);
+
+	if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
+		return (1);
+	}
+
+	return (0);
 
 }
 

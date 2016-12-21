@@ -71,7 +71,7 @@ void UsartInit(uint32_t serialNumber) {
 			rxPort = ports[board.serials[serialNumber].RXPort];
 			break;
 		case USING_SUMD:
-			board.serials[serialNumber].FrameSize  = 99; //variable packet size. Will be set based on data
+			board.serials[serialNumber].FrameSize  = 21; //variable packet size. Will be set based on data
 			board.serials[serialNumber].BaudRate   = 115200;
 			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
 			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
@@ -358,6 +358,8 @@ void DeInitBoardUsarts (void) {
 
 }
 
+//extern char rf_custom_out_buffer[];
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
@@ -374,6 +376,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			timeSinceLastPacket[serialNumber] = (currentTime - timeOfLastPacket[serialNumber]); //todo: How do we handle multiple RXs with this?
 			timeOfLastPacket[serialNumber]    = currentTime; //todo: How do we handle multiple RXs with this?
 
+			if ( (board.serials[serialNumber].Protocol == USING_SUMD) && (dmaIndex[serialNumber] == 2) )
+			{
+				//Sumd packet 2 (third one) is number of channels.
+				//total frame length is header (3) + number of channels * 2 (variable) + crc length (2).
+				board.serials[serialNumber].FrameSize = CONSTRAIN( (5 + (dmaRxBuffer * 2) ), 9, 47); //sumd can be between 7 and 37 long
+			}
+
 			if (timeSinceLastPacket[serialNumber] > 3) {
 				if (dmaIndex[serialNumber] < board.serials[serialNumber].FrameSize) {
 					__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[serialNumber].usartHandle]); // Clear the buffer to prevent overrun
@@ -381,24 +390,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				dmaIndex[serialNumber] = 0;
 			}
 
-			if ( (board.serials[serialNumber].Protocol == USING_SUMD) && (dmaIndex[serialNumber] == 2) )
-			{
-				//Sumd packet 2 (third one) is number of channels.
-				//total frame length is header (3) + number of channels * 2 (variable) + crc length (2).
-				board.serials[serialNumber].FrameSize = CONSTRAIN( (5 + dmaRxBuffer), 7, 37); //sumd can be between 7 and 37 long
-			}
-
 			serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][dmaIndex[serialNumber]++] = dmaRxBuffer; // Add that character to the string
 
-			if (dmaIndex[serialNumber] >= board.serials[serialNumber].FrameSize) // User typing too much, we can't have commands that big
+			if (dmaIndex[serialNumber] >= board.serials[serialNumber].FrameSize)
 			{
 				dmaIndex[serialNumber] = 0;
 				if ((board.serials[serialNumber].Protocol == USING_SPEKTRUM_TWO_WAY) || (board.serials[serialNumber].Protocol == USING_SPEKTRUM_ONE_WAY))
 					ProcessSpektrumPacket(serialNumber);
 				else if ((board.serials[serialNumber].Protocol == USING_SBUS) || (board.serials[serialNumber].Protocol == USING_SBUS_SPORT))
 					ProcessSbusPacket(serialNumber);
-				else if (board.serials[serialNumber].Protocol == USING_SUMD)
-					ProcessSumdPacket(serialNumber);
+				else if (board.serials[serialNumber].Protocol == USING_SUMD) {
+					//bzero(rf_custom_out_buffer,63);
+					//snprintf(rf_custom_out_buffer, 63, "0:%u, 1:%u, 2:%u, 3:%u, 4:%u, 5:%u\n", serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0], serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1], serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][2], serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][3], serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][4], serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][5]);
+					//RfCustomReply(rf_custom_out_buffer);
+					ProcessSumdPacket(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], board.serials[serialNumber].FrameSize);
+				}
 			}
 			break;
 		}

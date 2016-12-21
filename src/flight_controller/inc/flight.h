@@ -11,7 +11,7 @@ typedef struct {
 	volatile uint32_t gyroDivider;
 } loop_speed_record;
 
-extern loop_speed_record loopSpeed;
+extern volatile loop_speed_record loopSpeed;
 extern float filteredGyroData[];
 extern volatile uint32_t boardArmed, calibrateMotors, fullKiLatched;
 extern float pitchAttitude, rollAttitude, yawAttitude;

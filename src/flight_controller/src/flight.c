@@ -44,7 +44,7 @@ float pitchAttitudeErrorKi = 0;
 uint32_t usedGa[AXIS_NUMBER];
 
 //these numbers change based on loop_control
-loop_speed_record loopSpeed;
+volatile loop_speed_record loopSpeed;
 
 
 void ArmBoard(void) {
@@ -206,7 +206,7 @@ void InitFlightCode(void) {
 		case LOOP_H32:
 			loopSpeed.gyrodT      = 0.00003125;
 			loopSpeed.dT          = 0.00003125;
-			loopSpeed.uhohNumber  = 16000;
+			loopSpeed.uhohNumber  = 24000;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 32;
 			break;
@@ -214,14 +214,14 @@ void InitFlightCode(void) {
 		case LOOP_H16:
 			loopSpeed.gyrodT      = 0.00003125;
 			loopSpeed.dT          = 0.00006250;
-			loopSpeed.uhohNumber  = 8000;
+			loopSpeed.uhohNumber  = 12000;
 			loopSpeed.gyroDivider = 2;
 			loopSpeed.khzDivider  = 16;
 			break;
 		case LOOP_UH8:
 			loopSpeed.gyrodT      = 0.00003125;
 			loopSpeed.dT          = 0.00012500;
-			loopSpeed.uhohNumber  = 4000;
+			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 4;
 			loopSpeed.khzDivider  = 8;
 			break;
@@ -229,14 +229,14 @@ void InitFlightCode(void) {
 		case LOOP_M8:
 			loopSpeed.gyrodT      = 0.00012500;
 			loopSpeed.dT          = 0.00012500;
-			loopSpeed.uhohNumber  = 4000;
+			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 8;
 			break;
 		case LOOP_UH4:
 			loopSpeed.gyrodT      = 0.00003125;
 			loopSpeed.dT          = 0.00025000;
-			loopSpeed.uhohNumber  = 2000;
+			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 8;
 			loopSpeed.khzDivider  = 4;
 			break;
@@ -244,28 +244,28 @@ void InitFlightCode(void) {
 		case LOOP_M4:
 			loopSpeed.gyrodT      = 0.00012500;
 			loopSpeed.dT          = 0.00025000;
-			loopSpeed.uhohNumber  = 2000;
+			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 2;
 			loopSpeed.khzDivider  = 4;
 			break;
 		case LOOP_UH2:
 			loopSpeed.gyrodT      = 0.00003125;
 			loopSpeed.dT          = 0.00050000;
-			loopSpeed.uhohNumber  = 1000;
+			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 16;
 			loopSpeed.khzDivider  = 2;
 		case LOOP_H2:
 		case LOOP_M2:
 			loopSpeed.gyrodT      = 0.00012500;
 			loopSpeed.dT          = 0.00050000;
-			loopSpeed.uhohNumber  = 1000;
+			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 4;
 			loopSpeed.khzDivider  = 2;
 			break;
 		case LOOP_UH1:
 			loopSpeed.gyrodT      = 0.00003125;
 			loopSpeed.dT          = 0.00100000;
-			loopSpeed.uhohNumber  = 500;
+			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 32;
 			loopSpeed.khzDivider  = 1;
 			break;
@@ -273,7 +273,7 @@ void InitFlightCode(void) {
 		case LOOP_M1:
 			loopSpeed.gyrodT      = 0.00012500;
 			loopSpeed.dT          = 0.00100000;
-			loopSpeed.uhohNumber  = 500;
+			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 8;
 			loopSpeed.khzDivider  = 1;
 			break;
@@ -281,7 +281,7 @@ void InitFlightCode(void) {
 		default:
 			loopSpeed.gyrodT      = 0.00100000;
 			loopSpeed.dT          = 0.00100000;
-			loopSpeed.uhohNumber  = 500;
+			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 1;
 			break;
@@ -450,6 +450,7 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	static uint32_t kdAverageCounter = 0;
 	int32_t axis;
 	float averagedGyro;
+	uint32_t pidGood;
 	//cycle time
 	//flightcodeTimeStart = Micros();
 
@@ -517,9 +518,9 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 		}
 
 		//Run PIDC
-		InlinePidController(filteredGyroData, filteredGyroDataKd, flightSetPoints, flightPids, actuatorRange, mainConfig.pidConfig);
+		pidGood = InlinePidController(filteredGyroData, filteredGyroDataKd, flightSetPoints, flightPids, actuatorRange, mainConfig.pidConfig);
 
-		if (boardArmed) {
+		if ( (boardArmed) && (pidGood) ) {
 		   if (gyroCalibrationCycles != 0) {
 			   return;
 			}
