@@ -15,6 +15,18 @@ const actuator_mixer CONST_MIXER_X1234[MAX_MOTOR_NUMBER] =  {
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
 };
 
+const actuator_mixer CONST_MIXER_X1234I[MAX_MOTOR_NUMBER] =  {
+	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
+	{-1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
+	{ 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2
+	{-1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3
+	{ 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 7
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
+};
+
 const actuator_mixer CONST_MIXER_X1234RY[MAX_MOTOR_NUMBER] =  {
 	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
 	{-1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
@@ -73,6 +85,9 @@ void InitMixer(void) {
 	switch (mainConfig.mixerConfig.mixerType) {
 		case MIXER_X1234RY:
 			memcpy(motorMixer, CONST_MIXER_X1234RY, sizeof(motorMixer));
+			break;
+		case MIXER_X1234I:
+			memcpy(motorMixer, CONST_MIXER_X1234I, sizeof(motorMixer));
 			break;
 		case MIXER_CUSTOM:
 			//fill mixer customer here, for now it defaults to MIXER_X1234

@@ -311,26 +311,26 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 		numOfChannels = copiedBufferData[2];
 
-//		//check CRC
-//		calculatedCrc = CRC16(calculatedCrc, copiedBufferData[0]);
-//		calculatedCrc = CRC16(calculatedCrc, copiedBufferData[1]);
-//		calculatedCrc = CRC16(calculatedCrc, copiedBufferData[2]);
-//
-//		if ( (numOfChannels < 0x20) && (numOfChannels > 0x01) )
-//		{
-//
-//			receivedCrc = (uint32_t)((copiedBufferData[(numOfChannels + 1) * 2 + 1] << 8) & 0x0000FF00); //crc high byte
-//			receivedCrc = (uint32_t)(copiedBufferData[(numOfChannels + 1) * 2 + 2] & 0x000000FF);        //crc low byte
-//			for (x=0;x<(numOfChannels);x++)
-//			{
-//				calculatedCrc = CRC16(calculatedCrc, copiedBufferData[x * 2 + 1]);
-//				calculatedCrc = CRC16(calculatedCrc, copiedBufferData[x * 2 + 2]);
-//			}
-//
-//		}
-//
-//		if (receivedCrc == calculatedCrc)
-//		{
+		//check CRC
+		calculatedCrc = CRC16(calculatedCrc, copiedBufferData[0]);
+		calculatedCrc = CRC16(calculatedCrc, copiedBufferData[1]);
+		calculatedCrc = CRC16(calculatedCrc, copiedBufferData[2]);
+
+		if ( (numOfChannels < 0x20) && (numOfChannels > 0x01) )
+		{
+
+			receivedCrc = (uint32_t)((copiedBufferData[(numOfChannels + 1) * 2 + 1] << 8) & 0x0000FF00); //crc high byte
+			receivedCrc = (uint32_t)(copiedBufferData[(numOfChannels + 1) * 2 + 2] & 0x000000FF);        //crc low byte
+			for (x=0;x<(numOfChannels);x++)
+			{
+				calculatedCrc = CRC16(calculatedCrc, copiedBufferData[x * 2 + 1]);
+				calculatedCrc = CRC16(calculatedCrc, copiedBufferData[x * 2 + 2]);
+			}
+
+		}
+
+		if (receivedCrc == calculatedCrc)
+		{
 			if ( (numOfChannels < 0x20) && (numOfChannels > 0x01) )
 			{
 
@@ -349,7 +349,7 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 			}
 
-//		}
+		}
 
 	}
 

@@ -5,6 +5,7 @@
 pid_output flightPids[AXIS_NUMBER];
 biquad_state lpfFilterState[AXIS_NUMBER];
 biquad_state lpfFilterStateKd[AXIS_NUMBER];
+biquad_state lpfFilterStateAcc[AXIS_NUMBER];
 biquad_state lpfFilterStateNoise[6];
 biquad_state hpfFilterStateAcc[6];
 
@@ -287,7 +288,9 @@ void InitFlightCode(void) {
 			break;
 	}
 
-	loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
+	//TODO: gyroConfig.accDenom is not set until after gyro is running.
+	//loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
+	loopSpeed.accdT     = loopSpeed.gyrodT * 8;
 	loopSpeed.InversedT = (1/loopSpeed.dT);
 
 
@@ -359,14 +362,15 @@ inline void InlineInitAccFilters(void)  {
 
 	for (vector = 2; vector >= 0; --vector) {
 
-		pafAccStates[vector]   = InitPaf( mainConfig.filterConfig[vector].acc.q, mainConfig.filterConfig[vector].acc.r, mainConfig.filterConfig[vector].acc.p, filteredAccData[vector]);
+		InitBiquad(mainConfig.filterConfig[vector].acc.r, &lpfFilterStateAcc[vector], loopSpeed.accdT, FILTER_TYPE_LOWPASS, &lpfFilterStateAcc[vector], mainConfig.filterConfig[vector].acc.q);
+		//pafAccStates[vector]   = InitPaf( mainConfig.filterConfig[vector].acc.q, mainConfig.filterConfig[vector].acc.r, mainConfig.filterConfig[vector].acc.p, filteredAccData[vector]);
 
 		currentAccFilterConfig[vector] = mainConfig.filterConfig[vector].acc.r;
 
 	}
 
-	accCompAccTrust  = 0.30;
-	accCompGyroTrust = 0.70;
+	accCompAccTrust  = (mainConfig.filterConfig[ACCX].acc.p * 0.01);
+	accCompGyroTrust = (1.0 - (mainConfig.filterConfig[ACCX].acc.p * 0.01));
 
 }
 
@@ -374,13 +378,17 @@ inline void InlineInitAccFilters(void)  {
 inline void InlineUpdateAttitude(float geeForceAccArray[]) {
 
 	//update gyro filter
-	PafUpdate(&pafAccStates[ACCX], geeForceAccArray[ACCX]);
-	PafUpdate(&pafAccStates[ACCY], geeForceAccArray[ACCY]);
-	PafUpdate(&pafAccStates[ACCZ], geeForceAccArray[ACCZ]);
+	//PafUpdate(&pafAccStates[ACCX], geeForceAccArray[ACCX]);
+	//PafUpdate(&pafAccStates[ACCY], geeForceAccArray[ACCY]);
+	//PafUpdate(&pafAccStates[ACCZ], geeForceAccArray[ACCZ]);
 
-	filteredAccData[ACCX] = pafAccStates[ACCX].output;
-	filteredAccData[ACCY] = pafAccStates[ACCY].output;
-	filteredAccData[ACCZ] = pafAccStates[ACCZ].output;
+	//filteredAccData[ACCX] = pafAccStates[ACCX].output;
+	//filteredAccData[ACCY] = pafAccStates[ACCY].output;
+	//filteredAccData[ACCZ] = pafAccStates[ACCZ].output;
+
+	filteredAccData[ACCX] = BiquadUpdate(geeForceAccArray[ACCX], &lpfFilterStateAcc[ACCX]);
+	filteredAccData[ACCY] = BiquadUpdate(geeForceAccArray[ACCY], &lpfFilterStateAcc[ACCY]);
+	filteredAccData[ACCZ] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateAcc[ACCZ]);
 
 	accNoise[0] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[0]);
 	accNoise[1] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[1]);
@@ -410,9 +418,9 @@ void ComplementaryFilterUpdateAttitude(void)
 	//ACCZ is Y
 	//ACCY is X
     // Compensate for drift with accelerometer data is valid
-    float forceMagnitudeApprox = ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ]);
-    if (forceMagnitudeApprox > .45 && forceMagnitudeApprox < 2.1) //only look at ACC data if it's within .45 and 2.1 Gees
-    {
+    //float forceMagnitudeApprox = ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ]);
+    //if (forceMagnitudeApprox > .45 && forceMagnitudeApprox < 2.1) //only look at ACC data if it's within .45 and 2.1 Gees
+    //{
 	// Turning around the X axis results in a vector on the Y-axis
     	pitchAcc = (atan2f( (float)filteredAccData[ACCY], (float)filteredAccData[ACCX]) + PIf) * (180.0 * IPIf) - 180.0; //multiplying by the inverse of Pi is faster than dividing by Pi
     	pitchAttitude = pitchAttitude * accCompGyroTrust + pitchAcc * accCompAccTrust;
@@ -420,7 +428,7 @@ void ComplementaryFilterUpdateAttitude(void)
 	// Turning around the Y axis results in a vector on the X-axis
         rollAcc = (atan2f((float)filteredAccData[ACCZ], (float)filteredAccData[ACCX]) + PIf) * (180.0 * IPIf) - 180.0;
         rollAttitude = rollAttitude * accCompGyroTrust + rollAcc * accCompAccTrust;
-    }
+    //}
 }
 
 inline float AverageGyroADCbuffer(uint32_t axis, float currentData)

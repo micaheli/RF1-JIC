@@ -92,6 +92,23 @@ const BLHeli_EEprom_t BLHeliS32_EEprom = {
     .BL_LED_CONTROL = 37,
 };
 
+const oneWireParameter_t* oneWireParameters[] = {
+    &motorBeaconDelayParameter,
+    &motorBeaconStrengthParameter,
+    &motorBeepStrengthParameter,
+    &motorBrakeOnStopParameter,
+    &motorDemagParameter,
+    &motorDirectionParameter,
+    &motorEnableTxParameter,
+    &motorFrequencyParameter,
+    &motorMaxThrottleParameter,
+    &motorMinThrottleParameter,
+    &motorStartupPowerParameter,
+    &motorTimingParameter,
+    &motorTempProtectionParameter,
+    NULL
+};
+
 
 uint8_t  oneWireOutBuffer[ESC_BUF_SIZE];
 uint8_t  oneWireInBuffer[ESC_BUF_SIZE];
@@ -672,3 +689,239 @@ static void AppendBlHeliCrc(uint8_t outBuffer[], uint32_t len) {
 	outBuffer[i+1] = (crc >> 8);
 
 }
+
+
+
+
+
+
+
+
+
+
+
+int16_t Esc1WireSetParameter(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[], int16_t value)
+{
+
+	const BLHeli_EEprom_t *layout = escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout;
+
+    if (layout == NULL)
+    {
+        return (-1);
+    }
+
+    buf[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + parameter->offset)] = value;
+    return (1);
+
+}
+
+int16_t Esc1WireParameterFromDump(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[])
+{
+
+	const BLHeli_EEprom_t *layout = escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout;
+
+    if (layout == NULL)
+    {
+        return (-1);
+    }
+
+    return (buf[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + parameter->offset)]);
+
+}
+
+const char* OneWireParameterValueToName(const oneWireParameterValue_t *valuesList, uint8_t value)
+{
+    while (valuesList->name)
+    {
+        if (value == valuesList->value)
+        {
+            return (valuesList->name);
+        }
+        valuesList++;
+    }
+    return ("NOT FOUND");
+}
+
+int16_t OneWireParameterNameToValue(const oneWireParameterValue_t *valuesList, const char *name)
+{
+    while (valuesList->name)
+    {
+        if (strncasecmp(valuesList->name, name, strlen(valuesList->name)) == 0)
+        {
+            return valuesList->value;
+        }
+        valuesList++;
+    }
+    return (-1);
+}
+
+int16_t OneWireParameterValueToNumber(const oneWireParameterNumerical_t *numerical, uint8_t value)
+{
+    return ( numerical->step * ((int16_t)value) + numerical->offset );
+}
+
+uint8_t OneWireParameterNumberToValue(const oneWireParameterNumerical_t *numerical, int16_t value)
+{
+    return ( (uint8_t)((value - numerical->offset) / numerical->step) );
+}
+
+//int16_t esc1WireGetParameter(motor_type actuator, const oneWireParameter_t *parameter) {
+
+//    escHardware_t *esc = &escHardware[escIndex];
+//    const esc1WireProtocol_t *proto = escDevice[escIndex].protocol;
+//    if (proto == NULL) {
+//        return (-1);
+//    }
+//    const BLHeli_EEprom_t *layout = escDevice[escIndex].layout;
+//    if (layout == NULL) {
+//        return (-1);
+//    }
+//    return (readValueFromEEprom(esc, proto, *((uint8_t*)layout + parameter->offset)) );
+
+//}
+
+////////////////////////////////////////////////////////
+// BLHeli parameter definitions
+const oneWireParameterValue_t motorOnOffParameterList[] = {
+    {0x00, "disable"},
+    {0x01, "enable"},
+    {0, NULL},
+};
+const oneWireParameter_t motorEnableTxParameter = {
+    .name = "txprogramming",
+    .parameterNamed = motorOnOffParameterList,
+    .offset = offsetof(BLHeli_EEprom_t, BL_ENABLE_TX),
+};
+const oneWireParameterValue_t motorBeaconDelayList[] = {
+	{0x01, "1min"},
+	{0x02, "2min"},
+	{0x03, "5min"},
+	{0x04, "10min"},
+	{0x05, "off"},
+	{0, NULL},
+};
+const oneWireParameter_t motorBeaconDelayParameter = {
+	.name = "beacondelay",
+	.parameterNamed = motorBeaconDelayList,
+	.offset = offsetof(BLHeli_EEprom_t, BL_BEACON_DELAY)
+};
+const oneWireParameterNumerical_t motorBeaconStrengthValues = {
+    .min = 0x00,
+    .max = 0xFF,
+    .offset = 0,
+    .step = 1,
+};
+const oneWireParameter_t motorBeaconStrengthParameter = {
+	.name = "beaconstrength",
+	.parameterNamed = NULL,
+    .parameterNumerical = &motorBeaconStrengthValues,
+	.offset = offsetof(BLHeli_EEprom_t, BL_BEACON_STRENGTH)
+};
+const oneWireParameterNumerical_t motorBeepStrengthValues = {
+    .min = 0x00,
+    .max = 0xFF,
+    .offset = 0,
+    .step = 1,
+};
+const oneWireParameter_t motorBeepStrengthParameter = {
+	.name = "beepstrength",
+	.parameterNamed = NULL,
+    .parameterNumerical = &motorBeepStrengthValues,
+	.offset = offsetof(BLHeli_EEprom_t, BL_BEEP_STRENGTH)
+};
+const oneWireParameter_t motorBrakeOnStopParameter = {
+    .name = "brakeonstop",
+    .parameterNamed = motorOnOffParameterList,
+    .offset = offsetof(BLHeli_EEprom_t, BL_BRAKE_ON_STOP)
+};
+const oneWireParameterValue_t motorDemagParameterList[] = {
+    {0x01, "off"},
+    {0x02, "low"},
+    {0x03, "high"},
+    {0, NULL},
+};
+const oneWireParameter_t motorDemagParameter = {
+    .name = "demag",
+    .parameterNamed = motorDemagParameterList,
+    .offset = offsetof(BLHeli_EEprom_t, BL_DEMAG_COMP)
+};
+const oneWireParameterValue_t motorDirectionParameterList[] = {
+    {0x01, "normal"},
+    {0x02, "reversed"},
+    {0x03, "bidirectional"},
+    {0x04, "bidirectional reversed"},
+    {0, NULL},
+};
+const oneWireParameter_t motorDirectionParameter = {
+    .name = "direction",
+    .parameterNamed = motorDirectionParameterList,
+	.offset = offsetof(BLHeli_EEprom_t, BL_DIRECTION)
+};
+const oneWireParameterValue_t motorFrequencyParameterList[] = {
+    {0x01, "high"},
+    {0x02, "low"},
+    {0x03, "damped light"},
+    {0, NULL},
+};
+const oneWireParameter_t motorFrequencyParameter = {
+    .name = "frequency",
+    .parameterNamed = motorFrequencyParameterList,
+	.offset = offsetof(BLHeli_EEprom_t, BL_PWM_FREQ)
+};
+const oneWireParameterNumerical_t motorThrottleValues = {
+    .min = 0x00,
+    .max = 0xFF,
+    .offset = 1000,
+    .step = 4,
+};
+const oneWireParameter_t motorMaxThrottleParameter = {
+    .name = "maxthrottle",
+    .parameterNamed = NULL,
+    .parameterNumerical = &motorThrottleValues,
+    .offset = offsetof(BLHeli_EEprom_t, BL_PPM_MAX_THROTLE)
+};
+const oneWireParameter_t motorMinThrottleParameter = {
+    .name = "minthrottle",
+    .parameterNamed = NULL,
+    .parameterNumerical = &motorThrottleValues,
+    .offset = offsetof(BLHeli_EEprom_t, BL_PPM_MIN_THROTLE)
+};
+const oneWireParameterValue_t motorStartupPowerParameterList[] = {
+    {0x01, "0.031"},
+    {0x02, "0.047"},
+    {0x03, "0.063"},
+    {0x04, "0.094"},
+    {0x05, "0.125"},
+    {0x06, "0.188"},
+    {0x07, "0.25"},
+    {0x08, "0.38"},
+    {0x09, "0.50"},
+    {0x0A, "0.75"},
+    {0x0B, "1.00"},
+    {0x0C, "1.25"},
+    {0x0D, "1.50"},
+    {0, NULL},
+};
+const oneWireParameter_t motorStartupPowerParameter = {
+    .name = "startuppower",
+    .parameterNamed = motorStartupPowerParameterList,
+	.offset = offsetof(BLHeli_EEprom_t, BL_STARTUP_PWR)
+};
+const oneWireParameter_t motorTempProtectionParameter = {
+    .name = "tempprotection",
+    .parameterNamed = motorOnOffParameterList,
+    .offset = offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION)
+};
+const oneWireParameterValue_t motorTimingParameterList[] = {
+    {0x01, "low"},
+    {0x02, "medlow"},
+    {0x03, "medium"},
+    {0x04, "medhigh"},
+    {0x05, "high"},
+    {0, NULL},
+};
+const oneWireParameter_t motorTimingParameter = {
+    .name = "timing",
+    .parameterNamed = motorTimingParameterList,
+	.offset = offsetof(BLHeli_EEprom_t, BL_COMM_TIMING)
+};

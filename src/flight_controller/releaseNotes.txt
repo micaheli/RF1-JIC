@@ -118,3 +118,10 @@ Version 0.109.036:
 
 Version 0.110.036:
 	Finished making SUMD work.
+
+Version 0.111.036
+	Added "pidsdefaults" command. Will return pids and filters to default settings.
+	Added "pidsrs2k" command. Will return pids and filters to RS2K's settings.
+	Added "pidsabba" command. Will return pids and filters to Abbadessa's settings.
+	Added "pidspg" command. Will return pids and filters to Preston's Settings.
+	

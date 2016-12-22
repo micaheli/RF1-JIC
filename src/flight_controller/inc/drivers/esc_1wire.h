@@ -71,18 +71,6 @@ typedef struct BLHeli_EEprom {
 } BLHeli_EEprom_t;
 
 
-/*
-typedef struct {
-    uint32_t (*Disconnect)(void);
-    uint32_t (*PollReadReady)(void);
-    uint32_t (*ReadFlash)(ioMem_t*);
-    uint32_t (*WriteFlash)(ioMem_t*);
-    uint32_t (*ReadEEprom)(ioMem_t*);
-    uint32_t (*WriteEEprom)(ioMem_t*);
-    uint32_t (*PageErase)(ioMem_t*);
-    uint32_t (*EepromErase)(ioMem_t*);
-} esc1WireProtocol_t;
-*/
 typedef struct {
     uint32_t (*Disconnect)(motor_type actuator, uint32_t timeout);
 //    uint32_t (*PollReadReady)(void);
@@ -94,6 +82,24 @@ typedef struct {
     uint32_t (*EepromErase)(motor_type actuator, uint32_t timeout);
 } esc1WireProtocol_t;
 
+typedef struct {
+    uint8_t min;
+    uint8_t max;
+    int16_t step;
+    int16_t offset;
+} oneWireParameterNumerical_t;
+
+typedef struct {
+    uint8_t value;
+    const char *name;
+} oneWireParameterValue_t;
+
+typedef struct {
+    const char* name;
+    const oneWireParameterValue_t *parameterNamed;
+    const oneWireParameterNumerical_t *parameterNumerical;
+    uint32_t offset;
+} oneWireParameter_t;
 
 typedef struct {
 
@@ -124,6 +130,36 @@ typedef struct {
 	} oneWireState;
 
 } esc_one_wire_status;
+
+
+extern const oneWireParameter_t motorBeaconDelayParameter;
+extern const oneWireParameter_t motorBeaconStrengthParameter;
+extern const oneWireParameter_t motorBeepStrengthParameter;
+extern const oneWireParameter_t motorBrakeOnStopParameter;
+extern const oneWireParameter_t motorDemagParameter;
+extern const oneWireParameter_t motorDirectionParameter;
+extern const oneWireParameter_t motorEnableTxParameter;
+extern const oneWireParameter_t motorFrequencyParameter;
+extern const oneWireParameter_t motorMaxThrottleParameter;
+extern const oneWireParameter_t motorMinThrottleParameter;
+extern const oneWireParameter_t motorStartupPowerParameter;
+extern const oneWireParameter_t motorTempProtectionParameter;
+extern const oneWireParameter_t motorTimingParameter;
+
+
+extern const oneWireParameter_t* oneWireParameters[];
+
+extern int16_t Esc1WireSetParameter(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[], int16_t value);
+extern int16_t Esc1WireParameterFromDump(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[]);
+extern const char* OneWireParameterValueToName(const oneWireParameterValue_t *valuesList, uint8_t value);
+extern int16_t OneWireParameterNameToValue(const oneWireParameterValue_t *valuesList, const char *name);
+extern int16_t OneWireParameterValueToNumber(const oneWireParameterNumerical_t *numerical, uint8_t value);
+extern uint8_t OneWireParameterNumberToValue(const oneWireParameterNumerical_t *numerical, int16_t value);
+
+//int16_t esc1WireGetParameter(uint8_t escIndex, const oneWireParameter_t *layout);
+//uint8_t esc1WireSetParameter(uint8_t escIndex, const oneWireParameter_t *layout, uint8_t value);
+//int16_t esc1WireParameterFromDump(uint8_t escIndex, const oneWireParameter_t *parameter, uint8_t *buf);
+
 
 extern esc_one_wire_status escOneWireStatus[];
 extern volatile uint32_t oneWireOngoing;

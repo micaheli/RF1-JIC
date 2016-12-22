@@ -57,6 +57,7 @@ const string_comp_rec stringCompTable[] = {
 //		{"ESC_MEGAVOLT",  ESC_MEGAVOLT },
 
 		//mixer.h
+		{"MIXER_X1234I",  MIXER_X1234I },
 		{"MIXER_X1234RY", MIXER_X1234RY },
 		{"MIXER_X1234",   MIXER_X1234 },
 		{"MIXER_CUSTOM",  MIXER_CUSTOM },
@@ -160,15 +161,15 @@ const config_variables_rec valueTable[] = {
 		{ "pitch_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kdBq.lpfHz, 			0, 200, 68.00, "" },
 
 
-		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 				0, 10, 0.1000, "" },
-		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 250.00, "" },
-		{ "x_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.p, 				0, 10, 0.1500, "" },
-		{ "y_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.q, 				0, 10, 0.1000, "" },
-		{ "y_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.r, 				0, 10, 250.00, "" },
-		{ "y_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.p, 				0, 10, 0.1500, "" },
-		{ "z_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.q, 				0, 10, 0.1000, "" },
-		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 250.00, "" },
-		{ "z_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.p, 				0, 10, 0.1500, "" },
+		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 				0, 10, 2.0000, "" },
+		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 055.00, "" },
+		{ "x_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.p, 				0, 10, 0.0500, "" },
+		{ "y_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.q, 				0, 10, 2.0000, "" },
+		{ "y_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.r, 				0, 10, 055.00, "" },
+		{ "y_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.p, 				0, 10, 0.0500, "" },
+		{ "z_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.q, 				0, 10, 2.0000, "" },
+		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 055.00, "" },
+		{ "z_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.p, 				0, 10, 0.0500, "" },
 
 		{ "rx_protocol", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxProtcol, 				0, 10, USING_SPEKTRUM_TWO_WAY, "" },
 		{ "rx_usart", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxUsart, 				0, MAX_USARTS-1, ENUM_USART1, "" },
@@ -786,7 +787,15 @@ int32_t CheckAndSetChannel(uint32_t outChannel) {
 
 static void OneWire(char *inString) {
 
+	const oneWireParameter_t *parameter;
+	int16_t value, bytesWritten = 0;
+	uint32_t idx;
 	uint32_t x;
+	char *modString = NULL;
+	char *args = NULL;
+	uint32_t motorNumber;
+	uint32_t modStringLength;
+	uint32_t i;
 
 	if (!strcmp("start", inString) || !strcmp("read", inString))
 	{
@@ -795,8 +804,10 @@ static void OneWire(char *inString) {
 		RfCustomReply(rf_custom_out_buffer);
 		if (OneWireInit() == 0)
 		{
+
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "No ESCs detected. Is your battery connected?");
 			RfCustomReply(rf_custom_out_buffer);
+
 		}
 		else
 		{
@@ -820,8 +831,86 @@ static void OneWire(char *inString) {
 					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Disabled", x);
 					RfCustomReply(rf_custom_out_buffer);
 				}
+
 			}
+
 		}
+
+	}
+	else if (!strcmp("config", inString))
+	{
+
+		snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "1wiredumpstart\n");
+		RfCustomReply(rf_custom_out_buffer);
+		bytesWritten = 0;
+
+		for (x = 0; x < MAX_MOTOR_NUMBER; x++)
+		{
+
+			if ( (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[x].actuatorArrayNum].enabled) )
+			{
+
+				for (idx = 0; oneWireParameters[idx] != NULL; idx++)
+				{
+
+					parameter = oneWireParameters[idx];
+					bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "m%lu:%s=", x, parameter->name);
+					value = Esc1WireParameterFromDump(board.motors[x], parameter, escOneWireStatus[board.motors[x].actuatorArrayNum].config);
+					// make sure the value is valid
+
+					if (value == 0xFF)
+					{
+						bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "NONE\n");
+						RfCustomReply(rf_custom_out_buffer);
+						DelayMs(2);
+						bytesWritten = 0;
+						continue;
+					}
+
+					// add the readable form of the parameter value to the buffer
+					if (parameter->parameterNamed)
+					{
+						bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "%s\n", OneWireParameterValueToName(parameter->parameterNamed, value));
+						RfCustomReply(rf_custom_out_buffer);
+						DelayMs(2);
+						bytesWritten = 0;
+					}
+					else
+					{
+						bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "%d\n", OneWireParameterValueToNumber(parameter->parameterNumerical, value));
+						RfCustomReply(rf_custom_out_buffer);
+						DelayMs(2);
+						bytesWritten = 0;
+					}
+
+				}
+
+			}
+
+		}
+
+		snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "1wiredumpcomplete\n");
+		RfCustomReply(rf_custom_out_buffer);
+		bytesWritten = 0;
+
+//		int16_t value = esc1WireGetParameter(board.motors[x], "demag");
+//		uint32_t configParam;
+//		for (x = 0; x < MAX_MOTOR_NUMBER; x++)
+//		{
+//			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+//			{
+//				if (escOneWireStatus[board.motors[x].actuatorArrayNum].enabled)
+//				{
+//					configParam = escOneWireStatus[board.motors[x].actuatorArrayNum].BLHeliEEpromLayout.BL_GOV_P_GAIN + BLHELI_EEPROM_HEAD;
+//					if (configParam < 45) {
+//						escOneWireStatus[board.motors[x].actuatorArrayNum].config[configParam];
+//					}
+//				}
+//
+//			}
+//
+//		}
+
 	}
 	else if (!strcmp("save", inString))
 	{
@@ -854,6 +943,87 @@ static void OneWire(char *inString) {
 		OneWireDeinit();
 		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "1Wire Session Ended.");
 		RfCustomReply(rf_custom_out_buffer);
+	}
+	else
+	{
+		if ( (inString[0] == 'm') && (inString[2] == '=') ) {
+			motorNumber=atoi(&inString[1]);
+			modString = inString+3;
+
+			StripSpaces(modString);
+
+			modStringLength = strlen(modString);
+
+			for (x = 0; x < modStringLength; x++) {
+				if (modString[x] == '=')
+					break;
+			}
+
+			if (modStringLength > x) {
+				args = modString + x + 1;
+			}
+
+			modString[x] = 0;
+
+			for (x = 0; x < strlen(modString); x++)
+				modString[x] = tolower((unsigned char)modString[x]);
+
+			for (x = 0; x < strlen(args); x++)
+				args[x] = tolower((unsigned char)args[x]);
+
+
+			if ( (board.motors[motorNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[motorNumber].actuatorArrayNum].enabled) )
+			{
+				for (idx = 0; oneWireParameters[idx] != NULL; idx++)
+				{
+					parameter = oneWireParameters[idx];
+					if (!strcmp(parameter->name, modString)) //found the proper parameter, now let's get the proper value based on the string args
+					{
+						if (parameter->parameterNamed) //is the value a string?
+						{
+							value = OneWireParameterNameToValue(parameter->parameterNamed, args);
+						}
+						else //then it's an int.
+						{
+							value = OneWireParameterNumberToValue(parameter->parameterNumerical, (int16_t)atoi(args));
+						}
+						if (value < 0)
+						{
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ERROR=Unknown parameter value\n");
+							RfCustomReply(rf_custom_out_buffer);
+							return;
+						}
+						else
+						{
+							if ( Esc1WireSetParameter(board.motors[motorNumber], parameter, escOneWireStatus[board.motors[motorNumber].actuatorArrayNum].config, value) )
+							{
+								snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu Value Set! Please Save Changes!\n", motorNumber);
+								RfCustomReply(rf_custom_out_buffer);
+								return;
+							}
+							else
+							{
+								snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ERROR=Unknown ESC Layout\n");
+								RfCustomReply(rf_custom_out_buffer);
+								return;
+							}
+						}
+					}
+
+				}
+			}
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Stuff1 %s\n", inString);
+			RfCustomReply(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Stuff2 %s\n", modString);
+			RfCustomReply(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Stuff3 %s\n", args);
+			RfCustomReply(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Stuff4 %lu\n", motorNumber);
+			RfCustomReply(rf_custom_out_buffer);
+
+		}
+
 	}
 
 }
@@ -1365,6 +1535,12 @@ void ProcessCommand(char *inString)
 			char pitchString[12];
 			char rollString[12];
 			char yawString[12];
+			char ax[12];
+			char ay[12];
+			char az[12];
+			char gx[12];
+			char gy[12];
+			char gz[12];
 
 			ftoa(pitchAttitude, pitchString);
 			ftoa(rollAttitude, rollString);
@@ -1373,8 +1549,29 @@ void ProcessCommand(char *inString)
 			StripSpaces(rollString);
 			StripSpaces(yawString);
 
+			ftoa(filteredAccData[ACCX], ax);
+			ftoa(filteredAccData[ACCY], ay);
+			ftoa(filteredAccData[ACCZ], az);
+			StripSpaces(ax);
+			StripSpaces(ay);
+			StripSpaces(az);
+
+
+			ftoa(filteredGyroData[X], gx);
+			ftoa(filteredGyroData[Y], gy);
+			ftoa(filteredGyroData[Z], gz);
+			StripSpaces(gx);
+			StripSpaces(gy);
+			StripSpaces(gz);
+
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "pitch=%s\nroll=%s\nheading=%s", pitchString,rollString,yawString);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "telemstarted\npitch=%s\nroll=%s\nheading=%s\n", pitchString,rollString,yawString);
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ax=%s\nay=%s\naz=%s\n", ax,ay,az);
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "gx=%s\ngy=%s\ngz=%s\ntelemcomplete\n", gx,gy,gz);
 			RfCustomReply(rf_custom_out_buffer);
 
 		}
@@ -1440,6 +1637,162 @@ void ProcessCommand(char *inString)
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
 			RfCustomReply(rf_custom_out_buffer);
+		}
+	else if (!strcmp("pidsdefault", inString) || !strcmp("pidsdefault", inString))
+		{
+			mainConfig.pidConfig[YAW].kp = 460.00;
+			mainConfig.pidConfig[ROLL].kp = 290.00;
+			mainConfig.pidConfig[PITCH].kp = 330.00;
+
+			mainConfig.pidConfig[YAW].ki = 410.00;
+			mainConfig.pidConfig[ROLL].ki = 330.00;
+			mainConfig.pidConfig[PITCH].ki = 365.00;
+
+			mainConfig.pidConfig[YAW].kd = 80.00;
+			mainConfig.pidConfig[ROLL].kd = 320.00;
+			mainConfig.pidConfig[PITCH].kd = 360.00;
+
+			mainConfig.pidConfig[YAW].ga = 3.00;
+			mainConfig.pidConfig[ROLL].ga = 3.00;
+			mainConfig.pidConfig[PITCH].ga = 3.00;
+
+			mainConfig.pidConfig[YAW].wc = 4.00;
+			mainConfig.pidConfig[ROLL].wc = 4.00;
+			mainConfig.pidConfig[PITCH].wc = 4.00;
+
+			mainConfig.filterConfig[YAW].gyro.r = 290.00;
+			mainConfig.filterConfig[ROLL].gyro.r = 260.00;
+			mainConfig.filterConfig[PITCH].gyro.r = 260.00;
+
+			mainConfig.filterConfig[YAW].gyro.q = 0.1000;
+			mainConfig.filterConfig[ROLL].gyro.q = 0.1000;
+			mainConfig.filterConfig[PITCH].gyro.q = 0.1000;
+
+			mainConfig.filterConfig[YAW].gyro.p = 0.1500;
+			mainConfig.filterConfig[ROLL].gyro.p = 0.1500;
+			mainConfig.filterConfig[PITCH].gyro.p = 0.1500;
+
+			mainConfig.filterConfig[YAW].kd.r = 70.0;
+			mainConfig.filterConfig[ROLL].kd.r = 85.0;
+			mainConfig.filterConfig[PITCH].kd.r = 85.0;
+
+		}
+	else if (!strcmp("pidsrs2k", inString) || !strcmp("pidsrs2k", inString))
+		{
+			mainConfig.pidConfig[YAW].kp = 460.00;
+			mainConfig.pidConfig[ROLL].kp = 290.00;
+			mainConfig.pidConfig[PITCH].kp = 330.00;
+
+			mainConfig.pidConfig[YAW].ki = 410.00;
+			mainConfig.pidConfig[ROLL].ki = 330.00;
+			mainConfig.pidConfig[PITCH].ki = 365.00;
+
+			mainConfig.pidConfig[YAW].kd = 80.00;
+			mainConfig.pidConfig[ROLL].kd = 320.00;
+			mainConfig.pidConfig[PITCH].kd = 360.00;
+
+			mainConfig.pidConfig[YAW].ga = 3.00;
+			mainConfig.pidConfig[ROLL].ga = 3.00;
+			mainConfig.pidConfig[PITCH].ga = 3.00;
+
+			mainConfig.pidConfig[YAW].wc = 4.00;
+			mainConfig.pidConfig[ROLL].wc = 4.00;
+			mainConfig.pidConfig[PITCH].wc = 4.00;
+
+			mainConfig.filterConfig[YAW].gyro.r = 290.00;
+			mainConfig.filterConfig[ROLL].gyro.r = 260.00;
+			mainConfig.filterConfig[PITCH].gyro.r = 260.00;
+
+			mainConfig.filterConfig[YAW].gyro.q = 0.1000;
+			mainConfig.filterConfig[ROLL].gyro.q = 0.1000;
+			mainConfig.filterConfig[PITCH].gyro.q = 0.1000;
+
+			mainConfig.filterConfig[YAW].gyro.p = 0.1500;
+			mainConfig.filterConfig[ROLL].gyro.p = 0.1500;
+			mainConfig.filterConfig[PITCH].gyro.p = 0.1500;
+
+			mainConfig.filterConfig[YAW].kd.r = 70.0;
+			mainConfig.filterConfig[ROLL].kd.r = 85.0;
+			mainConfig.filterConfig[PITCH].kd.r = 85.0;
+
+		}
+	else if (!strcmp("pidspg", inString) || !strcmp("pidspg", inString))
+		{
+			mainConfig.pidConfig[YAW].kp = 500.00;
+			mainConfig.pidConfig[ROLL].kp = 340.00;
+			mainConfig.pidConfig[PITCH].kp = 380.00;
+
+			mainConfig.pidConfig[YAW].ki = 410.00;
+			mainConfig.pidConfig[ROLL].ki = 330.00;
+			mainConfig.pidConfig[PITCH].ki = 365.00;
+
+			mainConfig.pidConfig[YAW].kd = 300.00;
+			mainConfig.pidConfig[ROLL].kd = 580.00;
+			mainConfig.pidConfig[PITCH].kd = 640.00;
+
+			mainConfig.pidConfig[YAW].ga = 10.00;
+			mainConfig.pidConfig[ROLL].ga = 10.00;
+			mainConfig.pidConfig[PITCH].ga = 10.00;
+
+			mainConfig.pidConfig[YAW].wc = 4.00;
+			mainConfig.pidConfig[ROLL].wc = 4.00;
+			mainConfig.pidConfig[PITCH].wc = 4.00;
+
+			mainConfig.filterConfig[YAW].gyro.r = 150.00;
+			mainConfig.filterConfig[ROLL].gyro.r = 125.00;
+			mainConfig.filterConfig[PITCH].gyro.r = 125.00;
+
+			mainConfig.filterConfig[YAW].gyro.q = 0.1000;
+			mainConfig.filterConfig[ROLL].gyro.q = 0.1000;
+			mainConfig.filterConfig[PITCH].gyro.q = 0.1000;
+
+			mainConfig.filterConfig[YAW].gyro.p = 0.1500;
+			mainConfig.filterConfig[ROLL].gyro.p = 0.1500;
+			mainConfig.filterConfig[PITCH].gyro.p = 0.1500;
+
+			mainConfig.filterConfig[YAW].kd.r = 70.0;
+			mainConfig.filterConfig[ROLL].kd.r = 85.0;
+			mainConfig.filterConfig[PITCH].kd.r = 85.0;
+
+		}
+	else if (!strcmp("pidsabba", inString) || !strcmp("pidsabba", inString))
+		{
+			mainConfig.pidConfig[YAW].kp = 420.00;
+			mainConfig.pidConfig[ROLL].kp = 280.00;
+			mainConfig.pidConfig[PITCH].kp = 300.00;
+
+			mainConfig.pidConfig[YAW].ki = 410.00;
+			mainConfig.pidConfig[ROLL].ki = 330.00;
+			mainConfig.pidConfig[PITCH].ki = 365.00;
+
+			mainConfig.pidConfig[YAW].kd = 1200.00;
+			mainConfig.pidConfig[ROLL].kd = 3800.00;
+			mainConfig.pidConfig[PITCH].kd = 4000.00;
+
+			mainConfig.pidConfig[YAW].ga = 3.00;
+			mainConfig.pidConfig[ROLL].ga = 3.00;
+			mainConfig.pidConfig[PITCH].ga = 3.00;
+
+			mainConfig.pidConfig[YAW].wc = 4.00;
+			mainConfig.pidConfig[ROLL].wc = 4.00;
+			mainConfig.pidConfig[PITCH].wc = 4.00;
+
+			mainConfig.filterConfig[YAW].gyro.r = 180.00;
+			mainConfig.filterConfig[ROLL].gyro.r = 180.00;
+			mainConfig.filterConfig[PITCH].gyro.r = 180.00;
+
+			mainConfig.filterConfig[YAW].gyro.q = 0.1000;
+			mainConfig.filterConfig[ROLL].gyro.q = 0.1000;
+			mainConfig.filterConfig[PITCH].gyro.q = 0.1000;
+
+			mainConfig.filterConfig[YAW].gyro.p = 0.1500;
+			mainConfig.filterConfig[ROLL].gyro.p = 0.1500;
+			mainConfig.filterConfig[PITCH].gyro.p = 0.1500;
+
+			mainConfig.filterConfig[YAW].kd.r = 75.0;
+			mainConfig.filterConfig[ROLL].kd.r = 90.0;
+			mainConfig.filterConfig[PITCH].kd.r = 90.0;
+
 		}
 	else if (!strcmp("spekdefaults3", inString) || !strcmp("spekdefaults1", inString))
 		{
