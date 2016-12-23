@@ -123,5 +123,9 @@ Version 0.111.036
 	Added "pidsdefaults" command. Will return pids and filters to default settings.
 	Added "pidsrs2k" command. Will return pids and filters to RS2K's settings.
 	Added "pidsabba" command. Will return pids and filters to Abbadessa's settings.
+	Added "pidstaja" command. Will return pids and filters to Ehitaja's Settings.
 	Added "pidspg" command. Will return pids and filters to Preston's Settings.
-	
+
+Version 0.112.036
+	Fixed an asynchronous rate issue.
+	added ESC 1wire flash and config capabilities.

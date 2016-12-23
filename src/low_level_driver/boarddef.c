@@ -24,7 +24,7 @@ SPI_TypeDef        *spiInstance[6];
 
 unsigned char serialRxBuffer[3][RXBUFFERSIZE];
 unsigned char serialTxBuffer[3][TXBUFFERSIZE];
-uint32_t motorOutputBuffer[8][1280];
+uint32_t motorOutputBuffer[8][1500];
 
 
 volatile function_pointer callbackFunctionArray[IRQH_FP_TOT];

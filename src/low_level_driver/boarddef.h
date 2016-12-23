@@ -471,7 +471,7 @@ extern SPI_TypeDef        *spiInstance[];
 
 extern unsigned char serialTxBuffer[][TXBUFFERSIZE];
 extern unsigned char serialRxBuffer[][RXBUFFERSIZE];
-extern uint32_t motorOutputBuffer[][1280];
+extern uint32_t motorOutputBuffer[][1500];
 
 extern int InitializeMCUSettings();
 void getBoardHardwareDefs();

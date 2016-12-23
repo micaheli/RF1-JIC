@@ -40,6 +40,11 @@ typedef enum {
 	BLHBLM_SIMONK_ATMEL  = 3,
 } esc_bootloader_mode;
 
+typedef struct {
+	uint32_t startAddress;
+	uint32_t endAddress;
+	uint16_t version;
+} esc_hex_location;
 
 typedef struct BLHeli_EEprom {
     uint8_t BL_GOV_P_GAIN;
@@ -116,6 +121,7 @@ typedef struct {
 	uint32_t                  enabled;
 	uint8_t                   config[128];
 	const BLHeli_EEprom_t    *BLHeliEEpromLayout;
+	esc_hex_location          escHexLocation;
 
 	enum {
 		OW_IDLE                   = 0,
@@ -155,6 +161,7 @@ extern const char* OneWireParameterValueToName(const oneWireParameterValue_t *va
 extern int16_t OneWireParameterNameToValue(const oneWireParameterValue_t *valuesList, const char *name);
 extern int16_t OneWireParameterValueToNumber(const oneWireParameterNumerical_t *numerical, uint8_t value);
 extern uint8_t OneWireParameterNumberToValue(const oneWireParameterNumerical_t *numerical, int16_t value);
+extern uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator);
 
 //int16_t esc1WireGetParameter(uint8_t escIndex, const oneWireParameter_t *layout);
 //uint8_t esc1WireSetParameter(uint8_t escIndex, const oneWireParameter_t *layout, uint8_t value);

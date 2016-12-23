@@ -149,10 +149,10 @@ void ErrorHandler(uint32_t error)
     while (1) {
 		DoLed(0, 1);
 		DoLed(1, 0);
-        DelayMs(40);
+		simpleDelay_ASM(50000);
 		DoLed(0, 0);
 		DoLed(1, 1);
-        DelayMs(40);
+		simpleDelay_ASM(75000);
     	ZeroActuators(10);
     }
 }

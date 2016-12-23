@@ -150,8 +150,8 @@ static uint32_t EepromEraseSiLabsBLHeli(motor_type actuator, uint32_t timeout);
 static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout)  __attribute__ ((unused));
 static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address)  __attribute__ ((unused));
 
-const BLHeli_EEprom_t* GetBLHeliEEpromLayout(uint8_t data[]);
-
+static const BLHeli_EEprom_t* GetBLHeliEEpromLayout(uint8_t data[]);
+static void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize);
 /*
 const esc1WireProtocol_t BLHeliAtmelProtocol = {
 //    .disconnect    = DisconnectBLHeli,
@@ -176,8 +176,51 @@ const esc1WireProtocol_t BLHeliSiLabsProtocol = {
     .EepromErase   = EepromEraseSiLabsBLHeli,
 };
 
+static void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize) {
 
+	uint32_t addressFlashStart = ADDRESS_ESC_START;
+	uint32_t addressFlashEnd   = ADDRESS_FLASH_END;
+	uint32_t wordOffset;
+	uint32_t firmwareFinderData[5];
+	uint8_t firmwareFinderByteData[5 * 4];
+	uint32_t x;
+	uint8_t escStart[3] = {0x02, 0x19, 0xFD};
 
+	escHexLocation->startAddress = 0;
+	escHexLocation->endAddress = 0;
+	escHexLocation->version = 0;
+
+	//from ESC start address the config starts at 0x1A00 and the ESC name is at 0x1A00 + 0x50. The firmware stops at 1A6F and includes 1A6F
+	for (wordOffset = addressFlashStart; wordOffset < (addressFlashEnd - 0x1A6F); wordOffset++) { //scan up to 1mb of flash starting at after rfbl //todo:set per mcu
+		//flash goes like this. RFBL -> FW -> ESCs -> fade43f4 a62fe81a -> RFBL SIZE in 16 bit hex variable -> fade43f4 a62fe81a -> RFBL
+		memcpy( &firmwareFinderData, (char *) wordOffset, sizeof(firmwareFinderData) );
+		for (x=0; x<sizeof(firmwareFinderData)/4; x++) {
+			firmwareFinderData[x] = BigToLittleEndian32(firmwareFinderData[x]);
+			firmwareFinderByteData[(x * 4)+0] = ((firmwareFinderData[x]>>24)&0xff);
+			firmwareFinderByteData[(x * 4)+1] = ((firmwareFinderData[x]>>16)&0xff);
+			firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
+			firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
+		}
+		if (!strncmp(firmwareFinderByteData, escStart, 3)) {
+			memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00+64, sizeof(firmwareFinderData) ); //get config data to look for ESC name
+			for (x=0; x<sizeof(firmwareFinderData)/4; x++) {
+				firmwareFinderData[x] = BigToLittleEndian32(firmwareFinderData[x]); //switch to little endian
+				firmwareFinderByteData[(x * 4)+0] = ((firmwareFinderData[x]>>24)&0xff);
+				firmwareFinderByteData[(x * 4)+1] = ((firmwareFinderData[x]>>16)&0xff);
+				firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
+				firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
+			}
+			if (!strncmp(firmwareFinderByteData, escStringName, escNameStringSize)) {
+				escHexLocation->startAddress = wordOffset;
+				escHexLocation->endAddress = wordOffset + 0x1A6F;
+				memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00, sizeof(firmwareFinderData) ); //get versionnumber
+				//firmwareFinderData[0] = BigToLittleEndian32(firmwareFinderData[0]);
+				escHexLocation->version = (uint16_t)( ((firmwareFinderData[0]<<8) & 0xff00) | ((firmwareFinderData[0]>>8) & 0x00ff) );
+				return;
+			}
+		}
+	}
+}
 
 uint32_t OneWireInit(void)
 {
@@ -391,6 +434,74 @@ static uint32_t SendWriteCommand(motor_type actuator, uint8_t outBuffer[], uint1
 }
 */
 
+//1wire m2=upgrade
+uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator) {
+
+	uint32_t firmwareData32[32];
+	uint8_t  firmwareData8[130]; //128b writes with room for crc
+	uint32_t startAddress;
+	uint32_t endAddress;
+	uint16_t version;
+	uint16_t writeLength;
+	uint32_t wordOffset;
+	uint32_t x;
+	uint16_t y;
+	uint32_t try;
+	uint16_t pageAddress;
+	uint16_t currentPage;
+
+	currentPage  = 0;
+	pageAddress  = 0;
+	startAddress = escOneWireStatus[actuator.actuatorArrayNum].escHexLocation.startAddress;
+	endAddress   = escOneWireStatus[actuator.actuatorArrayNum].escHexLocation.endAddress;
+	version      = escOneWireStatus[actuator.actuatorArrayNum].escHexLocation.version;
+
+	// no ESC hex found
+	if (!(version > 0)) {
+		return (0);
+	}
+
+	wordOffset = startAddress;
+	//one 8 bit address at a time
+	for (y=0; y<(uint16_t)(startAddress-endAddress); y=y+128 ) {
+
+		FeedTheDog();
+		memcpy( &firmwareData32, (char *) wordOffset+y, sizeof(firmwareData32) );
+		for (x=0; x<sizeof(firmwareData32)/4; x++) {
+			firmwareData32[x] = BigToLittleEndian32(firmwareData32[x]);
+			firmwareData8[(x * 4)+0] = ((firmwareData32[x]>>24)&0xff);
+			firmwareData8[(x * 4)+1] = ((firmwareData32[x]>>16)&0xff);
+			firmwareData8[(x * 4)+2] = ((firmwareData32[x]>>8)&0xff);
+			firmwareData8[(x * 4)+3] = ((firmwareData32[x]>>0)&0xff);
+		}
+		writeLength = 128;
+		if (y > (startAddress-endAddress)) {
+			writeLength = writeLength - (y - (startAddress-endAddress));
+		}
+		//static uint32_t WriteEEpromSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout)
+		//return ( WriteFlashSiLabsBLHeli(actuator, outBuffer, 0x1A00, length, timeout) );
+
+		//each page needs to be erased.
+		//check if this is a new page:
+		//if so we erase it
+		//page size is 512 bytes, which is hex 0x200
+		pageAddress = 0x200 * (y / 0x200) + 1;
+		if (pageAddress > currentPage) {
+			escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->PageErase(actuator, y, 1000);
+			currentPage = pageAddress;
+		}
+
+		//write data
+		escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteFlash(actuator, firmwareData8, y, writeLength, 200);
+
+		//if (escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->PageErase(x, 1000))
+		//{
+		//	return ( escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteEEprom(actuator, escOneWireStatus[actuator.actuatorArrayNum].config, (BLHELI_END_DATA - 1), 150) );
+		//}
+	}
+	return (1);
+}
+
 static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
 
 	// SiLabs has no EEPROM, just a flash section at 0x1A00
@@ -424,6 +535,8 @@ static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
 			memcpy(escOneWireStatus[actuator.actuatorArrayNum].config, oneWireInBuffer, (BLHELI_END_DATA - 1));
 
 			escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout = GetBLHeliEEpromLayout(oneWireInBuffer);
+
+			FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16);
 		}
 		else
 		{
@@ -623,7 +736,7 @@ void OneWireDeinit(void) {
 
 
 
-const BLHeli_EEprom_t* GetBLHeliEEpromLayout(uint8_t data[]) {
+static const BLHeli_EEprom_t* GetBLHeliEEpromLayout(uint8_t data[]) {
 
 	uint32_t layoutVersion;
 

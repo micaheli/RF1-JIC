@@ -24,6 +24,20 @@ inline uint8_t BitReverse8(uint8_t byteToConvert) {
 	return (BitReverseTable256[byteToConvert]);
 }
 
+inline uint32_t BigToLittleEndian32(uint32_t numberIn)
+{
+
+	uint32_t numberOut;
+
+	numberOut = ((numberIn>>24)&0xff)    |   // move byte 3 to byte 0
+				((numberIn<<8)&0xff0000) |   // move byte 1 to byte 2
+				((numberIn>>8)&0xff00)   |   // move byte 2 to byte 1
+				((numberIn<<24)&0xff000000); // byte 0 to byte 3
+
+	return (numberOut);
+
+}
+
 inline float InlineConstrainf(float amt, float low, float high)
 {
     if (amt < low)
