@@ -2354,16 +2354,20 @@ void ProcessCommand(char *inString)
 
 				if ( M25p16ReadPage( atoi(args), flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer) ) {
 
-					for (uint32_t x=0;x<256;x++) {
+					//for (uint32_t x=0;x<256;x++) {
+					for (uint32_t x=0;x<RF_BUFFER_SIZE;x++) {
 
 						rf_custom_out_buffer[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
-						if (smallerPointer > 62) {
-							RfCustomReply(rf_custom_out_buffer);
-							smallerPointer = 0;
-							bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-						}
+						//rf_custom_out_buffer[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
+						//if (smallerPointer > 62) {
+						//	RfCustomReply(rf_custom_out_buffer);
+						//	smallerPointer = 0;
+						//	bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+						//}
 
 					}
+					RfCustomReply(rf_custom_out_buffer);
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 
 				} else {
 

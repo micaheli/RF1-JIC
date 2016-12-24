@@ -128,4 +128,11 @@ Version 0.111.036
 
 Version 0.112.036
 	Fixed an asynchronous rate issue.
+	Fix for SUMD calibration issue. Needs to be tested.
 	added ESC 1wire flash and config capabilities.
+	ESC config and flashing now works.
+
+Version 0.113.036
+	Add syn-ack log download command.
+
+Version 0.112.036

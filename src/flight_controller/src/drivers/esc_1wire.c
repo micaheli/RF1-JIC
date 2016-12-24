@@ -446,7 +446,6 @@ uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator) {
 	uint32_t wordOffset;
 	uint32_t x;
 	uint16_t y;
-	uint32_t try;
 	uint16_t pageAddress;
 	uint16_t currentPage;
 
