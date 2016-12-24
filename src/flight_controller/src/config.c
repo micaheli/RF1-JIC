@@ -795,7 +795,6 @@ static void OneWire(char *inString) {
 	char *args = NULL;
 	uint32_t motorNumber;
 	uint32_t modStringLength;
-	uint32_t i;
 
 	if (!strcmp("start", inString) || !strcmp("read", inString))
 	{

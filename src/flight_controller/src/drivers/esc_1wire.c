@@ -201,7 +201,7 @@ static void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *e
 			firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
 			firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
 		}
-		if (!strncmp(firmwareFinderByteData, escStart, 3)) {
+		if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStart, 3)) {
 			memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00+64, sizeof(firmwareFinderData) ); //get config data to look for ESC name
 			for (x=0; x<sizeof(firmwareFinderData)/4; x++) {
 				firmwareFinderData[x] = BigToLittleEndian32(firmwareFinderData[x]); //switch to little endian
@@ -210,7 +210,7 @@ static void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *e
 				firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
 				firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
 			}
-			if (!strncmp(firmwareFinderByteData, escStringName, escNameStringSize)) {
+			if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStringName, escNameStringSize)) {
 				escHexLocation->startAddress = wordOffset;
 				escHexLocation->endAddress = wordOffset + 0x1A6F;
 				memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00, sizeof(firmwareFinderData) ); //get versionnumber
