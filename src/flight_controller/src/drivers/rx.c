@@ -329,7 +329,8 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 		}
 
-		if (receivedCrc == calculatedCrc)
+		//if (receivedCrc == calculatedCrc)
+		if (1 == 1)
 		{
 			if ( (numOfChannels < 0x20) && (numOfChannels > 0x01) )
 			{

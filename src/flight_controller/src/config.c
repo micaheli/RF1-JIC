@@ -1,39 +1,15 @@
 #include "includes.h"
 
-// put this in a config.h
-/*
-#define UINT32 1;
-#define FLOAT 2;
-#define STRING 3;  // max size 32
-
-typedef struct {
-    void *location;
-    char name[8];  // max variable name 12
-} variableList;
-
-variableList variables[100];
-
-
-void AddVariable(char *variableName, void *VariableLocation, uint32_t variableType)
-{
-
-
-}
-*/
-
-#define RF_BUFFER_SIZE HID_EPIN_SIZE-1
 
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
 main_config mainConfig;
-uint32_t checkRxData[MAXCHANNELS];
 uint32_t resetBoard = 0;
+char rf_custom_out_buffer[RF_BUFFER_SIZE];
 
-static void SetValueOrString(uint32_t position, char *value);
-static void SetValue(uint32_t position, char *value);
-static void OneWire(char *inString);
-static void SetupWizard(char *inString);
-
+static uint32_t ValidateConfig (uint32_t addresConfigStart);
+static void     SetValueOrString(uint32_t position, char *value);
+static void     SetValue(uint32_t position, char *value);
 
 static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -96,6 +72,7 @@ const string_comp_rec stringCompTable[] = {
 		{"USING_SBUS",             USING_SBUS},
 		{"USING_SBUS_SPORT",       USING_SBUS_SPORT},
 		{"USING_SUMD",             USING_SUMD},
+		{"USING_SUMD_TWO_WAY",     USING_SUMD_TWO_WAY},
 
 };
 
@@ -259,15 +236,6 @@ const config_variables_rec valueTable[] = {
 
 };
 
-char rf_custom_out_buffer[RF_BUFFER_SIZE];
-
-//test
-
-
-//Dynamic config is bad idea if we are supporting f1, so instead we will go to a static sized structure
-// basically add padding at end of structure to make it a fixed size.   Then always ad variables to the end, then when loading
-// the structure, if your new version have new variables they will be zeroied and then just check in this function for zeroed functions and set default
-
 
 //TODO REwrite this better
 char *ftoa(float x, char *floatString)
@@ -392,7 +360,7 @@ uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length)
 
 }
 
-int ValidateConfig (uint32_t addresConfigStart)
+static uint32_t ValidateConfig (uint32_t addresConfigStart)
 {
 
 	const main_config *temp = (main_config *) addresConfigStart; //ADDRESS_FLASH_START;
@@ -520,7 +488,7 @@ void SetValueOrString(uint32_t position, char *value)
 
 	SetValue(position, value);
 }
-//here
+
 void SetValue(uint32_t position, char *value)
 {
 
@@ -538,845 +506,14 @@ void SetValue(uint32_t position, char *value)
 
 }
 
-int32_t FindRxCenter(void) {
-
-	volatile int32_t successRxStuff = 0;
-	uint32_t time = 5 * 400; //two seconds
-	rc_control_config tempRc;
-	bzero(&tempRc,sizeof(tempRc));
-
-	for (uint32_t timeCounter = 0;timeCounter < time;timeCounter+=5) {
-
-		calibrateMotors = 0;
-		ZeroActuators(0);
-
-		for (uint32_t x = 0;x<MAXCHANNELS;x++) {
-			tempRc.midRc[x] = rxData[x];
-		}
-
-		if (rx_timeout > 1000)
-		{
-			return -1;
-		}
-
-	}
-
-	for (uint32_t x = 0;x<MAXCHANNELS;x++) {
-		if ( tempRc.maxRc[x] != 1000000 ) {
-			mainConfig.rcControlsConfig.midRc[x] = tempRc.midRc[x];
-			if ( ( ABS((int32_t)mainConfig.rcControlsConfig.midRc[x] - (int32_t)mainConfig.rcControlsConfig.minRc[x]) < 10 ) ) { //looks like switch
-				mainConfig.rcControlsConfig.midRc[x] = mainConfig.rcControlsConfig.minRc[x]; //set center to min RC
-			} else
-			if ( ( ABS((int32_t)mainConfig.rcControlsConfig.midRc[x] - (int32_t)mainConfig.rcControlsConfig.maxRc[x]) < 10 ) ) { //looks like switch
-				mainConfig.rcControlsConfig.midRc[x] = mainConfig.rcControlsConfig.minRc[x]; //set center to min RC
-			}
-			successRxStuff++;
-		}
-	}
-
-	calibrateMotors = 0;
-	ZeroActuators(32000);
-
-	return (successRxStuff);
+void SendStatusReport(char *inString)
+{
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "STAT:%s\n", inString);
+	RfCustomReply(rf_custom_out_buffer);
 }
 
-int32_t FindRxMinMax(void) {
-
-	volatile int32_t successMinMaxStuff = 0;
-	uint32_t time = 20 * 750; //fifteen seconds
-	rc_control_config tempRc;
-
-	mainConfig.rcControlsConfig.rcCalibrated = 0;
-	bzero(&tempRc,sizeof(tempRc));
-
-	for (uint32_t x = 0;x<MAXCHANNELS;x++) {
-		tempRc.maxRc[x] = 0;
-		tempRc.minRc[x] = 1000000;
-		tempRc.channelMap[x] = 1000; //disable the channel
-	}
-
-	for (uint32_t timeCounter = 0;timeCounter < time;timeCounter+=20) {
-
-		calibrateMotors = 0;
-		ZeroActuators(0);
-		DelayMs(20);
-
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(rxData[0]));
-		RfCustomReply(rf_custom_out_buffer);
-
-		for (uint32_t x = 0;x<MAXCHANNELS;x++) {
-			if (rxData[x] < tempRc.minRc[x]) {
-				tempRc.minRc[x] = (volatile unsigned int)rxData[x];
-				tempRc.channelMap[x] = x;
-			}
-
-			if (rxData[x] > tempRc.maxRc[x]) {
-				tempRc.maxRc[x] = (volatile unsigned int)rxData[x];
-				tempRc.channelMap[x] = x;
-			}
-		}
-
-		if (rx_timeout > 1000)
-		{
-			return -1;
-		}
-
-	}
-
-	for (uint32_t xx = 0;xx<MAXCHANNELS;xx++) {
-
-		if ( (tempRc.minRc[xx] != 1000000) && ( ABS( (int32_t)tempRc.maxRc[xx] - (int32_t)tempRc.minRc[xx] ) > 200 ) ) { //we have RC data and the difference is greater than 200
-			mainConfig.rcControlsConfig.maxRc[xx]      = tempRc.maxRc[xx];
-			mainConfig.rcControlsConfig.minRc[xx]      = tempRc.minRc[xx];
-			mainConfig.rcControlsConfig.channelMap[xx] = 50; //set to 50 means waiting to be assigned
-			successMinMaxStuff++;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(xx));
-			RfCustomReply(rf_custom_out_buffer);
-		} else {
-			mainConfig.rcControlsConfig.maxRc[xx]      = 1000000;
-			mainConfig.rcControlsConfig.minRc[xx]      = 0;
-			mainConfig.rcControlsConfig.channelMap[xx] = 100; //set to 100 disables the channel
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u, %u, %u, %u", (volatile unsigned int)xx, (volatile unsigned int)(tempRc.maxRc[xx]), (volatile unsigned int)(tempRc.minRc[xx]), (volatile unsigned int)ABS( (int32_t)tempRc.maxRc[xx] - (int32_t)tempRc.minRc[xx] ));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-
-	}
-
-	calibrateMotors = 0;
-	ZeroActuators(32000);
-
-
-	return (successMinMaxStuff);
-}
-
-void ResetChannelCheck(void) {
-	memcpy(checkRxData, rxData, sizeof(checkRxData));
-}
-
-int32_t WhichInChannelChange(void) { //only returns unassigned channels //returns channel with largest change that's unassigned
-
-	int32_t inChannelChanged  = -1;
-	uint32_t changeValue      = 0;
-	float currentChannelRange = 0;
-	float percentFromMax      = 0;
-	float percentFromMin      = 0;
-	volatile float diffFloat  = 0;
-	float closestToEndPoint   = .5;
-
-	for (uint32_t x = 0;x<MAXCHANNELS;x++) {
-
-		changeValue = ABS((int32_t)rxData[x] - (int32_t)checkRxData[x]);
-
-		if ( changeValue > 200 ) {
-			if (mainConfig.rcControlsConfig.channelMap[x] == 50) {
-				currentChannelRange = ABS((float)mainConfig.rcControlsConfig.maxRc[x] - (float)mainConfig.rcControlsConfig.minRc[x]); //1000    //0  //1
-				diffFloat      = (float)rxData[x] -  (float)mainConfig.rcControlsConfig.maxRc[x];
-				percentFromMax = (float)( ABS(diffFloat) / (float)currentChannelRange);
-				diffFloat      = (float)rxData[x] -  (float)mainConfig.rcControlsConfig.minRc[x];
-				percentFromMin = (float)( ABS(diffFloat) / (float)currentChannelRange);
-				if (percentFromMax > percentFromMin) { //we're near min
-					if (percentFromMax > closestToEndPoint ) { //if current channel is closer to endpoint and it's changed at least 200 points, this is our channel
-						closestToEndPoint = percentFromMin;
-						//inChannelChanged = x;
-					}
-				} else { //we're closer to max or we're in the middle
-					if (percentFromMin > closestToEndPoint ) { //if current channel is closer to endpoint and it's changed at least 200 points, this is our channel
-						closestToEndPoint = percentFromMax;
-						//inChannelChanged = x;
-					}
-				}
-				if (closestToEndPoint < 0.05) { //at least within 5% of endpoint
-					inChannelChanged = x;
-				}
-
-			}
-
-		}
-
-	}
-
-	return inChannelChanged;
-
-}
-
-int32_t SetChannelMapAndDirection(uint32_t inChannel, uint32_t outChannel) {
-
-	int32_t channelCheck = ( rxData[inChannel] < (mainConfig.rcControlsConfig.maxRc[inChannel] - 300) ); //channel is reversed
-
-	if (mainConfig.rcControlsConfig.channelMap[inChannel] == 50) { //if channelMap for the inChannel is 50 than it's waiting to be assigned.
-
-		mainConfig.rcControlsConfig.channelMap[inChannel] = outChannel; //set channel map
-
-		if ( channelCheck ) { //min is higher so channel is reversed, reverse if needed
-			channelCheck = (int32_t)mainConfig.rcControlsConfig.maxRc[inChannel];
-			mainConfig.rcControlsConfig.maxRc[inChannel] = mainConfig.rcControlsConfig.minRc[inChannel];
-			mainConfig.rcControlsConfig.minRc[inChannel] = (uint32_t)channelCheck;
-		}
-		return 1;
-
-	}
-	return -1;
-
-}
-
-uint32_t CheckSafeMotors(uint32_t time, uint32_t deviationAllowed) {
-
-	float stdDeviation[10];
-	bzero(stdDeviation, sizeof(stdDeviation));
-	uint32_t simpleCouter = 0;
-
-	float strdDeviationCheck;
-
-	time = time / 10;
-
-	for (uint32_t timeCounter = 0;timeCounter < time;timeCounter++) {
-
-		for (simpleCouter=0;simpleCouter < 10;simpleCouter++) {
-			stdDeviation[simpleCouter]   = ABS(geeForceAccArray[ACCZ]);
-			DelayMs(1);
-		}
-		FeedTheDog();
-		simpleCouter = 0;
-		strdDeviationCheck = CalculateSD(stdDeviation) * 100000;
-
-		//bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "X:%u", (unsigned int)(strdDeviationCheck));
-		//RfCustomReply(rf_custom_out_buffer);
-
-		if (strdDeviationCheck > deviationAllowed) {
-			calibrateMotors = 0;
-			DisarmBoard();
-			ZeroActuators(32000);
-			return 0;
-		}
-
-	}
-	return 1;
-}
-
-//void WaitForInput (uint32_t timeout) {
-//
-//}
-
-int32_t CheckAndSetChannel(uint32_t outChannel) {
-	int32_t changedInChannel = -1;
-	int32_t throttleFix = 0;
-	for (uint32_t x = 0;x<1000;x++) {
-		changedInChannel = WhichInChannelChange();
-		if ((changedInChannel > -1) && (x > 100))
-			break;
-		DelayMs(10);
-	}
-	if (changedInChannel > -1) {
-		if (SetChannelMapAndDirection(changedInChannel, outChannel)) {
-			if ( (outChannel == THROTTLE) || (outChannel == AUX1) || (outChannel == AUX2) || (outChannel == AUX3) || (outChannel == AUX4) ) { //set mid point at center between extremes
-				throttleFix = (int32_t)(((int32_t)mainConfig.rcControlsConfig.maxRc[changedInChannel] - (int32_t)mainConfig.rcControlsConfig.minRc[changedInChannel]) / 2);
-				mainConfig.rcControlsConfig.midRc[changedInChannel] = (uint32_t)( throttleFix + (int32_t)mainConfig.rcControlsConfig.minRc[changedInChannel]);
-			}
-			return 1;
-		} else {
-			return -1;
-		}
-	} else {
-		return -1;
-	}
-}
-
-static void OneWire(char *inString) {
-
-	const oneWireParameter_t *parameter;
-	int16_t value, bytesWritten = 0;
-	uint32_t idx;
-	uint32_t x;
-	char *modString = NULL;
-	char *args = NULL;
-	uint32_t motorNumber;
-	uint32_t modStringLength;
-
-	if (!strcmp("start", inString) || !strcmp("read", inString))
-	{
-
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Reading ESCs...");
-		RfCustomReply(rf_custom_out_buffer);
-		DelayMs(5);
-		if (OneWireInit() == 0)
-		{
-
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "No ESCs detected. Is your battery connected?");
-			RfCustomReply(rf_custom_out_buffer);
-			DelayMs(5);
-
-		}
-		else
-		{
-			for (x = 0; x < MAX_MOTOR_NUMBER; x++)
-			{
-				if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
-				{
-					if (escOneWireStatus[board.motors[x].actuatorArrayNum].enabled)
-					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu: %u.%u, %s, %s, %s", x, (uint8_t)( (escOneWireStatus[board.motors[x].actuatorArrayNum].version >> 8) & 0xFF), (uint8_t)(escOneWireStatus[board.motors[x].actuatorArrayNum].version & 0xFF), escOneWireStatus[board.motors[x].actuatorArrayNum].nameStr, escOneWireStatus[board.motors[x].actuatorArrayNum].fwStr, escOneWireStatus[board.motors[x].actuatorArrayNum].versionStr);
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(1);
-						if (escOneWireStatus[board.motors[x].actuatorArrayNum].escHexLocation.version > escOneWireStatus[board.motors[x].actuatorArrayNum].version) {
-							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu: Upgrade to version %u.%u is available", x, (uint8_t)( (escOneWireStatus[board.motors[x].actuatorArrayNum].escHexLocation.version >> 8) & 0xFF), (uint8_t)( escOneWireStatus[board.motors[x].actuatorArrayNum].escHexLocation.version & 0xFF) );
-							RfCustomReply(rf_custom_out_buffer);
-							DelayMs(5);
-						}
-					}
-					else
-					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Unreadable", x);
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(5);
-					}
-				}
-				else
-				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Disabled", x);
-					RfCustomReply(rf_custom_out_buffer);
-					DelayMs(5);
-				}
-
-			}
-
-			snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "1wiredumpstart\n");
-			RfCustomReply(rf_custom_out_buffer);
-			DelayMs(5);
-			bytesWritten = 0;
-
-			for (x = 0; x < MAX_MOTOR_NUMBER; x++)
-			{
-
-				if ( (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[x].actuatorArrayNum].enabled) )
-				{
-
-					for (idx = 0; oneWireParameters[idx] != NULL; idx++)
-					{
-
-						parameter = oneWireParameters[idx];
-						bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "m%lu=%s=", x, parameter->name);
-						value = Esc1WireParameterFromDump(board.motors[x], parameter, escOneWireStatus[board.motors[x].actuatorArrayNum].config);
-						// make sure the value is valid
-
-						if (value == 0xFF)
-						{
-							bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "NONE\n");
-							RfCustomReply(rf_custom_out_buffer);
-							DelayMs(5);
-							bytesWritten = 0;
-							continue;
-						}
-
-						// add the readable form of the parameter value to the buffer
-						if (parameter->parameterNamed)
-						{
-							bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "%s\n", OneWireParameterValueToName(parameter->parameterNamed, value));
-							RfCustomReply(rf_custom_out_buffer);
-							DelayMs(5);
-							bytesWritten = 0;
-						}
-						else
-						{
-							bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "%d\n", OneWireParameterValueToNumber(parameter->parameterNumerical, value));
-							RfCustomReply(rf_custom_out_buffer);
-							DelayMs(5);
-							bytesWritten = 0;
-						}
-
-					}
-
-				}
-
-			}
-
-			snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "1wiredumpcomplete\n");
-			RfCustomReply(rf_custom_out_buffer);
-			DelayMs(5);
-			bytesWritten = 0;
-
-		}
-
-	}
-	else if (!strcmp("config", inString))
-	{
-
-		snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "1wiredumpstart\n");
-		RfCustomReply(rf_custom_out_buffer);
-		bytesWritten = 0;
-
-		for (x = 0; x < MAX_MOTOR_NUMBER; x++)
-		{
-
-			if ( (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[x].actuatorArrayNum].enabled) )
-			{
-
-				for (idx = 0; oneWireParameters[idx] != NULL; idx++)
-				{
-
-					parameter = oneWireParameters[idx];
-					bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "m%lu=%s=\n", x, parameter->name);
-					value = Esc1WireParameterFromDump(board.motors[x], parameter, escOneWireStatus[board.motors[x].actuatorArrayNum].config);
-					// make sure the value is valid
-
-					if (value == 0xFF)
-					{
-						bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "NONE\n");
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(2);
-						bytesWritten = 0;
-						continue;
-					}
-
-					// add the readable form of the parameter value to the buffer
-					if (parameter->parameterNamed)
-					{
-						bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "%s\n", OneWireParameterValueToName(parameter->parameterNamed, value));
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(2);
-						bytesWritten = 0;
-					}
-					else
-					{
-						bytesWritten += snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "%d\n", OneWireParameterValueToNumber(parameter->parameterNumerical, value));
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(2);
-						bytesWritten = 0;
-					}
-
-				}
-
-			}
-
-		}
-
-		snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "1wiredumpcomplete\n");
-		RfCustomReply(rf_custom_out_buffer);
-		bytesWritten = 0;
-
-//		int16_t value = esc1WireGetParameter(board.motors[x], "demag");
-//		uint32_t configParam;
-//		for (x = 0; x < MAX_MOTOR_NUMBER; x++)
-//		{
-//			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
-//			{
-//				if (escOneWireStatus[board.motors[x].actuatorArrayNum].enabled)
-//				{
-//					configParam = escOneWireStatus[board.motors[x].actuatorArrayNum].BLHeliEEpromLayout.BL_GOV_P_GAIN + BLHELI_EEPROM_HEAD;
-//					if (configParam < 45) {
-//						escOneWireStatus[board.motors[x].actuatorArrayNum].config[configParam];
-//					}
-//				}
-//
-//			}
-//
-//		}
-
-	}
-	else if (!strcmp("save", inString))
-	{
-
-		for (x = 0; x < MAX_MOTOR_NUMBER; x++)
-		{
-			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
-			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Saving Motor %lu Config.\n", x);
-				RfCustomReply(rf_custom_out_buffer);
-
-				if (OneWireSaveConfig(board.motors[x]))
-				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Config Saved.\n", x);
-					RfCustomReply(rf_custom_out_buffer);
-				}
-				else
-				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Error Saving Motor %lu Config.\n", x);
-					RfCustomReply(rf_custom_out_buffer);
-				}
-
-			}
-
-		}
-
-	}
-	else if (!strcmp("stop", inString))
-	{
-		OneWireDeinit();
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "1Wire Session Ended.");
-		RfCustomReply(rf_custom_out_buffer);
-	}
-	else
-	{
-		if ( (inString[0] == 'm') && (inString[2] == '=') ) {
-			motorNumber=atoi(&inString[1]);
-			modString = inString+3;
-
-			StripSpaces(modString);
-
-			modStringLength = strlen(modString);
-
-			for (x = 0; x < modStringLength; x++) {
-				if (modString[x] == '=')
-					break;
-			}
-
-			if (modStringLength > x) {
-				args = modString + x + 1;
-			}
-
-			modString[x] = 0;
-
-			for (x = 0; x < strlen(modString); x++)
-				modString[x] = tolower((unsigned char)modString[x]);
-
-			for (x = 0; x < strlen(args); x++)
-				args[x] = tolower((unsigned char)args[x]);
-
-
-			if (!strcmp("upgrade", modString))
-			{
-				if ( (board.motors[motorNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[motorNumber].actuatorArrayNum].enabled) )
-				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Upgrading %lu...\n", motorNumber);
-					RfCustomReply(rf_custom_out_buffer);
-					DelayMs(5);
-					if ( BuiltInUpgradeSiLabsBLHeli(board.motors[motorNumber]) )
-					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu upgrade complete\n", motorNumber);
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(5);
-					}
-					else
-					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu upgrade failed\n", motorNumber);
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(5);
-					}
-				}
-				else
-				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "No upgrade available for ESC %lu\n", motorNumber);
-					RfCustomReply(rf_custom_out_buffer);
-					DelayMs(5);
-				}
-			}
-			else
-			{
-				if ( (board.motors[motorNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[motorNumber].actuatorArrayNum].enabled) )
-				{
-					for (idx = 0; oneWireParameters[idx] != NULL; idx++)
-					{
-						parameter = oneWireParameters[idx];
-						if (!strcmp(parameter->name, modString)) //found the proper parameter, now let's get the proper value based on the string args
-						{
-							if (parameter->parameterNamed) //is the value a string?
-							{
-								value = OneWireParameterNameToValue(parameter->parameterNamed, args);
-							}
-							else //then it's an int.
-							{
-								value = OneWireParameterNumberToValue(parameter->parameterNumerical, (int16_t)atoi(args));
-							}
-							if (value < 0)
-							{
-								snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ERROR=Unknown parameter value\n");
-								RfCustomReply(rf_custom_out_buffer);
-								return;
-							}
-							else
-							{
-								if ( Esc1WireSetParameter(board.motors[motorNumber], parameter, escOneWireStatus[board.motors[motorNumber].actuatorArrayNum].config, value) )
-								{
-									snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu Value Set! Please Save Changes!\n", motorNumber);
-									RfCustomReply(rf_custom_out_buffer);
-									return;
-								}
-								else
-								{
-									snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ERROR=Unknown ESC Layout\n");
-									RfCustomReply(rf_custom_out_buffer);
-									return;
-								}
-							}
-						}
-					}
-				}
-			}
-
-			//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Stuff1 %s\n", inString);
-			//RfCustomReply(rf_custom_out_buffer);
-			//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Stuff2 %s\n", modString);
-			//RfCustomReply(rf_custom_out_buffer);
-			//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Stuff3 %s\n", args);
-			//RfCustomReply(rf_custom_out_buffer);
-			//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Stuff4 %lu\n", motorNumber);
-			//RfCustomReply(rf_custom_out_buffer);
-
-		}
-
-	}
-
-}
-
-static void SetupWizard(char *inString) {
-
-	int32_t returnedValue = 0;
-
-	if (!strcmp("cala", inString)) {
-		mainConfig.gyroConfig.boardCalibrated = 0;
-		mainConfig.gyroConfig.gyroRotation = CW0;
-		DelayMs(200); //need to reset calibration and give ACC data time to refresh
-		if (SetCalibrate1()) {
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrate1finished\n", sizeof("calibrate1finished\n"));
-			RfCustomReply(rf_custom_out_buffer);
-		} else {
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrationfailed\n", sizeof("calibrationfailed\n"));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-	} else
-	if (!strcmp("calb", inString)) {
-
-		if (SetCalibrate2()) {
-
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrate2finished\n", sizeof("calibrate2finished\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
-
-		} else {
-
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrationfailed\n", sizeof("calibrationfailed\n"));
-			RfCustomReply(rf_custom_out_buffer);
-
-		}
-
-	} else
-	if (!strcmp("rca", inString)) {
-
-		//reset rcCalibration
-		mainConfig.rcControlsConfig.rcCalibrated = 0;
-		skipRxMap = 1;
-
-		//reset channelMap
-		for (uint32_t x = 0;x<MAXCHANNELS;x++) {
-			mainConfig.rcControlsConfig.channelMap[x] = x;
-		}
-
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "\n", sizeof("\n"));
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "movercfor15seconds", sizeof("movercfor15seconds"));
-		RfCustomReply(rf_custom_out_buffer);
-
-		returnedValue = FindRxMinMax();
-		DisarmBoard();
-		if (returnedValue == -1) {
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibratercfailedradionotdetected", sizeof("calibratercfailedradionotdetected"));
-			RfCustomReply(rf_custom_out_buffer);
-		} else if (returnedValue) {
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "endpointsset", sizeof("endpointsset"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "centersticksandswitches", sizeof("centersticksandswitches"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "runwizrcb", sizeof("runwizrcb"));
-			RfCustomReply(rf_custom_out_buffer);
-		} else {
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibratercfailed", sizeof("calibratercfailed"));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-	} else
-	if (!strcmp("rcb", inString)) {
-
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "\n", sizeof("\n"));
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "calibratestickcenters", sizeof("calibratestickcenters"));
-		RfCustomReply(rf_custom_out_buffer);
-
-		returnedValue = FindRxCenter();
-		DisarmBoard();
-		if (returnedValue == -1) {
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibratercfailedradionotdetected", sizeof("calibratercfailedradionotdetected"));
-			RfCustomReply(rf_custom_out_buffer);
-		} else if (returnedValue) {
-			ResetChannelCheck(); //reset stick checker
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "centersset", sizeof("centersset"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "\n", sizeof("\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "setARMSWITCHdisarmed", sizeof("setARMSWITCHdisarmed"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "setLOGSWITCHoff", sizeof("setLOGSWITCHoff"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "setTHROTTLEbottom", sizeof("setTHROTTLEbottom"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "runwizrcc", sizeof("runwizrcc"));
-			RfCustomReply(rf_custom_out_buffer);
-		} else {
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibratercfailed", sizeof("calibratercfailed"));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-	} else
-	//if (!strcmp("rcc", inString)) {
-	//	ResetChannelCheck();
-	//	bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-	//	memcpy(rf_custom_out_buffer, "setTHROTTLEtop", sizeof("setTHROTTLEtop"));
-	//	RfCustomReply(rf_custom_out_buffer);
-	//} else
-	if (!strcmp("rcc", inString)) {
-
-		ResetChannelCheck();
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "setTHROTTLEtop", sizeof("setTHROTTLEtop"));
-		RfCustomReply(rf_custom_out_buffer);
-
-		if (CheckAndSetChannel(THROTTLE)) {
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "setYAWright", sizeof("setYAWright"));
-			RfCustomReply(rf_custom_out_buffer);
-			if (CheckAndSetChannel(YAW)) {
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "setPITCHtop", sizeof("setPITCHtop"));
-				RfCustomReply(rf_custom_out_buffer);
-				if (CheckAndSetChannel(PITCH)) {
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "setROLLright", sizeof("setROLLright"));
-					RfCustomReply(rf_custom_out_buffer);
-					if (CheckAndSetChannel(ROLL)) {
-						bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-						memcpy(rf_custom_out_buffer, "setARMSWITCHarmed", sizeof("setARMSWITCHarmed"));
-						RfCustomReply(rf_custom_out_buffer);
-						if (CheckAndSetChannel(AUX1)) {
-							bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-							memcpy(rf_custom_out_buffer, "setLOGarmed", sizeof("setLOGarmed"));
-							RfCustomReply(rf_custom_out_buffer);
-							if (CheckAndSetChannel(AUX2)) {
-								bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-								memcpy(rf_custom_out_buffer, "loggingswitchenabled", sizeof("loggingswitchenabled"));
-								RfCustomReply(rf_custom_out_buffer);
-							} else {
-								bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-								memcpy(rf_custom_out_buffer, "loggingswitchdisabled", sizeof("loggingswitchdisabled"));
-								RfCustomReply(rf_custom_out_buffer);
-							}
-							bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-							memcpy(rf_custom_out_buffer, "calibrationcomplete", sizeof("calibrationcomplete"));
-							RfCustomReply(rf_custom_out_buffer);
-							mainConfig.rcControlsConfig.rcCalibrated = 1;
-							skipRxMap = 0;
-							bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-							memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
-							RfCustomReply(rf_custom_out_buffer);
-							SaveConfig(ADDRESS_CONFIG_START);
-							bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-							memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
-							RfCustomReply(rf_custom_out_buffer);
-						} else {
-							bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-							memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
-							RfCustomReply(rf_custom_out_buffer);
-						}
-					} else {
-						bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-						memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
-						RfCustomReply(rf_custom_out_buffer);
-					}
-				} else {
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
-					RfCustomReply(rf_custom_out_buffer);
-				}
-			} else {
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
-				RfCustomReply(rf_custom_out_buffer);
-			}
-		} else {
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-
-	} else
-	if (!strcmp("mot", inString)) {
-
-		InitWatchdog(WATCHDOG_TIMEOUT_16S);
-		calibrateMotors = 1;
-		SKIP_GYRO=1;
-		DisarmBoard();
-		motorOutput[0] = 1.0;
-		OutputActuators(motorOutput, servoOutput);
-		if (CheckSafeMotors(1000, 10000)) { //check for safe motors for 3 seconds, 10000 standard deviation allowed
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "calibratingmotorspluginbattery", sizeof("calibratingmotorspluginbattery"));
-			RfCustomReply(rf_custom_out_buffer);
-		} else {
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "motorcalibrationfailed", sizeof("motorcalibrationfailed"));
-			RfCustomReply(rf_custom_out_buffer);
-			InitWatchdog(WATCHDOG_TIMEOUT_2S);
-			return;
-		}
-
-		InitWatchdog(WATCHDOG_TIMEOUT_16S);
-		if (CheckSafeMotors(15000,200000)) { //calibrate for 15 seconds safe motors for 3 seconds
-
-		}
-		motorOutput[0] = 0;
-		motorOutput[1] = 0;
-		motorOutput[2] = 0;
-		motorOutput[3] = 0;
-		motorOutput[4] = 0;
-		motorOutput[5] = 0;
-		motorOutput[6] = 0;
-		motorOutput[7] = 0;
-		motorOutput[8] = 0;
-		OutputActuators(motorOutput, servoOutput);
-		InitWatchdog(WATCHDOG_TIMEOUT_2S);
-		SKIP_GYRO=0;
-		calibrateMotors = 0;
-
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		memcpy(rf_custom_out_buffer, "calibratingmotorscomplete", sizeof("calibratingmotorscomplete"));
-		RfCustomReply(rf_custom_out_buffer);
-
-		InitWatchdog(WATCHDOG_TIMEOUT_2S);
-	} else
-	{
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "noargumentsfoundforargument:%s", inString);
-		RfCustomReply(rf_custom_out_buffer);
-	}
-}
-
-int32_t SetVariable(char *inString) {
+int32_t SetVariable(char *inString)
+{
 	uint32_t x;
 	uint32_t inStringLength;
 	char *args = NULL;
@@ -1481,7 +618,8 @@ void OutputVar(uint32_t position)
 /**********************************************************************************************************************/
 
 
-int RfCustomReply(char *rf_custom_out_buffer) {
+int RfCustomReply(char *rf_custom_out_buffer)
+{
 
 	uint32_t forCounter;
 
@@ -1503,6 +641,14 @@ int RfCustomReply(char *rf_custom_out_buffer) {
 	return(0);
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////COMMANDS/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//process commands here.
 void ProcessCommand(char *inString)
 {
 	//buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
@@ -1650,9 +796,10 @@ void ProcessCommand(char *inString)
 			StripSpaces(az);
 
 
-			ftoa(filteredGyroData[X], gx);
-			ftoa(filteredGyroData[Y], gy);
-			ftoa(filteredGyroData[Z], gz);
+			//X is pitch, y is roll, z is yaw
+			ftoa(filteredGyroData[PITCH], gx);
+			ftoa(filteredGyroData[ROLL], gy);
+			ftoa(filteredGyroData[YAW], gz);
 			StripSpaces(gx);
 			StripSpaces(gy);
 			StripSpaces(gz);
@@ -1668,7 +815,7 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 
 		}
-	else if (!strcmp("taranisdefaultsrf1", inString) || !strcmp("taranisdefaultsrf1", inString))
+	else if (!strcmp("taranis_1", inString) || !strcmp("taranis_3", inString) || !strcmp("taranis_t_1", inString) || !strcmp("taranis_t_3", inString))
 		{
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 985;
 			mainConfig.rcControlsConfig.midRc[ROLL]          = 985;
@@ -1716,12 +863,97 @@ void ProcessCommand(char *inString)
 
 			mainConfig.rcControlsConfig.rcCalibrated         = 1;
 
-			mainConfig.rcControlsConfig.rxProtcol            = USING_SBUS_SPORT; //this is used by serial.c
+			if(!strcmp("taranis_t_1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_SPORT; //this is used by serial.c
+			}
+			if(!strcmp("taranis_t_3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_SPORT; //this is used by serial.c
+			}
+			if(!strcmp("taranis_1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS; //this is used by serial.c
+			}
+			if(!strcmp("taranis_3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS; //this is used by serial.c
+			}
 
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "settingdefaultstotaranisdefaultsrf1\n", sizeof("settingdefaultstotaranisdefaultsrf1\n"));
+			memcpy(rf_custom_out_buffer, "settingdefaultstotaranis\n", sizeof("settingdefaultstotaranis\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			SaveConfig(ADDRESS_CONFIG_START);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
+	else if (!strcmp("sumd_1", inString) || !strcmp("sumd_3", inString))
+		{
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 12000;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 12000;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 12000;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 12000;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 12000;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 12000;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 12000;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 12000;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 8000;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 16000;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 16000;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 16000;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 8000;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 8000;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 0;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 16000;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 8000;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 8000;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 8000;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 16000;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 16000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1000000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
+
+			mainConfig.rcControlsConfig.rcCalibrated         = 1;
+
+			if(!strcmp("sumd_1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_TWO_WAY; //this is used by serial.c
+			}
+			if(!strcmp("sumd_3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD; //this is used by serial.c
+			}
+
+			resetBoard = 1;
+
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "settingdefaultstosumd\n", sizeof("settingdefaultstosumd\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
@@ -1926,7 +1158,7 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[PITCH].kd.r = 90.0;
 
 		}
-	else if (!strcmp("spekdefaults3", inString) || !strcmp("spekdefaults1", inString))
+	else if (!strcmp("spek_1", inString) || !strcmp("spek_3", inString) || !strcmp("spek_t_1", inString) || !strcmp("spek_t_3", inString))
 		{
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
 			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
@@ -1974,11 +1206,22 @@ void ProcessCommand(char *inString)
 
 			mainConfig.rcControlsConfig.rcCalibrated         = 1;
 
-			if(!strcmp("spekdefaults1", inString))
+			if(!strcmp("spek_t_1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
 				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_TWO_WAY; //this is used by serial.c
-
-			if(!strcmp("spekdefaults3", inString))
+			}
+			if(!strcmp("spek_t_3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_TWO_WAY; //this is used by serial.c
+			}
+			if(!strcmp("spek_1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_TWO_WAY; //this is used by serial.c
+			}
+			if(!strcmp("spek_3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
 				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_ONE_WAY; //this is used by serial.c
+			}
 
 			resetBoard = 1;
 
@@ -2491,17 +1734,6 @@ void ProcessCommand(char *inString)
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "unknowncommand:%s\n", args);
 			RfCustomReply(rf_custom_out_buffer);
 		}
-/*
-	else if (!strcmp("1wire", inString))
-	{
-		rfCustom1Wire(args);
-	}
-	else if (!strcmp("rfblbind", inString))
-	{
-		rfCustomRfblBind(args);
-	}
-*/
-
 
 }
 

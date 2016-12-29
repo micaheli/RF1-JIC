@@ -136,4 +136,37 @@ Version 0.113.036
 	Add syn-ack log download command.
 
 Version 0.114.036
-	TBD...
+	Changes to loggin.
+
+Version 0.115.036
+	Fixed Sumd again! Woohoo!
+	Change rx defaults:
+		Removed all rx "defaults" commands, such as "spekdefaults1"
+		Added "spek_t_1" command:    Sets up spektrum on USART 1. Conect to TX pin. Works with telemtry out.
+		Added "spek_1" command:      Sets up spektrum on USART 1. Conect to TX pin.
+		Added "spek_t_3" command:    Sets up spektrum on USART 3. Conect to TX pin. Works with telemtry out.
+		Added "spek_3" command:      Sets up spektrum on USART 3. Conect to RX pin. 
+		Added "taranis_t_1" command: Sets up sbus on USART 1 - Inverted input (standard sbus). Conect to Sbus pin. Works with s.port telemtry out on usart 1 RX pin.
+		Added "taranis_1" command:   Sets up sbus on USART 1 - Inverted input (standard sbus). Conect to Sbus pin.
+		Added "taranis_t_3" command: Sets up sbus on USART 3 - Normal input (non standard sbus). Conect to TX pin. Works with s.port telemtry out on usart 3 RX pin.
+		Added "taranis_3" command:   Sets up sbus on USART 3 - Normal input (non standard sbus). Conect to TX pin. 
+		Added "sumd_1" command:      Sets up SumD on Usart 1. Conect to TX pin.
+		Added "sumd_3" command:      Sets up SumD on Usart 3. Conect to RX pin.
+
+Version 0.116.036
+	Add ESC 1wire force flash option.
+	Fixed SumD again. :)
+
+Version 0.117.036
+	Added 45 degree mount capability to wiz cala and wiz calb
+
+Version 0.118.036
+	Fixed mixer issue in 117.036
+	fixed 1wire issue in 117.036
+
+Version 0.119.036
+	Filled in 1wire logic.
+
+Version 0.120.036
+	Code cleanup.
+	Change PID logging scale.

@@ -22,6 +22,7 @@
 #include "debug.h"
 #include "flight.h"
 #include "filter.h"
+#include "wizard.h"
 #include "watchdog.h"
 #include "scheduler.h"
 #include "flight_logger.h"

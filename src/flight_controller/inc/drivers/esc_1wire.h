@@ -46,6 +46,8 @@ typedef struct {
 	uint16_t version;
 } esc_hex_location;
 
+extern esc_hex_location escHexByPosition[];
+
 typedef struct BLHeli_EEprom {
     uint8_t BL_GOV_P_GAIN;
     uint8_t BL_GOV_I_GAIN;
@@ -79,9 +81,9 @@ typedef struct BLHeli_EEprom {
 typedef struct {
     uint32_t (*Disconnect)(motor_type actuator, uint32_t timeout);
 //    uint32_t (*PollReadReady)(void);
-    uint32_t (*ReadFlash)(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
+    uint32_t (*ReadFlash)(motor_type actuator, uint8_t inBuffer[], uint16_t address, uint16_t length, uint32_t timeout);
     uint32_t (*WriteFlash)(motor_type actuator, uint8_t outBuffer[], uint16_t address, uint16_t length, uint32_t timeout);
-    uint32_t (*ReadEEprom)(motor_type actuator, uint32_t timeout);
+    uint32_t (*ReadEEprom)(motor_type actuator, uint8_t inBuffer[], uint32_t timeout);
     uint32_t (*WriteEEprom)(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout);
     uint32_t (*PageErase)(motor_type actuator, uint16_t address, uint32_t timeout);
     uint32_t (*EepromErase)(motor_type actuator, uint32_t timeout);
@@ -107,6 +109,23 @@ typedef struct {
 } oneWireParameter_t;
 
 typedef struct {
+	uint8_t processed;
+    uint8_t txprogramming;
+    uint8_t beacondelay;
+    uint8_t beaconstrength;
+    uint8_t beepstrength;
+    uint8_t brakeonstop;
+    uint8_t demag;
+    uint8_t direction;
+    uint8_t frequency;
+    uint8_t maxthrottle;
+    uint8_t minthrottle;
+    uint8_t startuppower;
+    uint8_t tempprotection;
+    uint8_t timing;
+} oneWireCurrentValues_t;
+
+typedef struct {
 
 	uint32_t                  escSignature;
 	uint32_t                  bootVersion;
@@ -122,6 +141,7 @@ typedef struct {
 	uint8_t                   config[128];
 	const BLHeli_EEprom_t    *BLHeliEEpromLayout;
 	esc_hex_location          escHexLocation;
+	oneWireCurrentValues_t    oneWireCurrentValues;
 
 	enum {
 		OW_IDLE                   = 0,
@@ -154,6 +174,7 @@ extern const oneWireParameter_t motorTimingParameter;
 
 
 extern const oneWireParameter_t* oneWireParameters[];
+extern uint32_t ListAllEscHexesInFlash(void);
 
 extern int16_t Esc1WireSetParameter(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[], int16_t value);
 extern int16_t Esc1WireParameterFromDump(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[]);
@@ -161,7 +182,8 @@ extern const char* OneWireParameterValueToName(const oneWireParameterValue_t *va
 extern int16_t OneWireParameterNameToValue(const oneWireParameterValue_t *valuesList, const char *name);
 extern int16_t OneWireParameterValueToNumber(const oneWireParameterNumerical_t *numerical, uint8_t value);
 extern uint8_t OneWireParameterNumberToValue(const oneWireParameterNumerical_t *numerical, int16_t value);
-extern uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator);
+extern uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator, esc_hex_location escHexLocation);
+extern void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize);
 
 //int16_t esc1WireGetParameter(uint8_t escIndex, const oneWireParameter_t *layout);
 //uint8_t esc1WireSetParameter(uint8_t escIndex, const oneWireParameter_t *layout, uint8_t value);

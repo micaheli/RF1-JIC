@@ -2,9 +2,12 @@
 
 #define CONFIG_VERSION			(uint32_t)(36U)
 #define CONFIG_VERSION_STR		"36"
-#define FIRMWARE_VERSION		"0.112.036 ALPHA"
+#define FIRMWARE_VERSION		"0.120.036 ALPHA"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
+
+#define RF_BUFFER_SIZE HID_EPIN_SIZE-1
+
 
 typedef struct {
 	rc_control_config rcControlsConfig;
@@ -38,21 +41,19 @@ typedef struct {
     const int32_t valueInt;
 } string_comp_rec;
 
+extern char rf_custom_out_buffer[];
+
+extern char *StripSpaces(char *inString);
+extern char *CleanupString(char *inString);
+
 extern main_config mainConfig;
 extern const config_variables_rec valueTable[];
 
 extern char *CleanupNumberString(char *inString);
 extern void SaveConfig (uint32_t addresConfigStart);
 extern uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length);
-int    ValidateConfig (uint32_t addresConfigStart);
 extern void LoadConfig (uint32_t addresConfigStart);
 extern void GenerateConfig(void);
 extern void ProcessCommand(char *inString);
 extern int RfCustomReply(char *rf_custom_out_buffer);
-
-uint32_t CheckSafeMotors(uint32_t time, uint32_t deviationAllowed);
-int32_t SetChannelMapAndDirection(uint32_t inChannel, uint32_t outChannel);
-int32_t WhichInChannelChange(void);
-void ResetChannelCheck(void);
-int32_t FindRxMinMax(void);
-int32_t FindRxCenter(void);
+extern void SendStatusReport(char *inString);

@@ -251,9 +251,11 @@ int FindFirstEmptyPage(void) {
 	uint32_t firstEmptySector;
 
 	//find first empty sector
-	for (x = 0; x < flashInfo.totalSize; x = x + (flashInfo.pageSize * flashInfo.pagesPerSector) ) {
+	for (x = 0; x < flashInfo.totalSize; x = x + (flashInfo.pageSize * flashInfo.pagesPerSector) )
+	{
 
-		if ( M25p16ReadPage( x, buffer->txBuffer, buffer->rxBuffer) ) {
+		if ( M25p16ReadPage( x, buffer->txBuffer, buffer->rxBuffer) )
+		{
 
 			allFFs = 1;
 
@@ -281,28 +283,38 @@ int FindFirstEmptyPage(void) {
 	}
 
 	//find first empty page in sector
-	for (x = firstEmptySector;x < (firstEmptySector + (flashInfo.pageSize * flashInfo.pagesPerSector * 2 ) );x = x + flashInfo.pageSize) {
+	//for each sector we look for 8 FF pages in a row (FF being empty)
+	for (x = firstEmptySector;x < (firstEmptySector + (flashInfo.pageSize * flashInfo.pagesPerSector * 2 ) );x = x + flashInfo.pageSize)
+	{
 
-		if ( M25p16ReadPage( x, buffer->txBuffer, buffer->rxBuffer) ) {
+		if ( M25p16ReadPage( x, buffer->txBuffer, buffer->rxBuffer) )
+		{
 
 			allFFs = 1;
 
-			for (y=0;y<flashInfo.pageSize;y++) { //check if page is empty, all 0xFF's
+			//check if page is empty, all 0xFF's
+			for (y=0;y<flashInfo.pageSize;y++)
+			{
 				if (buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+y] != 0xFF)
 					allFFs = 0; //any non FF's will set this to 0.
 			}
 
-			if (allFFs) { //this page is empty since all FF's is an empty page
+			//this page is empty since all FF's is an empty page
+			if (allFFs)
+			{
 				allFFsTotal++;
 			}
 
-			if (allFFsTotal == 4) {
+			if (allFFsTotal == 8)
+			{
 				flashInfo.enabled = FLASH_ENABLED;
 				flashInfo.currentWriteAddress = (x - ( flashInfo.pageSize  * 3 ) );
 				return 1;
 			}
 
-		} else {
+		}
+		else
+		{
 
 			flashInfo.currentWriteAddress = x;
 			flashInfo.enabled = FLASH_FULL;
@@ -318,7 +330,8 @@ int FindFirstEmptyPage(void) {
 
 }
 
-void FlashDeinit(void) {
+void FlashDeinit(void)
+{
 
 	flashInfo.enabled = FLASH_DISABLED;
 
@@ -336,10 +349,12 @@ int InitFlashChip(void)
 	//TODO: Allow working with multiple flash chips
 
 	//TODO: Check for DMA conflicts
-	if (board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma].enabled) {
+	if (board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma].enabled)
+	{
 		memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma], sizeof(board_dma) );
 	}
-	if (board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma].enabled) {
+	if (board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma].enabled)
+	{
 		memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma], sizeof(board_dma) );
 	}
 
@@ -350,24 +365,29 @@ int InitFlashChip(void)
     //check Read ID in blocking mode
 
 
-    if (!M25p16ReadIdSetFlashRecord()) {
+    if (!M25p16ReadIdSetFlashRecord())
+    {
     	DelayMs(70);
-    	if (!M25p16ReadIdSetFlashRecord()) {
+    	if (!M25p16ReadIdSetFlashRecord())
+    	{
     		return 0;
     	}
     }
 
     return ( FindFirstEmptyPage() );
     //check Read ID in nonblocking mode, this function blocks, but it's used to test the non blocking functionality of the chip
-    if (M25p16ReadIdSetFlashRecordDma() == flashInfo.chipId) {
-        if ( flashInfo.chipId ) {
-        	//flash chip is good! Let's check if we can write to it and where we can write to
+    if (M25p16ReadIdSetFlashRecordDma() == flashInfo.chipId)
+    {
+    	//flash chip is good! Let's check if we can write to it and where we can write to
+        if ( flashInfo.chipId )
+        {
         	return ( FindFirstEmptyPage() );
         }
 
     }
 
-    if (0){
+    if (0)
+    {
     	M25p16DmaReadPage(0, flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer);
     }
     return 0;
@@ -399,7 +419,8 @@ static uint8_t M25p16ReadStatus(void)
 
 }
 
-inline void WriteEnableDataFlash(void) {
+inline void WriteEnableDataFlash(void)
+{
 
 	uint8_t c[1] = {M25P16_WRITE_ENABLE};
 
@@ -411,11 +432,13 @@ inline void WriteEnableDataFlash(void) {
 
 }
 
-int WriteEnableDataFlashDma(void) {
+int WriteEnableDataFlashDma(void)
+{
 
 	uint8_t c[1] = {M25P16_WRITE_ENABLE};
 
-    if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY) {
+    if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY)
+    {
 
     	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
         //flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
@@ -423,13 +446,16 @@ int WriteEnableDataFlashDma(void) {
 
         return (1);
 
-    } else {
+    }
+    else
+    {
         return (0);
     }
 
 }
 
-int MassEraseDataFlashByPage(int blocking) {
+int MassEraseDataFlashByPage(int blocking)
+{
 	uint8_t command[4];
 	uint32_t sectorsToErase = 0;
 	uint32_t x;
@@ -439,7 +465,9 @@ int MassEraseDataFlashByPage(int blocking) {
 
 	sectorsToErase = ceil((float)flashInfo.currentWriteAddress / ((float)flashInfo.pageSize * (float)flashInfo.pagesPerSector));
 
-	for (x = 0;x<sectorsToErase;x++) { //for each sector
+	//for each sector
+	for (x = 0;x<sectorsToErase;x++)
+	{
 
 		WriteEnableDataFlash();
 
@@ -465,20 +493,26 @@ int MassEraseDataFlashByPage(int blocking) {
 	return 1;
 }
 
-int MassEraseDataFlash(int blocking) {
+int MassEraseDataFlash(int blocking)
+{
 
 	uint8_t c[1] = {M25P16_BULK_ERASE};
 
-	if (!(M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip not busy
+	//flash chip not busy
+	if (!(M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS))
+	{
 		WriteEnableDataFlash();
 
 		inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
 		HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], c, 1, 100);
 		inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
 
-		if (blocking) {
+		if (blocking)
+		{
 			blocking = 0;
-			while ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
+			//flash chip busy
+			while ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS))
+			{
 				DelayMs(1);
 				blocking++;
 				if (blocking == 80000)
@@ -487,8 +521,12 @@ int MassEraseDataFlash(int blocking) {
 			flashInfo.currentWriteAddress = 0;
 			flashInfo.enabled = FLASH_ENABLED;
 			return 1;
-		} else {
-			if ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
+		}
+		else
+		{
+			//flash chip busy
+			if ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS))
+			{
 				flashInfo.currentWriteAddress = 0;
 				flashInfo.enabled = FLASH_ENABLED;
 				return 1;

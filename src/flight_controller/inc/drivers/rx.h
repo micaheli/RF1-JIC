@@ -65,6 +65,7 @@ enum {
 #define USING_SBUS             3
 #define USING_SBUS_SPORT       4
 #define USING_SUMD             5
+#define USING_SUMD_TWO_WAY     6
 
 
 extern volatile uint32_t rx_timeout;

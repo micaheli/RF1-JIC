@@ -58,128 +58,153 @@ void DisarmBoard(void) {
 	InitWatchdog(WATCHDOG_TIMEOUT_32S);
 }
 
-int SetCalibrate1(void) {
+int SetCalibrate1(void)
+{
 
-	if ( ABS(filteredAccData[ACCX]) > (ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ])) )
+	if ( ABS(filteredAccData[ACCZ]) > (ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY])) )
 	{
 		// is king
-		if (filteredAccData[ACCX] < 0) { //ACCX negative
+		if (filteredAccData[ACCZ] < -0.8) { //ACCZ negative
 			//board inverted
 			return (boardOrientation1 = CALIBRATE_BOARD_INVERTED);
-		} else { //ACCX positive
+		} else if (filteredAccData[ACCZ] > 0.8) { //ACCZ positive
 			//board upright
 			return (boardOrientation1 = CALIBRATE_BOARD_UPRIGHT);
 		}
 
-	}
-	else if ( ABS(filteredAccData[ACCY]) > (ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCZ])) )
-	{
-		//ACCY is king
-		if (filteredAccData[ACCY] < 0) { //ACCY negative
-			return (CALIBRATE_BOARD_FAILED); //board sideways or on nose, return 0
-		} else { //ACCY positive
-			return (CALIBRATE_BOARD_FAILED); //board sideways or on nose, return 0
-		}
-	}
-	else if ( ABS(filteredAccData[ACCZ]) > (ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY])) )
-	{
-		//ACCZ is king
-		if (filteredAccData[ACCZ] < 0) { //ACCZ negative
-			return (CALIBRATE_BOARD_FAILED); //board sideways or on nose, return 0
-		} else { //ACCZ positive
-			return (CALIBRATE_BOARD_FAILED); //board sideways or on nose, return 0
-		}
 	}
 
 	return (CALIBRATE_BOARD_FAILED); //check sanity and return 0 if result not sane.
 
 }
 
-int SetCalibrate2(void) {
+int SetCalibrate2(void)
+{
 
 	if (!boardOrientation1) { //make sure step one completed successfully.
 		return (0);
 	}
 
 
-	if ( ABS(filteredAccData[ACCX]) > (ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ])) )
+	if (boardOrientation1 == CALIBRATE_BOARD_UPRIGHT)
 	{
-		//ACCX is king
-		if (filteredAccData[ACCX] < 0) { //ACCX negative
-			boardOrientation1 = 0; //calibration done, reset check
-			return (CALIBRATE_BOARD_FAILED); //board is not on its side
-		} else { //ACCX positive
-			boardOrientation1 = 0; //calibration done, reset check
-			return (CALIBRATE_BOARD_FAILED); //board is not on its side
+		if (filteredAccData[ACCX] < -0.9)
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW0;  //set proper rotation
 		}
-
-	}
-	else if ( ABS(filteredAccData[ACCY]) > (ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCZ])) )
-	{
-		//ACCY is king
-		if (filteredAccData[ACCY] < 0) { //ACCY negative
-			if (boardOrientation1 == CALIBRATE_BOARD_UPRIGHT) {
-				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW0; //
-				boardOrientation1 = 0; //calibration done, reset check
-				return (1); //calibration looks good
-			} else {
-				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW180_INV; //
-				boardOrientation1 = 0; //calibration done, reset check
-				return (1); //calibration looks good
-			}
-		} else { //ACCY positive
-			if (boardOrientation1 == CALIBRATE_BOARD_UPRIGHT) {
-				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW180;
-				boardOrientation1 = 0; //calibration done, reset check
-				return (1); //calibration looks good
-			} else {
-				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW0_INV;
-				boardOrientation1 = 0; //calibration done, reset check
-				return (1); //calibration looks good
-			}
+		else if (filteredAccData[ACCY] < -0.9)
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW90;  //set proper rotation
 		}
-	}
-	else if ( ABS(filteredAccData[ACCZ]) > (ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY])) )
-	{
-		//ACCZ is king
-		if (filteredAccData[ACCZ] < 0) { //ACCZ negative
-			if (boardOrientation1 == CALIBRATE_BOARD_UPRIGHT) {
-				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW90;
-				boardOrientation1 = 0; //calibration done, reset check
-				return (1); //calibration looks good
-			} else {
-				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW270_INV;
-				boardOrientation1 = 0; //calibration done, reset check
-				return (1); //calibration looks good
-			}
-		} else { //ACCZ positive
-			if (boardOrientation1 == CALIBRATE_BOARD_UPRIGHT) {
-				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW270;
-				boardOrientation1 = 0; //calibration done, reset check
-				return (1); //calibration looks good
-			} else {
-				mainConfig.gyroConfig.boardCalibrated = 1;
-				mainConfig.gyroConfig.gyroRotation = CW90_INV;
-				boardOrientation1 = 0; //calibration done, reset check
-				return (1); //calibration looks good
-			}
+		else if (filteredAccData[ACCX] > 0.9)
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW180;  //set proper rotation
+		}
+		else if (filteredAccData[ACCY] > 0.9)
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW270;  //set proper rotation
+		}
+		else if ((filteredAccData[ACCX] < -0.6) && (filteredAccData[ACCY] < -0.6))
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW45;  //set proper rotation
+		}
+		else if ((filteredAccData[ACCX] > 0.6) && (filteredAccData[ACCY] < -0.6))
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW135;  //set proper rotation
+		}
+		else if ((filteredAccData[ACCX] > 0.6) && (filteredAccData[ACCY] > 0.6))
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW225;  //set proper rotation
+		}
+		else if ((filteredAccData[ACCX] < -0.6) && (filteredAccData[ACCY] > 0.6))
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW315;  //set proper rotation
+		}
+		else
+		{
+			boardOrientation1 = 0;
+			return (CALIBRATE_BOARD_FAILED);
 		}
 	}
+	else
+	{
+		if (filteredAccData[ACCX] < -0.9)
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW180_INV;  //set proper rotation
+		}
+		else if (filteredAccData[ACCY] < -0.9)
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW90_INV;  //set proper rotation
+		}
+		else if (filteredAccData[ACCX] > 0.9)
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW0_INV;  //set proper rotation
+		}
+		else if (filteredAccData[ACCY] > 0.9)
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW270_INV;  //set proper rotation
+		}
+		else if ((filteredAccData[ACCX] < -0.6) && (filteredAccData[ACCY] < -0.6))
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW315_INV;  //set proper rotation
+		}
+		else if ((filteredAccData[ACCX] > 0.6) && (filteredAccData[ACCY] < -0.6))
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW225_INV;  //set proper rotation
+		}
+		else if ((filteredAccData[ACCX] > 0.6) && (filteredAccData[ACCY] > 0.6))
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW135_INV;  //set proper rotation
+		}
+		else if ((filteredAccData[ACCX] < -0.6) && (filteredAccData[ACCY] > 0.6))
+		{
+			boardOrientation1 = 0; //done calibrating
+			mainConfig.gyroConfig.boardCalibrated = 1; //set board as calibrated
+			mainConfig.gyroConfig.gyroRotation = CW45_INV;  //set proper rotation
+		}
+		else
+		{
+			boardOrientation1 = 0;
+			return (CALIBRATE_BOARD_FAILED);
+		}
+	}
 
-	boardOrientation1 = 0; //once we get this far we need to repeat step 1 in the event of a failure.
-
-	return (CALIBRATE_BOARD_FAILED); //check sanity and return 0 if result not sane.
+	return(1);
 
 }
 
-void InitFlightCode(void) {
+void InitFlightCode(void)
+{
 
 	kdFiltUsed[YAW]   = mainConfig.filterConfig[YAW].kd.r;
 	kdFiltUsed[ROLL]  = mainConfig.filterConfig[ROLL].kd.r;
@@ -309,7 +334,8 @@ void InitFlightCode(void) {
 
 }
 
-inline void InlineInitGyroFilters(void)  {
+inline void InlineInitGyroFilters(void)
+{
 
 	int32_t axis;
 
@@ -327,7 +353,8 @@ inline void InlineInitGyroFilters(void)  {
 
 }
 
-inline void InlineInitKdFilters(void)  {
+inline void InlineInitKdFilters(void)
+{
 
 	int32_t axis;
 
@@ -356,7 +383,8 @@ inline void InlineInitSpectrumNoiseFilter(void) {
 
 }
 
-inline void InlineInitAccFilters(void)  {
+inline void InlineInitAccFilters(void)
+{
 
 	int32_t vector;
 
@@ -406,8 +434,8 @@ void ComplementaryFilterUpdateAttitude(void)
 
     // Integrate the gyroscope data
 	pitchAttitude += (filteredGyroData[PITCH] * loopSpeed.dT);
-	rollAttitude += (filteredGyroData[ROLL] * loopSpeed.dT);
-	yawAttitude += (filteredGyroData[YAW] * loopSpeed.dT);
+	rollAttitude  += (filteredGyroData[ROLL] * loopSpeed.dT);
+	yawAttitude   += (filteredGyroData[YAW] * loopSpeed.dT);
 
 	if (yawAttitude > 180)
 		yawAttitude = (yawAttitude - 360);
@@ -422,11 +450,11 @@ void ComplementaryFilterUpdateAttitude(void)
     //if (forceMagnitudeApprox > .45 && forceMagnitudeApprox < 2.1) //only look at ACC data if it's within .45 and 2.1 Gees
     //{
 	// Turning around the X axis results in a vector on the Y-axis
-    	pitchAcc = (atan2f( (float)filteredAccData[ACCY], (float)filteredAccData[ACCX]) + PIf) * (180.0 * IPIf) - 180.0; //multiplying by the inverse of Pi is faster than dividing by Pi
+    	pitchAcc = (atan2f( (float)filteredAccData[ACCX], (float)filteredAccData[ACCZ]) + PIf) * (180.0 * IPIf) - 180.0; //multiplying by the inverse of Pi is faster than dividing by Pi
     	pitchAttitude = pitchAttitude * accCompGyroTrust + pitchAcc * accCompAccTrust;
 
 	// Turning around the Y axis results in a vector on the X-axis
-        rollAcc = (atan2f((float)filteredAccData[ACCZ], (float)filteredAccData[ACCX]) + PIf) * (180.0 * IPIf) - 180.0;
+        rollAcc = (atan2f((float)filteredAccData[ACCY], (float)filteredAccData[ACCZ]) + PIf) * (180.0 * IPIf) - 180.0;
         rollAttitude = rollAttitude * accCompGyroTrust + rollAcc * accCompAccTrust;
     //}
 }
@@ -512,11 +540,11 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 
 		//get setpoint for PIDC
 		if (1==1) { //if rateMode
-			flightSetPoints[YAW]   = -InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
+			flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
 			flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL]);
-			flightSetPoints[PITCH] = InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH]);
+			flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH]);
 		} else { //if angleMode
-			flightSetPoints[YAW]   = -InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
+			flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
 			rollAttitudeError      = -( rollAttitude - (smoothedRcCommandF[ROLL] * 70) );
 			pitchAttitudeError     = ( pitchAttitude - (smoothedRcCommandF[PITCH] * -70) );
 			rollAttitudeErrorKi    = (rollAttitudeErrorKi+rollAttitudeErrorKi * 3 * loopSpeed.dT);

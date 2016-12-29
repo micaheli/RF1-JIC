@@ -2,6 +2,7 @@
 
 #define PIf       3.14159265358f
 #define IPIf      0.31830988618f //inverse of Pi
+#define I180      0.00555555555f
 
 //These were defined in a lib file?
 #ifndef MIN

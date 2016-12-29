@@ -235,6 +235,8 @@ __ALIGN_BEGIN static uint8_t USBD_HID_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_
 
 __ALIGN_BEGIN static uint8_t HID_MOUSE_ReportDesc[HID_MOUSE_REPORT_DESC_SIZE]  __ALIGN_END =
 {
+  //0xAA, 0xFF,                    // USAGE_PAGE (Generic Desktop)
+  //0x09, 0x01,                    // USAGE (Undefined)
   0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
   0x09, 0x00,                    // USAGE (Undefined)
   0xa1, 0x01,                    // COLLECTION (Application)
@@ -246,7 +248,7 @@ __ALIGN_BEGIN static uint8_t HID_MOUSE_ReportDesc[HID_MOUSE_REPORT_DESC_SIZE]  _
 
   0x85, 0x01,                    //   REPORT_ID (1)
   0x75, 0x08,                    //   REPORT_SIZE (8)
-  0x95, HID_EPIN_SIZE-1,        //   REPORT_COUNT (this is the byte length)
+  0x95, HID_EPIN_SIZE-1,         //   REPORT_COUNT (this is the byte length)
   0x09, 0x00,                    //   USAGE (Undefined)
   0x81, 0x82,                    //   INPUT (Data,Var,Abs,Vol)
 
@@ -254,7 +256,7 @@ __ALIGN_BEGIN static uint8_t HID_MOUSE_ReportDesc[HID_MOUSE_REPORT_DESC_SIZE]  _
 
   0x85, 0x02,                    //   REPORT_ID (2)
   0x75, 0x08,                    //   REPORT_SIZE (8)
-  0x95, HID_EPOUT_SIZE-1,       //   REPORT_COUNT (this is the byte length)
+  0x95, HID_EPOUT_SIZE-1,        //   REPORT_COUNT (this is the byte length)
   0x09, 0x00,                    //   USAGE (Undefined)
   0x91, 0x82,                    //   OUTPUT (Data,Var,Abs,Vol)
 

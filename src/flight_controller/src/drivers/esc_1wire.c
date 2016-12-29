@@ -2,7 +2,7 @@
 
 
 esc_one_wire_status escOneWireStatus[16];
-
+esc_hex_location escHexByPosition[50];
 
 // EEPROM layout - BLHeli rev 20, bumped in 14.0
 const BLHeli_EEprom_t BLHeli20_EEprom = {
@@ -120,7 +120,7 @@ static const uint16_t signaturesAtmel[]  = {0x9307, 0x930A, 0x930F, 0x940B, 0};
 static const uint16_t signaturesSilabs[] = {0xF310, 0xF330, 0xF410, 0xF390, 0xF850, 0xE8B1, 0xE8B2, 0};
 
 
-static uint32_t OneWireMain() __attribute__ ((unused));
+static uint32_t ProcessEEprom(motor_type actuator, uint8_t eepromBuffer[], uint32_t hasDataSize);
 static uint32_t SignatureMatch(uint16_t signature, const uint16_t *list, uint32_t listSize);
 static void     AppendBlHeliCrc(uint8_t outBuffer[], uint32_t len);
 //static void     SendHello(void);
@@ -142,16 +142,16 @@ static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout)
 static uint32_t DisconnectBLHeli(motor_type actuator, uint32_t timeout);
 //static uint32_t SendReadCommand(motor_type actuator, uint8_t cmd, uint16_t address, uint16_t length, uint32_t timeout);
 static uint32_t WriteEEpromSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout);
-static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout);
+static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint8_t inBuffer[], uint32_t timeout);
 static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[], uint16_t address, uint16_t length, uint32_t timeout);
-static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout);
+static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint8_t inBuffer[], uint16_t address, uint16_t length, uint32_t timeout);
 static uint32_t PageEraseSiLabsBLHeli(motor_type actuator, uint16_t address, uint32_t timeout);
 static uint32_t EepromEraseSiLabsBLHeli(motor_type actuator, uint32_t timeout);
 static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint16_t length, uint32_t timeout)  __attribute__ ((unused));
 static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address)  __attribute__ ((unused));
 
 static const BLHeli_EEprom_t* GetBLHeliEEpromLayout(uint8_t data[]);
-static void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize);
+
 /*
 const esc1WireProtocol_t BLHeliAtmelProtocol = {
 //    .disconnect    = DisconnectBLHeli,
@@ -176,7 +176,51 @@ const esc1WireProtocol_t BLHeliSiLabsProtocol = {
     .EepromErase   = EepromEraseSiLabsBLHeli,
 };
 
-static void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize) {
+uint32_t ListAllEscHexesInFlash(void) {
+
+	uint8_t  reportOut[50];
+	uint32_t addressFlashStart = ADDRESS_ESC_START;
+	uint32_t addressFlashEnd   = ADDRESS_FLASH_END;
+	uint32_t wordOffset;
+	uint32_t firmwareFinderData[5];
+	uint8_t  firmwareFinderByteData[5 * 4];
+	uint32_t x;
+	uint32_t found = 0;
+	uint8_t  escStart[3] = {0x02, 0x19, 0xFD};
+
+	for (wordOffset = addressFlashStart; wordOffset < (addressFlashEnd - 0x1A6F); wordOffset++) { //scan up to 1mb of flash starting at after rfbl //todo:set per mcu
+		//flash goes like this. RFBL -> FW -> ESCs -> fade43f4 a62fe81a -> RFBL SIZE in 16 bit hex variable -> fade43f4 a62fe81a -> RFBL
+		memcpy( &firmwareFinderData, (char *) wordOffset, sizeof(firmwareFinderData) );
+		for (x=0; x<sizeof(firmwareFinderData)/4; x++) {
+			firmwareFinderData[x] = BigToLittleEndian32(firmwareFinderData[x]);
+			firmwareFinderByteData[(x * 4)+0] = ((firmwareFinderData[x]>>24)&0xff);
+			firmwareFinderByteData[(x * 4)+1] = ((firmwareFinderData[x]>>16)&0xff);
+			firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
+			firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
+		}
+		if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStart, 3)) {
+			memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00+64, sizeof(firmwareFinderData) ); //get config data to look for ESC name
+			for (x=0; x<sizeof(firmwareFinderData)/4; x++) {
+				firmwareFinderData[x] = BigToLittleEndian32(firmwareFinderData[x]); //switch to little endian
+				firmwareFinderByteData[(x * 4)+0] = ((firmwareFinderData[x]>>24)&0xff);
+				firmwareFinderByteData[(x * 4)+1] = ((firmwareFinderData[x]>>16)&0xff);
+				firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
+				firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
+			}
+			firmwareFinderByteData[16] = 0;
+			sprintf((char *)reportOut, "ESC POSITION:%lu HEX:%s", found, (char *)firmwareFinderByteData);
+			SendStatusReport((char *)reportOut);
+			escHexByPosition[found].startAddress = wordOffset;
+			escHexByPosition[found].endAddress = wordOffset + 0x1A6F;
+			memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00, sizeof(firmwareFinderData) ); //get versionnumber
+			escHexByPosition[found].version = (uint16_t)( ((firmwareFinderData[0]<<8) & 0xff00) | ((firmwareFinderData[0]>>8) & 0x00ff) );
+			found++;
+		}
+	}
+	return (found);
+}
+
+void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize) {
 
 	uint32_t addressFlashStart = ADDRESS_ESC_START;
 	uint32_t addressFlashEnd   = ADDRESS_FLASH_END;
@@ -225,10 +269,13 @@ static void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *e
 uint32_t OneWireInit(void)
 {
 
+	uint8_t  reportOut[50];
 	uint32_t x;
 	uint32_t tries = 0;
 	uint32_t allWork = 1;
 	uint32_t atLeastOneWorks = 0;
+	uint8_t  inBuffer[127];
+	uint32_t dataCount;
 
 	oneWireOngoing = 1;
 	//need to deinit RX, Gyro, Flash... basically anything that uses DMA. Should make a skip for USART if it's being used for communication
@@ -240,37 +287,51 @@ uint32_t OneWireInit(void)
 
 	DeInitAllowedSoftOutputs(); //deinit all the soft outputs
 
-	DelayMs(200);
+	DelayMs(500);
 
-	while (tries < 5) {
+	while (tries < 5)
+	{
+
 		allWork = 1;
 		tries++;
-		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
+
+		for (x = 0; x < MAX_MOTOR_NUMBER; x++)
+		{
 			InitDmaOutputForSoftSerial(DMA_OUTPUT_ESC_1WIRE, board.motors[x]);
 			DelayMs(10);
 		}
-		DelayMs(1000);
-		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
-			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+
+		DelayMs(1500);
+
+		for (x = 0; x < MAX_MOTOR_NUMBER; x++)
+		{
+			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+			{
 				escOneWireStatus[board.motors[x].actuatorArrayNum].enabled = 0;
-				if (ConnectToBlheliBootloader(board.motors[x], 35)) {
-					if ( escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125) ) {
+				if (ConnectToBlheliBootloader(board.motors[x], 35))
+				{
+					dataCount = escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], inBuffer, 150);
+					if ( ProcessEEprom ( board.motors[x], inBuffer, dataCount) )
+					{
+						if (tries > 1)
+						{
+							sprintf((char *)reportOut, "ESC:%lu Read Successful", board.motors[x].actuatorArrayNum);
+							SendStatusReport((char *)reportOut);
+						}
 						atLeastOneWorks++;
 					} else {
-						allWork = 0;
-					}
-				} else {
-					if (ConnectToBlheliBootloader(board.motors[x], 35)) {
-						if ( escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125) ) {
-							atLeastOneWorks++;
-						} else {
-							allWork = 0;
+						if (tries > 1)
+						{
+							sprintf((char *)reportOut, "ESC:%lu Read Failure", board.motors[x].actuatorArrayNum);
+							SendStatusReport((char *)reportOut);
 						}
+						allWork = 0;
 					}
 				}
 				DeInitDmaOutputForSoftSerial(board.motors[x]);
 			}
 		}
+
 		if (allWork) //all active motors returned
 		{
 			return (atLeastOneWorks);
@@ -278,49 +339,22 @@ uint32_t OneWireInit(void)
 		else if (atLeastOneWorks || tries < 3) //try at least twice, even if not a single ESC detected
 		{
 			InitActuators();
-			DelayMs(7000);
+			DelayMs(3500);
+			sprintf((char *)reportOut, "Reading ESCs...");
+			SendStatusReport((char *)reportOut);
+			DelayMs(3500);
 			DeInitActuators();
 		}
 		else if (atLeastOneWorks == 0 && tries == 2 ) //tried twice, not a single ESC detected
 		{
 			return (0);
 		}
+
 	}
 
 	return (atLeastOneWorks); //tried all used up, return what we've found.
 
-	for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
-		//ConnectToBlheliBootloader(DMA_OUTPUT_ESC_1WIRE, board.motors[x]);
-	}
-
-	for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
-
-		//InitDmaOutputForSoftSerial(board.motors[x]);
-		if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-			escOneWireStatus[board.motors[x].actuatorArrayNum].enabled = 0;
-			if (ConnectToBlheliBootloader(board.motors[x], 35)) {
-				//TODO: Make work with the protocol struct
-				//const esc1WireProtocol_t *proto = escOneWireStatus[board.motors[actuatorNumOutput].actuatorArrayNum].esc1WireProtocol;
-				//proto->ReadEEprom(board.motors[actuatorNumOutput], 25);
-				escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 200);
-			}
-			DeInitDmaOutputForSoftSerial(board.motors[x]);
-		}
-
-	}
-
 }
-
-uint32_t OneWireSaveConfig(motor_type actuator) {
-
-	if (escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->EepromErase(actuator, 1000))
-	{
-		return ( escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteEEprom(actuator, escOneWireStatus[actuator.actuatorArrayNum].config, (BLHELI_END_DATA - 1), 150) );
-	}
-
-	return (0);
-}
-
 
 static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout) {
 
@@ -434,9 +468,92 @@ static uint32_t SendWriteCommand(motor_type actuator, uint8_t outBuffer[], uint1
 }
 */
 
-//1wire m2=upgrade
-uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator) {
+uint32_t OneWireSaveConfig(motor_type actuator) {
 
+	uint32_t hasData;
+	uint16_t checkCrc1;
+	uint16_t checkCrc2;
+	uint16_t retry;
+	uint8_t inOutBuffer[127];
+
+	const BLHeli_EEprom_t *layout = escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout;
+
+	if (!escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.processed)
+	{
+		return (0);
+	}
+
+	retry = 10;
+
+	while(retry > 0) {
+
+		DelayMs(25);
+
+		//read flash to inBuffer
+		hasData = escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->ReadEEprom(actuator, inOutBuffer, 150);
+
+		//if successful we change flash
+		if ( (hasData > 121) && (inOutBuffer[122] == RET_SUCCESS) )
+		{
+
+			//check CRC:
+			checkCrc1 = (uint16_t)( ( (inOutBuffer[120] & 0xFF) << 8) | ((inOutBuffer[121] >> 8) & 0xFF));
+			AppendBlHeliCrc(inOutBuffer, 120);
+			checkCrc2 = (uint16_t)( ( (inOutBuffer[120] & 0xFF) << 8) | ((inOutBuffer[121] >> 8) & 0xFF));
+
+			//if CRC is valid we have good data
+			if (checkCrc1 == checkCrc2)
+			{
+
+				//change flash to proper values
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_ENABLE_TX))]       = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.txprogramming;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BEACON_DELAY))]    = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.beacondelay;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BEACON_STRENGTH))] = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.beaconstrength;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BEEP_STRENGTH))]   = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.beepstrength;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BRAKE_ON_STOP))]   = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.brakeonstop;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_DEMAG_COMP))]      = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.demag;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_DIRECTION))]       = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.direction;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PWM_FREQ))]        = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.frequency;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_MAX_THROTLE))] = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.maxthrottle;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_MIN_THROTLE))] = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.minthrottle;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_STARTUP_PWR))]     = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.startuppower;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION))] = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.tempprotection;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_COMM_TIMING))]     = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.timing;
+
+				//ninja update
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BRAKE_ON_STOP))]   = 0x01; //enabled
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_DEMAG_COMP))]      = 0x03; //high
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PWM_FREQ))]        = 0x03; //damped light
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_STARTUP_PWR))]     = 0x0C; //1.25
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION))] = 0x01; //enabled
+
+				//erase eeprom
+				if (escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->EepromErase(actuator, 1000) &&
+						escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteEEprom(actuator, inOutBuffer, (BLHELI_END_DATA - 1), 150))
+				{
+					hasData = escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->ReadEEprom(actuator, inOutBuffer, 150);
+
+					if (ProcessEEprom(actuator, inOutBuffer, hasData))
+						return(1);
+
+				}
+
+			}
+
+		}
+
+		retry--;
+	}
+
+	return(0);
+
+}
+
+//1wire m2=upgrade
+uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator, esc_hex_location escHexLocation)
+{
+
+	uint8_t  reportOut[50];
 	uint32_t firmwareData32[32];
 	uint8_t  firmwareData8[130]; //128b writes with room for crc
 	uint32_t startAddress;
@@ -448,21 +565,28 @@ uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator) {
 	uint16_t y;
 	uint16_t pageAddress;
 	uint16_t currentPage;
+	uint16_t retry;
 
+	retry        = 10;
+	retryFlash:
 	currentPage  = 0;
 	pageAddress  = 0;
-	startAddress = escOneWireStatus[actuator.actuatorArrayNum].escHexLocation.startAddress;
-	endAddress   = escOneWireStatus[actuator.actuatorArrayNum].escHexLocation.endAddress;
-	version      = escOneWireStatus[actuator.actuatorArrayNum].escHexLocation.version;
+	startAddress = escHexLocation.startAddress;
+	endAddress   = escHexLocation.endAddress;
+	version      = escHexLocation.version;
 
 	// no ESC hex found
 	if (!(version > 0)) {
 		return (0);
 	}
 
+	if (retry < 1)
+	{
+		return (0);
+	}
 	wordOffset = startAddress;
 	//one 8 bit address at a time
-	for (y=0; y<(uint16_t)(startAddress-endAddress); y=y+128 ) {
+	for (y=0; y<(uint16_t)(endAddress - startAddress); y=y+128 ) {
 
 		FeedTheDog();
 		memcpy( &firmwareData32, (char *) wordOffset+y, sizeof(firmwareData32) );
@@ -486,56 +610,75 @@ uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator) {
 		//page size is 512 bytes, which is hex 0x200
 		pageAddress = 0x200 * (y / 0x200) + 1;
 		if (pageAddress > currentPage) {
-			escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->PageErase(actuator, y, 1000);
+			sprintf((char *)reportOut, "Flashing ESC:%lu: %lu percent done", actuator.actuatorArrayNum, (uint32_t)(( (float)y / (float)(endAddress - startAddress) ) * 100)  );
+			SendStatusReport((char *)reportOut);
+			if ( !escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->PageErase(actuator, y, 1000) ) {
+				retry--;
+				goto retryFlash;
+			}
 			currentPage = pageAddress;
 		}
 
 		//write data
-		escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteFlash(actuator, firmwareData8, y, writeLength, 200);
-
-		//if (escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->PageErase(x, 1000))
-		//{
-		//	return ( escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteEEprom(actuator, escOneWireStatus[actuator.actuatorArrayNum].config, (BLHELI_END_DATA - 1), 150) );
-		//}
+		if ( !escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->WriteFlash(actuator, firmwareData8, y, writeLength, 200) ) {
+			retry--;
+			goto retryFlash;
+		}
 	}
-	return (1);
+	return ( OneWireSaveConfig(actuator) );
 }
 
-static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
+static uint32_t ProcessEEprom(motor_type actuator, uint8_t eepromBuffer[], uint32_t hasDataSize)
+{
 
-	// SiLabs has no EEPROM, just a flash section at 0x1A00
-
-	uint32_t hasData;
 	uint16_t checkCrc1;
 	uint16_t checkCrc2;
+	const BLHeli_EEprom_t *layout;
 
-	hasData = ReadFlashSiLabsBLHeli(actuator, 0x1A00, 120, timeout);
-
-	if ( (hasData > 121) && (oneWireInBuffer[122] == RET_SUCCESS) )
+	if ((hasDataSize > 121) && (eepromBuffer[122] == RET_SUCCESS))
 	{
 
 		//check CRC:
-		checkCrc1 = (uint16_t)( ( (oneWireInBuffer[120] & 0xFF) << 8) | ((oneWireInBuffer[121] >> 8) & 0xFF));
-		AppendBlHeliCrc(oneWireInBuffer, 120);
-		checkCrc2 = (uint16_t)( ( (oneWireInBuffer[120] & 0xFF) << 8) | ((oneWireInBuffer[121] >> 8) & 0xFF));
+		checkCrc1 = (uint16_t)(((eepromBuffer[120] & 0xFF) << 8) | ((eepromBuffer[121] >> 8) & 0xFF));
+		AppendBlHeliCrc(eepromBuffer, 120);
+		checkCrc2 = (uint16_t)(((eepromBuffer[120] & 0xFF) << 8) | ((eepromBuffer[121] >> 8) & 0xFF));
 
 		//if CRC is valid we have good data
 		if (checkCrc1 == checkCrc2)
 		{
+
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.processed      = 0;
 			escOneWireStatus[actuator.actuatorArrayNum].enabled = 1;
 			bzero(escOneWireStatus[actuator.actuatorArrayNum].nameStr,      sizeof(escOneWireStatus[actuator.actuatorArrayNum].nameStr));
 			bzero(escOneWireStatus[actuator.actuatorArrayNum].fwStr,        sizeof(escOneWireStatus[actuator.actuatorArrayNum].fwStr));
 			bzero(escOneWireStatus[actuator.actuatorArrayNum].versionStr,   sizeof(escOneWireStatus[actuator.actuatorArrayNum].versionStr));
-			memcpy( escOneWireStatus[actuator.actuatorArrayNum].nameStr,    oneWireInBuffer + 64, 16 );
-			memcpy( escOneWireStatus[actuator.actuatorArrayNum].fwStr,      oneWireInBuffer + 80, 16 );
-			memcpy( escOneWireStatus[actuator.actuatorArrayNum].versionStr, oneWireInBuffer + 95, 16 );
-			escOneWireStatus[actuator.actuatorArrayNum].version = ( (oneWireInBuffer[0] << 8) | (oneWireInBuffer[1]) ) ;
+			memcpy( escOneWireStatus[actuator.actuatorArrayNum].nameStr,    eepromBuffer + 64, 16 );
+			memcpy( escOneWireStatus[actuator.actuatorArrayNum].fwStr,      eepromBuffer + 80, 16 );
+			memcpy( escOneWireStatus[actuator.actuatorArrayNum].versionStr, eepromBuffer + 95, 16 );
+			escOneWireStatus[actuator.actuatorArrayNum].version = ( (eepromBuffer[0] << 8) | (eepromBuffer[1]) ) ;
 
-			memcpy(escOneWireStatus[actuator.actuatorArrayNum].config, oneWireInBuffer, (BLHELI_END_DATA - 1));
+			memcpy(escOneWireStatus[actuator.actuatorArrayNum].config, eepromBuffer, (BLHELI_END_DATA - 1));
 
-			escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout = GetBLHeliEEpromLayout(oneWireInBuffer);
+			escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout = GetBLHeliEEpromLayout(eepromBuffer);
 
 			FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16);
+
+			layout = escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout;
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.processed      = 1;
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.txprogramming  = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_ENABLE_TX))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.beacondelay    = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BEACON_DELAY))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.beaconstrength = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BEACON_STRENGTH))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.beepstrength   = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BEEP_STRENGTH))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.brakeonstop    = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BRAKE_ON_STOP))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.demag          = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_DEMAG_COMP))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.direction      = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_DIRECTION))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.frequency      = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PWM_FREQ))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.maxthrottle    = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_MAX_THROTLE))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.minthrottle    = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_MIN_THROTLE))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.startuppower   = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_STARTUP_PWR))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.tempprotection = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.timing         = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_COMM_TIMING))];
+
 		}
 		else
 		{
@@ -550,6 +693,14 @@ static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint32_t timeout) {
 	}
 
 	return(escOneWireStatus[actuator.actuatorArrayNum].enabled);
+
+}
+
+static uint32_t ReadEEpromSiLabsBLHeli(motor_type actuator, uint8_t inBuffer[], uint32_t timeout) {
+
+	// SiLabs has no EEPROM, just a flash section at 0x1A00
+
+	return (ReadFlashSiLabsBLHeli(actuator, inBuffer, 0x1A00, 120, timeout));
 
 }
 
@@ -591,19 +742,24 @@ static uint32_t DisconnectBLHeli(motor_type actuator, uint32_t timeout)
 	return (oneWireInBufferIdx);
 }
 
-static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint16_t address, uint16_t length, uint32_t timeout)
+static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint8_t inBuffer[], uint16_t address, uint16_t length, uint32_t timeout)
 {
+
+	uint8_t outBuffer[4];
 
 	if (!SendCmdSetAddress(actuator, address))
 		return (0);
 
-	oneWireOutBuffer[0] = CMD_READ_FLASH_SIL;
-	oneWireOutBuffer[1] = (length & 0xff);
+	outBuffer[0] = CMD_READ_FLASH_SIL;
+	outBuffer[1] = (length & 0xff);
 
-	AppendBlHeliCrc(oneWireOutBuffer, 2);
+	AppendBlHeliCrc(outBuffer, 2);
 
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout);
+	//bzero(inBuffer, length);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, 4, inBuffer, actuator, timeout);
 
+	inBuffer[123]=77;
+	inBuffer[124]=77;
 	return (oneWireInBufferIdx);
 }
 
@@ -664,36 +820,6 @@ static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[],
 
 	if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
 		return (1);
-	}
-
-	return (0);
-
-}
-
-uint32_t OneWireMain() {
-
-	uint32_t x;
-
-	while (1) {
-		for (x = 0; x < MAX_MOTOR_NUMBER; x++) {
-
-			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-				FeedTheDog(); //feed the dog each time we change motors
-				if (ConnectToBlheliBootloader(board.motors[x], 35)) {
-					escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
-				} else {
-					InitActuators();
-					DelayMs(5000);
-					DeInitActuators();
-					if (ConnectToBlheliBootloader(board.motors[x], 35)) {
-						escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], 125);
-					}
-				}
-			} else {
-				escOneWireStatus[board.motors[x].actuatorArrayNum].enabled = 0;
-			}
-			DeInitDmaOutputForSoftSerial(board.motors[x]);
-		}
 	}
 
 	return (0);
@@ -810,8 +936,6 @@ static void AppendBlHeliCrc(uint8_t outBuffer[], uint32_t len) {
 
 
 
-
-
 int16_t Esc1WireSetParameter(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[], int16_t value)
 {
 
@@ -837,7 +961,7 @@ int16_t Esc1WireParameterFromDump(motor_type actuator, const oneWireParameter_t 
         return (-1);
     }
 
-    return (buf[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + parameter->offset)]);
+    return ( buf[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + parameter->offset)] );
 
 }
 

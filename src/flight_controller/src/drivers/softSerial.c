@@ -178,7 +178,8 @@ static uint32_t IsSoftSerialLineIdle() {
 
 void ProcessSoftSerialLineIdle(uint32_t useCallback) {
 
-	//timeInBuffer[timeInBufferIdx] = timeInBuffer[timeInBufferIdx - 1] + lrintf(softSerialStatus.bitWidth*2); //put in last time so we can get the last byte. We need the last byte to calculate the frame.
+	timeInBuffer[timeInBufferIdx] = timeInBuffer[timeInBufferIdx - 1] + lrintf(softSerialStatus.bitWidth*2); //put in last time so we can get the last byte. We need the last byte to calculate the frame.
+	timeInBufferIdx++;
 
 	//Process the serial data received and disabled the IRQ if there's a line idle sensed AFTER data has been received
 	if ( ProcessSoftSerialBits() ) {
@@ -401,7 +402,7 @@ inline static float FindSoftSerialByteWidth(float bitWidth, uint32_t bitsPerByte
 }
 
 inline static float FindSoftSerialLineIdleTime(float byteWidth) {
-	return (byteWidth * 1.20);
+	return (byteWidth * 1.50);
 }
 
 static uint32_t HandleSoftSerial(void) {

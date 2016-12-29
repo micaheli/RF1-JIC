@@ -83,6 +83,19 @@ void UsartInit(uint32_t serialNumber) {
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].RXPort];
 			break;
+		case USING_SUMD_TWO_WAY:
+			board.serials[serialNumber].FrameSize  = 21; //variable packet size. Will be set based on data
+			board.serials[serialNumber].BaudRate   = 115200;
+			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
+			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
+			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
+			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
+			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
+			txPin  = board.serials[serialNumber].TXPin;
+			rxPin  = board.serials[serialNumber].TXPin;
+			txPort = ports[board.serials[serialNumber].TXPort];
+			rxPort = ports[board.serials[serialNumber].TXPort];
+			break;
 		case USING_MANUAL:
 		default:
 			txPin  = board.serials[serialNumber].TXPin;
@@ -281,59 +294,84 @@ void UsartDmaInit(uint32_t serialNumber)
 
 void InitBoardUsarts (void) {
 
+	uint32_t usartOn;
+	uint32_t usartOff;
+
+	if (mainConfig.rcControlsConfig.rxUsart == ENUM_USART1) {
+		usartOn  = ENUM_USART1;
+		usartOff = ENUM_USART3;
+	}
+	else
+	{
+		usartOn  = ENUM_USART3;
+		usartOff = ENUM_USART1;
+	}
+
     //TODO: change this up, for ability to set usarts now on revolt
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_ONE_WAY) {
-    	board.serials[ENUM_USART1].enabled  = 0;
-    	board.serials[ENUM_USART3].enabled  = 1;
-    	board.serials[ENUM_USART3].Protocol = USING_SPEKTRUM_ONE_WAY;
-    	board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 1;
-		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 1;
-		board.dmasSerial[board.serials[ENUM_USART1].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 0;
+
+    	board.serials[usartOff].enabled  = 0;
+    	board.serials[usartOn].enabled  = 1;
+    	board.serials[usartOn].Protocol = USING_SPEKTRUM_ONE_WAY;
+    	board.dmasSerial[board.serials[usartOn].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
     } else
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY) {
-		board.serials[ENUM_USART3].enabled  = 0;
-		board.serials[ENUM_USART1].enabled  = 1;
-		board.serials[ENUM_USART1].Protocol = USING_SPEKTRUM_TWO_WAY;
-		board.dmasSerial[board.serials[ENUM_USART1].TXDma].enabled = 1;
-		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 1;
-		board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 0;
+		board.serials[usartOff].enabled  = 0;
+		board.serials[usartOn].enabled  = 1;
+		board.serials[usartOn].Protocol = USING_SPEKTRUM_TWO_WAY;
+		board.dmasSerial[board.serials[usartOn].TXDma].enabled = 1;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
 	} else
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS) {
-		board.serials[ENUM_USART3].enabled  = 0;
-		board.serials[ENUM_USART1].enabled  = 1;
-		board.serials[ENUM_USART1].Protocol = USING_SBUS;
-		board.dmasSerial[board.serials[ENUM_USART1].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 1;
-		board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 0;
+		board.serials[usartOff].enabled  = 0;
+		board.serials[usartOn].enabled  = 1;
+		board.serials[usartOn].Protocol = USING_SBUS;
+		board.dmasSerial[board.serials[usartOn].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
 	} else
 	if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT) {
-		board.serials[ENUM_USART3].enabled  = 0;
-		board.serials[ENUM_USART1].enabled  = 1;
-		board.serials[ENUM_USART1].Protocol = USING_SBUS_SPORT;
-		board.dmasSerial[board.serials[ENUM_USART1].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 1;
-		board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 0;
+		board.serials[usartOff].enabled  = 0;
+		board.serials[usartOn].enabled  = 1;
+		board.serials[usartOn].Protocol = USING_SBUS_SPORT;
+		board.dmasSerial[board.serials[usartOn].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
 	} else
 	if (mainConfig.rcControlsConfig.rxProtcol == USING_SUMD) {
-		board.serials[ENUM_USART1].enabled  = 0;
-		board.serials[ENUM_USART3].enabled  = 1;
-		board.serials[ENUM_USART3].Protocol = USING_SUMD;
-		board.dmasSerial[board.serials[ENUM_USART1].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[ENUM_USART1].RXDma].enabled = 0;
-		board.dmasSerial[board.serials[ENUM_USART3].TXDma].enabled = 1;
-		board.dmasSerial[board.serials[ENUM_USART3].RXDma].enabled = 1;
+		board.serials[usartOff].enabled = 0;
+		board.serials[usartOn].enabled  = 1;
+		board.serials[usartOn].Protocol = USING_SUMD;
+		board.dmasSerial[board.serials[usartOn].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
+	} else
+	if (mainConfig.rcControlsConfig.rxProtcol == USING_SUMD_TWO_WAY) {
+		board.serials[usartOff].enabled = 0;
+		board.serials[usartOn].enabled  = 1;
+		board.serials[usartOn].Protocol = USING_SUMD_TWO_WAY;
+		board.dmasSerial[board.serials[usartOn].TXDma].enabled = 1;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
+		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
 	}
 
 	lastRXPacket = InlineMillis();
 
 	// read and write settings at slow speed
 	// starting serial ENUM_USART1 which is serial 0
-	for (uint32_t serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++) {
-		if (board.serials[serialNumber].enabled) {
+	for (uint32_t serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++)
+	{
+		if (board.serials[serialNumber].enabled)
+		{
 
 			if (board.dmasSerial[board.serials[serialNumber].TXDma].enabled) //only move the DMA into the Active DMA if the serial needs it
 		    	memcpy( &board.dmasActive[board.serials[serialNumber].TXDma], &board.dmasSerial[board.serials[serialNumber].TXDma], sizeof(board_dma) ); //TODO: Add dmasUsart
@@ -350,8 +388,10 @@ void InitBoardUsarts (void) {
 
 void DeInitBoardUsarts (void) {
 
-	for (uint32_t serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++) {
-		if (board.serials[serialNumber].enabled) {
+	for (uint32_t serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++)
+	{
+		if (board.serials[serialNumber].enabled)
+		{
 			UsartDeInit(serialNumber); //deinits serial and associated pins and DMAs
 		}
 	}
@@ -370,21 +410,25 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
     currentTime = InlineMillis();
 
-	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++) {
-		if (huart == &uartHandles[board.serials[serialNumber].usartHandle]) {
+	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
+	{
+		if (huart == &uartHandles[board.serials[serialNumber].usartHandle])
+		{
 			//todo: How do we handle multiple RXs with this?
 			timeSinceLastPacket[serialNumber] = (currentTime - timeOfLastPacket[serialNumber]); //todo: How do we handle multiple RXs with this?
 			timeOfLastPacket[serialNumber]    = currentTime; //todo: How do we handle multiple RXs with this?
 
-			if ( (board.serials[serialNumber].Protocol == USING_SUMD) && (dmaIndex[serialNumber] == 2) )
+			if ( ( (board.serials[serialNumber].Protocol == USING_SUMD) || (board.serials[serialNumber].Protocol == USING_SUMD_TWO_WAY)) && (dmaIndex[serialNumber] == 2) )
 			{
 				//Sumd packet 2 (third one) is number of channels.
 				//total frame length is header (3) + number of channels * 2 (variable) + crc length (2).
 				board.serials[serialNumber].FrameSize = CONSTRAIN( (5 + (dmaRxBuffer * 2) ), 9, 47); //sumd can be between 7 and 37 long
 			}
 
-			if (timeSinceLastPacket[serialNumber] > 3) {
-				if (dmaIndex[serialNumber] < board.serials[serialNumber].FrameSize) {
+			if (timeSinceLastPacket[serialNumber] > 3)
+			{
+				if (dmaIndex[serialNumber] < board.serials[serialNumber].FrameSize)
+				{
 					__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[serialNumber].usartHandle]); // Clear the buffer to prevent overrun
 				}
 				dmaIndex[serialNumber] = 0;
@@ -399,12 +443,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 					ProcessSpektrumPacket(serialNumber);
 				else if ((board.serials[serialNumber].Protocol == USING_SBUS) || (board.serials[serialNumber].Protocol == USING_SBUS_SPORT))
 					ProcessSbusPacket(serialNumber);
-				else if (board.serials[serialNumber].Protocol == USING_SUMD) {
-					//bzero(rf_custom_out_buffer,63);
-					//snprintf(rf_custom_out_buffer, 63, "0:%u, 1:%u, 2:%u, 3:%u, 4:%u, 5:%u\n", serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0], serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1], serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][2], serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][3], serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][4], serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][5]);
-					//RfCustomReply(rf_custom_out_buffer);
+				else if ( (board.serials[serialNumber].Protocol == USING_SUMD) || (board.serials[serialNumber].Protocol == USING_SUMD_TWO_WAY) )
 					ProcessSumdPacket(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], board.serials[serialNumber].FrameSize);
-				}
 			}
 			break;
 		}
