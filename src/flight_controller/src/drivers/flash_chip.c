@@ -237,15 +237,19 @@ static void SpiInit(uint32_t baudRatePrescaler)
 }
 
 
-int CheckIfFlashBusy(void) {
+int CheckIfFlashBusy(void)
+{
 	return(0);
 }
 
-int FindFirstEmptyPage(void) {
+int FindFirstEmptyPage(void)
+{
+
 	buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
 
 	uint32_t x;
 	uint32_t y;
+	uint32_t z;
 	uint32_t allFFs;
 	uint32_t allFFsTotal = 0;
 	uint32_t firstEmptySector;
@@ -259,74 +263,85 @@ int FindFirstEmptyPage(void) {
 
 			allFFs = 1;
 
-			for (y=0;y<flashInfo.pageSize;y++) { //check if page is empty, all 0xFF's
-				if (buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+y] != 0xFF)
-					allFFs = 0; //any non FF's will set this to 0.
-			}
-
-			firstEmptySector = x*(flashInfo.pageSize * flashInfo.pagesPerSector);
-
-			if (allFFs && (x == 0) ) {
-				firstEmptySector = 0;
-				break;
-			} else if (allFFs) {
-				firstEmptySector=x;
-				break;
-			}
-
-		} else {
-			flashInfo.currentWriteAddress = x;
-			flashInfo.enabled = FLASH_FULL;
-			return 0;
-		}
-
-	}
-
-	//find first empty page in sector
-	//for each sector we look for 8 FF pages in a row (FF being empty)
-	for (x = firstEmptySector;x < (firstEmptySector + (flashInfo.pageSize * flashInfo.pagesPerSector * 2 ) );x = x + flashInfo.pageSize)
-	{
-
-		if ( M25p16ReadPage( x, buffer->txBuffer, buffer->rxBuffer) )
-		{
-
-			allFFs = 1;
-
-			//check if page is empty, all 0xFF's
-			for (y=0;y<flashInfo.pageSize;y++)
+			for (y=0;y<flashInfo.pageSize;y++) //check if page is empty, all 0xFF's
 			{
 				if (buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+y] != 0xFF)
 					allFFs = 0; //any non FF's will set this to 0.
 			}
 
-			//this page is empty since all FF's is an empty page
-			if (allFFs)
-			{
-				allFFsTotal++;
-			}
+			//firstEmptySector = x*(flashInfo.pageSize * flashInfo.pagesPerSector);
 
-			if (allFFsTotal == 8)
+			if (allFFs && (x == 0) )
 			{
 				flashInfo.enabled = FLASH_ENABLED;
-				flashInfo.currentWriteAddress = (x - ( flashInfo.pageSize  * 3 ) );
-				return 1;
+				flashInfo.currentWriteAddress = 0;
+				return (1);
+			}
+			else if (allFFs)
+			{
+
+				firstEmptySector = x - (flashInfo.pageSize * flashInfo.pagesPerSector);
+				//find first empty page in sector
+				//for each sector we look for 4 FF pages in a row (FF being empty)
+				for (z = (firstEmptySector);z < ( (firstEmptySector) + (flashInfo.pageSize * flashInfo.pagesPerSector) * 2);z = z + flashInfo.pageSize)
+				{
+
+					if ( M25p16ReadPage( z, buffer->txBuffer, buffer->rxBuffer) )
+					{
+
+						allFFs = 1;
+
+						//check if page is empty, all 0xFF's
+						for (y=0;y<flashInfo.pageSize;y++)
+						{
+							if (buffer->rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+y] != 0xFF)
+							{
+								allFFs = 0; //any non FF's will set this to 0.
+								allFFsTotal = 0;
+							}
+						}
+
+						//this page is empty since all FF's is an empty page
+						if (allFFs)
+						{
+							allFFsTotal++;
+						}
+
+						if (allFFsTotal == 4)
+						{
+							flashInfo.enabled = FLASH_ENABLED;
+							//volatile uint32_t peeeeee = FLASH_ENABLED * y * z * x * firstEmptySector;
+							//flashInfo.enabled = FLASH_ENABLED;
+							flashInfo.currentWriteAddress = (z - ( flashInfo.pageSize  * 3 ) );
+							return (1);
+						}
+
+					}
+					else
+					{
+
+						flashInfo.currentWriteAddress = z;
+						flashInfo.enabled = FLASH_FULL;
+						return (0);
+
+					}
+
+				}
+
+				flashInfo.currentWriteAddress = z;
+				flashInfo.enabled = FLASH_FULL;
+				return (0);
 			}
 
 		}
 		else
 		{
-
 			flashInfo.currentWriteAddress = x;
 			flashInfo.enabled = FLASH_FULL;
-			return 0;
-
+			return (0);
 		}
 
 	}
-
-	flashInfo.currentWriteAddress = x;
-	flashInfo.enabled = FLASH_FULL;
-	return 0;
 
 }
 
@@ -390,7 +405,7 @@ int InitFlashChip(void)
     {
     	M25p16DmaReadPage(0, flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer);
     }
-    return 0;
+    return (0);
 }
 
 void DataFlashProgramPage(uint32_t address, uint8_t *data, uint16_t length)
@@ -483,6 +498,7 @@ int MassEraseDataFlashByPage(int blocking)
 
 		blocking = 0;
 		while ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS)) { //flash chip busy
+			FeedTheDog();
 			DelayMs(1);
 			blocking++;
 			if (blocking == 4000) //four seconds max time

@@ -203,55 +203,10 @@ void scheduler(int32_t count)
 
 }
 
-void SoftSerialCallback (void) {
-
-	//TODO: Move to softSerial.c or serial.c
-	uint32_t x;
-
-	/* EXTI line interrupt detected */
-	if(__HAL_GPIO_EXTI_GET_IT(board.motors[7].pin) != RESET)
-	{
-
-		__HAL_GPIO_EXTI_CLEAR_IT(board.motors[7].pin);
-
-
-		softSerialBuf[softSerialCurBuf][softSerialInd[softSerialCurBuf]++] = Micros();
-
-		if (softSerialSwitchBuffer) {
-
-			if (softSerialCurBuf == 1)
-			{
-				softSerialInd[0] = 0; //set next buffer index to 0
-
-				for (x = (softSerialLastByteProcessedLocation + 1); x < (softSerialCurBuf + 1); x++) {
-					softSerialBuf[0][softSerialInd[0]++] = softSerialBuf[1][x]; //load unprocessed data into new buffer
-				}
-				softSerialLastByteProcessedLocation = 0;
-				softSerialCurBuf = 0;
-				softSerialSwitchBuffer = 0;
-
-			}
-			else
-			{
-				softSerialInd[1] = 0; //set next buffer index to 0
-
-				for (x = (softSerialLastByteProcessedLocation + 1); x < (softSerialCurBuf + 1); x++) {
-					softSerialBuf[1][softSerialInd[1]++] = softSerialBuf[0][x]; //load unprocessed data into new buffer
-				}
-				softSerialLastByteProcessedLocation = 0;
-				softSerialCurBuf = 1;
-				softSerialSwitchBuffer = 0;
-
-			}
-
-		}
-
-	}
-
-}
 
 void TaskTelemtry(void) {
 
+/*
 	//TODO: Move all this to telemetry.c
 
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -267,7 +222,7 @@ void TaskTelemtry(void) {
 			//send telemetry here
 			lastTimeSPort = InlineMillis();
 
-			HAL_GPIO_DeInit(ports[board.motors[7].port], board.motors[7].pin);
+			//HAL_GPIO_DeInit(ports[board.motors[7].port], board.motors[7].pin);
 
 			//Set pin to timer now that IRQ has occurred.
 			GPIO_InitStructure.Pin       = board.motors[7].pin;
@@ -329,6 +284,7 @@ void TaskTelemtry(void) {
 		EXTI_Init(ports[board.motors[7].port], board.motors[7].pin, EXTI9_5_IRQn, 0, 1, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLDOWN);
 	}
 
+*/
 }
 
 inline void TaskAutoSaveConfig(void) {

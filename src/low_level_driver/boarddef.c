@@ -410,7 +410,7 @@ void getBoardHardwareDefs(void)
 	board.motors[7].motorOutputLength = 64; //bits
 	board.motors[7].EXTIn             = EXTI9_5_IRQn;
 	board.motors[7].DmaCallback       = FP_DMA2_S2; //used for input
-	callbackFunctionArray[FP_EXTI9_5] = SoftSerialCallback;
+	//callbackFunctionArray[FP_EXTI9_5] = SoftSerialCallback;
 
 	board.dmasMotor[7].enabled            = 1;
 	board.dmasMotor[7].dmaStream          = ENUM_DMA2_STREAM_2;    //motor out

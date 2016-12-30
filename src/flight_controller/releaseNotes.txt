@@ -170,3 +170,15 @@ Version 0.119.036
 Version 0.120.036
 	Code cleanup.
 	Change PID logging scale.
+
+Version 0.121.037
+	Implement abillity to adjust motor outputs.
+	Start work on Mixer Wizard.
+	Resolved 1wire config issue.
+
+Version 0.122.037:
+	Change 1wire startup power variable.
+
+Version 0.123.037:
+	Fixed issue with witchcraft.
+	Fixed issue with dlflsize reporting incorrect size.

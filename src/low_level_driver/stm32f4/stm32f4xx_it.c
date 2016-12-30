@@ -97,47 +97,47 @@ void OTG_FS_IRQHandler(void)
 
 
 
-void TIM1_CC_IRQHandler(void)
-{
-	//HAL_TIM_IRQHandler(&TimHandle);
-}
+//void TIM1_CC_IRQHandler(void)
+//{
+//	//HAL_TIM_IRQHandler(&TimHandle);
+//}
 
 
-void TIM2_IRQHandler(void)
-{
-	//HAL_TIM_IRQHandler(&TimHandle);
-}
-
-void TIM3_IRQHandler(void)
-{
+//void TIM2_IRQHandler(void)
+//{
+//	//HAL_TIM_IRQHandler(&TimHandle);
+//}
+//
+//void TIM3_IRQHandler(void)
+//{
 //	HAL_TIM_IRQHandler(&pwmTimers[board.motors[0].actuatorArrayNum]);
-}
+//}
 
-void TIM8_UP_TIM13_IRQHandler(void)
-{
+//void TIM8_UP_TIM13_IRQHandler(void)
+//{
 //	HAL_TIM_IRQHandler(&softSerialClockTimer);
 //	if (inlineIsPinStatusHi(ports[board.motors[0].port], board.motors[0].pin))
 //		inlineDigitalHi(ports[board.motors[0].port], board.motors[0].pin);
 //	else
 //		inlineDigitalLo(ports[board.motors[0].port], board.motors[0].pin);
-}
+//}
 
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	(void)(htim);
-	//if(htim->Instance == TIM8)
-	//{
-		//HAL_TIM_IRQHandler(&softSerialClockTimer);
-		//if (inlineIsPinStatusHi(ports[board.motors[0].port], board.motors[0].pin))
-		//	inlineDigitalHi(ports[board.motors[0].port], board.motors[0].pin);
-		//else
-		//	inlineDigitalLo(ports[board.motors[0].port], board.motors[0].pin);
-		//HAL_TIM_Base_Stop_IT(htim);
-		//HAL_GPIO_WritePin(GPIOG,GPIO_PIN_2,GPIO_PIN_RESET);
-    //}
-
-}
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+//{
+//	(void)(htim);
+//	//if(htim->Instance == TIM8)
+//	//{
+//		//HAL_TIM_IRQHandler(&softSerialClockTimer);
+//		//if (inlineIsPinStatusHi(ports[board.motors[0].port], board.motors[0].pin))
+//		//	inlineDigitalHi(ports[board.motors[0].port], board.motors[0].pin);
+//		//else
+//		//	inlineDigitalLo(ports[board.motors[0].port], board.motors[0].pin);
+//		//HAL_TIM_Base_Stop_IT(htim);
+//		//HAL_GPIO_WritePin(GPIOG,GPIO_PIN_2,GPIO_PIN_RESET);
+//    //}
+//
+//}
 
 
 void DMA1_Stream0_IRQHandler(void) {

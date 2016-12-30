@@ -276,6 +276,7 @@ uint32_t OneWireInit(void)
 	uint32_t atLeastOneWorks = 0;
 	uint8_t  inBuffer[127];
 	uint32_t dataCount;
+	uint32_t outputNumber;
 
 	oneWireOngoing = 1;
 	//need to deinit RX, Gyro, Flash... basically anything that uses DMA. Should make a skip for USART if it's being used for communication
@@ -297,7 +298,8 @@ uint32_t OneWireInit(void)
 
 		for (x = 0; x < MAX_MOTOR_NUMBER; x++)
 		{
-			InitDmaOutputForSoftSerial(DMA_OUTPUT_ESC_1WIRE, board.motors[x]);
+			outputNumber = mainConfig.mixerConfig.motorOutput[x];
+			InitDmaOutputForSoftSerial(DMA_OUTPUT_ESC_1WIRE, board.motors[outputNumber]);
 			DelayMs(10);
 		}
 
@@ -305,30 +307,31 @@ uint32_t OneWireInit(void)
 
 		for (x = 0; x < MAX_MOTOR_NUMBER; x++)
 		{
-			if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+			outputNumber = mainConfig.mixerConfig.motorOutput[x];
+			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 			{
-				escOneWireStatus[board.motors[x].actuatorArrayNum].enabled = 0;
-				if (ConnectToBlheliBootloader(board.motors[x], 35))
+				escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled = 0;
+				if (ConnectToBlheliBootloader(board.motors[outputNumber], 35))
 				{
-					dataCount = escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[x], inBuffer, 150);
-					if ( ProcessEEprom ( board.motors[x], inBuffer, dataCount) )
+					dataCount = escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[outputNumber], inBuffer, 150);
+					if ( ProcessEEprom ( board.motors[outputNumber], inBuffer, dataCount) )
 					{
 						if (tries > 1)
 						{
-							sprintf((char *)reportOut, "ESC:%lu Read Successful", board.motors[x].actuatorArrayNum);
+							sprintf((char *)reportOut, "ESC:%lu Read Successful", board.motors[outputNumber].actuatorArrayNum);
 							SendStatusReport((char *)reportOut);
 						}
 						atLeastOneWorks++;
 					} else {
 						if (tries > 1)
 						{
-							sprintf((char *)reportOut, "ESC:%lu Read Failure", board.motors[x].actuatorArrayNum);
+							sprintf((char *)reportOut, "ESC:%lu Read Failure", board.motors[outputNumber].actuatorArrayNum);
 							SendStatusReport((char *)reportOut);
 						}
 						allWork = 0;
 					}
 				}
-				DeInitDmaOutputForSoftSerial(board.motors[x]);
+				DeInitDmaOutputForSoftSerial(board.motors[outputNumber]);
 			}
 		}
 
@@ -524,7 +527,7 @@ uint32_t OneWireSaveConfig(motor_type actuator) {
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BRAKE_ON_STOP))]   = 0x01; //enabled
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_DEMAG_COMP))]      = 0x03; //high
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PWM_FREQ))]        = 0x03; //damped light
-				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_STARTUP_PWR))]     = 0x0C; //1.25
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_STARTUP_PWR))]     = 0x05; //0.125
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION))] = 0x01; //enabled
 
 				//erase eeprom
@@ -829,17 +832,17 @@ static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[],
 void OneWireDeinit(void) {
 
 	uint32_t x;
+	uint32_t outputNumber;
 
 	for (x = 0; x < MAX_MOTOR_NUMBER; x++)
 	{
-
-		//if ( (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[x].actuatorArrayNum].enabled) )
-		if (board.motors[x].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+		outputNumber = mainConfig.mixerConfig.motorOutput[x];
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 		{
 
-			escOneWireStatus[board.motors[x].actuatorArrayNum].esc1WireProtocol->Disconnect(board.motors[x], 22);
+			escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].esc1WireProtocol->Disconnect(board.motors[outputNumber], 22);
 
-			DeInitDmaOutputForSoftSerial(board.motors[x]);
+			DeInitDmaOutputForSoftSerial(board.motors[outputNumber]);
 
 		}
 
@@ -946,7 +949,33 @@ int16_t Esc1WireSetParameter(motor_type actuator, const oneWireParameter_t *para
         return (-1);
     }
 
-    buf[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + parameter->offset)] = value;
+    if (!strcmp("txprogramming", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.txprogramming = value;
+    if (!strcmp("beacondelay", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.beacondelay = value;
+    if (!strcmp("beaconstrength", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.beaconstrength = value;
+    if (!strcmp("beepstrength", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.beepstrength = value;
+    if (!strcmp("brakeonstop", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.brakeonstop = value;
+    if (!strcmp("demag", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.demag = value;
+    if (!strcmp("direction", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.direction = value;
+    if (!strcmp("frequency", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.frequency = value;
+    if (!strcmp("maxthrottle", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.maxthrottle = value;
+    if (!strcmp("minthrottle", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.minthrottle = value;
+    if (!strcmp("startuppower", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.startuppower = value;
+    if (!strcmp("tempprotection", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.tempprotection = value;
+    if (!strcmp("timing", parameter->name))
+    	escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.timing = value;
+
     return (1);
 
 }

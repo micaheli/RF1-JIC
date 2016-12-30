@@ -244,7 +244,7 @@ inline void InlineUpdateWitchcraft(pid_terms pidConfig[])
 	int32_t axis;
 
 	for (axis = 2; axis >= 0; --axis) {
-		if (pidConfig[axis].wc) {
+		if (pidConfig[axis].wc > 1) {
 			kdRingBuffer[axis][kdRingBufferPoint[axis]++] = kdDelta[axis];
 			kdRingBufferSum[axis] += kdDelta[axis];
 

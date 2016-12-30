@@ -164,7 +164,6 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 
 	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], bufferIdx);
 
-//	inlineDigitalLo(ports[board.motors[3].port], board.motors[3].pin);
 }
 
 
@@ -582,19 +581,21 @@ uint32_t DoesDmaConflictWithActiveDmas(motor_type actuator) {
 void DeInitAllowedSoftOutputs(void) {
 
 	uint32_t actuatorNumOutput;
+	uint32_t outputNumber;
 
 	softSerialEnabled = 0; //todo: make this better, this is pretty ghetto.
 	telemEnabled      = 0;
 
 	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++)
 	{
-		switch (board.motors[actuatorNumOutput].enabled)
+		outputNumber = mainConfig.mixerConfig.motorOutput[actuatorNumOutput];
+		switch (board.motors[outputNumber].enabled)
 		{
 
 			case ENUM_ACTUATOR_TYPE_WS2812:
 			case ENUM_ACTUATOR_TYPE_SPORT:
 
-				DeInitDmaOutputForSoftSerial(board.motors[actuatorNumOutput]); //disable DMA for motor if it's active and set to one of the above cases. This assume the DMA doesn't get deactivated somehow.
+				DeInitDmaOutputForSoftSerial(board.motors[outputNumber]); //disable DMA for motor if it's active and set to one of the above cases. This assume the DMA doesn't get deactivated somehow.
 
 				break;
 
@@ -608,27 +609,32 @@ void DeInitAllowedSoftOutputs(void) {
 }
 
 //TODO: make sure EXTIs don't conflict
-void InitAllowedSoftOutputs(void) {
+void InitAllowedSoftOutputs(void)
+{
 
 	uint32_t actuatorNumOutput;
 	uint32_t actuatorNumCheck;
-	uint32_t okayToEnable = 1;
+	uint32_t okayToEnable;
+	uint32_t outputNumber;
+
+	okayToEnable = 1;
 
 	//TODO: We need more actuators, no more max motor number, instead we use max_actuator number.
 	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++) {
-		switch (board.motors[actuatorNumOutput].enabled) {
+		outputNumber = mainConfig.mixerConfig.motorOutput[actuatorNumOutput];
+		switch (board.motors[outputNumber].enabled) {
 			case ENUM_ACTUATOR_TYPE_WS2812:
 			case ENUM_ACTUATOR_TYPE_SPORT:
 				for (actuatorNumCheck = 0; actuatorNumCheck < MAX_MOTOR_NUMBER; actuatorNumCheck++) { //make sure soft sport and soft ws2812 don't interfer with active motor configuration
 
-					if (!DoesDmaConflictWithActiveDmas(board.motors[actuatorNumOutput])) {
+					if (!DoesDmaConflictWithActiveDmas(board.motors[outputNumber])) {
 						okayToEnable = 0;
 					}
 
 				}
 				if (okayToEnable) {
 
-					if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_SPORT) {
+					if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_SPORT) {
 						//TODO: make telemetry and soft serial setup smarter
 						softSerialEnabled = 1;
 						telemEnabled      = 1;
@@ -643,8 +649,8 @@ void InitAllowedSoftOutputs(void) {
 						//prepare soft serial buffer and index
 						__enable_irq();
 
-						SetActiveDmaToActuatorDma(board.motors[actuatorNumOutput]);
-						InitDmaOutputForSoftSerial(board.motors[actuatorNumOutput].enabled, board.motors[actuatorNumOutput]);
+						SetActiveDmaToActuatorDma(board.motors[outputNumber]);
+						InitDmaOutputForSoftSerial(board.motors[outputNumber].enabled, board.motors[outputNumber]);
 					}
 
 				}
@@ -785,6 +791,7 @@ void InitDshotOutputOnMotors(uint32_t usedFor)
 	uint32_t normalPulse;
 	uint32_t alonePulse;
 	uint32_t inverted;
+	uint32_t outputNumber;
 
 	if (usedFor == ESC_DSHOT600) {
 
@@ -819,13 +826,14 @@ void InitDshotOutputOnMotors(uint32_t usedFor)
 	}
 
 	for (uint32_t motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		if ( (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (board.dmasMotor[board.motors[motorNum].Dma].enabled) ) {
-			SetActiveDmaToActuatorDma(board.motors[motorNum]);
-			alonePulseWidth[board.motors[motorNum].actuatorArrayNum+1]  = alonePulse;
-			normalPulseWidth[board.motors[motorNum].actuatorArrayNum+1] = normalPulse;
-			endPulseWidth[board.motors[motorNum].actuatorArrayNum+1]    = endPulse;
-			loPulseWidth[board.motors[motorNum].actuatorArrayNum+1]     = loPulse;
-			InitOutputForDma(board.motors[motorNum], pwmHz, timerHz, inverted);
+		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
+		if ( (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (board.dmasMotor[board.motors[outputNumber].Dma].enabled) ) {
+			SetActiveDmaToActuatorDma(board.motors[outputNumber]);
+			alonePulseWidth[board.motors[outputNumber].actuatorArrayNum+1]  = alonePulse;
+			normalPulseWidth[board.motors[outputNumber].actuatorArrayNum+1] = normalPulse;
+			endPulseWidth[board.motors[outputNumber].actuatorArrayNum+1]    = endPulse;
+			loPulseWidth[board.motors[outputNumber].actuatorArrayNum+1]     = loPulse;
+			InitOutputForDma(board.motors[outputNumber], pwmHz, timerHz, inverted);
 		}
 	}
 

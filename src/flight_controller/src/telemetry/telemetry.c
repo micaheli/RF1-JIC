@@ -47,29 +47,31 @@ void InitSoftSport(void) {
 	uint32_t actuatorNumOutput;
 	uint32_t actuatorNumCheck;
 	uint32_t okayToEnable = 1;
+	uint32_t outputNumber;
 
 	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++) {
-		switch (board.motors[actuatorNumOutput].enabled) {
+		outputNumber = mainConfig.mixerConfig.motorOutput[actuatorNumOutput];
+		switch (board.motors[outputNumber].enabled) {
 			case ENUM_ACTUATOR_TYPE_WS2812:
 			case ENUM_ACTUATOR_TYPE_SPORT:
 				for (actuatorNumCheck = 0; actuatorNumCheck < MAX_MOTOR_NUMBER; actuatorNumCheck++) { //make sure soft sport and soft ws2812 don't interfer with active motor configuration
 
-					if (!DoesDmaConflictWithActiveDmas(board.motors[actuatorNumOutput])) {
+					if (!DoesDmaConflictWithActiveDmas(board.motors[outputNumber])) {
 						okayToEnable = 0;
 					}
 
 				}
 				if (okayToEnable) { //this actuator is safe to enable
 
-					if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_SPORT) {
+					if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_SPORT) {
 						//TODO: make telemetry and soft serial setup smarter
 
 						//buffer location to write to, buffer index, actuator to RX on.
 						//once line idle occurs the callback function will be called
 						softserialCallbackFunctionArray[0] = TelemtryRxCallback; //this function is called once line idle is sensed after data reception
-						SoftSerialReceiveNonBlocking(telemtryRxBuffer, &telemtryRxBufferIdx, board.motors[actuatorNumOutput]);
+						SoftSerialReceiveNonBlocking(telemtryRxBuffer, &telemtryRxBufferIdx, board.motors[outputNumber]);
 
-						//PutSoftSerialActuatorInReceiveState(board.motors[actuatorNumOutput]);
+						//PutSoftSerialActuatorInReceiveState(board.motors[outputNumber]);
 
 						softSerialEnabled = 1;
 						telemEnabled      = 1;
@@ -84,8 +86,8 @@ void InitSoftSport(void) {
 						//prepare soft serial buffer and index
 						__enable_irq();
 
-						SetActiveDmaToActuatorDma(board.motors[actuatorNumOutput]);
-						InitDmaOutputForSoftSerial(board.motors[actuatorNumOutput].enabled, board.motors[actuatorNumOutput]);
+						SetActiveDmaToActuatorDma(board.motors[outputNumber]);
+						InitDmaOutputForSoftSerial(board.motors[outputNumber].enabled, board.motors[outputNumber]);
 					}
 
 				}

@@ -16,13 +16,13 @@ typedef struct {
     float aux4;
 } actuator_mixer;
 
-
 typedef struct {
     uint32_t mixerType;
     uint32_t escProtcol;
     uint32_t escUpdateFrequency;
     float    idlePercent;
     uint32_t motorMixer;
+    uint32_t motorOutput[8];
 } mixer_config;
 
 enum {MIXER_X1234=0,MIXER_X1234RY,MIXER_X1234I,MIXER_CUSTOM,MIXER_END};

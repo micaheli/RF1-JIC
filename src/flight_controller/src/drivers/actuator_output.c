@@ -12,21 +12,16 @@ static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle
 
 void DeInitActuators(void)  {
 	uint32_t motorNum;
+	uint32_t outputNumber;
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
-		{
-			//if (board.motors[motorNum].polarity == TIM_OCPOLARITY_LOW)
-			//{
-			//	inlineDigitalLo(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
-			//}
-			//else
-			//{
-			//	inlineDigitalHi(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
-			//}
+		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
 
-			HAL_GPIO_DeInit(ports[board.motors[motorNum].port], board.motors[motorNum].pin);
-			HAL_TIM_PWM_DeInit(&pwmTimers[board.motors[motorNum].actuatorArrayNum]);
-			HAL_TIM_Base_DeInit(&pwmTimers[board.motors[motorNum].actuatorArrayNum]);
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+		{
+
+			HAL_GPIO_DeInit(ports[board.motors[outputNumber].port], board.motors[outputNumber].pin);
+			HAL_TIM_PWM_DeInit(&pwmTimers[board.motors[outputNumber].actuatorArrayNum]);
+			HAL_TIM_Base_DeInit(&pwmTimers[board.motors[outputNumber].actuatorArrayNum]);
 
 		}
 	}
@@ -38,6 +33,7 @@ void InitActuators(void) {
 	float walledUs;   // longest pulse width (full throttle)
 	float idleUs;     // idle pulse width (armed, zero throttle)
 	uint32_t motorNum;
+	uint32_t outputNumber;
 
 	// timerHz *must* be a proper divisor of the timer frequency
 	//     REVOLT - 48 MHz (overclocked from 42 MHz)
@@ -102,8 +98,9 @@ void InitActuators(void) {
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-			InitActuatorTimer(board.motors[motorNum], pwmHz, timerHz);
+		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+			InitActuatorTimer(board.motors[outputNumber], pwmHz, timerHz);
 		}
 	}
 
@@ -111,9 +108,10 @@ void InitActuators(void) {
 
 	// Start the timers
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-			HAL_TIM_Base_Start(&pwmTimers[board.motors[motorNum].actuatorArrayNum]);
-			HAL_TIM_PWM_Start(&pwmTimers[board.motors[motorNum].actuatorArrayNum], board.motors[motorNum].timChannel);
+		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+			HAL_TIM_Base_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum]);
+			HAL_TIM_PWM_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum], board.motors[outputNumber].timChannel);
 		}
 	}
 
@@ -221,46 +219,51 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 {
 	(void)servoOutput;
 
+	uint32_t outputNumber;
 	uint32_t motorNum;
 	uint8_t serialOutBuffer[2];
 
 	if (boardArmed) {
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-			if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+			outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
+			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 				if ( IsDshotEnabled() ) {
 					ThrottleToDshot(serialOutBuffer, motorOutput[motorNum], mainConfig.mixerConfig.idlePercent);
-					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1, 0);
+					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0);
 				} else {
-					*ccr[board.motors[motorNum].timCCR] = (uint16_t)(motorOutput[motorNum] * (float)pulseValueRange) + idlePulseValue;
+					*ccr[board.motors[outputNumber].timCCR] = (uint16_t)(motorOutput[motorNum] * (float)pulseValueRange) + idlePulseValue;
 				}
 			}
 		}
 	} else if (calibrateMotors) {
 		if (motorOutput[0] < 0.1) {
 			for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-				if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+				outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
+				if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 					if ( !IsDshotEnabled() ) {
-						*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
+						*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue;
 					}
 				}
 			}
 		} else {
 			for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-				if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+				outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
+				if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 					if ( !IsDshotEnabled() ) {
-						*ccr[board.motors[motorNum].timCCR] = pulseValueRange + idlePulseValue;
+						*ccr[board.motors[outputNumber].timCCR] = pulseValueRange + idlePulseValue;
 					}
 				}
 			}
 		}
 	} else {
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-			if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+			outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
+			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 				if ( IsDshotEnabled() ) {
 					ThrottleToDshot(serialOutBuffer, 0, 0);
-					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1, 0);
+					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0);
 				} else {
-					*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
+					*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue;
 				}
 			}
 		}
@@ -268,20 +271,23 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 }
 
 
-void ZeroActuators(uint32_t delayUs) {
+void ZeroActuators(uint32_t delayUs)
+{
 
+	uint32_t outputNumber;
 	uint8_t serialOutBuffer[2];
 
 	if ( (mainConfig.mixerConfig.escProtcol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT150) )
 		__disable_irq();
 
 	for (uint32_t motorNum=0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		if (board.motors[motorNum].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 			if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) ) {
 				ThrottleToDshot(serialOutBuffer, 0, 0);
-				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[motorNum], 1, 0); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
+				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
 			} else {
-				*ccr[board.motors[motorNum].timCCR] = disarmPulseValue;
+				*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue;
 			}
 		}
 	}
@@ -293,3 +299,24 @@ void ZeroActuators(uint32_t delayUs) {
 		__enable_irq();
 
 }
+
+void IdleActuator(uint32_t motorNum)
+{
+
+	uint32_t outputNumber;
+	uint8_t serialOutBuffer[2];
+
+	outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
+
+	if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+	{
+		if ( IsDshotEnabled() ) {
+			ThrottleToDshot(serialOutBuffer, motorOutput[outputNumber], mainConfig.mixerConfig.idlePercent);
+			OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0);
+		} else {
+			*ccr[board.motors[outputNumber].timCCR] = (uint16_t)idlePulseValue;
+		}
+	}
+
+}
+
