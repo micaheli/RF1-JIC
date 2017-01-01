@@ -3,9 +3,9 @@
 paf_state InitPaf(float q, float r, float p, float intial_value)
 {
 	paf_state result;
-	result.q = q * 0.01;
-	result.r = r * 0.01;
-	result.p = p * 0.01;
+	result.q = q * 0.001;
+	result.r = r * 0.001;
+	result.p = p * 0.001;
 	result.x = intial_value * 16.4;
 
 	return result;
@@ -83,7 +83,6 @@ void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSe
 			break;
 	}
 
-
     // precompute the coefficients
     newState->a0 = b0 / a0;
     newState->a1 = b1 / a0;
@@ -98,6 +97,21 @@ void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSe
     newState->y1 =  oldState->y1;
     newState->y2 =  oldState->y1;
 
+}
+
+void LpfInit(lpf_state *filter, float frequencyCut, float refreshRateSeconds)
+{
+	filter->dT = refreshRateSeconds;
+	filter->rC = 1.0f / ( 2.0f * M_PI * frequencyCut );
+	filter->state = 0.0;
+}
+
+float LpfUpdate(float input, lpf_state *filter)
+{
+
+	filter->state = filter->state + filter->dT / (filter->rC + filter->dT) * (input - filter->state);
+
+	return (filter->state);
 }
 
 float BiquadUpdate(float sample, biquad_state *state)

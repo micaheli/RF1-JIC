@@ -1,6 +1,7 @@
 #include "includes.h"
 
 volatile uint32_t disarmPulseValue;
+volatile uint32_t calibratePulseValue;
 volatile uint32_t idlePulseValue;
 volatile uint32_t pulseValueRange;
 
@@ -29,9 +30,10 @@ void DeInitActuators(void)  {
 
 void InitActuators(void) {
 
-	float disarmUs;   // shortest pulse width (disarmed)
-	float walledUs;   // longest pulse width (full throttle)
-	float idleUs;     // idle pulse width (armed, zero throttle)
+	float disarmUs;    // shortest pulse width (disarmed)
+	float calibrateUs; // shortest pulse width (calibrate)
+	float walledUs;    // longest pulse width (full throttle)
+	float idleUs;      // idle pulse width (armed, zero throttle)
 	uint32_t motorNum;
 	uint32_t outputNumber;
 
@@ -43,31 +45,35 @@ void InitActuators(void) {
 
 	switch (mainConfig.mixerConfig.escProtcol) {
 		case ESC_PWM:
-			disarmUs  = 1000;
-			walledUs  = 2000;
-			pwmHz     = 490;
-			timerHz   = 1000000;
+			disarmUs    = 990;
+			calibrateUs = 1000;
+			walledUs    = 2000;
+			pwmHz       = 490;
+			timerHz     = 1000000;
 			break;
 		case ESC_ONESHOT:
-			disarmUs  = 125;
-			walledUs  = 250;
-			pwmHz     = 3900;
-			timerHz   = 8000000;
+			disarmUs    = 120;
+			calibrateUs = 125;
+			walledUs    = 250;
+			pwmHz       = 3900;
+			timerHz     = 8000000;
 			break;
 		case ESC_ONESHOT42:
-			disarmUs  = 41.667;
-			walledUs  = 83.334; // round up for int math
-			pwmHz     = 11500;
-			timerHz   = 24000000;
+			disarmUs    = 40;
+			calibrateUs = 41.667;
+			walledUs    = 83.334; // round up for int math
+			pwmHz       = 11500;
+			timerHz     = 24000000;
 			break;
 		case ESC_DSHOT150:
 		case ESC_DSHOT300:
 		case ESC_DSHOT600:
-			disarmUs  = 0;
-			walledUs  = 2000;
-			idleUs    = 48;
-			pwmHz     = 0;
-			timerHz   = 0;
+			disarmUs    = 0;
+			calibrateUs = 0;
+			walledUs    = 2000;
+			idleUs      = 48;
+			pwmHz       = 0;
+			timerHz     = 0;
 			disarmPulseValue = 0;
 			idlePulseValue   = 48;
 			walledPulseValue = 2048;
@@ -77,10 +83,11 @@ void InitActuators(void) {
 			break;
 		case ESC_MULTISHOT:
 		default:
-			disarmUs  = 5;
-			walledUs  = 22;
-			pwmHz     = 32000;
-			timerHz   = 48000000; // full resolution
+			disarmUs    = 4.9;
+			calibrateUs = 5;
+			walledUs    = 24.5;
+			pwmHz       = 32000;
+			timerHz     = 48000000; // full resolution
 			//timerHz   = 12000000; // 1/4 resolution
 			break;
 	}
@@ -91,9 +98,10 @@ void InitActuators(void) {
 	// compute idle PWM width from idlePercent
 	idleUs = ((walledUs - disarmUs) * (mainConfig.mixerConfig.idlePercent * 0.01) ) + disarmUs;
 
-	disarmPulseValue = ((uint32_t)(disarmUs * timerHz)) / 1000000;
-	idlePulseValue   = ((uint32_t)(idleUs * timerHz))   / 1000000;
-	walledPulseValue = ((uint32_t)(walledUs * timerHz)) / 1000000;
+	disarmPulseValue    = ((uint32_t)(disarmUs * timerHz))    / 1000000;
+	calibratePulseValue = ((uint32_t)(calibrateUs * timerHz)) / 1000000;
+	idlePulseValue      = ((uint32_t)(idleUs * timerHz))      / 1000000;
+	walledPulseValue    = ((uint32_t)(walledUs * timerHz))    / 1000000;
 
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
@@ -241,7 +249,7 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 				outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
 				if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 					if ( !IsDshotEnabled() ) {
-						*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue;
+						*ccr[board.motors[outputNumber].timCCR] = calibratePulseValue;
 					}
 				}
 			}

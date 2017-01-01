@@ -11,6 +11,7 @@ float kdDelta[AXIS_NUMBER];
 float kiError[AXIS_NUMBER];
 float kiErrorLimit[AXIS_NUMBER];
 biquad_state kdBqFilterState[AXIS_NUMBER];
+lpf_state yawKpLpf;
 
 pid_terms  pidsUsed[AXIS_NUMBER];
 
@@ -46,6 +47,8 @@ void InitPid (void)
 	pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 200000000 )  / loopSpeed.dT;
 	pidsUsed[2].wc = mainConfig.pidConfig[2].wc;
 
+	LpfInit(&yawKpLpf, 30.0f, loopSpeed.dT);
+
 }
 
 
@@ -61,7 +64,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 
 	(void)(pidConfig);
 	(void)(actuatorRange);
-/*
+
 	//set point limiter.
 	if ( actuatorRange >= 0.90 )
 	{
@@ -100,10 +103,10 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 		usedFlightSetPoints[2] = flightSetPoints[2];
 
 	}
-*/
-	usedFlightSetPoints[0] = flightSetPoints[0];
-	usedFlightSetPoints[1] = flightSetPoints[1];
-	usedFlightSetPoints[2] = flightSetPoints[2];
+
+	//usedFlightSetPoints[0] = flightSetPoints[0];
+	//usedFlightSetPoints[1] = flightSetPoints[1];
+	//usedFlightSetPoints[2] = flightSetPoints[2];
 
 	for (axis = 2; axis >= 0; --axis)
 	{
@@ -130,6 +133,9 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 
 			// calculate Kp
 			flightPids[axis].kp = (pidError * pidsUsed[axis].kp);
+
+			//if (axis == YAW)
+			//	flightPids[YAW].kp = LpfUpdate(flightPids[YAW].kp, &yawKpLpf);
 
 			// calculate Ki ////////////////////////// V
 			if ( fullKiLatched )
@@ -172,7 +178,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 				else
 				{
 					filterSetup[axis] = 1;
-					InitBiquad(mainConfig.filterConfig[YAW].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 1.66f);
+					InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 1.66f);
 				}
 
 			}

@@ -182,3 +182,32 @@ Version 0.122.037:
 Version 0.123.037:
 	Fixed issue with witchcraft.
 	Fixed issue with dlflsize reporting incorrect size.
+
+Version 0.124.037:
+	Changed pidsrs2k. Mix of default PIDs and Ehitaja's filtering settings.
+
+Version 0.125.037:
+	Changed pidspg. Mix of PG PIDs and Ehitaja's filtering settings.
+
+Version 0.126.037:
+	Code cleanup.
+	Added LEDs back in.
+	Added Buzzers back in.
+
+Version 0.127.002:
+	Custom version for XDC Racers.
+	Added LED set command selections. RGB colors and number of LEDs.
+		set led_red=0-255
+		set led_green=0-255
+		set led_blue=0-255
+		set led_count=0-32
+
+Version 0.128.038:
+	Code cleanup.
+	Changed MS signal output and calibration routine.
+	Must recalibrate your ESCs on this build.
+	Changed filtering up.
+
+Version 0.129.038:
+	Major flight code fix. Highly recommended ended upgrade.
+	Updated pidsrs2k

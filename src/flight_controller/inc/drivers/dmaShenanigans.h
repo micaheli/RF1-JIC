@@ -23,12 +23,23 @@ typedef struct {
 
 
 typedef struct {
-    uint32_t ledColor;
     uint32_t ledCount;
+    uint32_t ledRed;
+    uint32_t ledGreen;
+    uint32_t ledBlue;
 } led_config;
 
 
+typedef struct {
+	uint32_t enabled;
+	motor_type ws2812Actuator;
+} ws2812_led_record;
 
+
+extern ws2812_led_record ws2812LedRecord;
+
+
+extern motor_type ws2812Actuator;
 extern ws2812Led_t WS2812_IO_colors[];
 
 
@@ -40,6 +51,7 @@ extern void Ws2812LedInit(void);
 extern void ws2812_led_update(uint32_t nLeds);
 extern void SetLEDColor(uint8_t newColor);
 extern void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_type actuator, uint32_t msb, uint32_t sendFrame);
+extern void InitWs2812();
 
 
 extern void     InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator);

@@ -314,13 +314,40 @@ inline void TaskHandlePcComm(void)
 
 inline void TaskLed(void)
 {
-	//static uint32_t lastUpdate = 0;
-	UpdateLeds();
+	static uint32_t lastUpdate = 0;
+	static uint32_t lastColors = 0xFFFFFFFF;
+	uint32_t currentColors;
+	uint32_t x;
+	uint32_t y;
+	uint8_t  rgbArray[96];
 
-	//if ( ( InlineMillis() - lastUpdate ) > 100 ) {
-	//	lastUpdate = InlineMillis();
-	//	ws2812_led_update(mainConfig.ledConfig.ledCount);
-	//}
+	UpdateLeds(); //update status LEDs
+
+	//Update WS2812 LEDs
+	if ( ( InlineMillis() - lastUpdate ) > 100 )
+	{
+		lastUpdate = InlineMillis();
+
+		currentColors = (((uint8_t)mainConfig.ledConfig.ledGreen<<16) | ((uint8_t)mainConfig.ledConfig.ledRed<<8) | ((uint8_t)mainConfig.ledConfig.ledBlue<<0));
+		if (ws2812LedRecord.enabled && (currentColors != lastColors))
+		{
+			lastColors = currentColors;
+			y = 0;
+
+			mainConfig.ledConfig.ledCount = CONSTRAIN(mainConfig.ledConfig.ledCount, 1, WS2812_MAX_LEDS);
+
+			for (x = 0; x < mainConfig.ledConfig.ledCount; x++)
+			{
+				rgbArray[y++] = ~(uint8_t)mainConfig.ledConfig.ledGreen;
+				rgbArray[y++] = ~(uint8_t)mainConfig.ledConfig.ledRed;
+				rgbArray[y++] = ~(uint8_t)mainConfig.ledConfig.ledBlue;
+			}
+
+			OutputSerialDmaByte(rgbArray, y, ws2812LedRecord.ws2812Actuator, 1, 0);
+
+		}
+	}
+
 }
 
 inline void TaskBuzzer(void)

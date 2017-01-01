@@ -16,27 +16,14 @@ uint8_t ledColor = 254;
 DMA_HandleTypeDef  ws2812_led;
 TIM_HandleTypeDef  pwmTimerBase;
 
-uint32_t dmaTriggered = 0;
+ws2812_led_record ws2812LedRecord;
+
 uint32_t onePulseWidth[17];
 uint32_t zeroPulseWidth[17];
 uint32_t alonePulseWidth[17];
 uint32_t normalPulseWidth[17];
 uint32_t endPulseWidth[17];
 uint32_t loPulseWidth[17];
-
-
-uint32_t testBuffer[88];
-
-/* Captured Value */
-__IO uint32_t            uwIC2Value = 0;
-__IO uint32_t            uwIC2Value2 = 0;
-/* Duty Cycle Value */
-__IO uint32_t            uwDutyCycle = 0;
-/* Frequency Value */
-__IO uint32_t            uwFrequency = 0;
-
-
-
 
 
 ws2812Led_t red = {
@@ -166,12 +153,52 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 
 }
 
+void InitWs2812(void)
+{
 
-void TIM8_CC_IRQHandler(void) {
+	uint32_t actuatorNumOutput;
+	uint32_t actuatorNumCheck;
+	uint32_t outputNumber;
+
+
+	ws2812LedRecord.enabled = 0;
+	//TODO: We need more actuators, no more max motor number, instead we use max_actuator number.
+	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++)
+	{
+		outputNumber = mainConfig.mixerConfig.motorOutput[actuatorNumOutput];
+
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_WS2812)
+		{
+			for (actuatorNumCheck = 0; actuatorNumCheck < MAX_MOTOR_NUMBER; actuatorNumCheck++)
+			{ //make sure soft sport and soft ws2812 don't interfere with active motor configuration
+
+				if (!DoesDmaConflictWithActiveDmas(board.motors[outputNumber]))
+				{
+					ws2812LedRecord.enabled = 1;
+					ws2812LedRecord.ws2812Actuator = board.motors[outputNumber];
+					SetActiveDmaToActuatorDma(ws2812LedRecord.ws2812Actuator);
+					InitDmaOutputForSoftSerial(ws2812LedRecord.ws2812Actuator.enabled, ws2812LedRecord.ws2812Actuator);
+					uint8_t rgbArray[] = {0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF};
+					OutputSerialDmaByte(rgbArray, 12, ws2812LedRecord.ws2812Actuator, 0, 0);
+
+
+				}
+
+			}
+
+		}
+
+	}
+
+}
+
+void TIM8_CC_IRQHandler(void)
+{
 	HAL_TIM_IRQHandler(&softSerialClockTimer);
 }
 
-void InitOdd(motor_type actuator) {
+void InitOdd(motor_type actuator)
+{
 	(void)(actuator);
 /*
 	//GPIO_InitTypeDef        GPIO_InitStruct;
@@ -571,9 +598,9 @@ uint32_t DoesDmaConflictWithActiveDmas(motor_type actuator) {
 	for (x=0;x<16;x++)
 		if (board.dmasActive[actuator.Dma].enabled)
 			if (board.dmasActive[actuator.Dma].dmaStream == board.dmasActive[x].dmaStream)
-				return 0;
+				return (1);
 
-	return(1);
+	return(0);
 
 }
 
@@ -694,47 +721,28 @@ void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator)
 	if (usedFor == DMA_OUTPUT_WS2812_LEDS)
 	{
 
-	}
-	else if (usedFor == ENUM_ACTUATOR_TYPE_WS2812)
-	{
-		//17 / 24 = 0.708 us
-	    // note that the timer is running at 24 MHZ, with a period of 30 cycles
-	    // a "1" must be high for ~700 ns, which corresponds to roughly 17 timer cycles
-	    // a "0" must be high for ~350 ns, which corresponds to roughly 8 timer cycles
-		//At 09600, bit time is 104.166666666666 microseconds. 104166 ns
-		//At 19200, bit time is 52.083333333333 microseconds. 52083 ns
-		//0.0416666666666667 us per tick with timerHz at 24000000 and pwmHz at 800000 with
-		//1 MHz timer is 1us per tick. :)
-		//52 ticks is a 1 and 0 ticks is a 0 for serial
-
-		//19200KBAUD
-		//timerHz   = 48000000; //48 MHz frequency is perfectly fine for 19200 Baud.
-		//pwmHz     = 19200;   //baudrate
-		//onePulse  = 1;
-		//zeroPulse = 2490; //2500 max, but we can't fill the CCR
-
-		//57600KBAUD
-		//timerHz   = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833
-		//pwmHz     = 57600;   //baudrate
-		//onePulse  = 0;
-		//zeroPulse = 832; //833 max, but we can't fill the CCR
-		//inverted  = 1;
-
-		//100KBAUD
-		//timerHz   = 48000000; //48 MHz frequency is perfectly fine for 19200 Baud.
-		//pwmHz     = 100000;   //baudrate
-		//onePulse  = 1;
-		//zeroPulse = 470; //480 max, but we can't fill the CCR
-
-		//200KBAUD
-		//timerHz   = 48000000; //48 MHz frequency is perfectly fine for 19200 Baud.
-		//pwmHz     = 200000;   //baudrate
-		//onePulse  = 1;
-		//zeroPulse = 230; //240 max, but we can't fill the CCR
+		//memcpy(&colorTable[0], &red, 3);
+		//memcpy(&colorTable[1], &yellow, 3);
+		//memcpy(&colorTable[2], &green, 3);
+		//memcpy(&colorTable[3], &cyan, 3);
+		//memcpy(&colorTable[4], &blue, 3);
+		//memcpy(&colorTable[5], &purple, 3);
+		//memcpy(&colorTable[6], &white, 3);
 		timerHz     = 24000000;
 		pwmHz       = 800000;
 		//onePulse  = 17;
 		//zeroPulse = 8;
+		normalPulse = 17;
+		alonePulse  = 17;
+		endPulse    = 17;
+		loPulse     = 8;
+	}
+	else if (usedFor == ENUM_ACTUATOR_TYPE_WS2812)
+	{
+
+		timerHz     = 24000000;
+		pwmHz       = 800000;
+
 		normalPulse = 17;
 		alonePulse  = 17;
 		endPulse    = 17;
@@ -779,6 +787,40 @@ void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator)
 
 	InitOutputForDma(actuator, pwmHz, timerHz, inverted);
 
+	//17 / 24 = 0.708 us
+    // note that the timer is running at 24 MHZ, with a period of 30 cycles
+    // a "1" must be high for ~700 ns, which corresponds to roughly 17 timer cycles
+    // a "0" must be high for ~350 ns, which corresponds to roughly 8 timer cycles
+	//At 09600, bit time is 104.166666666666 microseconds. 104166 ns
+	//At 19200, bit time is 52.083333333333 microseconds. 52083 ns
+	//0.0416666666666667 us per tick with timerHz at 24000000 and pwmHz at 800000 with
+	//1 MHz timer is 1us per tick. :)
+	//52 ticks is a 1 and 0 ticks is a 0 for serial
+
+	//19200KBAUD
+	//timerHz   = 48000000; //48 MHz frequency is perfectly fine for 19200 Baud.
+	//pwmHz     = 19200;   //baudrate
+	//onePulse  = 1;
+	//zeroPulse = 2490; //2500 max, but we can't fill the CCR
+
+	//57600KBAUD
+	//timerHz   = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833
+	//pwmHz     = 57600;   //baudrate
+	//onePulse  = 0;
+	//zeroPulse = 832; //833 max, but we can't fill the CCR
+	//inverted  = 1;
+
+	//100KBAUD
+	//timerHz   = 48000000; //48 MHz frequency is perfectly fine for 19200 Baud.
+	//pwmHz     = 100000;   //baudrate
+	//onePulse  = 1;
+	//zeroPulse = 470; //480 max, but we can't fill the CCR
+
+	//200KBAUD
+	//timerHz   = 48000000; //48 MHz frequency is perfectly fine for 19200 Baud.
+	//pwmHz     = 200000;   //baudrate
+	//onePulse  = 1;
+	//zeroPulse = 230; //240 max, but we can't fill the CCR
 }
 
 void InitDshotOutputOnMotors(uint32_t usedFor)

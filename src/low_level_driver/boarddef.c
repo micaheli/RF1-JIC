@@ -373,7 +373,7 @@ void getBoardHardwareDefs(void)
 	board.motors[6].timerIRQn         = TIM4_IRQn;
 	board.motors[6].motorOutputLength = 64; //bits
 	board.motors[6].EXTIn             = EXTI4_IRQn;
-	board.motors[6].DmaCallback       = FP_DMA1_S0; //used for input
+	//board.motors[6].DmaCallback       = FP_DMA1_S0; //used for input
 
 	board.dmasMotor[6].enabled            = 1;
 	board.dmasMotor[6].dmaStream          = ENUM_DMA1_STREAM_0;    //motor out

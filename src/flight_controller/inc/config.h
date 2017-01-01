@@ -1,8 +1,9 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint32_t)(36U)
-#define CONFIG_VERSION_STR		"37"
-#define FIRMWARE_VERSION		"0.123.037 ALPHA"
+#define CONFIG_VERSION			(uint32_t)(39U)
+#define CONFIG_VERSION_STR		"39"
+#define FIRMWARE_VERSION		"0.129.039 ALPHA"
+//#define FIRMWARE_VERSION		"0.127.002 SHAUN_TAYLOR"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
 
@@ -49,11 +50,11 @@ extern char *CleanupString(char *inString);
 extern main_config mainConfig;
 extern const config_variables_rec valueTable[];
 
-extern char *CleanupNumberString(char *inString);
-extern void SaveConfig (uint32_t addresConfigStart);
+extern char   *CleanupNumberString(char *inString);
+extern void    SaveConfig (uint32_t addresConfigStart);
 extern uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length);
-extern void LoadConfig (uint32_t addresConfigStart);
-extern void GenerateConfig(void);
-extern void ProcessCommand(char *inString);
-extern int RfCustomReply(char *rf_custom_out_buffer);
-extern void SendStatusReport(char *inString);
+extern void    LoadConfig (uint32_t addresConfigStart);
+extern void    GenerateConfig(void);
+extern void    ProcessCommand(char *inString);
+extern int     RfCustomReply(char *rf_custom_out_buffer);
+extern void    SendStatusReport(char *inString);

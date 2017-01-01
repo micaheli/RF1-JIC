@@ -82,7 +82,7 @@ const config_variables_rec valueTable[] = {
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtcol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 5, "" },
-		{ "motor_mixer", 		typeUINT,  "mixr", &mainConfig.mixerConfig.motorMixer,					0, 2, 0, "" },
+		{ "motor_mixer", 		typeUINT,  "mixr", &mainConfig.mixerConfig.motorMixer,					0, 2, 1, "" },
 		{ "mout1", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[0],				0, 9, 0, "" },
 		{ "mout2", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[1],				0, 9, 1, "" },
 		{ "mout3", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[2],				0, 9, 2, "" },
@@ -93,7 +93,9 @@ const config_variables_rec valueTable[] = {
 		{ "mout8", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[7],				0, 9, 7, "" },
 
 		{ "led_count",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledCount,						0, WS2812_MAX_LEDS, 8, "" },
-		{ "led_color",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledColor,						0, MAX_LED_COLORS, 1, "" },
+		{ "led_red",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledRed,						0, 255, 1, "" },
+		{ "led_green",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledGreen,						0, 255, 0, "" },
+		{ "led_blue",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledBlue,						0, 255, 0, "" },
 
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, 12, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1, 0, "" },
@@ -121,6 +123,7 @@ const config_variables_rec valueTable[] = {
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 3, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 3, "" },
 
+		{ "dial",	 			typeUINT,  "filt", &mainConfig.filterConfig[YAW].dial, 		    		0, 10, 0, "" },
 		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 10, 0.1000, "" },
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 10, 290.00, "" },
 		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 				0, 10, 0.1500, "" },
@@ -225,9 +228,9 @@ const config_variables_rec valueTable[] = {
 		{ "aux3_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX3], 		0, EXPO_CURVE_END, NO_EXPO, "" },
 		{ "aux4_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX4], 		0, EXPO_CURVE_END, NO_EXPO, "" },
 
-		{ "pitch_expo", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[PITCH],		0, 100, 60, "" },
-		{ "roll_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[ROLL],		0, 100, 60, "" },
-		{ "yaw_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[YAW],			0, 100, 60, "" },
+		{ "pitch_expo", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[PITCH],		0, 100, 70, "" },
+		{ "roll_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[ROLL],		0, 100, 70, "" },
+		{ "yaw_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[YAW],			0, 100, 70, "" },
 		{ "throttle_expo", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[THROTTLE],	0, 100, 0, "" },
 		{ "aux1_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX1],		0, 100, 0, "" },
 		{ "aux2_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX2],		0, 100, 0, "" },
@@ -730,7 +733,7 @@ void ProcessCommand(char *inString)
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++) {
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%d", (volatile int)(smoothedRcCommandF[xx]*1000));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%d", (volatile int)(trueRcCommandF[xx]*1000));
 				RfCustomReply(rf_custom_out_buffer);
 			}
 		}
@@ -738,44 +741,9 @@ void ProcessCommand(char *inString)
 		{
 			//for (uint32_t xx = 0; xx < MAXCHANNELS;xx++) {
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u : %d", (volatile unsigned int)(rxData[0]), (volatile int)(smoothedRcCommandF[0]*1000));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u : %d", (volatile unsigned int)(rxData[0]), (volatile int)(trueRcCommandF[0]*1000));
 				RfCustomReply(rf_custom_out_buffer);
 			//}
-		}
-	else if (!strcmp("buzzer", inString))
-		{
-			args = StripSpaces(args);
-			if (sizeof(atoi(args)) == sizeof(uint32_t)) {
-				buzzerStatus.status = atoi(args);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "buzzer goes BUZZZZZZ!\0", sizeof("buzzer goes BUZZZZZZ!\0"));
-				RfCustomReply(rf_custom_out_buffer);
-			} else {
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "buzzer needs a number to go BUZZZZZZ!\0", sizeof("buzzer needs a number to go BUZZZZZZ!\0"));
-				RfCustomReply(rf_custom_out_buffer);
-			}
-		}
-
-	else if (!strcmp("ledcolor", inString))
-		{
-
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "dumpstarted", sizeof("dumpstarted"));
-			RfCustomReply(rf_custom_out_buffer);
-
-			args = StripSpaces(args);
-			if (atoi(args) <= 22) {
-				mainConfig.ledConfig.ledColor = atoi(args);
-				SetLEDColor(mainConfig.ledConfig.ledColor);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "led goes BLING!\0", sizeof("led goes BLING!\0"));
-				RfCustomReply(rf_custom_out_buffer);
-			} else {
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "led needs a number to go BLING!\0", sizeof("led needs a number to go BLING!\0"));
-				RfCustomReply(rf_custom_out_buffer);
-			}
 		}
 	else if (!strcmp("telem", inString))
 		{
@@ -1010,43 +978,82 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[PITCH].kd.r = 85.0;
 
 		}
-	else if (!strcmp("pidsrs2k", inString))
+	else if (!strcmp("pidshg", inString))
 		{
-			mainConfig.pidConfig[YAW].kp = 460.00;
-			mainConfig.pidConfig[ROLL].kp = 290.00;
-			mainConfig.pidConfig[PITCH].kp = 330.00;
+			mainConfig.pidConfig[YAW].kp = 420.00;
+			mainConfig.pidConfig[ROLL].kp = 390.00;
+			mainConfig.pidConfig[PITCH].kp = 600.00;
 
-			mainConfig.pidConfig[YAW].ki = 410.00;
-			mainConfig.pidConfig[ROLL].ki = 330.00;
-			mainConfig.pidConfig[PITCH].ki = 365.00;
+			mainConfig.pidConfig[YAW].ki = 666.00;
+			mainConfig.pidConfig[ROLL].ki = 425.00;
+			mainConfig.pidConfig[PITCH].ki = 555.00;
 
-			mainConfig.pidConfig[YAW].kd = 80.00;
-			mainConfig.pidConfig[ROLL].kd = 320.00;
-			mainConfig.pidConfig[PITCH].kd = 360.00;
+			mainConfig.pidConfig[YAW].kd = 1000.00;
+			mainConfig.pidConfig[ROLL].kd = 1400.00;
+			mainConfig.pidConfig[PITCH].kd = 1600.00;
 
 			mainConfig.pidConfig[YAW].ga = 3.00;
 			mainConfig.pidConfig[ROLL].ga = 3.00;
 			mainConfig.pidConfig[PITCH].ga = 3.00;
 
-			mainConfig.pidConfig[YAW].wc = 4.00;
-			mainConfig.pidConfig[ROLL].wc = 4.00;
-			mainConfig.pidConfig[PITCH].wc = 4.00;
+			mainConfig.pidConfig[YAW].wc = 0;
+			mainConfig.pidConfig[ROLL].wc = 0;
+			mainConfig.pidConfig[PITCH].wc = 0;
 
-			mainConfig.filterConfig[YAW].gyro.r = 290.00;
-			mainConfig.filterConfig[ROLL].gyro.r = 260.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 260.00;
+			mainConfig.filterConfig[YAW].gyro.r = 170.00;
+			mainConfig.filterConfig[ROLL].gyro.r = 170.00;
+			mainConfig.filterConfig[PITCH].gyro.r = 170.00;
 
-			mainConfig.filterConfig[YAW].gyro.q = 0.1000;
-			mainConfig.filterConfig[ROLL].gyro.q = 0.1000;
-			mainConfig.filterConfig[PITCH].gyro.q = 0.1000;
+			mainConfig.filterConfig[YAW].gyro.q = 0.015;
+			mainConfig.filterConfig[ROLL].gyro.q = 0.015;
+			mainConfig.filterConfig[PITCH].gyro.q = 0.015;
 
-			mainConfig.filterConfig[YAW].gyro.p = 0.1500;
-			mainConfig.filterConfig[ROLL].gyro.p = 0.1500;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.1500;
+			mainConfig.filterConfig[YAW].gyro.p = 0.005;
+			mainConfig.filterConfig[ROLL].gyro.p = 0.005;
+			mainConfig.filterConfig[PITCH].gyro.p = 0.005;
 
-			mainConfig.filterConfig[YAW].kd.r = 70.0;
+			mainConfig.filterConfig[YAW].kd.r = 85.0;
 			mainConfig.filterConfig[ROLL].kd.r = 85.0;
-			mainConfig.filterConfig[PITCH].kd.r = 85.0;
+			mainConfig.filterConfig[PITCH].kd.r = 70.0;
+
+		}
+	else if (!strcmp("pidsrs2k", inString))
+		{
+			mainConfig.pidConfig[YAW].kp   = 425.00;
+			mainConfig.pidConfig[ROLL].kp  = 260.00;
+			mainConfig.pidConfig[PITCH].kp = 280.00;
+
+			mainConfig.pidConfig[YAW].ki   = 410.00;
+			mainConfig.pidConfig[ROLL].ki  = 330.00;
+			mainConfig.pidConfig[PITCH].ki = 365.00;
+
+			mainConfig.pidConfig[YAW].kd   = 1500.00;
+			mainConfig.pidConfig[ROLL].kd  = 3000.00;
+			mainConfig.pidConfig[PITCH].kd = 3600.00;
+
+			mainConfig.pidConfig[YAW].ga   = 3.00;
+			mainConfig.pidConfig[ROLL].ga  = 3.00;
+			mainConfig.pidConfig[PITCH].ga = 3.00;
+
+			mainConfig.pidConfig[YAW].wc   = 4;
+			mainConfig.pidConfig[ROLL].wc  = 4;
+			mainConfig.pidConfig[PITCH].wc = 4;
+
+			mainConfig.filterConfig[YAW].gyro.r   = 150.00;
+			mainConfig.filterConfig[ROLL].gyro.r  = 150.00;
+			mainConfig.filterConfig[PITCH].gyro.r = 150.00;
+
+			mainConfig.filterConfig[YAW].gyro.q   = 0.100;
+			mainConfig.filterConfig[ROLL].gyro.q  = 0.100;
+			mainConfig.filterConfig[PITCH].gyro.q = 0.100;
+
+			mainConfig.filterConfig[YAW].gyro.p   = 0.150;
+			mainConfig.filterConfig[ROLL].gyro.p  = 0.150;
+			mainConfig.filterConfig[PITCH].gyro.p = 0.150;
+
+			mainConfig.filterConfig[YAW].kd.r   = 95.0;
+			mainConfig.filterConfig[ROLL].kd.r  = 95.0;
+			mainConfig.filterConfig[PITCH].kd.r = 95.0;
 
 		}
 	else if (!strcmp("pidstaja", inString))
@@ -1102,29 +1109,29 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].kd = 580.00;
 			mainConfig.pidConfig[PITCH].kd = 640.00;
 
-			mainConfig.pidConfig[YAW].ga = 10.00;
-			mainConfig.pidConfig[ROLL].ga = 10.00;
-			mainConfig.pidConfig[PITCH].ga = 10.00;
+			mainConfig.pidConfig[YAW].ga = 3.00;
+			mainConfig.pidConfig[ROLL].ga = 3.00;
+			mainConfig.pidConfig[PITCH].ga = 3.00;
 
-			mainConfig.pidConfig[YAW].wc = 4.00;
-			mainConfig.pidConfig[ROLL].wc = 4.00;
-			mainConfig.pidConfig[PITCH].wc = 4.00;
+			mainConfig.pidConfig[YAW].wc = 0;
+			mainConfig.pidConfig[ROLL].wc = 0;
+			mainConfig.pidConfig[PITCH].wc = 0;
 
 			mainConfig.filterConfig[YAW].gyro.r = 150.00;
-			mainConfig.filterConfig[ROLL].gyro.r = 125.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 125.00;
+			mainConfig.filterConfig[ROLL].gyro.r = 150.00;
+			mainConfig.filterConfig[PITCH].gyro.r = 150.00;
 
-			mainConfig.filterConfig[YAW].gyro.q = 0.1000;
-			mainConfig.filterConfig[ROLL].gyro.q = 0.1000;
-			mainConfig.filterConfig[PITCH].gyro.q = 0.1000;
+			mainConfig.filterConfig[YAW].gyro.q = 0.015;
+			mainConfig.filterConfig[ROLL].gyro.q = 0.015;
+			mainConfig.filterConfig[PITCH].gyro.q = 0.015;
 
-			mainConfig.filterConfig[YAW].gyro.p = 0.1500;
-			mainConfig.filterConfig[ROLL].gyro.p = 0.1500;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.1500;
+			mainConfig.filterConfig[YAW].gyro.p = 0.005;
+			mainConfig.filterConfig[ROLL].gyro.p = 0.005;
+			mainConfig.filterConfig[PITCH].gyro.p = 0.005;
 
-			mainConfig.filterConfig[YAW].kd.r = 70.0;
-			mainConfig.filterConfig[ROLL].kd.r = 85.0;
-			mainConfig.filterConfig[PITCH].kd.r = 85.0;
+			mainConfig.filterConfig[YAW].kd.r = 100.0;
+			mainConfig.filterConfig[ROLL].kd.r = 100.0;
+			mainConfig.filterConfig[PITCH].kd.r = 100.0;
 
 		}
 	else if (!strcmp("pidsabba", inString))

@@ -15,17 +15,19 @@ flash_info_record flashInfo;
 #define M25P16_SECTOR_ERASE      0xD8
 #define M25P16_BULK_ERASE        0xC7
 
+
 #define M25P16_WRITE_IN_PROGRESS 0x01
 #define M25P16_WRITE_ENABLED     0x02
 
+
 #define M25P16_PAGESIZE          256
+
 
 #define ID_MICRON_M25P16         0x202015
 #define ID_MICRON_N25Q064        0x20BA17
 #define ID_WINBOND_W25Q64        0xEF4017
 #define ID_MICRON_N25Q128        0x20ba18
 #define ID_WINBOND_W25Q128       0xEF4018
-
 
 
 static void SpiInit(uint32_t baudRatePrescaler);
@@ -37,7 +39,8 @@ static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuf
 extern void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 
 
-void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) {
+void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
+{
 
 	//write data from txBuffer into flash chip using DMA.
 	//command and dummy bytes are in rxBuffer
@@ -66,7 +69,9 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) 
 
 }
 
-static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) {
+
+static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
+{
 	//address need to be aligned with the pages. We won't check since this is C!! Woohoo!
     //set up non blocking READ of data
 
@@ -88,7 +93,9 @@ static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuf
 
 }
 
-int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) {
+
+int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
+{
 	//address need to be aligned with the pages. We won't check since this is C!! Woohoo!
     //set up non blocking READ of data
 
@@ -114,6 +121,7 @@ int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer) {
 	return 0;
 
 }
+
 
 static int M25p16ReadIdSetFlashRecord(void)
 {
@@ -310,8 +318,6 @@ int FindFirstEmptyPage(void)
 						if (allFFsTotal == 4)
 						{
 							flashInfo.enabled = FLASH_ENABLED;
-							//volatile uint32_t peeeeee = FLASH_ENABLED * y * z * x * firstEmptySector;
-							//flashInfo.enabled = FLASH_ENABLED;
 							flashInfo.currentWriteAddress = (z - ( flashInfo.pageSize  * 3 ) );
 							return (1);
 						}
