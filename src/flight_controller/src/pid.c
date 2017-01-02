@@ -249,16 +249,18 @@ inline void InlineUpdateWitchcraft(pid_terms pidConfig[])
 
 	int32_t axis;
 
-	for (axis = 2; axis >= 0; --axis) {
-		if (pidConfig[axis].wc > 1) {
+	for (axis = 2; axis >= 0; --axis)
+	{
+		if (pidConfig[axis].wc > 1)
+		{
 			kdRingBuffer[axis][kdRingBufferPoint[axis]++] = kdDelta[axis];
 			kdRingBufferSum[axis] += kdDelta[axis];
 
 			if (kdRingBufferPoint[axis] == pidConfig[axis].wc)
 				kdRingBufferPoint[axis] = 0;
 
-			kdRingBufferSum[axis] -= kdRingBuffer[axis][kdRingBufferPoint[axis]];
 			kdDelta[axis] = (float)(kdRingBufferSum[axis] / (float) (pidConfig[axis].wc));
+			kdRingBufferSum[axis] -= kdRingBuffer[axis][kdRingBufferPoint[axis]];
 		}
 	}
 

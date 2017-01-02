@@ -461,10 +461,12 @@ void ComplementaryFilterUpdateAttitude(void)
     //}
 }
 
-inline float AverageGyroADCbuffer(uint32_t axis, float currentData)
+inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 {
 
-	if (usedGa[axis]) {
+	float returnData;
+	if (usedGa[axis] > 1)
+	{
 
 		averagedGyroData[axis][averagedGyroDataPointer[axis]++] = currentData;
 		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] += currentData;
@@ -472,9 +474,10 @@ inline float AverageGyroADCbuffer(uint32_t axis, float currentData)
 		if (averagedGyroDataPointer[axis] == usedGa[axis])
 			averagedGyroDataPointer[axis] = 0;
 
+		returnData = (averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] * averagedGyroDataPointerMultiplier[axis]);
 		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] -= averagedGyroData[axis][averagedGyroDataPointer[axis]];
 
-		return (averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] * averagedGyroDataPointerMultiplier[axis]) ;
+		return(returnData);
 
 	}
 
@@ -482,12 +485,13 @@ inline float AverageGyroADCbuffer(uint32_t axis, float currentData)
 
 }
 
-inline void InlineFlightCode(float dpsGyroArray[]) {
+inline void InlineFlightCode(float dpsGyroArray[])
+{
 
 	static float kdAverage[3];
 	static uint32_t kdAverageCounter = 0;
 	int32_t axis;
-	float averagedGyro;
+	volatile float averagedGyro;
 	uint32_t pidGood;
 	//cycle time
 	//flightcodeTimeStart = Micros();
@@ -506,34 +510,43 @@ inline void InlineFlightCode(float dpsGyroArray[]) {
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
-	if (SKIP_GYRO) {
+	if (SKIP_GYRO)
+	{
 		CheckFailsafe();
 		ledStatus.status = LEDS_FAST_BLINK;
 		return;
 	}
 
 	//update gyro filter, every time there's an interrupt
-	for (axis = 2; axis >= 0; --axis) {
+	for (axis = 2; axis >= 0; --axis)
+	{
 
-		averagedGyro             = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
+		averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
 
-		if (mainConfig.gyroConfig.filterTypeKd == 0) {
+		if (mainConfig.gyroConfig.filterTypeKd == 0)
+		{
 			PafUpdate(&pafKdStates[axis], averagedGyro );
 			filteredGyroDataKd[axis] = pafKdStates[axis].output;
-		} else {
+		}
+		else
+		{
 			filteredGyroDataKd[axis] = BiquadUpdate(averagedGyro, &lpfFilterStateKd[axis]);
 		}
 
-		if (mainConfig.gyroConfig.filterTypeGyro == 0) {
+		if (mainConfig.gyroConfig.filterTypeGyro == 0)
+		{
 			PafUpdate(&pafGyroStates[axis], averagedGyro );
 			filteredGyroData[axis] = pafGyroStates[axis].output;
-		} else {
+		}
+		else
+		{
 			filteredGyroData[axis] = BiquadUpdate(averagedGyro, &lpfFilterState[axis]);
 		}
 
 	}
 
-	if (gyroLoopCounter-- == 0) {
+	if (gyroLoopCounter-- == 0)
+	{
 
 		gyroLoopCounter=loopSpeed.gyroDivider;
 

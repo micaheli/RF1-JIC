@@ -343,7 +343,7 @@ inline void TaskLed(void)
 				rgbArray[y++] = ~(uint8_t)mainConfig.ledConfig.ledBlue;
 			}
 
-			OutputSerialDmaByte(rgbArray, y, ws2812LedRecord.ws2812Actuator, 1, 0);
+			OutputSerialDmaByte(rgbArray, y, ws2812LedRecord.ws2812Actuator, 1, 0, 0);
 
 		}
 	}

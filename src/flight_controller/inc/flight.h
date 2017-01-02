@@ -26,7 +26,7 @@ extern void ArmBoard(void);
 extern void DisarmBoard(void);
 extern int SetCalibrate1(void);
 extern int SetCalibrate2(void);
-extern float AverageGyroADCbuffer(uint32_t axis, float currentData); //not really extern
+extern float AverageGyroADCbuffer(uint32_t axis, volatile float currentData); //not really extern
 void ComplementaryFilterUpdateAttitude(void);
 void InitFlightCode(void);
 void InlineInitGyroFilters(void);

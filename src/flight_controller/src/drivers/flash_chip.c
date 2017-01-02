@@ -315,6 +315,13 @@ int FindFirstEmptyPage(void)
 							allFFsTotal++;
 						}
 
+						if (z >= (uint32_t)( 0.95f * (float)flashInfo.totalSize ))
+						{
+							flashInfo.currentWriteAddress = z;
+							flashInfo.enabled = FLASH_FULL;
+							return (0);
+						}
+
 						if (allFFsTotal == 4)
 						{
 							flashInfo.enabled = FLASH_ENABLED;

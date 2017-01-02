@@ -202,12 +202,24 @@ Version 0.127.002:
 		set led_blue=0-255
 		set led_count=0-32
 
-Version 0.128.038:
+Version 0.128.039:
 	Code cleanup.
 	Changed MS signal output and calibration routine.
 	Must recalibrate your ESCs on this build.
 	Changed filtering up.
 
-Version 0.129.038:
+Version 0.129.039:
 	Major flight code fix. Highly recommended ended upgrade.
 	Updated pidsrs2k
+
+Version 0.130.0389:
+	Quick fix to remove debug variable.
+
+Version 0.131.039:
+	Updated pidsrs2k.
+	Updated pidstaja.
+	Updated pidsabba.
+	Added confirmation and autosave to pid commands.
+	Fixed full fflash causing flash not to recognise.
+	
+	

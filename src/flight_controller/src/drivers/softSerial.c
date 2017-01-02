@@ -127,7 +127,7 @@ uint32_t SoftSerialSendReceiveBlocking(uint8_t serialOutBuffer[], uint32_t seria
 	softSerialStatus.softSerialState = SS_SENDING_DATA;
 
 	//set the data to be sent and trigger the DMA to start sending.
-	OutputSerialDmaByte(serialOutBuffer, serialOutBufferLength, actuator, 0, 1); //send outbuffer, xx bytes, this actuator, 0=LSB, 1=serial frame
+	OutputSerialDmaByte(serialOutBuffer, serialOutBufferLength, actuator, 0, 1, 0); //send outbuffer, xx bytes, this actuator, 0=LSB, 1=serial frame
 
 	//SS state is in SS_SENDING_DATA. Once data output completes it goes to SS_RECEIVING_DATA. While SS_SENDING_DATA we check to see if timeout time has passed.
 	while (softSerialStatus.softSerialState == SS_SENDING_DATA) {
