@@ -222,4 +222,8 @@ Version 0.131.039:
 	Added confirmation and autosave to pid commands.
 	Fixed full fflash causing flash not to recognise.
 	
-	
+Version 0.132.039:
+	Updated pidsrs2k.
+	updated pidsdefault.
+	Added arming buzzer mode.
+	Added failsafe buzzer mode.

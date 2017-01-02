@@ -147,24 +147,13 @@ int main(void)
     InitFlight();
     DelayMs(20);
 
-//	TODO: Move these functions to an init function in DMA shenanigans. F3 and F7 won't need the SPORT function in DMA shenanigans.
-//	LEDs don't work the same time as dshot. Actuator init should cancel out this activation if dshot is enabled, but for now we'll check the config
-//	if ( (mainConfig.mixerConfig.escProtcol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT150) ) {
-//		//Ws2812LedInit();
-//		//InitDmaOutputForSoftSerial(DMA_OUTPUT_WS2812_LEDS, board.motors[6]); //Enable LEDs on actuator 6
-//    }
-    //if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT) {
-
-
-
-
     InitWatchdog(WATCHDOG_TIMEOUT_32S);
 
     buzzerStatus.status = STATE_BUZZER_STARTUP;
-    ledStatus.status = LEDS_SLOW_BLINK;
+    ledStatus.status    = LEDS_SLOW_BLINK;
 
-    while (1) {
-
+    while (1)
+    {
 
     	scheduler(count--);
 

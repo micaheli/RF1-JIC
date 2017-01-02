@@ -9,10 +9,12 @@ uint32_t usingSpektrum = 0; //only works if we are ONLY using Spektrum. Not sure
 
 static uint32_t packetTime = 11;
 
+uint32_t activeFailsafe = 0;
+
 uint32_t rxData[MAXCHANNELS];
 
 uint32_t skipRxMap = 0;
-uint32_t progMode = 0;
+uint32_t progMode  = 0;
 uint32_t progTimer = 0;
 
 // 2048 resolution
@@ -84,9 +86,9 @@ static uint16_t CRC16(uint16_t crc, uint8_t value)
 	for(i=0; i<8; i++)
 	{
 		if (crc & 0x8000)
-		crc = (crc << 1) ^ CRC_POLYNOME;
+			crc = (crc << 1) ^ CRC_POLYNOME;
 		else
-		crc = (crc << 1);
+			crc = (crc << 1);
 	}
 
 	return crc;
@@ -95,24 +97,39 @@ static uint16_t CRC16(uint16_t crc, uint8_t value)
 
 
 
-inline void CheckFailsafe(void) {
+inline void CheckFailsafe(void)
+{
+	//if rx_timeout is 0 and we're in active failsafe then we know failsafe is over. Let's stop the buzzer and clear active failsafe.
+	if ( (!rx_timeout++) && (activeFailsafe) )
+	{
+		activeFailsafe = 0;
+		buzzerStatus.status = STATE_BUZZER_OFF;
+	}
 
-	rx_timeout++;
 	FeedTheDog(); //resets IWDG time to 0. This tells the timer the board is running.
 
 	if ((boardArmed) && (rx_timeout > 1000))
 	{
+		activeFailsafe = 1;
 		DisarmBoard();
 		ZeroActuators(32000); //immediately set actuators to disarmed position.
 	}
+
+	if (activeFailsafe)
+		buzzerStatus.status = STATE_BUZZER_FAILSAFE;
+
 }
 
  void RxUpdate(void) // hook for when rx updates
 {
 
-	if ( (latchFirstArm == 0) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) ) {
+	if ( (latchFirstArm == 0) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) )
+	{
 		latchFirstArm = 1;
-	} else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode) { //TODO: make uncalibrated board buzz
+		buzzerStatus.status = STATE_BUZZER_ARMING;
+	}
+	else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode)
+	{ //TODO: make uncalibrated board buzz
 
 		latchFirstArm = 0;
 		disarmCount = 0;
@@ -133,10 +150,14 @@ inline void CheckFailsafe(void) {
 		if ( ABS((int32_t)rxData[YAW] - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
 			mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
 
-	} else if (trueRcCommandF[AUX1] < 0.5) {
+	}
+	else if (trueRcCommandF[AUX1] < 0.5)
+	{
 
-		if (disarmCount++ > 3) {
-			if (latchFirstArm==1) {
+		if (disarmCount++ > 3)
+		{
+			if (latchFirstArm==1)
+			{
 				latchFirstArm = 2;
 			}
 			DisarmBoard();
@@ -158,7 +179,8 @@ inline void CheckFailsafe(void) {
 
 }
 
-void SpektrumBind (uint32_t bindNumber) {
+void SpektrumBind (uint32_t bindNumber)
+{
 
 	uint32_t i;
 
@@ -282,7 +304,8 @@ void ProcessSbusPacket(uint32_t serialNumber)
 		//	rx_timeout = 0;
 		//}
 		// TODO: No, we should only look at SBUS_FAILSAFE_FLAG for failsafe.
-		if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) ) {
+		if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
+		{
 			rx_timeout = 0;
 		}
 		packetTime = 9;

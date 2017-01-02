@@ -4,10 +4,11 @@
 buzzerStatus_t buzzerStatus;
 
 
-uint32_t startBuzzArray[] = {225,225,200,200,175,175,150,150,125,125,100,100,75,75,50,50,25,25,0};
-uint32_t lostBuzzArray[]  = {500,300,1};
-uint32_t errorBuzzArray[] = {100,200,300,400,500,600,700,1};
-
+uint32_t startBuzzArray[]    = {225,225,200,200,175,175,150,150,125,125,100,100,75,75,50,50,25,25,0};
+uint32_t lostBuzzArray[]     = {500,300,1};
+uint32_t failsafeBuzzArray[] = {500,300,1};
+uint32_t errorBuzzArray[]    = {100,200,300,400,500,600,700,1};
+uint32_t armingBuzzArray[]   = {250,250,250,250,250,250,0};
 
 void InitBuzzer(void)
 {
@@ -73,6 +74,12 @@ void UpdateBuzzer(void)
 			break;
 		case STATE_BUZZER_LOST:
 			ComplexBuzz(timeNow, lostBuzzArray);
+			break;
+		case STATE_BUZZER_ARMING:
+			ComplexBuzz(timeNow, armingBuzzArray);
+			break;
+		case STATE_BUZZER_FAILSAFE:
+			ComplexBuzz(timeNow, failsafeBuzzArray);
 			break;
 		case STATE_BUZZER_STARTUP:
 			ComplexBuzz(timeNow, startBuzzArray);
