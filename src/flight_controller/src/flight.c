@@ -512,7 +512,6 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 	if (SKIP_GYRO)
 	{
-		CheckFailsafe();
 		ledStatus.status = LEDS_FAST_BLINK;
 		return;
 	}
@@ -616,6 +615,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		if (khzLoopCounter-- == 0) {
 			khzLoopCounter=loopSpeed.khzDivider;
 
+			CheckFailsafe();
+
 			if (mainConfig.gyroConfig.filterTypeKd == 1) {
 				kdAverageCounter++;
 				if (kdAverageCounter == 8) {
@@ -641,7 +642,6 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				}
 			}
 
-			CheckFailsafe();
 
 			static float lastNumber = 0;
 			float currentNumber = 0;

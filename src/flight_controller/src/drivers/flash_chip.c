@@ -356,6 +356,10 @@ int FindFirstEmptyPage(void)
 
 	}
 
+	flashInfo.currentWriteAddress = 0;
+	flashInfo.enabled = FLASH_FULL;
+	return (0);
+
 }
 
 void FlashDeinit(void)

@@ -47,7 +47,8 @@ void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSe
     //bigA  = powf(10, dbGain /40);
 	//beta  = arm_sqrt_f32(bigA + bigA);
 
-	switch (filterType) {
+	switch (filterType)
+	{
 		case FILTER_TYPE_LOWPASS:
 			b0 = (1 - cs) /2;
 			b1 = 1 - cs;

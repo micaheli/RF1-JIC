@@ -272,18 +272,12 @@ inline float InlineApplyMotorMixer2(pid_output pids[], float curvedRcCommandF[],
 		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset);
 	}
 
-	//for (i = activeMotorCounter; i >= 0; i--)
-	//{
-	//	motorOutputHere[i] += (throttle * motorMixer[i].throttle);  //add throttle
-	//	motorOutputHere[i] = InlineConstrainf(motorOutputHere[i],0.0f,1.0f);
-	//}
-
 	for(i=7; i>=0; i--)
 	{
 		motorOutputHere[i] = InlineConstrainf(motorOutputHere[i]+throttle,0.0f,1.0f);
 	}
 
-	return actuatorRange;
+	return(actuatorRange);
 
 }
 

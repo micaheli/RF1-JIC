@@ -64,7 +64,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 
 	(void)(pidConfig);
 	(void)(actuatorRange);
-
+/*
 	//set point limiter.
 	if ( actuatorRange >= 0.90 )
 	{
@@ -103,10 +103,10 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 		usedFlightSetPoints[2] = flightSetPoints[2];
 
 	}
-
-	//usedFlightSetPoints[0] = flightSetPoints[0];
-	//usedFlightSetPoints[1] = flightSetPoints[1];
-	//usedFlightSetPoints[2] = flightSetPoints[2];
+*/
+	usedFlightSetPoints[0] = flightSetPoints[0];
+	usedFlightSetPoints[1] = flightSetPoints[1];
+	usedFlightSetPoints[2] = flightSetPoints[2];
 
 	for (axis = 2; axis >= 0; --axis)
 	{

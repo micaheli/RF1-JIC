@@ -507,7 +507,17 @@ uint32_t OneWireSaveConfig(motor_type actuator) {
 			//if CRC is valid we have good data
 			if (checkCrc1 == checkCrc2)
 			{
-
+/*
+                     <select class="multi_change" id="startup_tone" name="startup_tone" style="display: none;" disabled>
+                      <option></option>
+                      <option value="90">Normal</option>
+                      <option value="91">Imperial March</option>
+                      <option value="92">Crazy Start</option>
+                      <option value="93">Game of Thrones</option>
+                      <option value="94">Harrison Gale</option>
+                      <option value="1">Stealth Mode</option>
+                    </select>
+ */
 				//change flash to proper values
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_ENABLE_TX))]       = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.txprogramming;
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BEACON_DELAY))]    = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.beacondelay;
@@ -528,7 +538,7 @@ uint32_t OneWireSaveConfig(motor_type actuator) {
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_DEMAG_COMP))]      = 0x03; //high
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PWM_FREQ))]        = 0x03; //damped light
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_STARTUP_PWR))]     = 0x05; //0.125
-				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION))] = 0x01; //enabled
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION))] = 0x00; //enabled
 
 				//erase eeprom
 				if (escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->EepromErase(actuator, 1000) &&
@@ -942,6 +952,7 @@ static void AppendBlHeliCrc(uint8_t outBuffer[], uint32_t len) {
 int16_t Esc1WireSetParameter(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[], int16_t value)
 {
 
+	(void)(buf);
 	const BLHeli_EEprom_t *layout = escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout;
 
     if (layout == NULL)

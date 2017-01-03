@@ -5,10 +5,10 @@ buzzerStatus_t buzzerStatus;
 
 
 uint32_t startBuzzArray[]    = {225,225,200,200,175,175,150,150,125,125,100,100,75,75,50,50,25,25,0};
-uint32_t lostBuzzArray[]     = {500,300,1};
-uint32_t failsafeBuzzArray[] = {500,300,1};
+uint32_t lostBuzzArray[]     = {500,100,500,150,500,1};
+uint32_t failsafeBuzzArray[] = {500,100,500,150,500,1};
 uint32_t errorBuzzArray[]    = {100,200,300,400,500,600,700,1};
-uint32_t armingBuzzArray[]   = {250,250,250,250,250,250,0};
+uint32_t armingBuzzArray[]   = {100,100,100,100,100,0};
 
 void InitBuzzer(void)
 {
@@ -112,6 +112,7 @@ void ComplexBuzz(uint32_t timeNow, uint32_t buzzArray[])
 		case 0:
 			//end of array has been reached, 0 means we turn off buzzer
 			buzzerStatus.status = STATE_BUZZER_OFF;
+			buzzerStatus.arrayIndex = 0;
 			buzzerStatus.on = 0;
 			DoBuzz(buzzerStatus.on);
 			break;

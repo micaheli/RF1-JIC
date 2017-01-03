@@ -22,7 +22,7 @@ enum
 typedef struct buzzerStatus_t
 {
 
-    uint8_t   status;
+    volatile uint8_t status;
     uint8_t   lastStatus;
     uint8_t   on;
     uint32_t  timeStart;

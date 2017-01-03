@@ -50,6 +50,7 @@ void SmartPortSendPackage(uint32_t id, int32_t val) {
 	//CRC
 	sPortPacket[7] = SmartPortGetByte( (uint8_t)( (0xFF - (uint8_t)(crc & 0xff) ) ), NULL);
 
+	(void)(sPortPacket);
 
 //	OutputSerialDmaByte(sPortPacket, 8, board.motors[7], 0, 1); //send sPortPacket, which is 8 bytes, onto actuator 7, lsb, with serial frame, lo pulse is a one
 

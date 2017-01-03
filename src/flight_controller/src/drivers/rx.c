@@ -5,7 +5,6 @@ float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the
 float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
 volatile unsigned char isRxDataNew;
 volatile uint32_t disarmCount = 0, latchFirstArm = 0;
-uint32_t usingSpektrum = 0; //only works if we are ONLY using Spektrum. Not sure why we would ever use more than one type of RX at a time.
 
 static uint32_t packetTime = 11;
 
@@ -99,24 +98,16 @@ static uint16_t CRC16(uint16_t crc, uint8_t value)
 
 inline void CheckFailsafe(void)
 {
-	//if rx_timeout is 0 and we're in active failsafe then we know failsafe is over. Let's stop the buzzer and clear active failsafe.
-	if ( (!rx_timeout++) && (activeFailsafe) )
-	{
-		activeFailsafe = 0;
-		buzzerStatus.status = STATE_BUZZER_OFF;
-	}
+	rx_timeout++;
 
 	FeedTheDog(); //resets IWDG time to 0. This tells the timer the board is running.
 
 	if ((boardArmed) && (rx_timeout > 1000))
 	{
-		activeFailsafe = 1;
+		buzzerStatus.status = STATE_BUZZER_FAILSAFE;
 		DisarmBoard();
 		ZeroActuators(32000); //immediately set actuators to disarmed position.
 	}
-
-	if (activeFailsafe)
-		buzzerStatus.status = STATE_BUZZER_FAILSAFE;
 
 }
 
@@ -223,13 +214,6 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 		outChannel = 15; //else dump to junk channel
 	}
 
-	if (1) // here is where we check which rx we are using probably use case
-	{
-
-		if ( (outChannel == THROTTLE) && (usingSpektrum) )
-			rx_timeout = 0;
-	}
-
 	return(outChannel);
 }
 
@@ -247,8 +231,10 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
 		spektrumChannel = (value & 0x7800) >> 11;
 		if (spektrumChannel < MAXCHANNELS) {
-			usingSpektrum=1;
 			rxData[ChannelMap(spektrumChannel)] = value & 0x7FF;
+			rx_timeout = 0;
+			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
+				buzzerStatus.status = STATE_BUZZER_OFF;
 		}
 	}
 	spekPhase = copiedBufferData[2] & 0x80;
@@ -281,7 +267,6 @@ void ProcessSbusPacket(uint32_t serialNumber)
 
 	// do we need to hook these into rxData[ChannelMap(i)] ?
 	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) ) {
-		usingSpektrum=0;
 		rxData[ChannelMap(0)] = frame->chan0;
 		rxData[ChannelMap(1)] = frame->chan1;
 		rxData[ChannelMap(2)] = frame->chan2;
@@ -307,6 +292,8 @@ void ProcessSbusPacket(uint32_t serialNumber)
 		if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
 		{
 			rx_timeout = 0;
+			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
+				buzzerStatus.status = STATE_BUZZER_OFF;
 		}
 		packetTime = 9;
 		InlineCollectRcCommand();
@@ -323,7 +310,7 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 	uint32_t x;
 	uint16_t value;
 	uint16_t numOfChannels;
-	uint16_t receivedCrc;
+	//uint16_t receivedCrc;
 	uint16_t calculatedCrc;
 																													// Make sure this is very first thing done in function, and its called first on interrupt
 	memcpy(copiedBufferData, serialRxBuffer, frameSize);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
@@ -342,8 +329,8 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 		if ( (numOfChannels < 0x20) && (numOfChannels > 0x01) )
 		{
 
-			receivedCrc = (uint32_t)((copiedBufferData[(numOfChannels + 1) * 2 + 1] << 8) & 0x0000FF00); //crc high byte
-			receivedCrc = (uint32_t)(copiedBufferData[(numOfChannels + 1) * 2 + 2] & 0x000000FF);        //crc low byte
+			//receivedCrc = (uint32_t)((copiedBufferData[(numOfChannels + 1) * 2 + 1] << 8) & 0x0000FF00); //crc high byte
+			//receivedCrc = (uint32_t)(copiedBufferData[(numOfChannels + 1) * 2 + 2] & 0x000000FF);        //crc low byte
 			for (x=0;x<(numOfChannels);x++)
 			{
 				calculatedCrc = CRC16(calculatedCrc, copiedBufferData[x * 2 + 1]);
@@ -368,6 +355,8 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 				packetTime = 10;
 				rx_timeout = 0;
+				if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
+					buzzerStatus.status = STATE_BUZZER_OFF;
 				InlineCollectRcCommand();
 				RxUpdate();
 
@@ -482,7 +471,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     static int32_t factor = 0;
     int32_t channel;
 
-    int32_t smoothingInterval = (32 * packetTime); //todo: calculate this number to be number of loops between PID loops
+    int32_t smoothingInterval = (loopSpeed.khzDivider * packetTime); //todo: calculate this number to be number of loops between PID loops
 	//88  for spektrum at  8 KHz loop time
 	//264 for spektrum at 24 KHz loop time
 	//352 for spektrum at 32 KHz loop time

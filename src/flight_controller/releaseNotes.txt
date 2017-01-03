@@ -212,7 +212,7 @@ Version 0.129.039:
 	Major flight code fix. Highly recommended ended upgrade.
 	Updated pidsrs2k
 
-Version 0.130.0389:
+Version 0.130.039:
 	Quick fix to remove debug variable.
 
 Version 0.131.039:
@@ -227,3 +227,19 @@ Version 0.132.039:
 	updated pidsdefault.
 	Added arming buzzer mode.
 	Added failsafe buzzer mode.
+
+Version 0.133.039:
+	Decrease failsafe sensitivity.
+
+Version 0.134.039:
+	Decrease failsafe sensitivity.
+	Change Kp limits.
+	Updated pidsrs2k.
+	Updated pidstaja.
+	Updated pidsdefaults.
+	Updated pidsxdc.
+	Added pidsnoise for noisier setups.
+	
+Version 0.135.039:
+	Fix flash detection function.
+	

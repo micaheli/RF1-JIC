@@ -25,7 +25,8 @@ void ProcessTelemtry(void) {
 }
 
 
-void InitTelemtry(void) {
+void InitTelemtry(void)
+{
 
 	//if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
 	//	InitAllowedSoftOutputs();
@@ -35,7 +36,8 @@ void InitTelemtry(void) {
 
 }
 
-void TelemtryRxCallback(uint8_t serialInBuffer[], uint32_t *serialInBufferIdx) {
+void TelemtryRxCallback(uint8_t serialInBuffer[], uint32_t *serialInBufferIdx)
+{
 	(void)(serialInBuffer);
 	(void)(serialInBufferIdx);
 }
@@ -49,21 +51,26 @@ void InitSoftSport(void) {
 	uint32_t okayToEnable = 1;
 	uint32_t outputNumber;
 
-	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++) {
+	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++)
+	{
 		outputNumber = mainConfig.mixerConfig.motorOutput[actuatorNumOutput];
-		switch (board.motors[outputNumber].enabled) {
+		switch (board.motors[outputNumber].enabled)
+		{
 			case ENUM_ACTUATOR_TYPE_WS2812:
 			case ENUM_ACTUATOR_TYPE_SPORT:
 				for (actuatorNumCheck = 0; actuatorNumCheck < MAX_MOTOR_NUMBER; actuatorNumCheck++) { //make sure soft sport and soft ws2812 don't interfer with active motor configuration
 
-					if (!DoesDmaConflictWithActiveDmas(board.motors[outputNumber])) {
+					if (!DoesDmaConflictWithActiveDmas(board.motors[outputNumber]))
+					{
 						okayToEnable = 0;
 					}
 
 				}
-				if (okayToEnable) { //this actuator is safe to enable
+				if (okayToEnable)
+				{ //this actuator is safe to enable
 
-					if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_SPORT) {
+					if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_SPORT)
+					{
 						//TODO: make telemetry and soft serial setup smarter
 
 						//buffer location to write to, buffer index, actuator to RX on.
