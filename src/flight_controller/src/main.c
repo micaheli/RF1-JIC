@@ -22,8 +22,6 @@ uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 
 /* Private functions ---------------------------------------------------------*/
 
-//#define XDC
-
 int main(void)
 {
 	//Absolutely no MCU specific code to go here.
@@ -43,98 +41,6 @@ int main(void)
     HandleRfbl();
 
     LoadConfig(ADDRESS_CONFIG_START);
-
-    //force these defaults every startup
-#ifdef XDC
-    mainConfig.pidConfig[YAW].kp   = 420.00;
-	mainConfig.pidConfig[ROLL].kp  = 390.00;
-	mainConfig.pidConfig[PITCH].kp = 600.00;
-
-	mainConfig.pidConfig[YAW].ki   = 666.00;
-	mainConfig.pidConfig[ROLL].ki  = 425.00;
-	mainConfig.pidConfig[PITCH].ki = 555.00;
-
-	mainConfig.pidConfig[YAW].kd   = 1000.00;
-	mainConfig.pidConfig[ROLL].kd  = 1400.00;
-	mainConfig.pidConfig[PITCH].kd = 1600.00;
-
-	mainConfig.pidConfig[YAW].ga   = 3.00;
-	mainConfig.pidConfig[ROLL].ga  = 3.00;
-	mainConfig.pidConfig[PITCH].ga = 3.00;
-
-	mainConfig.pidConfig[YAW].wc   = 0;
-	mainConfig.pidConfig[ROLL].wc  = 0;
-	mainConfig.pidConfig[PITCH].wc = 0;
-
-	mainConfig.filterConfig[YAW].gyro.r   = 170.00;
-	mainConfig.filterConfig[ROLL].gyro.r  = 170.00;
-	mainConfig.filterConfig[PITCH].gyro.r = 170.00;
-
-	mainConfig.filterConfig[YAW].gyro.q   = 0.015;
-	mainConfig.filterConfig[ROLL].gyro.q  = 0.015;
-	mainConfig.filterConfig[PITCH].gyro.q = 0.015;
-
-	mainConfig.filterConfig[YAW].gyro.p    = 0.005;
-	mainConfig.filterConfig[ROLL].gyro.p   = 0.005;
-	mainConfig.filterConfig[PITCH].gyro.p  = 0.005;
-
-	mainConfig.filterConfig[YAW].kd.r      = 85.0;
-	mainConfig.filterConfig[ROLL].kd.r     = 85.0;
-	mainConfig.filterConfig[PITCH].kd.r    = 70.0;
-
-
-
-	mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
-	mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
-	mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
-	mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
-	mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
-	mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
-	mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
-	mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
-
-	mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
-	mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
-	mainConfig.rcControlsConfig.minRc[YAW]           = 22;
-	mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
-	mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
-	mainConfig.rcControlsConfig.minRc[AUX2]          = 1706;
-	mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
-	mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
-
-	mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
-	mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
-	mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
-	mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
-	mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
-	mainConfig.rcControlsConfig.maxRc[AUX2]          = 342;
-	mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
-	mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
-
-	mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
-	mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
-	mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
-	mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
-	mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
-	mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-	mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
-	mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
-	mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
-	mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
-	mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
-	mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
-	mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
-	mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
-	mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
-	mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
-
-	mainConfig.rcControlsConfig.rcCalibrated         = 1;
-
-	mainConfig.rcControlsConfig.rxUsart              = ENUM_USART3;
-	mainConfig.rcControlsConfig.rxProtcol            = USING_SPEKTRUM_TWO_WAY; //this is used by serial.c
-//	mainConfig.gyroConfig.boardCalibrated            = 1; //this is used by serial.c
-//	mainConfig.gyroConfig.gyroRotation               = 0; //this is used by serial.c
-#endif
 
     HandleFcStartupReg();
 

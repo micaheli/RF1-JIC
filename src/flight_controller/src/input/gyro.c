@@ -11,7 +11,8 @@ static int32_t gyroSum[3] = {0, 0, 0};
 
 volatile uint32_t gyroCalibrationCycles = GYRO_CALIBRATION_CYCLES * 1;
 
-void ResetGyroCalibration(void) {
+void ResetGyroCalibration(void)
+{
 
 	bzero(gyroSum,sizeof(gyroSum));
 	gyroCalibrationCycles = GYRO_CALIBRATION_CYCLES * 1;

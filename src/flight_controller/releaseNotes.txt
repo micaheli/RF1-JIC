@@ -242,4 +242,10 @@ Version 0.134.039:
 	
 Version 0.135.039:
 	Fix flash detection function.
-	
+
+Version 0.136.039:
+	Arming changed to Double Single.
+	Gyro only calibrates on first switch.
+	Updated pidsrs2k.
+
+Version 0.137.039:

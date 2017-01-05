@@ -15,6 +15,7 @@ uint32_t rxData[MAXCHANNELS];
 uint32_t skipRxMap = 0;
 uint32_t progMode  = 0;
 uint32_t progTimer = 0;
+volatile uint32_t armCheckLatch = 0;
 
 // 2048 resolution
 #define SPEKTRUM_FRAME_SIZE 16
@@ -114,47 +115,52 @@ inline void CheckFailsafe(void)
  void RxUpdate(void) // hook for when rx updates
 {
 
-	if ( (latchFirstArm == 0) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) )
-	{
-		latchFirstArm = 1;
-		buzzerStatus.status = STATE_BUZZER_ARMING;
-	}
-	else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode)
-	{ //TODO: make uncalibrated board buzz
+	//throttle must be low and aux must be high before we look for switching for arming
+	if ( (trueRcCommandF[AUX1] < -0.5) && (trueRcCommandF[THROTTLE] < -0.8) )
+		armCheckLatch = 1;
 
-		latchFirstArm = 0;
-		disarmCount = 0;
-
-		if ( !(rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) ) {
-			//fc crashed during flight
-			ResetGyroCalibration();
-			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
-		}
-
-		ArmBoard();
-
-		//todo: make sure stick movement on these three axis are next to zero before setting centers.
-		if ( ABS((int32_t)rxData[PITCH] - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
-			mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
-		if ( ABS((int32_t)rxData[ROLL] - (int32_t)mainConfig.rcControlsConfig.midRc[ROLL]) < 30 )
-			mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
-		if ( ABS((int32_t)rxData[YAW] - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
-			mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
-
-	}
-	else if (trueRcCommandF[AUX1] < 0.5)
-	{
-
-		if (disarmCount++ > 3)
+	if (armCheckLatch) {
+		if ( (latchFirstArm == 0) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) )
 		{
-			if (latchFirstArm==1)
-			{
-				latchFirstArm = 2;
-			}
-			DisarmBoard();
-			rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_IDLE);
+			latchFirstArm = 1;
+			buzzerStatus.status = STATE_BUZZER_ARMING;
+			ResetGyroCalibration();
 		}
+		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode)
+		{ //TODO: make uncalibrated board buzz
 
+			latchFirstArm = 1; //1 is double single single single, 0 is double double double double
+			disarmCount   = 0;
+
+			if ( !(rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) ) {
+				//fc crashed during flight
+				rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
+			}
+
+			ArmBoard();
+
+			//todo: make sure stick movement on these three axis are next to zero before setting centers.
+			if ( ABS((int32_t)rxData[PITCH] - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
+				mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
+			if ( ABS((int32_t)rxData[ROLL] - (int32_t)mainConfig.rcControlsConfig.midRc[ROLL]) < 30 )
+				mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
+			if ( ABS((int32_t)rxData[YAW] - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
+				mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
+
+		}
+		else if ( (trueRcCommandF[AUX1] < 0.5) )
+		{
+			if (disarmCount++ > 3)
+			{
+				if (latchFirstArm==1)
+				{
+					latchFirstArm = 2;
+				}
+				DisarmBoard();
+				rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_IDLE);
+			}
+
+		}
 	}
 
 	if (!boardArmed && rxData[0] > 1800 && rxData[1] < 200 && rxData[2] < 200 && rxData[3] < 200)
