@@ -1027,12 +1027,12 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[ROLL].gyro.p  = 0.150;
 			mainConfig.filterConfig[PITCH].gyro.p = 0.150;
 
-			mainConfig.filterConfig[YAW].kd.r   = 85.0;
-			mainConfig.filterConfig[ROLL].kd.r  = 90.0;
-			mainConfig.filterConfig[PITCH].kd.r = 90.0;
+			mainConfig.filterConfig[YAW].kd.r     = 85.0;
+			mainConfig.filterConfig[ROLL].kd.r    = 90.0;
+			mainConfig.filterConfig[PITCH].kd.r   = 90.0;
 
-			mainConfig.gyroConfig.filterTypeGyro = 0;
-			mainConfig.gyroConfig.filterTypeKd   = 2;
+			mainConfig.gyroConfig.filterTypeGyro   = 0;
+			mainConfig.gyroConfig.filterTypeKd     = 2;
 
 			resetBoard = 1;
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));

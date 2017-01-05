@@ -21,6 +21,18 @@ typedef struct {
     uint32_t rxUsart;
 } rc_control_config;
 
+typedef struct
+{
+	uint32_t dataValue;
+	uint32_t timesOccurred;
+} rx_calibraation_record;
+
+typedef struct
+{
+	rx_calibraation_record rxCalibrationRecord[24];
+	uint32_t highestDataValue;
+} rx_calibration_records;
+
 //Enumerate the different channels in code. The TX map is not affected by this. This is for internal code only.
 enum {
 	YAW      = 0,
