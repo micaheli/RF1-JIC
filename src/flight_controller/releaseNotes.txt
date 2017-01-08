@@ -249,6 +249,7 @@ Version 0.136.039:
 	Updated pidsrs2k.
 
 Version 0.137.040:
+	Change stick calibration method (Not yet active).
 	Flight and switch mode support Stage 1 (Not yet active).
 	Self leveling flight mode support (Not yet active).
 	Logging and arm switch changes (Not yet active).

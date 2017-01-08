@@ -20,14 +20,63 @@ volatile uint32_t armCheckLatch = 0;
 // 2048 resolution
 #define SPEKTRUM_FRAME_SIZE 16
 uint32_t spektrumChannelShift = 3;
-uint32_t spektrumChannelMask = 0x07;
+uint32_t spektrumChannelMask  = 0x07;
+
+static rx_calibration_records rxCalibrationRecords[3];
 
 
-/*
-//1024 resolution
-spektrumChannelShift = 2;
-spektrumChannelMask = 0x03;
-*/
+static void checkRxPreArmCalibration(void);
+
+
+//check
+static void checkRxPreArmCalibration(void)
+{
+	uint32_t axis;
+	uint32_t y;
+	uint32_t z;
+	uint32_t highestCount;
+
+	for (axis = 0;axis<3;axis++)
+	{
+		highestCount=0;
+		//if pitch is near center, we add it to array
+		if ( ABS((int32_t)rxData[axis] - (int32_t)mainConfig.rcControlsConfig.midRc[axis]) < 30 )
+		{
+			z = 0;
+			//check each value for
+			for (y=0;y<32;y++)
+			{
+				//
+				if (rxCalibrationRecords[axis].rxCalibrationRecord[y].dataValue == rxData[axis])
+				{
+					highestCount < rxCalibrationRecords[axis].rxCalibrationRecord[y].timesOccurred;
+					rxCalibrationRecords[axis].rxCalibrationRecord[y].timesOccurred++;
+					z++;
+				}
+
+				//find and record the highest value
+				if (highestCount < rxCalibrationRecords[axis].rxCalibrationRecord[y].timesOccurred)
+				{
+					//set the dataValue with the
+					highestCount = rxCalibrationRecords[axis].rxCalibrationRecord[y].timesOccurred;
+					rxCalibrationRecords[axis].highestDataValue = rxCalibrationRecords[axis].rxCalibrationRecord[y].dataValue;
+				}
+			}
+			if (!z)
+			{
+				for (y=0;y<32;y++)
+				{
+					if (!rxCalibrationRecords[axis].rxCalibrationRecord[y].dataValue)
+					{
+						rxCalibrationRecords[axis].rxCalibrationRecord[y].dataValue     = rxData[axis];
+						rxCalibrationRecords[axis].rxCalibrationRecord[y].timesOccurred = 1;
+						z++;
+					}
+				}
+			}
+		}
+	}
+}
 
 SPM_VTX_DATA vtxData;
 
@@ -39,16 +88,16 @@ SPM_VTX_DATA vtxData;
 
 typedef struct {
 	uint8_t syncByte;
-	unsigned int chan0 : 11;
-	unsigned int chan1 : 11;
-	unsigned int chan2 : 11;
-	unsigned int chan3 : 11;
-	unsigned int chan4 : 11;
-	unsigned int chan5 : 11;
-	unsigned int chan6 : 11;
-	unsigned int chan7 : 11;
-	unsigned int chan8 : 11;
-	unsigned int chan9 : 11;
+	unsigned int chan0  : 11;
+	unsigned int chan1  : 11;
+	unsigned int chan2  : 11;
+	unsigned int chan3  : 11;
+	unsigned int chan4  : 11;
+	unsigned int chan5  : 11;
+	unsigned int chan6  : 11;
+	unsigned int chan7  : 11;
+	unsigned int chan8  : 11;
+	unsigned int chan9  : 11;
 	unsigned int chan10 : 11;
 	unsigned int chan11 : 11;
 	unsigned int chan12 : 11;
@@ -118,6 +167,9 @@ inline void CheckFailsafe(void)
 	//throttle must be low and aux must be high before we look for switching for arming
 	if ( (trueRcCommandF[AUX1] < -0.5) && (trueRcCommandF[THROTTLE] < -0.8) )
 		armCheckLatch = 1;
+
+	if (!latchFirstArm)
+		checkRxPreArmCalibration(); //collect rx data if not armed yet
 
 	if (armCheckLatch) {
 		if ( (latchFirstArm == 0) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) )
@@ -374,14 +426,20 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 }
 
-void InitRcData (void) {
+void InitRcData (void)
+{
+
 	bzero(trueRcCommandF, MAXCHANNELS);
 	bzero(curvedRcCommandF, MAXCHANNELS);
 	bzero(smoothedRcCommandF, MAXCHANNELS);
+	bzero(rxPreArmCalibrationCheck, sizeof(rxPreArmCalibrationCheck));
+
 	isRxDataNew = 0;
+
 }
 
-inline void InlineCollectRcCommand (void) {
+inline void InlineCollectRcCommand (void)
+{
 
 	uint32_t axis;
 	float rangedRx;
