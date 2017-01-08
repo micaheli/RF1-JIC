@@ -27,9 +27,11 @@ typedef struct
 	uint32_t timesOccurred;
 } rx_calibraation_record;
 
+#define RX_CHECK_AMOUNT 24
+
 typedef struct
 {
-	rx_calibraation_record rxCalibrationRecord[24];
+	rx_calibraation_record rxCalibrationRecord[RX_CHECK_AMOUNT];
 	uint32_t highestDataValue;
 } rx_calibration_records;
 

@@ -44,12 +44,12 @@ static void checkRxPreArmCalibration(void)
 		{
 			z = 0;
 			//check each value for
-			for (y=0;y<32;y++)
+			for (y=0;y<RX_CHECK_AMOUNT;y++)
 			{
 				//
 				if (rxCalibrationRecords[axis].rxCalibrationRecord[y].dataValue == rxData[axis])
 				{
-					highestCount < rxCalibrationRecords[axis].rxCalibrationRecord[y].timesOccurred;
+					highestCount = rxCalibrationRecords[axis].rxCalibrationRecord[y].timesOccurred;
 					rxCalibrationRecords[axis].rxCalibrationRecord[y].timesOccurred++;
 					z++;
 				}
@@ -64,7 +64,7 @@ static void checkRxPreArmCalibration(void)
 			}
 			if (!z)
 			{
-				for (y=0;y<32;y++)
+				for (y=0;y<RX_CHECK_AMOUNT;y++)
 				{
 					if (!rxCalibrationRecords[axis].rxCalibrationRecord[y].dataValue)
 					{
@@ -432,7 +432,6 @@ void InitRcData (void)
 	bzero(trueRcCommandF, MAXCHANNELS);
 	bzero(curvedRcCommandF, MAXCHANNELS);
 	bzero(smoothedRcCommandF, MAXCHANNELS);
-	bzero(rxPreArmCalibrationCheck, sizeof(rxPreArmCalibrationCheck));
 
 	isRxDataNew = 0;
 
