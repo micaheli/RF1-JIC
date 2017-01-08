@@ -248,5 +248,8 @@ Version 0.136.039:
 	Gyro only calibrates on first switch.
 	Updated pidsrs2k.
 
-Version 0.137.039:
-1
+Version 0.137.040:
+	Flight and switch mode support Stage 1 (Not yet active).
+	Self leveling flight mode support (Not yet active).
+	Logging and arm switch changes (Not yet active).
+	changed default tune.
