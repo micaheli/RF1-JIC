@@ -121,9 +121,15 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 	    		motorOutput[motorNum] = 0.05;
 	    	}
 
-	    	flightPids[axis].kp = 0;
-	    	flightPids[axis].ki = 0;
-	    	flightPids[axis].kd = 0;
+	    	flightPids[YAW].kp   = 0;
+	    	flightPids[YAW].ki   = 0;
+	    	flightPids[YAW].kd   = 0;
+	    	flightPids[ROLL].kp  = 0;
+			flightPids[ROLL].ki  = 0;
+			flightPids[ROLL].kd  = 0;
+			flightPids[PITCH].kp = 0;
+			flightPids[PITCH].ki = 0;
+			flightPids[PITCH].kd = 0;
 
 	    	return (0);
 

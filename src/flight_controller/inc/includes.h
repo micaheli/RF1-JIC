@@ -19,6 +19,7 @@
 //general includes
 #include "pid.h"
 #include "mixer.h"
+#include "modes.h"
 #include "debug.h"
 #include "flight.h"
 #include "filter.h"

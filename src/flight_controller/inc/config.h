@@ -1,13 +1,14 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint32_t)(39U)
-#define CONFIG_VERSION_STR		"39"
-#define FIRMWARE_VERSION		"0.136.039 ALPHA"
+#define CONFIG_VERSION			(uint32_t)(40U)
+#define CONFIG_VERSION_STR		"40"
+#define FIRMWARE_VERSION		"0.136.040 ALPHA"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
 
 #define RF_BUFFER_SIZE HID_EPIN_SIZE-1
-
+#define FLIGHT_MODE_ARRAY_SIZE 96
+// 32 flight modes listed from 0 to 31. first value is channel, second and third value is min and max
 
 typedef struct {
 	rc_control_config rcControlsConfig;
@@ -16,11 +17,11 @@ typedef struct {
 	led_config		  ledConfig;
 	filter_device     filterConfig[AXIS_NUMBER];
 	pid_terms         pidConfig[AXIS_NUMBER];
+	uint16_t          flightModeArray[96];
 	uint8_t           version;
 	uint16_t          size;
 	uint8_t           czechsum;
 } main_config;
-
 
 
 enum {typeINT=0,typeUINT,typeFLOAT,typeSTRING,};

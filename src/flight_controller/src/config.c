@@ -1794,6 +1794,11 @@ void ProcessCommand(char *inString)
 			args = StripSpaces(args);
 			SetupWizard(args);
 		}
+	else if (!strcmp("modes", inString))
+		{
+			args = StripSpaces(args);
+			SetupModes(args);
+		}
 	else if (!strcmp("save", inString))
 		{
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
