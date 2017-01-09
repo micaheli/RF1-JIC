@@ -597,9 +597,15 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			else if (!gyroStdDeviationLatch)
 			{
 				gyroStdDeviationLatch = 1;
-				pafGyroStates[YAW]    = InitPaf( mainConfig.filterConfig[YAW].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
-				pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
-				pafGyroStates[PITCH]  = InitPaf( mainConfig.filterConfig[PITCH].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
+				mainConfig.filterConfig[YAW].gyro.r = CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100;
+				mainConfig.filterConfig[ROLL].gyro.r = CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100;
+				mainConfig.filterConfig[PITCH].gyro.r = CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100;
+				pafGyroStates[YAW]    = InitPaf( mainConfig.filterConfig[YAW].gyro.q, mainConfig.filterConfig[YAW].gyro.r, 0, 0);
+				pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q, mainConfig.filterConfig[YAW].gyro.r, 0, 0);
+				pafGyroStates[PITCH]  = InitPaf( mainConfig.filterConfig[PITCH].gyro.q, mainConfig.filterConfig[YAW].gyro.r, 0, 0);
+				//pafGyroStates[YAW]    = InitPaf( mainConfig.filterConfig[YAW].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
+				//pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
+				//pafGyroStates[PITCH]  = InitPaf( mainConfig.filterConfig[PITCH].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
 				//set filters
 			}
 
