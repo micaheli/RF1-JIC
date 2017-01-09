@@ -22,29 +22,29 @@ uint32_t uhOhRecover = 0;
 void InitPid (void)
 {
 
-	bzero(kiError,sizeof(kiError));
-	bzero(kiErrorLimit,sizeof(kiErrorLimit));
-	bzero(kdDelta, sizeof(kdDelta));
-	bzero(kdRingBuffer, sizeof(kdRingBuffer));
-	bzero(kdRingBufferSum, sizeof(kdRingBufferSum));
+	bzero(kiError,           sizeof(kiError));
+	bzero(kiErrorLimit,      sizeof(kiErrorLimit));
+	bzero(kdDelta,           sizeof(kdDelta));
+	bzero(kdRingBuffer,      sizeof(kdRingBuffer));
+	bzero(kdRingBufferSum,   sizeof(kdRingBufferSum));
 	bzero(kdRingBufferPoint, sizeof(kdRingBufferPoint));
-	bzero(kdBqFilterState, sizeof(kdBqFilterState));
+	bzero(kdBqFilterState,   sizeof(kdBqFilterState));
 
 	uhOhRecover = 0; //unset recover mode
 
-	pidsUsed[0].kp = mainConfig.pidConfig[0].kp / 100000;
+	pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 100000;
 	pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 50000) * loopSpeed.dT;
-	pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 200000000 )  / loopSpeed.dT;
+	pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 200000000)  / loopSpeed.dT;
 	pidsUsed[0].wc = mainConfig.pidConfig[0].wc;
 
-	pidsUsed[1].kp = mainConfig.pidConfig[1].kp / 100000;
+	pidsUsed[1].kp = mainConfig.pidConfig[1].kp  / 100000;
 	pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 50000) * loopSpeed.dT;
-	pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 200000000 )  / loopSpeed.dT;
+	pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 200000000)  / loopSpeed.dT;
 	pidsUsed[1].wc = mainConfig.pidConfig[1].wc;
 
-	pidsUsed[2].kp = mainConfig.pidConfig[2].kp / 100000;
+	pidsUsed[2].kp = mainConfig.pidConfig[2].kp  / 100000;
 	pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 50000) * loopSpeed.dT;
-	pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 200000000 )  / loopSpeed.dT;
+	pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 200000000)  / loopSpeed.dT;
 	pidsUsed[2].wc = mainConfig.pidConfig[2].wc;
 
 	LpfInit(&yawKpLpf, 30.0f, loopSpeed.dT);
@@ -161,9 +161,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 			}
 			else
 			{
-
 				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -0.0521f, 0.0521f); //limit Ki when fullKiLatched is false
-
 			}
 			// calculate Ki ////////////////////////// ^
 

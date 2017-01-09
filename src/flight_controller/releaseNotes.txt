@@ -254,3 +254,6 @@ Version 0.137.040:
 	Self leveling flight mode support (Not yet active).
 	Logging and arm switch changes (Not yet active).
 	changed default tune.
+
+Version 0.138.040:
+	Change mixer slightly. Less floaty?

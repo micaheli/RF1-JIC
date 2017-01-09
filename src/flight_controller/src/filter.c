@@ -6,7 +6,8 @@ paf_state InitPaf(float q, float r, float p, float intial_value)
 	result.q = q * 0.001;
 	result.r = r * 0.001;
 	result.p = p * 0.001;
-	result.x = intial_value * 16.4;
+	//result.x = intial_value * 16.4;
+	result.x = intial_value;
 
 	return result;
 }
@@ -22,7 +23,8 @@ void PafUpdate(paf_state *state, float measurement)
 	state->x = state->x + state->k * (measurement * 16.4 - state->x);
 	state->p = (1 - state->k) * state->p;
 
-	state->output = state->x * 0.06097560975;
+	//state->output = state->x * 0.06097560975;
+	state->output = state->x;
 }
 
 

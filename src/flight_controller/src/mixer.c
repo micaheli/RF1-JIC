@@ -233,6 +233,7 @@ inline float InlineApplyMotorMixer2(pid_output pids[], float curvedRcCommandF[],
 
 	for (i = activeMotorCounter; i >= 0; i--)
 	{
+		//-1 to 1
 		motorOutputHere[i] = (
 			(
 				(pids[YAW].kp * ApplyAttenuationCurve(motorOutputHere[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
@@ -269,7 +270,11 @@ inline float InlineApplyMotorMixer2(pid_output pids[], float curvedRcCommandF[],
 		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
 		rangedThrottle = InlineChangeRangef(curvedRcCommandF[THROTTLE], 1.0, -1.0, 1.0, 0.0);
 		throttleOffset = actuatorRange / 2.0f;
-		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset);
+		throttle = InlineConstrainf(rangedThrottle - (1.0f - actuatorRange), throttleOffset, 1.0f - throttleOffset);
+		if (throttle > lowestMotor)
+		{
+			throttle = lowestMotor;
+		}
 	}
 
 	for(i=7; i>=0; i--)

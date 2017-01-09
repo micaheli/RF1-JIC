@@ -26,3 +26,4 @@ extern uint32_t BigToLittleEndian32(uint32_t numberIn);
 extern float InlineConstrainf(float amt, float low, float high);
 extern float InlineChangeRangef(float oldValue, float oldMax, float oldMin, float newMax, float newMin);
 extern float CalculateSD(float data[]);
+extern float CalculateSDSize(float data[], uint32_t size);

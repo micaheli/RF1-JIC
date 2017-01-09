@@ -77,3 +77,24 @@ inline float CalculateSD(float data[])
     return(result);
 }
 
+inline float CalculateSDSize(float data[], uint32_t size)
+{
+    float sum = 0.0, mean, standardDeviation = 0.0;
+    float result;
+
+    int i;
+
+    for(i=0; i<size; ++i)
+    {
+        sum += data[i];
+    }
+
+    mean = sum/(float)size;
+
+    for(i=0; i<size; ++i)
+        standardDeviation += powf(data[i] - mean, 2);
+
+    arm_sqrt_f32((standardDeviation/(float)size), &result);
+
+    return(result);
+}

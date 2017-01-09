@@ -9,6 +9,11 @@ biquad_state lpfFilterStateAcc[AXIS_NUMBER];
 biquad_state lpfFilterStateNoise[6];
 biquad_state hpfFilterStateAcc[6];
 
+#define GYRO_STD_DEVIATION_SAMPLE_SIZE 100
+
+float gyroStdDeviationSamples[AXIS_NUMBER][GYRO_STD_DEVIATION_SAMPLE_SIZE];
+uint32_t gyroStdDeviationPointer;
+
 float kdFiltUsed[AXIS_NUMBER];
 float accNoise[6];
 float averagedGyroData[AXIS_NUMBER][GYRO_AVERAGE_MAX_SUM];
@@ -218,6 +223,8 @@ void InitFlightCode(void)
 	bzero(filteredGyroDataKd,sizeof(filteredGyroDataKd));
 	bzero(averagedGyroDataPointer,sizeof(averagedGyroDataPointer));
 	bzero(&flightPids,sizeof(flightPids));
+	bzero(gyroStdDeviationSamples, sizeof(gyroStdDeviationSamples));
+	gyroStdDeviationPointer = 0;
 
 	averagedGyroDataPointerMultiplier[YAW]   = (1.0 / (float)mainConfig.pidConfig[YAW].ga);
 	averagedGyroDataPointerMultiplier[ROLL]  = (1.0 / (float)mainConfig.pidConfig[ROLL].ga);
@@ -488,6 +495,7 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 inline void InlineFlightCode(float dpsGyroArray[])
 {
 
+	static uint32_t gyroStdDeviationLatch = 0;
 	static float kdAverage[3];
 	static uint32_t kdAverageCounter = 0;
 	int32_t axis;
@@ -577,7 +585,22 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		{
 			if (gyroCalibrationCycles != 0)
 			{
+				//gather cycles during board calibration
+				gyroStdDeviationSamples[YAW][gyroStdDeviationPointer] = dpsGyroArray[YAW];
+				gyroStdDeviationSamples[ROLL][gyroStdDeviationPointer] = dpsGyroArray[ROLL];
+				gyroStdDeviationSamples[PITCH][gyroStdDeviationPointer++] = dpsGyroArray[PITCH];
+				if (gyroStdDeviationPointer > GYRO_STD_DEVIATION_SAMPLE_SIZE)
+					gyroStdDeviationPointer = 0;
+
 			   return;
+			}
+			else if (!gyroStdDeviationLatch)
+			{
+				gyroStdDeviationLatch = 1;
+				pafGyroStates[YAW]    = InitPaf( mainConfig.filterConfig[YAW].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
+				pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
+				pafGyroStates[PITCH]  = InitPaf( mainConfig.filterConfig[PITCH].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
+				//set filters
 			}
 
 			actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
