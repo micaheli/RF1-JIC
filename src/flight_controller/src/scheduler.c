@@ -75,6 +75,9 @@ void scheduler(int32_t count)
 
  void TaskProcessSoftSerial(void) {
 
+	 SoftSerialCheckLineIdle();
+
+/*
 	//TODO: Move to softSerial.c or serial.c
 	uint32_t x;
 	uint32_t currentTime;
@@ -200,6 +203,7 @@ void scheduler(int32_t count)
 		proccesedSoftSerialIdx = 0;
 	}
 
+*/
 
 }
 

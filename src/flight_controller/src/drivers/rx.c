@@ -70,7 +70,7 @@ static void checkRxPreArmCalibration(void)
 					{
 						rxCalibrationRecords[axis].rxCalibrationRecord[y].dataValue     = rxData[axis];
 						rxCalibrationRecords[axis].rxCalibrationRecord[y].timesOccurred = 1;
-						z++;
+						break;
 					}
 				}
 			}
@@ -192,12 +192,21 @@ inline void CheckFailsafe(void)
 			ArmBoard();
 
 			//todo: make sure stick movement on these three axis are next to zero before setting centers.
+
+			if ( ABS((int32_t)rxCalibrationRecords[PITCH].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
+				mainConfig.rcControlsConfig.midRc[PITCH] = rxCalibrationRecords[PITCH].highestDataValue;
+			if ( ABS((int32_t)rxCalibrationRecords[ROLL].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[ROLL]) < 30 )
+				mainConfig.rcControlsConfig.midRc[ROLL] = rxCalibrationRecords[ROLL].highestDataValue;
+			if ( ABS((int32_t)rxCalibrationRecords[YAW].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
+				mainConfig.rcControlsConfig.midRc[YAW] = rxCalibrationRecords[YAW].highestDataValue;
+			/*
 			if ( ABS((int32_t)rxData[PITCH] - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
 				mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
 			if ( ABS((int32_t)rxData[ROLL] - (int32_t)mainConfig.rcControlsConfig.midRc[ROLL]) < 30 )
 				mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
 			if ( ABS((int32_t)rxData[YAW] - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
 				mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
+			*/
 
 		}
 		else if ( (trueRcCommandF[AUX1] < 0.5) )

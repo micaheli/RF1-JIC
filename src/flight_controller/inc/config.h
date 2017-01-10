@@ -2,7 +2,7 @@
 
 #define CONFIG_VERSION			(uint32_t)(40U)
 #define CONFIG_VERSION_STR		"40"
-#define FIRMWARE_VERSION		"0.138.040 ALPHA"
+#define FIRMWARE_VERSION		"0.139.040 ALPHA"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
 
@@ -17,7 +17,7 @@ typedef struct {
 	led_config		  ledConfig;
 	filter_device     filterConfig[AXIS_NUMBER];
 	pid_terms         pidConfig[AXIS_NUMBER];
-	uint16_t          flightModeArray[96];
+	int16_t           flightModeArray[96];
 	uint8_t           version;
 	uint16_t          size;
 	uint8_t           czechsum;

@@ -226,35 +226,40 @@ void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLo
 	uint32_t addressFlashEnd   = ADDRESS_FLASH_END;
 	uint32_t wordOffset;
 	uint32_t firmwareFinderData[5];
-	uint8_t firmwareFinderByteData[5 * 4];
+	uint8_t  firmwareFinderByteData[5 * 4];
 	uint32_t x;
-	uint8_t escStart[3] = {0x02, 0x19, 0xFD};
+	uint8_t  escStart[3] = {0x02, 0x19, 0xFD};
 
 	escHexLocation->startAddress = 0;
 	escHexLocation->endAddress = 0;
 	escHexLocation->version = 0;
 
 	//from ESC start address the config starts at 0x1A00 and the ESC name is at 0x1A00 + 0x50. The firmware stops at 1A6F and includes 1A6F
-	for (wordOffset = addressFlashStart; wordOffset < (addressFlashEnd - 0x1A6F); wordOffset++) { //scan up to 1mb of flash starting at after rfbl //todo:set per mcu
+	for (wordOffset = addressFlashStart; wordOffset < (addressFlashEnd - 0x1A6F); wordOffset++) //scan up to 1mb of flash starting at after rfbl //todo:set per mcu
+	{
 		//flash goes like this. RFBL -> FW -> ESCs -> fade43f4 a62fe81a -> RFBL SIZE in 16 bit hex variable -> fade43f4 a62fe81a -> RFBL
 		memcpy( &firmwareFinderData, (char *) wordOffset, sizeof(firmwareFinderData) );
-		for (x=0; x<sizeof(firmwareFinderData)/4; x++) {
+		for (x=0; x<sizeof(firmwareFinderData)/4; x++)
+		{
 			firmwareFinderData[x] = BigToLittleEndian32(firmwareFinderData[x]);
 			firmwareFinderByteData[(x * 4)+0] = ((firmwareFinderData[x]>>24)&0xff);
 			firmwareFinderByteData[(x * 4)+1] = ((firmwareFinderData[x]>>16)&0xff);
 			firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
 			firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
 		}
-		if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStart, 3)) {
+		if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStart, 3))
+		{
 			memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00+64, sizeof(firmwareFinderData) ); //get config data to look for ESC name
-			for (x=0; x<sizeof(firmwareFinderData)/4; x++) {
+			for (x=0; x<sizeof(firmwareFinderData)/4; x++)
+			{
 				firmwareFinderData[x] = BigToLittleEndian32(firmwareFinderData[x]); //switch to little endian
 				firmwareFinderByteData[(x * 4)+0] = ((firmwareFinderData[x]>>24)&0xff);
 				firmwareFinderByteData[(x * 4)+1] = ((firmwareFinderData[x]>>16)&0xff);
 				firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
 				firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
 			}
-			if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStringName, escNameStringSize)) {
+			if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStringName, escNameStringSize))
+			{
 				escHexLocation->startAddress = wordOffset;
 				escHexLocation->endAddress = wordOffset + 0x1A6F;
 				memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00, sizeof(firmwareFinderData) ); //get versionnumber
@@ -322,7 +327,9 @@ uint32_t OneWireInit(void)
 							SendStatusReport((char *)reportOut);
 						}
 						atLeastOneWorks++;
-					} else {
+					}
+					else
+					{
 						if (tries > 1)
 						{
 							sprintf((char *)reportOut, "ESC:%lu Read Failure", board.motors[outputNumber].actuatorArrayNum);
@@ -364,7 +371,7 @@ static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout)
 	//connect to ESC and get bootloader info
 
 	memcpy(oneWireOutBuffer, bootInit, sizeof(bootInit));
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, sizeof(bootInit), oneWireInBuffer, actuator, timeout);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, sizeof(bootInit), oneWireInBuffer, actuator, timeout, 19200, 10, 0);
 
 	escOneWireStatus[actuator.actuatorArrayNum].escBootloaderMode = 0;
 
@@ -412,7 +419,7 @@ static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address) {
 
 	AppendBlHeliCrc(oneWireOutBuffer, 4);
 
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 6, oneWireInBuffer, actuator, 10); //150ms timeout is way more than we need
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 6, oneWireInBuffer, actuator, 10, 19200, 10, 0); //150ms timeout is way more than we need
 
 	if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
 		return (1);
@@ -428,14 +435,14 @@ static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint1
 	AppendBlHeliCrc(cmdBuffer, 4);
 
 	//send the command to write to buffer
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 6, oneWireInBuffer, actuator, 10);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 6, oneWireInBuffer, actuator, 10, 19200, 10, 0);
 
 	if ( oneWireInBufferIdx == 0 ) {
 
 		AppendBlHeliCrc(outBuffer, length);
 
 		//send the data
-		oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, (length + 2), oneWireInBuffer, actuator, timeout); //150ms timeout is way more than we need
+		oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, (length + 2), oneWireInBuffer, actuator, timeout, 19200, 10, 0); //150ms timeout is way more than we need
 
 		if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
 			return (1);
@@ -750,7 +757,7 @@ static uint32_t DisconnectBLHeli(motor_type actuator, uint32_t timeout)
 
 	AppendBlHeliCrc(oneWireOutBuffer, 2);
 
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout, 19200, 10, 0);
 
 	return (oneWireInBufferIdx);
 }
@@ -769,7 +776,7 @@ static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint8_t inBuffer[], u
 	AppendBlHeliCrc(outBuffer, 2);
 
 	//bzero(inBuffer, length);
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, 4, inBuffer, actuator, timeout);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, 4, inBuffer, actuator, timeout, 19200, 10, 0);
 
 	inBuffer[123]=77;
 	inBuffer[124]=77;
@@ -790,7 +797,7 @@ static uint32_t PageEraseSiLabsBLHeli(motor_type actuator, uint16_t address, uin
 	AppendBlHeliCrc(oneWireOutBuffer, 2);
 
 	//Send command and get result
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout, 19200, 10, 0);
 
 	//check result
 	if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
@@ -829,7 +836,7 @@ static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[],
 	AppendBlHeliCrc(cmdBuffer, 2);
 
 	//Send the actual write command
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 4, oneWireInBuffer, actuator, 30);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 4, oneWireInBuffer, actuator, 30, 19200, 10, 0);
 
 	if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
 		return (1);

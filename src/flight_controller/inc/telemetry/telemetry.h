@@ -6,3 +6,6 @@ extern volatile uint32_t okToSendSPort;
 extern volatile uint32_t sPortExtiSet;
 
 extern void InitTelemtry(void);
+
+extern void TelemtryRxCallback(uint8_t serialBuffer[], uint32_t outputLength);
+extern void TelemtryTxCallback(uint8_t serialBuffer[], uint32_t outputLength);

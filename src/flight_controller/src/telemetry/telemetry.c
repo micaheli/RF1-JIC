@@ -8,6 +8,10 @@ volatile uint32_t sPortExtiSet  = 0;
 volatile uint8_t telemtryRxBuffer[10];
 volatile uint32_t telemtryRxBufferIdx;
 
+motor_type sbusActuator;
+uint32_t timeToSend = 0;
+uint32_t readyToSend = 0;
+uint8_t sPortPacket[8];
 
 void ProcessTelemtry(void) {
 
@@ -21,14 +25,15 @@ void ProcessTelemtry(void) {
 	//if unidirectional, check if it's safe to send
 	//if it's time to send figure out what to send and send it.
 
-
+	//SoftSerialReceiveBlocking(uint8_t inBuffer[], motor_type actuator, uint32_t timeoutMs, uint32_t baudRate, uint32_t bitLength, uint32_t inverted);
 }
 
 
 void InitTelemtry(void)
 {
 
-	//if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
+	if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
+		InitSoftSport();
 	//	InitAllowedSoftOutputs();
 
 	//if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
@@ -36,13 +41,50 @@ void InitTelemtry(void)
 
 }
 
-void TelemtryRxCallback(uint8_t serialInBuffer[], uint32_t *serialInBufferIdx)
+void TelemtryRxCallback(uint8_t serialBuffer[], uint32_t outputLength)
 {
-	(void)(serialInBuffer);
-	(void)(serialInBufferIdx);
+
+	volatile uint32_t switchIt = 0;
+
+	if (outputLength > 0)
+	{
+		if ( (serialBuffer[0] == 0x7E) && (serialBuffer[1] == 0x1B) )
+		{
+			if (switchIt)
+			{
+				ledStatus.status = LEDS_OFF;
+				DoLed(0, 0);
+				switchIt = 0;
+			}
+			else
+			{
+				ledStatus.status = LEDS_OFF;
+				DoLed(0, 1);
+				switchIt = 1;
+			}
+			//sport output happens here
+			//SoftSerialReceiveNonBlocking(board.motors[outputNumber]);
+			SmartPortSendPackage(0x0700, (int32_t)(filteredAccData[ACCX] * 100), sPortPacket );
+			//SoftSerialSendNonBlocking(sPortPacket, 8, sbusActuator);
+			//send data, line will go back to receive state after data is sent
+			//SoftSerialReceiveNonBlocking(sbusActuator);
+			return;
+		}
+	}
+
+	//SoftSerialReceiveNonBlocking(sbusActuator);
+
+
 }
 
-void InitSoftSport(void) {
+void TelemtryTxCallback(uint8_t serialBuffer[], uint32_t outputLength)
+{
+	(void)(serialBuffer);
+	(void)(outputLength);
+}
+
+void InitSoftSport(void)
+{
 
 	//set RX callback to Send sbus data if
 	//if
@@ -60,7 +102,7 @@ void InitSoftSport(void) {
 			case ENUM_ACTUATOR_TYPE_SPORT:
 				for (actuatorNumCheck = 0; actuatorNumCheck < MAX_MOTOR_NUMBER; actuatorNumCheck++) { //make sure soft sport and soft ws2812 don't interfer with active motor configuration
 
-					if (!DoesDmaConflictWithActiveDmas(board.motors[outputNumber]))
+					if (DoesDmaConflictWithActiveDmas(board.motors[outputNumber]))
 					{
 						okayToEnable = 0;
 					}
@@ -73,10 +115,14 @@ void InitSoftSport(void) {
 					{
 						//TODO: make telemetry and soft serial setup smarter
 
+						sbusActuator = board.motors[outputNumber];
 						//buffer location to write to, buffer index, actuator to RX on.
 						//once line idle occurs the callback function will be called
+						//set rx and tx callbacks.
+						//callbackFunctionArray[board.motors[outputNumber].EXTICallback] = TelemtryRxCallback;
+						//callbackFunctionArray[board.motors[outputNumber].DmaCallback]  = TelemtryTxCallback;
 						softserialCallbackFunctionArray[0] = TelemtryRxCallback; //this function is called once line idle is sensed after data reception
-						SoftSerialReceiveNonBlocking(telemtryRxBuffer, &telemtryRxBufferIdx, board.motors[outputNumber]);
+						SoftSerialReceiveNonBlocking(board.motors[outputNumber], 57600, 10, 1);
 
 						//PutSoftSerialActuatorInReceiveState(board.motors[outputNumber]);
 

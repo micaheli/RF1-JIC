@@ -373,6 +373,7 @@ void getBoardHardwareDefs(void)
 	board.motors[6].timerIRQn         = TIM4_IRQn;
 	board.motors[6].motorOutputLength = 64; //bits
 	board.motors[6].EXTIn             = EXTI4_IRQn;
+	//board.motors[6].EXTICallback      = FP_EXTI4; //used for input
 	//board.motors[6].DmaCallback       = FP_DMA1_S0; //used for input
 
 	board.dmasMotor[6].enabled            = 1;
@@ -409,6 +410,7 @@ void getBoardHardwareDefs(void)
 	board.motors[7].timerIRQn         = TIM1_CC_IRQn; //TIM1_CC_IRQn //TIM1_UP_TIM10_IRQn //TIM1_BRK_TIM9_IRQn //TIM1_TRG_COM_TIM11_IRQn
 	board.motors[7].motorOutputLength = 64; //bits
 	board.motors[7].EXTIn             = EXTI9_5_IRQn;
+	board.motors[7].EXTICallback      = FP_EXTI9_5; //used for input
 	board.motors[7].DmaCallback       = FP_DMA2_S2; //used for input
 	//callbackFunctionArray[FP_EXTI9_5] = SoftSerialCallback;
 

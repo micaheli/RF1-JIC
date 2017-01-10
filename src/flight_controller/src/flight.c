@@ -9,7 +9,7 @@ biquad_state lpfFilterStateAcc[AXIS_NUMBER];
 biquad_state lpfFilterStateNoise[6];
 biquad_state hpfFilterStateAcc[6];
 
-#define GYRO_STD_DEVIATION_SAMPLE_SIZE 100
+#define GYRO_STD_DEVIATION_SAMPLE_SIZE 2
 
 float gyroStdDeviationSamples[AXIS_NUMBER][GYRO_STD_DEVIATION_SAMPLE_SIZE];
 uint32_t gyroStdDeviationPointer;
@@ -585,42 +585,31 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		{
 			if (gyroCalibrationCycles != 0)
 			{
+			   return;
+			}
+			else if (gyroStdDeviationPointer < GYRO_STD_DEVIATION_SAMPLE_SIZE)
+			{
 				//gather cycles during board calibration
 				gyroStdDeviationSamples[YAW][gyroStdDeviationPointer] = dpsGyroArray[YAW];
 				gyroStdDeviationSamples[ROLL][gyroStdDeviationPointer] = dpsGyroArray[ROLL];
 				gyroStdDeviationSamples[PITCH][gyroStdDeviationPointer++] = dpsGyroArray[PITCH];
-				if (gyroStdDeviationPointer > GYRO_STD_DEVIATION_SAMPLE_SIZE)
-					gyroStdDeviationPointer = 0;
-
-			   return;
 			}
 			else if (!gyroStdDeviationLatch)
 			{
-				gyroStdDeviationLatch = 1;
-				mainConfig.filterConfig[YAW].gyro.r = CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100;
-				mainConfig.filterConfig[ROLL].gyro.r = CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100;
-				mainConfig.filterConfig[PITCH].gyro.r = CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100;
-				pafGyroStates[YAW]    = InitPaf( mainConfig.filterConfig[YAW].gyro.q, mainConfig.filterConfig[YAW].gyro.r, 0, 0);
-				pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q, mainConfig.filterConfig[YAW].gyro.r, 0, 0);
-				pafGyroStates[PITCH]  = InitPaf( mainConfig.filterConfig[PITCH].gyro.q, mainConfig.filterConfig[YAW].gyro.r, 0, 0);
+		//		gyroStdDeviationLatch = 1;
+		//		mainConfig.filterConfig[YAW].gyro.r = 86;//CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE)     * 100;
+		//		mainConfig.filterConfig[ROLL].gyro.r = 86;//CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE)   * 100;
+		//		mainConfig.filterConfig[PITCH].gyro.r = 86;//CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100;
+		//		pafGyroStates[YAW]    = InitPaf( mainConfig.filterConfig[YAW].gyro.q, mainConfig.filterConfig[YAW].gyro.r    , 0, 0);
+		//		pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q, mainConfig.filterConfig[ROLL].gyro.r  , 0, 0);
+		//		pafGyroStates[PITCH]  = InitPaf( mainConfig.filterConfig[PITCH].gyro.q, mainConfig.filterConfig[PITCH].gyro.r, 0, 0);
 				//pafGyroStates[YAW]    = InitPaf( mainConfig.filterConfig[YAW].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
 				//pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
 				//pafGyroStates[PITCH]  = InitPaf( mainConfig.filterConfig[PITCH].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
 				//set filters
 			}
 
-			actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
-
-			//only run mixer if armed
-//		   switch (mainConfig.mixerConfig.motorMixer) {
-//			   case 0:
-//					actuatorRange = InlineApplyMotorMixer2(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
-//				   break;
-//			   case 1:
-//			   default:
-//					actuatorRange = InlineApplyMotorMixer2(flightPids, smoothedRcCommandF, motorOutput); //put in PIDs and Throttle or passthru
-//				   break;
-//		   }
+			actuatorRange = InlineApplyMotorMixer2(flightPids, smoothedRcCommandF[THROTTLE], motorOutput); //put in PIDs and Throttle or passthru
 
 		}
 		else

@@ -311,37 +311,37 @@ void InitBoardUsarts (void) {
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_ONE_WAY) {
 
     	board.serials[usartOff].enabled  = 0;
-    	board.serials[usartOn].enabled  = 1;
-    	board.serials[usartOn].Protocol = USING_SPEKTRUM_ONE_WAY;
-    	board.dmasSerial[board.serials[usartOn].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+    	board.serials[usartOn].enabled   = 1;
+    	board.serials[usartOn].Protocol  = USING_SPEKTRUM_ONE_WAY;
+    	board.dmasSerial[board.serials[usartOn].TXDma].enabled  = 0;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled  = 1;
 		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
 		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
     } else
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY) {
 		board.serials[usartOff].enabled  = 0;
-		board.serials[usartOn].enabled  = 1;
-		board.serials[usartOn].Protocol = USING_SPEKTRUM_TWO_WAY;
-		board.dmasSerial[board.serials[usartOn].TXDma].enabled = 1;
-		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.serials[usartOn].enabled   = 1;
+		board.serials[usartOn].Protocol  = USING_SPEKTRUM_TWO_WAY;
+		board.dmasSerial[board.serials[usartOn].TXDma].enabled  = 1;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled  = 1;
 		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
 		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
 	} else
     if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS) {
 		board.serials[usartOff].enabled  = 0;
-		board.serials[usartOn].enabled  = 1;
-		board.serials[usartOn].Protocol = USING_SBUS;
-		board.dmasSerial[board.serials[usartOn].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.serials[usartOn].enabled   = 1;
+		board.serials[usartOn].Protocol  = USING_SBUS;
+		board.dmasSerial[board.serials[usartOn].TXDma].enabled  = 0;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled  = 1;
 		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
 		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
 	} else
 	if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT) {
 		board.serials[usartOff].enabled  = 0;
-		board.serials[usartOn].enabled  = 1;
-		board.serials[usartOn].Protocol = USING_SBUS_SPORT;
-		board.dmasSerial[board.serials[usartOn].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.serials[usartOn].enabled   = 1;
+		board.serials[usartOn].Protocol  = USING_SBUS_SPORT;
+		board.dmasSerial[board.serials[usartOn].TXDma].enabled  = 0;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled  = 1;
 		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
 		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
 	} else
@@ -349,8 +349,8 @@ void InitBoardUsarts (void) {
 		board.serials[usartOff].enabled = 0;
 		board.serials[usartOn].enabled  = 1;
 		board.serials[usartOn].Protocol = USING_SUMD;
-		board.dmasSerial[board.serials[usartOn].TXDma].enabled = 0;
-		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[usartOn].TXDma].enabled  = 0;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled  = 1;
 		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
 		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
 	} else
@@ -358,8 +358,8 @@ void InitBoardUsarts (void) {
 		board.serials[usartOff].enabled = 0;
 		board.serials[usartOn].enabled  = 1;
 		board.serials[usartOn].Protocol = USING_SUMD_TWO_WAY;
-		board.dmasSerial[board.serials[usartOn].TXDma].enabled = 1;
-		board.dmasSerial[board.serials[usartOn].RXDma].enabled = 1;
+		board.dmasSerial[board.serials[usartOn].TXDma].enabled  = 1;
+		board.dmasSerial[board.serials[usartOn].RXDma].enabled  = 1;
 		board.dmasSerial[board.serials[usartOff].TXDma].enabled = 0;
 		board.dmasSerial[board.serials[usartOff].RXDma].enabled = 0;
 	}

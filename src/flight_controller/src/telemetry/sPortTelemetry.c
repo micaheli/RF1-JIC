@@ -29,9 +29,8 @@ static uint8_t SmartPortGetByte(uint8_t inByte, uint16_t *crcp) {
     return (outByte);
 }
 
-void SmartPortSendPackage(uint32_t id, int32_t val) {
+void SmartPortSendPackage(uint32_t id, int32_t val, uint8_t sPortPacket[]) {
 
-	uint8_t sPortPacket[8];
 	uint16_t crc = 0;
 
 	//Frame Header

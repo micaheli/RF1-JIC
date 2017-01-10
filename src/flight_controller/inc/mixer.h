@@ -41,6 +41,6 @@ extern actuator_mixer motorMixer[];
 
 void InitMixer(void);
 float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], volatile float motorOutput[]);
-float InlineApplyMotorMixer2(pid_output pids[], float curvedRcCommandF[], volatile float motorOutput[]);
+float InlineApplyMotorMixer2(pid_output pids[], float throttleIn, volatile float motorOutput[]);
 void InlineApplyMixer(pid_output pids[], float curvedRcCommandF[]);
 float ApplyAttenuationCurve (float input, float curve[], int curveSize);

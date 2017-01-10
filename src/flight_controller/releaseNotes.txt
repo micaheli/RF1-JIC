@@ -257,3 +257,13 @@ Version 0.137.040:
 
 Version 0.138.040:
 	Change mixer slightly. Less floaty?
+
+Version 0.139.040:
+	Fix mixer change.
+	More robust calibration method.
+	Updated flight mode switch support. Now configurable, but not yet active.
+
+Version 0.140.040:
+	IP. Enable S.port telemtry.
+	IP. Enable Spektrum Telemtry.
+	IP. Begining adding MSP Telemtry.
