@@ -138,7 +138,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 	    {
 
 			// calculate Kp
-			flightPids[axis].kp = InlineConstrainf((pidError * pidsUsed[axis].kp), -MAX_KP, -MAX_KP);
+			flightPids[axis].kp = InlineConstrainf((pidError * pidsUsed[axis].kp), -MAX_KP, MAX_KP);
 
 			//if (axis == YAW)
 			//	flightPids[YAW].kp = LpfUpdate(flightPids[YAW].kp, &yawKpLpf);
