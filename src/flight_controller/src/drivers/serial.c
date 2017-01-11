@@ -451,3 +451,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 
 }
+
+void SerialTxCallback(void)
+{
+	//HAL_DMA_IRQHandler(&uartHandles[board.serials[2].usartHandle].hdmatx);
+}

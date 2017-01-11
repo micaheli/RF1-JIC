@@ -9,3 +9,6 @@ extern void InitTelemtry(void);
 
 extern void TelemtryRxCallback(uint8_t serialBuffer[], uint32_t outputLength);
 extern void TelemtryTxCallback(uint8_t serialBuffer[], uint32_t outputLength);
+
+extern void SportSoftSerialExtiCallback(void);
+extern void SportSoftSerialDmaCallback(void);

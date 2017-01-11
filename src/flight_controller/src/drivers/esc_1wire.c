@@ -3,6 +3,7 @@
 
 esc_one_wire_status escOneWireStatus[16];
 esc_hex_location escHexByPosition[50];
+uint32_t oneWireActive = 0;
 
 // EEPROM layout - BLHeli rev 20, bumped in 14.0
 const BLHeli_EEprom_t BLHeli20_EEprom = {
@@ -298,6 +299,7 @@ uint32_t OneWireInit(void)
 	while (tries < 5)
 	{
 
+		FeedTheDog();
 		allWork = 1;
 		tries++;
 
@@ -371,7 +373,7 @@ static uint32_t ConnectToBlheliBootloader(motor_type actuator, uint32_t timeout)
 	//connect to ESC and get bootloader info
 
 	memcpy(oneWireOutBuffer, bootInit, sizeof(bootInit));
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, sizeof(bootInit), oneWireInBuffer, actuator, timeout, 19200, 10, 0);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, sizeof(bootInit), oneWireInBuffer, actuator, timeout);
 
 	escOneWireStatus[actuator.actuatorArrayNum].escBootloaderMode = 0;
 
@@ -419,7 +421,7 @@ static uint32_t SendCmdSetAddress(motor_type actuator, uint16_t address) {
 
 	AppendBlHeliCrc(oneWireOutBuffer, 4);
 
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 6, oneWireInBuffer, actuator, 10, 19200, 10, 0); //150ms timeout is way more than we need
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 6, oneWireInBuffer, actuator, 10); //150ms timeout is way more than we need
 
 	if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
 		return (1);
@@ -435,14 +437,14 @@ static uint32_t SendCmdSetBuffer(motor_type actuator, uint8_t outBuffer[], uint1
 	AppendBlHeliCrc(cmdBuffer, 4);
 
 	//send the command to write to buffer
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 6, oneWireInBuffer, actuator, 10, 19200, 10, 0);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 6, oneWireInBuffer, actuator, 10);
 
 	if ( oneWireInBufferIdx == 0 ) {
 
 		AppendBlHeliCrc(outBuffer, length);
 
 		//send the data
-		oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, (length + 2), oneWireInBuffer, actuator, timeout, 19200, 10, 0); //150ms timeout is way more than we need
+		oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, (length + 2), oneWireInBuffer, actuator, timeout); //150ms timeout is way more than we need
 
 		if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
 			return (1);
@@ -497,6 +499,7 @@ uint32_t OneWireSaveConfig(motor_type actuator) {
 
 	while(retry > 0) {
 
+		FeedTheDog();
 		DelayMs(25);
 
 		//read flash to inBuffer
@@ -757,7 +760,7 @@ static uint32_t DisconnectBLHeli(motor_type actuator, uint32_t timeout)
 
 	AppendBlHeliCrc(oneWireOutBuffer, 2);
 
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout, 19200, 10, 0);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout);
 
 	return (oneWireInBufferIdx);
 }
@@ -776,7 +779,7 @@ static uint32_t ReadFlashSiLabsBLHeli(motor_type actuator, uint8_t inBuffer[], u
 	AppendBlHeliCrc(outBuffer, 2);
 
 	//bzero(inBuffer, length);
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, 4, inBuffer, actuator, timeout, 19200, 10, 0);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(outBuffer, 4, inBuffer, actuator, timeout);
 
 	inBuffer[123]=77;
 	inBuffer[124]=77;
@@ -797,7 +800,7 @@ static uint32_t PageEraseSiLabsBLHeli(motor_type actuator, uint16_t address, uin
 	AppendBlHeliCrc(oneWireOutBuffer, 2);
 
 	//Send command and get result
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout, 19200, 10, 0);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(oneWireOutBuffer, 4, oneWireInBuffer, actuator, timeout);
 
 	//check result
 	if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
@@ -836,7 +839,7 @@ static uint32_t WriteFlashSiLabsBLHeli(motor_type actuator, uint8_t outBuffer[],
 	AppendBlHeliCrc(cmdBuffer, 2);
 
 	//Send the actual write command
-	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 4, oneWireInBuffer, actuator, 30, 19200, 10, 0);
+	oneWireInBufferIdx = SoftSerialSendReceiveBlocking(cmdBuffer, 4, oneWireInBuffer, actuator, 30);
 
 	if ( (oneWireInBufferIdx > 0) && (oneWireInBuffer[0] == RET_SUCCESS) ) {
 		return (1);
@@ -1016,6 +1019,7 @@ const char* OneWireParameterValueToName(const oneWireParameterValue_t *valuesLis
 {
     while (valuesList->name)
     {
+    	FeedTheDog();
         if (value == valuesList->value)
         {
             return (valuesList->name);
@@ -1029,6 +1033,7 @@ int16_t OneWireParameterNameToValue(const oneWireParameterValue_t *valuesList, c
 {
     while (valuesList->name)
     {
+    	FeedTheDog();
         if (strncasecmp(valuesList->name, name, strlen(valuesList->name)) == 0)
         {
             return valuesList->value;

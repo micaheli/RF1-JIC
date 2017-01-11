@@ -262,6 +262,7 @@ void SpektrumBind (uint32_t bindNumber)
 		DelayMs(2);
 
 	}
+
 }
 
 inline uint32_t ChannelMap(uint32_t inChannel)
@@ -294,10 +295,12 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SPEKTRUM_FRAME_SIZE);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   	   	   	   	   	   	   	   	   	   	   	   	   	   	// We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
 
-	for (x = 2; x < 16; x += 2) {
+	for (x = 2; x < 16; x += 2)
+	{
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
 		spektrumChannel = (value & 0x7800) >> 11;
-		if (spektrumChannel < MAXCHANNELS) {
+		if (spektrumChannel < MAXCHANNELS)
+		{
 			rxData[ChannelMap(spektrumChannel)] = value & 0x7FF;
 			rx_timeout = 0;
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -307,16 +310,23 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	spekPhase = copiedBufferData[2] & 0x80;
 
 	//Check for vtx data
-	if (copiedBufferData[12] == 0xE0) { 
+	if (copiedBufferData[12] == 0xE0)
+	{
 		vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
 		vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
 	}
       
 	      //Check channel slot 7 for vtx power, pit, and region data
-	if (copiedBufferData[14] == 0xE0) { 
+	if (copiedBufferData[14] == 0xE0)
+	{
 		vtxData.vtxPower  = copiedBufferData[15] & 0x03;
 		vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
 		vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
+	}
+
+	if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
+	{
+		sendSpektrumTelem();
 	}
 
 	packetTime = 11;

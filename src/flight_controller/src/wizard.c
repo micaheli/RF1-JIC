@@ -568,24 +568,46 @@ void OneWire(char *inString) {
 	int16_t value, bytesWritten = 0;
 	uint32_t idx;
 	uint32_t x;
+	uint32_t y;
 	char *modString = NULL;
 	char *args = NULL;
 	uint32_t motorNumber;
+	uint32_t maxMotors;
 	uint32_t modStringLength;
 	uint32_t outputNumber;
+	uint32_t somethingHappened = 0;
+	uint32_t verbose = 1;
+	uint32_t settings = 0;
 
-	if (!strcmp("start", inString) || !strcmp("read", inString))
+
+	if (!strcmp("start", inString) || !strcmp("read", inString) || !strcmp("check", inString) || !strcmp("settings", inString) || !strcmp("auto", inString))
 	{
 
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Reading ESCs...");
-		RfCustomReply(rf_custom_out_buffer);
-		DelayMs(5);
-		if (OneWireInit() == 0)
+		if (!strcmp("check", inString))
 		{
+			verbose = 0;
+		}
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "No ESCs detected. Is your battery connected?");
+		if (!strcmp("settings", inString))
+		{
+			settings = 0;
+		}
+
+		oneWireActive = 1;
+		if (verbose)
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Reading ESCs...\n");
 			RfCustomReply(rf_custom_out_buffer);
 			DelayMs(5);
+		}
+		if (OneWireInit() == 0)
+		{
+			if (verbose)
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "No ESCs detected. Is your battery connected?\n");
+				RfCustomReply(rf_custom_out_buffer);
+				DelayMs(5);
+			}
 
 		}
 		else
@@ -597,35 +619,92 @@ void OneWire(char *inString) {
 				{
 					if (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled)
 					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu: %u.%u, %s, %s, %s", x, (uint8_t)( (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version >> 8) & 0xFF), (uint8_t)(escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version & 0xFF), escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].nameStr, escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].fwStr, escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].versionStr);
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(1);
-						if (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation.version > escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version) {
-							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu: Upgrade to version %u.%u is available", x, (uint8_t)( (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation.version >> 8) & 0xFF), (uint8_t)( escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation.version & 0xFF) );
+						if (verbose)
+						{
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu: %u.%u, %s, %s, %s\n", x, (uint8_t)( (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version >> 8) & 0xFF), (uint8_t)(escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version & 0xFF), escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].nameStr, escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].fwStr, escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].versionStr);
 							RfCustomReply(rf_custom_out_buffer);
-							DelayMs(5);
+							DelayMs(1);
+						}
+						if (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation.version > escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version) {
+							if (verbose)
+							{
+								snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu: Upgrade to version %u.%u is available\n", x, (uint8_t)( (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation.version >> 8) & 0xFF), (uint8_t)( escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation.version & 0xFF) );
+								RfCustomReply(rf_custom_out_buffer);
+								DelayMs(5);
+							}
+							else
+							{
+								snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "upgrade available\n", x, (uint8_t)( (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation.version >> 8) & 0xFF), (uint8_t)( escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation.version & 0xFF) );
+								RfCustomReply(rf_custom_out_buffer);
+								return;
+							}
 						}
 					}
 					else
 					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Unreadable", x);
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(5);
+						if (verbose)
+						{
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Unreadable\n", x);
+							RfCustomReply(rf_custom_out_buffer);
+							DelayMs(5);
+						}
 					}
 				}
 				else
 				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Disabled", x);
-					RfCustomReply(rf_custom_out_buffer);
-					DelayMs(5);
+					if (verbose)
+					{
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Disabled\n", x);
+						RfCustomReply(rf_custom_out_buffer);
+						DelayMs(5);
+					}
 				}
 
+			}
+
+			if (!verbose)
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "no upgrade available\n", x);
+				RfCustomReply(rf_custom_out_buffer);
+				DelayMs(5);
+				return;
+			}
+			if (!strcmp("settings", inString) || !strcmp("auto", inString))
+			{
+				for (x = 0; x < MAX_MOTOR_NUMBER; x++)
+				{
+					outputNumber = mainConfig.mixerConfig.motorOutput[x];
+					if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+					{
+						//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Saving Motor %lu Config.\n", x);
+						//RfCustomReply(rf_custom_out_buffer);
+
+						if (OneWireSaveConfig(board.motors[outputNumber]))
+						{
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu Config Read.\n", x);
+							RfCustomReply(rf_custom_out_buffer);
+						}
+						else
+						{
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Error Motor %lu Config.\n", x);
+							RfCustomReply(rf_custom_out_buffer);
+						}
+
+					}
+
+				}
+			}
+			if (!strcmp("auto", inString))
+			{
+				inString = "ma=upgrade";
+				OneWire(inString);
 			}
 
 			snprintf(rf_custom_out_buffer+bytesWritten, RF_BUFFER_SIZE-bytesWritten, "1wiredumpstart\n");
 			RfCustomReply(rf_custom_out_buffer);
 			DelayMs(5);
 			bytesWritten = 0;
+
 
 			for (x = 0; x < MAX_MOTOR_NUMBER; x++)
 			{
@@ -776,6 +855,7 @@ void OneWire(char *inString) {
 	}
 	else if (!strcmp("stop", inString))
 	{
+		oneWireActive = 0;
 		OneWireDeinit();
 		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "1Wire Session Ended.");
 		RfCustomReply(rf_custom_out_buffer);
@@ -783,20 +863,32 @@ void OneWire(char *inString) {
 	else
 	{
 		if ( (inString[0] == 'm') && (inString[2] == '=') ) {
-			motorNumber=atoi(&inString[1]);
-			outputNumber = mainConfig.mixerConfig.motorOutput[motorNumber];
+
+			if (inString[1] == 'a' )
+			{
+				y=0;
+				maxMotors=4;
+			}
+			else
+			{
+				y=atoi(&inString[1]);
+				maxMotors=y+1;
+			}
+
 			modString = inString+3;
 
 			StripSpaces(modString);
 
 			modStringLength = strlen(modString);
 
-			for (x = 0; x < modStringLength; x++) {
+			for (x = 0; x < modStringLength; x++)
+			{
 				if (modString[x] == '=')
 					break;
 			}
 
-			if (modStringLength > x) {
+			if (modStringLength > x)
+			{
 				args = modString + x + 1;
 			}
 
@@ -808,88 +900,106 @@ void OneWire(char *inString) {
 			for (x = 0; x < strlen(args); x++)
 				args[x] = tolower((unsigned char)args[x]);
 
-
-			if (!strcmp("upgrade", modString) || !strcmp("forceupgrade", modString))
+			if ( (maxMotors > 1) && !strcmp("forceupgrade", modString) )
 			{
-				if (!strcmp("forceupgrade", modString))
-				{
-					if (atoi(args) < 50)
-					{
-						memcpy(&escHexLocation, &escHexByPosition[atoi(args)], sizeof(esc_hex_location));
-					}
-					else
-					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu upgrade will not progress. ESC Hex not found.\n", motorNumber);
-						RfCustomReply(rf_custom_out_buffer);
-						return;
-					}
-				}
-				else
-				{
-					memcpy(&escHexLocation, &escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation, sizeof(esc_hex_location));
-				}
-
-				if ( (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled) )
-				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Upgrading %lu...\n", motorNumber);
-					RfCustomReply(rf_custom_out_buffer);
-					DelayMs(5);
-					if ( BuiltInUpgradeSiLabsBLHeli(board.motors[outputNumber], escHexLocation) )
-					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu upgrade complete\n", motorNumber);
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(5);
-					}
-					else
-					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu upgrade failed\n", motorNumber);
-						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(5);
-					}
-				}
-				else
-				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "No upgrade available for ESC %lu\n", motorNumber);
-					RfCustomReply(rf_custom_out_buffer);
-					DelayMs(5);
-				}
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Automatic Force Upgrading Not Allowed\n", motorNumber);
+				RfCustomReply(rf_custom_out_buffer);
+				return;
 			}
-			else
+			for (motorNumber=y;motorNumber<maxMotors;motorNumber++)
 			{
-				if ( (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled) )
+				outputNumber = mainConfig.mixerConfig.motorOutput[motorNumber];
+
+
+				if (!strcmp("upgrade", modString) || !strcmp("forceupgrade", modString))
 				{
-					for (idx = 0; oneWireParameters[idx] != NULL; idx++)
+					if (!strcmp("forceupgrade", modString))
 					{
-						parameter = oneWireParameters[idx];
-						if (!strcmp(parameter->name, modString)) //found the proper parameter, now let's get the proper value based on the string args
+						if (atoi(args) < 50)
 						{
-							if (parameter->parameterNamed) //is the value a string?
+							memcpy(&escHexLocation, &escHexByPosition[atoi(args)], sizeof(esc_hex_location));
+						}
+						else
+						{
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu upgrade will not progress. ESC Hex not found.\n", motorNumber);
+							RfCustomReply(rf_custom_out_buffer);
+							somethingHappened=1;
+							continue;
+						}
+					}
+					else
+					{
+						memcpy(&escHexLocation, &escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation, sizeof(esc_hex_location));
+					}
+
+					if ( (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled) )
+					{
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Upgrading %lu...\n", motorNumber);
+						RfCustomReply(rf_custom_out_buffer);
+						somethingHappened=1;
+						DelayMs(5);
+						if ( BuiltInUpgradeSiLabsBLHeli(board.motors[outputNumber], escHexLocation) )
+						{
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu upgrade complete.\n", motorNumber);
+							RfCustomReply(rf_custom_out_buffer);
+							DelayMs(5);
+						}
+						else
+						{
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu not upgraded.\n", motorNumber);
+							RfCustomReply(rf_custom_out_buffer);
+							DelayMs(5);
+						}
+					}
+					else
+					{
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "No upgrade available for ESC %lu\n", motorNumber);
+						RfCustomReply(rf_custom_out_buffer);
+						somethingHappened=1;
+						DelayMs(5);
+					}
+				}
+				else
+				{
+					if ( (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled) )
+					{
+						for (idx = 0; oneWireParameters[idx] != NULL; idx++)
+						{
+							parameter = oneWireParameters[idx];
+							if (!strcmp(parameter->name, modString)) //found the proper parameter, now let's get the proper value based on the string args
 							{
-								value = OneWireParameterNameToValue(parameter->parameterNamed, args);
-							}
-							else //then it's an int.
-							{
-								value = OneWireParameterNumberToValue(parameter->parameterNumerical, (int16_t)atoi(args));
-							}
-							if (value < 0)
-							{
-								snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ERROR=Unknown parameter value\n");
-								RfCustomReply(rf_custom_out_buffer);
-								return;
-							}
-							else
-							{
-								if ( Esc1WireSetParameter(board.motors[outputNumber], parameter, escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].config, value) )
+								if (parameter->parameterNamed) //is the value a string?
 								{
-									snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu Value Set! Please Save Changes!\n", motorNumber);
+									value = OneWireParameterNameToValue(parameter->parameterNamed, args);
+								}
+								else //then it's an int.
+								{
+									value = OneWireParameterNumberToValue(parameter->parameterNumerical, (int16_t)atoi(args));
+								}
+								if (value < 0)
+								{
+									snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ERROR=Unknown parameter value\n");
 									RfCustomReply(rf_custom_out_buffer);
+									somethingHappened=1;
 									return;
 								}
 								else
 								{
-									snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ERROR=Unknown ESC Layout\n");
-									RfCustomReply(rf_custom_out_buffer);
-									return;
+									if ( Esc1WireSetParameter(board.motors[outputNumber], parameter, escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].config, value) )
+									{
+										snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu Value Set! Please Save Changes!\n", motorNumber);
+										RfCustomReply(rf_custom_out_buffer);
+										somethingHappened=1;
+										continue;
+									}
+									else
+									{
+										snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ERROR=Unknown ESC Layout\n");
+										RfCustomReply(rf_custom_out_buffer);
+										somethingHappened=1;
+										continue;
+									}
+
 								}
 
 							}
@@ -902,6 +1012,11 @@ void OneWire(char *inString) {
 
 			}
 
+		}
+		if (!somethingHappened)
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ERROR=Unknown Command\n");
+			RfCustomReply(rf_custom_out_buffer);
 		}
 
 	}

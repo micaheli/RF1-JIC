@@ -81,5 +81,7 @@
 #define SPORT_FRAME_HEADER		0x10
 #define BYTESTUFF				0x7d
 
+extern uint32_t sendSmartPortAt;
 
-extern void SmartPortSendPackage(uint32_t id, int32_t val, uint8_t sPortPacket[]);
+extern void SendSmartPort(void);
+

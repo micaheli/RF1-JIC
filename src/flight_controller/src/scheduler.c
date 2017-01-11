@@ -75,7 +75,10 @@ void scheduler(int32_t count)
 
  void TaskProcessSoftSerial(void) {
 
-	 SoftSerialCheckLineIdle();
+	 if (oneWireActive)
+		 FeedTheDog();
+
+	 //SoftSerialCheckLineIdle();
 
 /*
 	//TODO: Move to softSerial.c or serial.c
@@ -210,6 +213,7 @@ void scheduler(int32_t count)
 
 void TaskTelemtry(void) {
 
+	ProcessTelemtry();
 /*
 	//TODO: Move all this to telemetry.c
 

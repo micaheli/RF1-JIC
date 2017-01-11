@@ -594,13 +594,11 @@ uint32_t DoesDmaConflictWithActiveDmas(motor_type actuator) {
 }
 
 //TODO: Always DISABLE whatever is attached to a DMA before reusing the DMA for something else. We may need a way to track what's using a DMA.
-void DeInitAllowedSoftOutputs(void) {
+void DeInitAllowedSoftOutputs(void)
+{
 
 	uint32_t actuatorNumOutput;
 	uint32_t outputNumber;
-
-	softSerialEnabled = 0; //todo: make this better, this is pretty ghetto.
-	telemEnabled      = 0;
 
 	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++)
 	{
@@ -710,13 +708,6 @@ void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator)
 	if (usedFor == DMA_OUTPUT_WS2812_LEDS)
 	{
 
-		//memcpy(&colorTable[0], &red, 3);
-		//memcpy(&colorTable[1], &yellow, 3);
-		//memcpy(&colorTable[2], &green, 3);
-		//memcpy(&colorTable[3], &cyan, 3);
-		//memcpy(&colorTable[4], &blue, 3);
-		//memcpy(&colorTable[5], &purple, 3);
-		//memcpy(&colorTable[6], &white, 3);
 		timerHz     = 24000000;
 		pwmHz       = 800000;
 		//onePulse  = 17;
@@ -725,20 +716,6 @@ void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator)
 		alonePulse  = 17;
 		endPulse    = 17;
 		loPulse     = 8;
-	}
-	else if (usedFor == ENUM_ACTUATOR_TYPE_WS2812)
-	{
-
-		timerHz     = 24000000;
-		pwmHz       = 800000;
-
-		normalPulse = 17;
-		alonePulse  = 17;
-		endPulse    = 17;
-		loPulse     = 8;
-
-		inverted  = 1;
-
 	}
 	else if (usedFor == DMA_OUTPUT_ESC_1WIRE)
 	{
@@ -754,7 +731,7 @@ void InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator)
 		inverted    = 0;
 
 	}
-	else if (usedFor == ENUM_ACTUATOR_TYPE_SPORT)
+	else if (usedFor == DMA_OUTPUT_SPORT)
 	{
 
 		timerHz     = 48000000; //48 MHz frequency is okay for 57600 Baud, but actually runs at 57623, full pulse is 833

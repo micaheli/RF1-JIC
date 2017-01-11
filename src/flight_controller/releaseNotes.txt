@@ -264,6 +264,17 @@ Version 0.139.040:
 	Updated flight mode switch support. Now configurable, but not yet active.
 
 Version 0.140.040:
-	IP. Enable S.port telemtry.
-	IP. Enable Spektrum Telemtry.
+	Enable S.port telemtry.
+	Fix Spektrum Telemtry RX binding.
+
+Version 0.141.041:
+	Change filter defaults.
+	Adjusted filter range.
+	Added 1wire auto command
+	Added 1wire settings command
+	Added 1wire check command
+
+Version 0.142.041:
+	fix issue in pidc.
 	IP. Begining adding MSP Telemtry.
+	

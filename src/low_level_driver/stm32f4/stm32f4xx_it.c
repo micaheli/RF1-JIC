@@ -162,8 +162,8 @@ void DMA1_Stream2_IRQHandler(void) {
 }
 
 void DMA1_Stream3_IRQHandler(void) {
-	HAL_NVIC_ClearPendingIRQ(DMA1_Stream3_IRQn);
-	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_3]);
+//	HAL_NVIC_ClearPendingIRQ(DMA1_Stream3_IRQn);
+//	HAL_DMA_IRQHandler(&dmaHandles[ENUM_DMA1_STREAM_3]);
 	if (callbackFunctionArray[FP_DMA1_S3])
 		callbackFunctionArray[FP_DMA1_S3]();
 }

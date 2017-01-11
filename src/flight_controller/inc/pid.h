@@ -3,7 +3,9 @@
 #define AXIS_NUMBER 3
 #define VECTOR_NUMBER 3
 #define KD_RING_BUFFER_SIZE 256
-#define MAX_KD 0.3231f
+#define MAX_KP 0.58f
+#define MAX_KI 0.12f
+#define MAX_KD 0.30f
 
 enum { KP = 0, KD, KI, PID_VARIABLE_COUNT }; // why is there a blank enum here kalyn?
 

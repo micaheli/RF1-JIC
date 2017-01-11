@@ -51,7 +51,6 @@ int main(void)
     InitUsb();
 
     InitFlight();
-    DelayMs(20);
 
     InitWatchdog(WATCHDOG_TIMEOUT_32S);
 

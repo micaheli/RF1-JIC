@@ -208,7 +208,15 @@ void sendSpektrumBind()
 
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 {
-	HAL_UART_Transmit_DMA(&uartHandle[0], (uint8_t *)baseAddress, packetSize);
+	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
+	{
+		if ( (board.serials[serialNumber].enabled) && (board.serials[serialNumber].Protocol == USING_SPEKTRUM_TWO_WAY) )
+		{
+			//callbackFunctionArray[FP_DMA1_S3] = SerialTxCallback;
+			//HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)baseAddress, packetSize);
+			//HAL_UART_Transmit(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)baseAddress, packetSize, 10);
+		}
+	}
 }
 
 uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly)

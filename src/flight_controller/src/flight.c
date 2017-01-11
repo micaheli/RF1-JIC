@@ -349,7 +349,8 @@ inline void InlineInitGyroFilters(void)
 	for (axis = 2; axis >= 0; --axis) {
 
 		if (mainConfig.gyroConfig.filterTypeGyro == 0) {
-			pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
+			//pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
+			pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, 88.0f, 0.0f, filteredGyroData[axis]);
 		} else {
 			InitBiquad(mainConfig.filterConfig[axis].gyro.r, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.92f);
 		}
