@@ -96,7 +96,7 @@ void InitFlight(void) {
 
 	InitTelemtry();
 	InitWs2812();
-	InitTransponderTimer();
+	//InitTransponderTimer();
 	DelayMs(20);
 
 }
