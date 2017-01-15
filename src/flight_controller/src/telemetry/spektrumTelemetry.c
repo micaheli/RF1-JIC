@@ -210,7 +210,7 @@ void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 {
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
 	{
-		if ( (board.serials[serialNumber].enabled) && (board.serials[serialNumber].Protocol == USING_SPEKTRUM_TWO_WAY) )
+		if ( (board.serials[serialNumber].enabled) && (mainConfig.telemConfig.telemSpek) )
 		{
 			//callbackFunctionArray[FP_DMA1_S3] = SerialTxCallback;
 			//HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)baseAddress, packetSize);

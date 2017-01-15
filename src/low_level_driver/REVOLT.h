@@ -74,6 +74,11 @@
 //buzzer setup
 #define BUZZER_GPIO_Port        _PORTB
 #define BUZZER_GPIO_Pin         GPIO_PIN_4
+#define BUZZER_TIM				ENUMTIM3
+#define BUZZER_ALTERNATE		GPIO_AF2_TIM3
+#define BUZZER_TIM_CH			TIM_CHANNEL_1
+#define BUZZER_TIM_CCR			TIM3CCR1
+#define BUZZER_POLARITY			TIM_OCPOLARITY_LOW
 
 //ws2812
 //PB6

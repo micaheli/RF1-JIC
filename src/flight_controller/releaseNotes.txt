@@ -277,4 +277,72 @@ Version 0.141.041:
 Version 0.142.041:
 	fix issue in pidc.
 	IP. Begining adding MSP Telemtry.
-	
+
+Version 0.142.041:
+	change defaults
+	change actuator curve.
+
+Version 0.143.041:
+	change internal filter settings
+	change actuator curve.
+
+Version 0.144.041:
+	change actuator curve.
+	Added MS1.25 and MS2.5 protocols (1.25 to 5 us) (2.5us to 10us)... MS is (5us to 20us)
+		set esc_protocol=7 for MS2.5 and set esc_protocol=8 for MS1.25
+	Made changes to how rap opperates.
+
+Version 0.145.042
+	Fixed LED code.
+	Added partial IBus support. (Not yet active)
+	Added partial PPM support. (Not yet active)
+	Added partial DSM2 support. (Not yet active)
+
+Version 0.146.043:
+	PPM support active and tested.
+	Ibus support active and tested.
+	Changed RX command setup:
+		Avalable commands:
+			spek_t1, spek_t3, spek_t4, spek_r1, spek_r3, spek_r4
+			sbus_t1, sbus_t3, sbus_t4, sbus_r1, sbus_r3, sbus_r4
+			sumd_t1, sumd_t3, sumd_t4, sumd_r1, sumd_r3, sumd_r4
+			ibus_t1, ibus_t3, ibus_t4, ibus_r1, ibus_r3, ibus_r4
+			ppm_t1, ppm_t3, ppm_t4, ppm_r1, ppm_r3, ppm_r4
+		"protocol" underscore "tx or rx pin" "usart number"
+	Telemtry option command:
+		set telem_sport=1
+		set telem_spek=1
+		set telem_msp=1
+		set telem_mavlink=1
+			"1 to enable and 0 to disaable right now. This will change in the future and will be used to select where the telemtry outputs"
+			"only sport is enabled at the moment"
+
+Version 0.147.044:
+	Enable Mode Support
+		Activated Horizon Mode
+		Activated Attitude Mode
+	Added "set slp": Kp for outter loop of self leveling modes.
+	Added "set sli": Ki for outter loop of self leveling modes.
+	Added "set sla": Max angle in degrees allowed for self leveling modes.
+	Change filtering.
+
+
+Features in current development:
+	DSM2
+	Spektrum Telemtry
+	MSP compatibility
+	MAVlink compatibility
+	Activate Angle mode
+	Activate Horizon mode.
+	Vbat input
+	Current input
+	wizards
+	finish flight mode support
+
+Features for future development:
+	transponder output
+	single motor throttle test.
+	3D mixer
+	Sonar input
+	GPS input
+	Unobtanium detector

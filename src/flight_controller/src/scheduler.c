@@ -322,6 +322,7 @@ inline void TaskHandlePcComm(void)
 
 inline void TaskLed(void)
 {
+	static uint32_t ms100Counter = 0;
 	static uint32_t lastUpdate = 0;
 	static uint32_t lastColors = 0xFFFFFFFF;
 	uint32_t currentColors;
@@ -334,11 +335,13 @@ inline void TaskLed(void)
 	//Update WS2812 LEDs
 	if ( ( InlineMillis() - lastUpdate ) > 100 )
 	{
+		ms100Counter++;
 		lastUpdate = InlineMillis();
 
 		currentColors = (((uint8_t)mainConfig.ledConfig.ledGreen<<16) | ((uint8_t)mainConfig.ledConfig.ledRed<<8) | ((uint8_t)mainConfig.ledConfig.ledBlue<<0));
-		if (ws2812LedRecord.enabled && (currentColors != lastColors))
+		if (ws2812LedRecord.enabled && ( (currentColors != lastColors) || (ms100Counter == 10) ))
 		{
+			ms100Counter = 0;
 			lastColors = currentColors;
 			y = 0;
 

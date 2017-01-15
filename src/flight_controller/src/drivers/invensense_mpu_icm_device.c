@@ -175,6 +175,9 @@ int AccGyroDeviceDetect(void)
             case MPU9250_WHO_AM_I:
             case ICM20689_WHO_AM_I:
             case ICM20608G_WHO_AM_I:
+            	deviceWhoAmI = 0;
+				return 0;
+				break;
             case ICM20602_WHO_AM_I:
             	deviceWhoAmI = data;
                 return data;

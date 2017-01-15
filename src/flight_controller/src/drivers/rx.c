@@ -8,6 +8,7 @@ volatile uint32_t disarmCount = 0, latchFirstArm = 0;
 
 static uint32_t packetTime = 11;
 
+uint32_t PreArmFilterCheck = 0;
 uint32_t activeFailsafe = 0;
 
 uint32_t rxData[MAXCHANNELS];
@@ -16,6 +17,14 @@ uint32_t skipRxMap = 0;
 uint32_t progMode  = 0;
 uint32_t progTimer = 0;
 volatile uint32_t armCheckLatch = 0;
+uint32_t ppmPin = 99;
+
+#define PPM_SYNC_MINIMUM_US 4000
+#define PPM_BUFFER_SIZE 25
+#define PPM_CHANNELS 8
+uint32_t ppmBufferIdx = 0;
+uint32_t ppmBuffer[PPM_BUFFER_SIZE];
+uint32_t ppmData[PPM_CHANNELS];
 
 // 2048 resolution
 #define SPEKTRUM_FRAME_SIZE 16
@@ -23,7 +32,7 @@ uint32_t spektrumChannelShift = 3;
 uint32_t spektrumChannelMask  = 0x07;
 
 static rx_calibration_records rxCalibrationRecords[3];
-
+static void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx);
 
 static void checkRxPreArmCalibration(void);
 
@@ -175,6 +184,7 @@ inline void CheckFailsafe(void)
 		if ( (latchFirstArm == 0) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) )
 		{
 			latchFirstArm = 1;
+			PreArmFilterCheck = 1;
 			buzzerStatus.status = STATE_BUZZER_ARMING;
 			ResetGyroCalibration();
 		}
@@ -235,6 +245,7 @@ inline void CheckFailsafe(void)
 	}
 
 
+	CheckRxToModes();
 }
 
 void SpektrumBind (uint32_t bindNumber)
@@ -324,7 +335,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
 	}
 
-	if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
+	if (mainConfig.telemConfig.telemSpek)
 	{
 		sendSpektrumTelem();
 	}
@@ -445,16 +456,126 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 }
 
+void ProcessIbusPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
+{
+
+	uint32_t i;
+	uint16_t chkSum, rxSum;
+
+															// Make sure this is very first thing done in function, and its called first on interrupt
+	memcpy(copiedBufferData, serialRxBuffer, frameSize);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+															// We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
+	chkSum = 0xFFFF;
+	for (i = 0; i < 30; i++)
+		chkSum -= copiedBufferData[i];
+
+	rxSum = copiedBufferData[30] + (copiedBufferData[31] << 8);
+
+	 if (chkSum == rxSum)
+	 {
+		rxData[ChannelMap(0)] = (copiedBufferData[ 3] << 8) + copiedBufferData[ 2];
+		rxData[ChannelMap(1)] = (copiedBufferData[ 5] << 8) + copiedBufferData[ 4];
+		rxData[ChannelMap(2)] = (copiedBufferData[ 7] << 8) + copiedBufferData[ 6];
+		rxData[ChannelMap(3)] = (copiedBufferData[ 9] << 8) + copiedBufferData[ 8];
+		rxData[ChannelMap(4)] = (copiedBufferData[11] << 8) + copiedBufferData[10];
+		rxData[ChannelMap(5)] = (copiedBufferData[13] << 8) + copiedBufferData[12];
+		rxData[ChannelMap(6)] = (copiedBufferData[15] << 8) + copiedBufferData[14];
+		rxData[ChannelMap(7)] = (copiedBufferData[17] << 8) + copiedBufferData[16];
+		rxData[ChannelMap(8)] = (copiedBufferData[19] << 8) + copiedBufferData[18];
+		rxData[ChannelMap(9)] = (copiedBufferData[21] << 8) + copiedBufferData[20];
+
+		packetTime = 10;
+		rx_timeout = 0;
+
+		if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
+			buzzerStatus.status = STATE_BUZZER_OFF;
+
+		InlineCollectRcCommand();
+		RxUpdate();
+	}
+
+}
+
+void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx)
+{
+//	ppmBuffer[*ppmBufferIdx]
+
+	uint32_t x;
+	//make sure sync is correct:
+	//we have at least two times, make sure they are at least the PPM_SYNC_MINIMUM_US apart
+	if ( (*ppmBufferIdx > 17) && ( (ppmBuffer2[1] - ppmBuffer[0]) >  PPM_SYNC_MINIMUM_US ) )
+	{
+		//sync looks good, where 0 is the end of the last pulse and 1 is the beginning of the new pulse
+		//we have at least 8 channels which is 18 interrupts
+
+		ppmData[0] = (ppmBuffer[ 3] - ppmBuffer[ 2]);
+		ppmData[1] = (ppmBuffer[ 5] - ppmBuffer[ 4]);
+		ppmData[2] = (ppmBuffer[ 7] - ppmBuffer[ 6]);
+		ppmData[3] = (ppmBuffer[ 9] - ppmBuffer[ 8]);
+		ppmData[4] = (ppmBuffer[11] - ppmBuffer[10]);
+		ppmData[5] = (ppmBuffer[13] - ppmBuffer[12]);
+		ppmData[6] = (ppmBuffer[15] - ppmBuffer[14]);
+		ppmData[7] = (ppmBuffer[17] - ppmBuffer[16]);
+
+		for (x=0;x<8;x++)
+		{
+			if ( (ppmData[x] < 2200) && (ppmData[x] > 500) )
+			{
+				rxData[ChannelMap(x)] = ppmData[x];
+			}
+		}
+
+		packetTime = (ppmBuffer[17] - ppmBuffer[0]);
+		rx_timeout = 0;
+
+		if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
+			buzzerStatus.status = STATE_BUZZER_OFF;
+
+		InlineCollectRcCommand();
+		RxUpdate();
+
+		ppmBuffer[0] = ppmBuffer[*ppmBufferIdx-1];
+		*ppmBufferIdx = 1;
+	}
+	else if ( (*ppmBufferIdx > 1) && (ppmBuffer[1] - ppmBuffer[0]) <  PPM_SYNC_MINIMUM_US ) //we have at least two times and the first two aren't apart enough, so we reset the sync
+	{
+		//reset sync until we see a sync pulse
+		ppmBuffer[0] = ppmBuffer[*ppmBufferIdx-1];
+		*ppmBufferIdx = 1;
+	}
+
+}
+
 void InitRcData (void)
 {
 
 	bzero(trueRcCommandF, MAXCHANNELS);
 	bzero(curvedRcCommandF, MAXCHANNELS);
 	bzero(smoothedRcCommandF, MAXCHANNELS);
+	bzero(ppmBuffer, sizeof(ppmBuffer));
+	ppmBufferIdx = 0;
 
 	isRxDataNew = 0;
 
 }
+
+
+void PpmExtiCallback(void)
+{
+	// EXTI line interrupt detected
+	if(__HAL_GPIO_EXTI_GET_IT(ppmPin) != RESET)
+	{
+		//record time of IRQ in microseconds
+		ppmBuffer[ppmBufferIdx++] = Micros();
+		ProcessPpmPacket(ppmBuffer, &ppmBufferIdx);
+		if (ppmBufferIdx == PPM_BUFFER_SIZE)
+		{
+			ppmBufferIdx = 0;
+		}
+		__HAL_GPIO_EXTI_CLEAR_IT(ppmPin);
+	}
+}
+
 
 inline void InlineCollectRcCommand (void)
 {

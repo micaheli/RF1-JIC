@@ -168,7 +168,7 @@ void InitWs2812(void)
 					ws2812LedRecord.enabled = 1;
 					ws2812LedRecord.ws2812Actuator = board.motors[outputNumber];
 					SetActiveDmaToActuatorDma(ws2812LedRecord.ws2812Actuator);
-					InitDmaOutputForSoftSerial(ws2812LedRecord.ws2812Actuator.enabled, ws2812LedRecord.ws2812Actuator);
+					InitDmaOutputForSoftSerial(DMA_OUTPUT_WS2812_LEDS, ws2812LedRecord.ws2812Actuator);
 					uint8_t rgbArray[] = {0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF};
 					OutputSerialDmaByte(rgbArray, 12, ws2812LedRecord.ws2812Actuator, 0, 0, 1);
 				}

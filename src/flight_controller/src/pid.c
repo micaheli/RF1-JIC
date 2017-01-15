@@ -64,7 +64,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 
 	(void)(pidConfig);
 	(void)(actuatorRange);
-/*
+
 	//set point limiter.
 	if ( actuatorRange >= 0.90 )
 	{
@@ -103,7 +103,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 		usedFlightSetPoints[2] = flightSetPoints[2];
 
 	}
-*/
+
 	usedFlightSetPoints[0] = flightSetPoints[0];
 	usedFlightSetPoints[1] = flightSetPoints[1];
 	usedFlightSetPoints[2] = flightSetPoints[2];
@@ -138,7 +138,8 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 	    {
 
 			// calculate Kp
-			flightPids[axis].kp = InlineConstrainf((pidError * pidsUsed[axis].kp), -MAX_KP, MAX_KP);
+			//flightPids[axis].kp = InlineConstrainf((pidError * pidsUsed[axis].kp), -MAX_KP, MAX_KP);
+			flightPids[axis].kp = (pidError * pidsUsed[axis].kp);
 
 			//if (axis == YAW)
 			//	flightPids[YAW].kp = LpfUpdate(flightPids[YAW].kp, &yawKpLpf);

@@ -22,8 +22,9 @@ enum {
 
 extern string_modes_rec stringModes[];
 
-void InitModes(void);
-void EnableMode(uint32_t modeMask);
-void DisableMode(uint32_t modeMask);
-uint32_t ModeActive(uint32_t modeMask);
-void SetupModes(char *modeString);
+extern void InitModes(void);
+extern void EnableMode(uint32_t modeMask);
+extern void DisableMode(uint32_t modeMask);
+extern uint32_t ModeActive(uint32_t modeMask);
+extern void SetupModes(char *modeString);
+extern void CheckRxToModes(void);

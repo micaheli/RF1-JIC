@@ -900,7 +900,7 @@ void OneWire(char *inString) {
 			for (x = 0; x < strlen(args); x++)
 				args[x] = tolower((unsigned char)args[x]);
 
-			if ( (maxMotors > 1) && !strcmp("forceupgrade", modString) )
+			if ( (inString[1] == 'a' ) && !strcmp("forceupgrade", modString) )
 			{
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Automatic Force Upgrading Not Allowed\n", motorNumber);
 				RfCustomReply(rf_custom_out_buffer);

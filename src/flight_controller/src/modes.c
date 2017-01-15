@@ -41,17 +41,17 @@ inline uint32_t ModeActive(uint32_t modeMask)
 
 void CheckRxToModes(void)
 {
-	uint32_t mode = 0;
+	uint32_t mode = 1;
 	uint16_t x;
-	uint16_t channel;
+	volatile uint16_t channel;
 	float rcMin;
 	float rcMax;
 
 	for (x=0;x<FLIGHT_MODE_ARRAY_SIZE;x=x+3)
 	{
 		channel = (uint16_t)mainConfig.flightModeArray[x];
-		rcMin   = (float)mainConfig.flightModeArray[x+1];
-		rcMax   = (float)mainConfig.flightModeArray[x+2];
+		rcMin   = (float)mainConfig.flightModeArray[x+1] * 0.001;
+		rcMax   = (float)mainConfig.flightModeArray[x+2] * 0.001;
 		if ((channel > 3) && (channel < MAXCHANNELS)) //first four channels are not to be used for flight modes
 		{
 			if ( (trueRcCommandF[channel] > rcMin) && (trueRcCommandF[channel] < rcMax) )
@@ -63,7 +63,7 @@ void CheckRxToModes(void)
 				DisableMode(mode);
 			}
 		}
-		mode++;
+		mode *= 2;
 	}
 
 }

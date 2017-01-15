@@ -18,7 +18,7 @@ void ProcessTelemtry(void) {
 
 	//SoftSerialReceiveBlocking(uint8_t inBuffer[], motor_type actuator, uint32_t timeoutMs, uint32_t baudRate, uint32_t bitLength, uint32_t inverted);
 
-	if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
+	if (mainConfig.telemConfig.telemSport)
 	{
 		if ( (sendSmartPortAt) && (sendSmartPortAt > Micros()) )
 		{
@@ -38,10 +38,10 @@ void ProcessTelemtry(void) {
 void InitTelemtry(void)
 {
 
-	if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_SPORT)
+	if (mainConfig.telemConfig.telemSport)
 		InitSoftSport();
 
-	if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_TWO_WAY)
+	if (mainConfig.telemConfig.telemSpek)
 		InitSpektrumTelemetry();
 
 }

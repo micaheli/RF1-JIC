@@ -26,6 +26,8 @@ extern void VectorIrqInit(uint32_t address);
 extern void SystemReset(void);
 extern void SystemResetToDfuBootloader(void);
 
+extern uint32_t GetExtinFromPin(uint16_t GPIO_Pin);
+extern uint32_t GetExtiCallbackFromPin(uint16_t GPIO_Pin);
 extern void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on);
 extern void InitializeGpioInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 

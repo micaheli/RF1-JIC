@@ -74,12 +74,20 @@ enum {
 
 //used in config.c string table
 #define USING_MANUAL           0
-#define USING_SPEKTRUM_ONE_WAY 1
-#define USING_SPEKTRUM_TWO_WAY 2
-#define USING_SBUS             3
-#define USING_SBUS_SPORT       4
-#define USING_SUMD             5
-#define USING_SUMD_TWO_WAY     6
+#define USING_SPEKTRUM_R       1
+#define USING_SPEKTRUM_T       2
+#define USING_SBUS_R           3
+#define USING_SBUS_T           4
+#define USING_SUMD_R           5
+#define USING_SUMD_T           6
+#define USING_IBUS_R           7
+#define USING_IBUS_T           8
+#define USING_PPM_R            9
+#define USING_PPM_T            10
+#define USING_SPEKTRUM_DSM2_R  11
+#define USING_SPEKTRUM_DSM2_T  12
+
+extern uint32_t ppmPin;
 
 
 extern volatile uint32_t rx_timeout;
@@ -89,6 +97,7 @@ extern float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this
 extern uint32_t rxData[MAXCHANNELS];
 extern volatile unsigned char isRxDataNew;
 extern uint32_t skipRxMap;
+extern uint32_t PreArmFilterCheck;
 extern uint32_t activeFailsafe;
 
 extern void SpektrumBind (uint32_t bindNumber);
@@ -101,8 +110,11 @@ extern void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 extern void ProcessSpektrumPacket(uint32_t serialNumber);
 extern void ProcessSbusPacket(uint32_t serialNumber);
 extern void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize);
+extern void ProcessIbusPacket(uint8_t serialRxBuffer[], uint32_t frameSize);
 
 extern void RxUpdate(void);
 extern void CheckFailsafe(void);
 extern uint32_t SpektrumChannelMap(uint32_t inChannel);
 extern uint32_t ChannelMap(uint32_t inChannel);
+
+extern void PpmExtiCallback(void);

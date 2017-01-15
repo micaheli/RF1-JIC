@@ -3,9 +3,9 @@
 #define AXIS_NUMBER 3
 #define VECTOR_NUMBER 3
 #define KD_RING_BUFFER_SIZE 256
-#define MAX_KP 0.58f
-#define MAX_KI 0.12f
-#define MAX_KD 0.30f
+#define MAX_KP 0.75f
+#define MAX_KI 0.15f
+#define MAX_KD 0.35f
 
 enum { KP = 0, KD, KI, PID_VARIABLE_COUNT }; // why is there a blank enum here kalyn?
 
@@ -21,6 +21,10 @@ typedef struct {
     float kd;
     uint32_t wc;
     uint32_t ga;
+    float slp;
+    float sli;
+    float sla;
+    float sld;
 } pid_terms;
 
 extern float pidSetpoint[AXIS_NUMBER];    //3 axis for pidc. range is in DPS.

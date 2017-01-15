@@ -72,7 +72,8 @@ int main(void)
 void InitFlight(void) {
 
     //TODO: move the check into the init functions.
-    if (board.flash[0].enabled) {
+    if (board.flash[0].enabled)
+    {
     	InitFlashChip();
     	InitFlightLogger();
     }
@@ -88,12 +89,14 @@ void InitFlight(void) {
     InitModes();          //set flight modes mask to zero.
     InitBoardUsarts();    //most important thing is activated last, the ability to control the craft.
 
-	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl)) {
-		ErrorHandler(GYRO_INIT_FAILIURE);
+	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl))
+	{
+		//ErrorHandler(GYRO_INIT_FAILIURE);
 	}
 
 	InitTelemtry();
 	InitWs2812();
+	InitTransponderTimer();
 	DelayMs(20);
 
 }
