@@ -31,6 +31,7 @@ void UsartInit(uint32_t serialNumber) {
 
 	switch (board.serials[serialNumber].Protocol) {
 		case USING_SPEKTRUM_R:
+		case USING_DSM2_R:
 			board.serials[serialNumber].FrameSize  = 16;
 			board.serials[serialNumber].BaudRate   = 115200;
 			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
@@ -44,6 +45,7 @@ void UsartInit(uint32_t serialNumber) {
 			rxPort = ports[board.serials[serialNumber].RXPort];
 			break;
 		case USING_SPEKTRUM_T:
+		case USING_DSM2_T:
 			board.serials[serialNumber].FrameSize  = 16;
 			board.serials[serialNumber].BaudRate   = 115200;
 			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
@@ -342,16 +344,16 @@ void InitBoardUsarts (void)
 	}
 
 	//set RX usarts based on rx setup
-	if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_R)
+	if ((mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_R) || (mainConfig.rcControlsConfig.rxProtcol == USING_DSM2_R))
     {
     	board.serials[mainConfig.rcControlsConfig.rxUsart].enabled   = 1;
-    	board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol  = USING_SPEKTRUM_R;
+    	board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol  = mainConfig.rcControlsConfig.rxProtcol;
 		board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].RXDma].enabled  = 1;
     }
-    else if (mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_T)
+    else if ((mainConfig.rcControlsConfig.rxProtcol == USING_SPEKTRUM_T) || (mainConfig.rcControlsConfig.rxProtcol == USING_DSM2_T))
     {
 		board.serials[mainConfig.rcControlsConfig.rxUsart].enabled   = 1;
-		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol  = USING_SPEKTRUM_T;
+		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol  = mainConfig.rcControlsConfig.rxProtcol;
 		if (mainConfig.telemConfig.telemSpek)
 		{
 			board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].TXDma].enabled  = 1;
@@ -361,37 +363,37 @@ void InitBoardUsarts (void)
     else if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_R)
     {
 		board.serials[mainConfig.rcControlsConfig.rxUsart].enabled   = 1;
-		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol  = USING_SBUS_R;
+		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol  = mainConfig.rcControlsConfig.rxProtcol;
 		board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].RXDma].enabled  = 1;
 	}
     else if (mainConfig.rcControlsConfig.rxProtcol == USING_SBUS_T)
     {
 		board.serials[mainConfig.rcControlsConfig.rxUsart].enabled   = 1;
-		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol  = USING_SBUS_T;
+		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol  = mainConfig.rcControlsConfig.rxProtcol;
 		board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].RXDma].enabled  = 1;
 	}
 	else if (mainConfig.rcControlsConfig.rxProtcol == USING_SUMD_R)
 	{
 		board.serials[mainConfig.rcControlsConfig.rxUsart].enabled  = 1;
-		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = USING_SUMD_R;
+		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = mainConfig.rcControlsConfig.rxProtcol;
 		board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].RXDma].enabled  = 1;
 	}
 	else if (mainConfig.rcControlsConfig.rxProtcol == USING_SUMD_T)
 	{
 		board.serials[mainConfig.rcControlsConfig.rxUsart].enabled  = 1;
-		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = USING_SUMD_T;
+		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = mainConfig.rcControlsConfig.rxProtcol;
 		board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].RXDma].enabled  = 1;
 	}
 	else if (mainConfig.rcControlsConfig.rxProtcol == USING_IBUS_R)
 	{
 		board.serials[mainConfig.rcControlsConfig.rxUsart].enabled  = 1;
-		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = USING_IBUS_R;
+		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = mainConfig.rcControlsConfig.rxProtcol;
 		board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].RXDma].enabled  = 1;
 	}
 	else if (mainConfig.rcControlsConfig.rxProtcol == USING_IBUS_T)
 	{
 		board.serials[mainConfig.rcControlsConfig.rxUsart].enabled  = 1;
-		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = USING_IBUS_T;
+		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = mainConfig.rcControlsConfig.rxProtcol;
 		board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].RXDma].enabled  = 1;
 	}
 	else if (mainConfig.rcControlsConfig.rxProtcol == USING_PPM_R)
@@ -400,7 +402,7 @@ void InitBoardUsarts (void)
 
 		if ( (board.gyros[0].extiIRQn) != (GetExtinFromPin(ppmPin)) )
 		{
-			board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = USING_PPM_R;
+			board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = mainConfig.rcControlsConfig.rxProtcol;
 			callbackFunctionArray[GetExtiCallbackFromPin(ppmPin)] = PpmExtiCallback;
 			EXTI_Init(ports[board.serials[mainConfig.rcControlsConfig.rxUsart].RXPort], board.serials[mainConfig.rcControlsConfig.rxUsart].RXPin, GetExtinFromPin(ppmPin), 0, 5, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP);
 		}
@@ -415,7 +417,7 @@ void InitBoardUsarts (void)
 
 		if ( (board.gyros[0].extiIRQn) != (GetExtinFromPin(ppmPin)) )
 		{
-			board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = USING_PPM_T;
+			board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = mainConfig.rcControlsConfig.rxProtcol;
 			callbackFunctionArray[GetExtiCallbackFromPin(ppmPin)] = PpmExtiCallback;
 			EXTI_Init(ports[board.serials[mainConfig.rcControlsConfig.rxUsart].TXPort], board.serials[mainConfig.rcControlsConfig.rxUsart].TXPin, GetExtinFromPin(ppmPin), 0, 5, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP);
 		}
@@ -519,7 +521,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			if (dmaIndex[serialNumber] >= board.serials[serialNumber].FrameSize)
 			{
 				dmaIndex[serialNumber] = 0;
-				if ((board.serials[serialNumber].Protocol == USING_SPEKTRUM_T) || (board.serials[serialNumber].Protocol == USING_SPEKTRUM_R))
+				if ((board.serials[serialNumber].Protocol == USING_SPEKTRUM_T) || (board.serials[serialNumber].Protocol == USING_SPEKTRUM_R) || (board.serials[serialNumber].Protocol == USING_DSM2_T) || (board.serials[serialNumber].Protocol == USING_DSM2_R))
 					ProcessSpektrumPacket(serialNumber);
 				else if ((board.serials[serialNumber].Protocol == USING_SBUS_T) || (board.serials[serialNumber].Protocol == USING_SBUS_R))
 					ProcessSbusPacket(serialNumber);

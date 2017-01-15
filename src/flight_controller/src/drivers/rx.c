@@ -173,22 +173,26 @@ inline void CheckFailsafe(void)
  void RxUpdate(void) // hook for when rx updates
 {
 
-	//throttle must be low and aux must be high before we look for switching for arming
-	if ( (trueRcCommandF[AUX1] < -0.5) && (trueRcCommandF[THROTTLE] < -0.8) )
+	 //get current flight modes
+	CheckRxToModes();
+
+	//throttle must be low and board must be set to not armed before we allow an arming
+	if ( (!ModeActive(M_ARMED)) && (trueRcCommandF[THROTTLE] < -0.85) )
 		armCheckLatch = 1;
 
 	if (!latchFirstArm)
 		checkRxPreArmCalibration(); //collect rx data if not armed yet
 
-	if (armCheckLatch) {
-		if ( (latchFirstArm == 0) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) )
+	if (armCheckLatch)
+	{
+		if ( (latchFirstArm == 0) && (!boardArmed) && (ModeActive(M_ARMED)) )
 		{
 			latchFirstArm = 1;
 			PreArmFilterCheck = 1;
 			buzzerStatus.status = STATE_BUZZER_ARMING;
 			ResetGyroCalibration();
 		}
-		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode)
+		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (ModeActive(M_ARMED)) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.85) && !progMode)
 		{ //TODO: make uncalibrated board buzz
 
 			latchFirstArm = 1; //1 is double single single single, 0 is double double double double
@@ -219,7 +223,7 @@ inline void CheckFailsafe(void)
 			*/
 
 		}
-		else if ( (trueRcCommandF[AUX1] < 0.5) )
+		else if ( !ModeActive(M_ARMED) )
 		{
 			if (disarmCount++ > 3)
 			{
@@ -230,7 +234,6 @@ inline void CheckFailsafe(void)
 				DisarmBoard();
 				rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_IDLE);
 			}
-
 		}
 	}
 
@@ -245,7 +248,6 @@ inline void CheckFailsafe(void)
 	}
 
 
-	CheckRxToModes();
 }
 
 void SpektrumBind (uint32_t bindNumber)
@@ -301,7 +303,17 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	volatile uint32_t spektrumChannel;
 	uint32_t x;
 	uint32_t value;
+	uint16_t channelIdMask;
+	uint16_t servoPosMask;
 
+	channelIdMask = 0x7800;
+	servoPosMask  = 0x07FF;
+	//DSM2 is 10 bits and the others are 11 bits of data for the RX
+	if ((board.serials[serialNumber].Protocol == USING_DSM2_T) || (board.serials[serialNumber].Protocol == USING_DSM2_R))
+	{
+		channelIdMask = 0xFC00;
+		servoPosMask  = 0x03FF;
+	}
 																													// Make sure this is very first thing done in function, and its called first on interrupt
 	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SPEKTRUM_FRAME_SIZE);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   	   	   	   	   	   	   	   	   	   	   	   	   	   	// We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
@@ -309,10 +321,10 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	for (x = 2; x < 16; x += 2)
 	{
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
-		spektrumChannel = (value & 0x7800) >> 11;
+		spektrumChannel = (value & channelIdMask) >> 11;
 		if (spektrumChannel < MAXCHANNELS)
 		{
-			rxData[ChannelMap(spektrumChannel)] = value & 0x7FF;
+			rxData[ChannelMap(spektrumChannel)] = value & servoPosMask;
 			rx_timeout = 0;
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
 				buzzerStatus.status = STATE_BUZZER_OFF;

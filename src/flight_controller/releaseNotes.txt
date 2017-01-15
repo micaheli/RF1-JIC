@@ -325,15 +325,36 @@ Version 0.147.044:
 	Added "set sli": Ki for outter loop of self leveling modes.
 	Added "set sla": Max angle in degrees allowed for self leveling modes.
 	Change filtering.
+	Active Horizon or Attiude flight mode like so:
+		modes HORIZON=6=500=1000
+		modes ATTITUDE=6=500=1000
+		-where the first number is the channel you want to activate the mode starting from channel 0, the second number is the
+		-minimum channel value that will activate the flight mode and the third number is the maximum channel value that will
+		-activate the flight mode. Channel values are calculated from -1000 to 1000 where -1000 is the minimum and 1000 represents the maximum channel value.
+
+Version 0.148.044:
+	Changed logging method. Added it to Modes.
+	If there is no channel assigned to the logging mode the flight log will log any time the FC is armed, otherwise the flight log will log when the board is armed and the flight logging mode is enabled.
+	To enable a mode (example adding flight log mode):
+		in console:
+			-Mode channels start from 0, so the first channel on your radio is channel 0 on the FC
+			"modes list" will display all modes and what channels they are assigned to.
+			"modes LOGGING=5=500=1000" will enable the LOGGING mode on channel 5 which is the 6th radio channel usually known as AUX2 to enable when the switch is equal to or between 500 and 1000 on a scale that ranges from -1000 to 1000.
+	Flight log will automatically format in the background when "wiz cala" is run. No need to format flash separately during the setup process.
+	DSM2 protocol activated.
+	Change RC wizard. It will now only set the sticks. The switches must be assigned manually.
+	Moved arm method to Modes. It must be set after using the RC wizard (wiz rca) like so:
+		"modes ARMED=4=500=1000"
+	Added commands: dsm2_t1, dsm2_t3, dsm2_t4, dsm2_r1, dsm2_r3, dsm2_r4
+
+
 
 
 Features in current development:
-	DSM2
 	Spektrum Telemtry
 	MSP compatibility
 	MAVlink compatibility
-	Activate Angle mode
-	Activate Horizon mode.
+	Change Horizon mode.
 	Vbat input
 	Current input
 	wizards

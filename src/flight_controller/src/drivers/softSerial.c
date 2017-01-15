@@ -156,7 +156,7 @@ void ProcessSoftSerialLineIdle(uint32_t useCallback)
 		//softSerialStatus.softSerialState = SS_IDLE;
 		//process the received data
 		if ( (useCallback) && (softserialCallbackFunctionArray[0]) )
-			softserialCallbackFunctionArray[0](serialInBuffer, &serialInBufferIdx);
+			softserialCallbackFunctionArray[0](serialInBuffer, serialInBufferIdx);
 	}
 	else
 	{

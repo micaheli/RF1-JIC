@@ -54,7 +54,7 @@ void CheckRxToModes(void)
 		rcMax   = (float)mainConfig.flightModeArray[x+2] * 0.001;
 		if ((channel > 3) && (channel < MAXCHANNELS)) //first four channels are not to be used for flight modes
 		{
-			if ( (trueRcCommandF[channel] > rcMin) && (trueRcCommandF[channel] < rcMax) )
+			if ( (trueRcCommandF[channel] >= rcMin) && (trueRcCommandF[channel] <= rcMax) )
 			{
 				EnableMode(mode);
 			}
@@ -84,11 +84,11 @@ void PrintModes(void)
 	}
 }
 
+/*
 void SplitString(char *inString, char *inString2, char token)
 {
 	uint32_t x;
 	uint32_t stringLength;
-	uint32_t stringLength2;
 
 	stringLength = strlen(inString);
 
@@ -105,45 +105,62 @@ void SplitString(char *inString, char *inString2, char token)
 
 	inString[x] = 0; //set modstrging to modeSting
 }
+*/
 
-void SetupModes(char *modeString)
+void SetMode(uint32_t modeMask, uint16_t channel, int16_t minRc, int16_t maxRc)
 {
+
 	uint32_t x;
-	char *channelString = "stringspace/0";
-	char *minRcString   = "stringspace/0";
-	char *maxRcString   = "stringspace/0";
+
+	for (x=0;x<(sizeof(stringModes)/sizeof(string_modes_rec));x++)
+	{
+		if ( stringModes[x].modeMask == modeMask)
+		{
+			mainConfig.flightModeArray[x*3+0] = channel;
+			mainConfig.flightModeArray[x*3+1] = minRc;
+			mainConfig.flightModeArray[x*3+2] = maxRc;
+			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d", stringModes[x].modeString, mainConfig.flightModeArray[x*3+0], mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+			RfCustomReply(rf_custom_out_buffer);
+		}
+	}
+}
+
+void SetupModes(char *modString)
+{
+
+	uint32_t x;
+	char *channelString = NULL;
+	char *minRcString   = NULL;
+	char *maxRcString   = NULL;
 	uint16_t channel;
 	int16_t minRc;
 	int16_t maxRc;
 	uint32_t stringLength;
 
-	if (!strcmp("list", modeString))
+	if (!strcmp("list", modString))
 	{
 		PrintModes();
 	}
 	else
 	{
 		//look for "MODE=CHANEL=MINRX=MAXRC"
-		StripSpaces(modeString);
+		StripSpaces(modString);
 
-		stringLength = strlen(modeString);
+		stringLength = strlen(modString);
 
 		for (x = 0; x < stringLength; x++)
 		{
-			if (modeString[x] == '=')
+			if (modString[x] == '=')
 				break;
 		}
 
 		if ( stringLength > x )
 		{
-			channelString = modeString + x + 1; //put everything after the token into inString2
+			channelString = modString + x + 1; //put everything after the token into inString2
 		}
 
-		modeString[x] = 0; //set modstrging to modeSting
-
-
-
-
+		modString[x] = 0; //set modstrging to modeSting
 
 		stringLength = strlen(channelString);
 
@@ -176,7 +193,7 @@ void SetupModes(char *modeString)
 			maxRcString = minRcString + x + 1; //put everything after the token into inString2
 		}
 
-		minRcString[x] = 0; //set modstrging to modeSting
+		minRcString[x] = 0; //set modstring to modeSting
 
 		//SplitString(modeString,    channelString, '=');
 		//SplitString(channelString, minRcString,   '=');
@@ -188,7 +205,7 @@ void SetupModes(char *modeString)
 
 		for (x=0;x<(sizeof(stringModes)/sizeof(string_modes_rec));x++)
 		{
-			if (!strcmp(stringModes[x].modeString, modeString))
+			if (!strcmp(stringModes[x].modeString, modString))
 			{
 				mainConfig.flightModeArray[x*3+0] = channel;
 				mainConfig.flightModeArray[x*3+1] = minRc;

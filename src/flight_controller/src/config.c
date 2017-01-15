@@ -823,8 +823,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 172;
 			mainConfig.rcControlsConfig.minRc[AUX1]          = 1811;
 			mainConfig.rcControlsConfig.minRc[AUX2]          = 172;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 0;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 172;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 172;
 
 			mainConfig.rcControlsConfig.maxRc[PITCH]         = 1811;
 			mainConfig.rcControlsConfig.maxRc[ROLL]          = 1811;
@@ -832,8 +832,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 1811;
 			mainConfig.rcControlsConfig.maxRc[AUX1]          = 172;
 			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1811;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1000000;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1811;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1811;
 
 			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
 			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
@@ -841,8 +841,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
 			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
@@ -885,6 +885,7 @@ void ProcessCommand(char *inString)
 				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_T; //this is used by serial.c
 			}
 
+			SetMode(M_ARMED, 4, 500, 1000);
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -915,8 +916,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 16000;
 			mainConfig.rcControlsConfig.minRc[AUX1]          = 8000;
 			mainConfig.rcControlsConfig.minRc[AUX2]          = 8000;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 0;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 8000;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 8000;
 
 			mainConfig.rcControlsConfig.maxRc[PITCH]         = 16000;
 			mainConfig.rcControlsConfig.maxRc[ROLL]          = 8000;
@@ -924,8 +925,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 8000;
 			mainConfig.rcControlsConfig.maxRc[AUX1]          = 16000;
 			mainConfig.rcControlsConfig.maxRc[AUX2]          = 16000;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1000000;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 16000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 16000;
 
 			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
 			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
@@ -933,8 +934,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
 			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
@@ -971,6 +972,7 @@ void ProcessCommand(char *inString)
 				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_R; //this is used by serial.c
 			}
 
+			SetMode(M_ARMED, 4, 500, 1000);
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -1001,8 +1003,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 1000;
 			mainConfig.rcControlsConfig.minRc[AUX1]          = 1000;
 			mainConfig.rcControlsConfig.minRc[AUX2]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 0;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 1000;
 
 			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2000;
 			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2000;
@@ -1010,8 +1012,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2000;
 			mainConfig.rcControlsConfig.maxRc[AUX1]          = 2000;
 			mainConfig.rcControlsConfig.maxRc[AUX2]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1000000;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
 
 			mainConfig.rcControlsConfig.channelMap[PITCH]    = 3;
 			mainConfig.rcControlsConfig.channelMap[ROLL]     = 2;
@@ -1019,8 +1021,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
 			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
@@ -1057,6 +1059,7 @@ void ProcessCommand(char *inString)
 				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_R; //this is used by serial.c
 			}
 
+			SetMode(M_ARMED, 4, 500, 1000);
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -1087,8 +1090,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 1000;
 			mainConfig.rcControlsConfig.minRc[AUX1]          = 1000;
 			mainConfig.rcControlsConfig.minRc[AUX2]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 0;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 1000;
 
 			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2000;
 			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2000;
@@ -1096,8 +1099,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2000;
 			mainConfig.rcControlsConfig.maxRc[AUX1]          = 2000;
 			mainConfig.rcControlsConfig.maxRc[AUX2]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1000000;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
 
 			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
 			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
@@ -1105,8 +1108,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
 			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
@@ -1143,6 +1146,7 @@ void ProcessCommand(char *inString)
 				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_R; //this is used by serial.c
 			}
 
+			SetMode(M_ARMED, 4, 500, 1000);
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -1248,8 +1252,8 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[ROLL].kd.r    = 90.0;
 			mainConfig.filterConfig[PITCH].kd.r   = 90.0;
 
-			mainConfig.gyroConfig.filterTypeGyro   = 0;
-			mainConfig.gyroConfig.filterTypeKd     = 2;
+			mainConfig.gyroConfig.filterTypeGyro  = 0;
+			mainConfig.gyroConfig.filterTypeKd    = 2;
 
 			resetBoard = 1;
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -1548,18 +1552,18 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
 			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
 			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 1706;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
 			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
 
 			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
 			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
 			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
 			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
 			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 342;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
 			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
 
 			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
 			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
@@ -1568,7 +1572,7 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
 			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
 			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
@@ -1605,10 +1609,98 @@ void ProcessCommand(char *inString)
 				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_R; //this is used by serial.c
 			}
 
+			SetMode(M_ARMED, 4, 500, 1000);
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "settingdefaultstospektrumsupport\n", sizeof("settingdefaultstospektrumsupport\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			SaveConfig(ADDRESS_CONFIG_START);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
+	else if (!strcmp("dsm2_t1", inString) || !strcmp("dsm2_t3", inString) || !strcmp("dsm2_t4", inString) || !strcmp("dsm2_r1", inString) || !strcmp("dsm2_r3", inString) || !strcmp("dsm2_r4", inString))
+		{
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
+
+			mainConfig.rcControlsConfig.rcCalibrated         = 1;
+
+			if(!strcmp("dsm2_t1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_T; //this is used by serial.c
+			}
+			if(!strcmp("dsm2_t3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_T; //this is used by serial.c
+			}
+			if(!strcmp("dsm2_t4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_T; //this is used by serial.c
+			}
+			if(!strcmp("dsm2_r1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_R; //this is used by serial.c
+			}
+			if(!strcmp("dsm2_r3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_R; //this is used by serial.c
+			}
+			if(!strcmp("dsm2_r4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_R; //this is used by serial.c
+			}
+
+			SetMode(M_ARMED, 4, 500, 1000);
+			resetBoard = 1;
+
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "settingdefaultstodsm2support\n", sizeof("settingdefaultstodsm2support\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));

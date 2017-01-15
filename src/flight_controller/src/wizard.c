@@ -284,6 +284,32 @@ void MixerWizard(char *inString)
 	}
 }
 
+void SetRestOfMap(void)
+{
+
+	uint32_t highestMappedChannel[MAXCHANNELS];
+
+	bzero(highestMappedChannel, sizeof(highestMappedChannel));
+
+	for (uint32_t x = 0;x<MAXCHANNELS;x++)
+	{
+		if (mainConfig.rcControlsConfig.channelMap[x] < 40)
+			highestMappedChannel[mainConfig.rcControlsConfig.channelMap[x]]=1;
+	}
+
+	for (uint32_t x = 0;x<MAXCHANNELS;x++)
+	{
+		if (!highestMappedChannel[x])
+		{
+			mainConfig.rcControlsConfig.channelMap[x] = x;
+			mainConfig.rcControlsConfig.minRc[mainConfig.rcControlsConfig.channelMap[x]] = mainConfig.rcControlsConfig.minRc[0];
+			mainConfig.rcControlsConfig.midRc[mainConfig.rcControlsConfig.channelMap[x]] = mainConfig.rcControlsConfig.midRc[0];
+			mainConfig.rcControlsConfig.maxRc[mainConfig.rcControlsConfig.channelMap[x]] = mainConfig.rcControlsConfig.maxRc[0];
+		}
+	}
+
+}
+
 void SetupWizard(char *inString)
 {
 
@@ -303,6 +329,7 @@ void SetupWizard(char *inString)
 	}
 	else if (!strcmp("cala", inString))
 	{
+		MassEraseDataFlashByPage(0);
 		mainConfig.gyroConfig.boardCalibrated = 0;
 		mainConfig.gyroConfig.gyroRotation = CW0;
 		DelayMs(200); //need to reset calibration and give ACC data time to refresh
@@ -407,12 +434,6 @@ void SetupWizard(char *inString)
 			memcpy(rf_custom_out_buffer, "\n", sizeof("\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "setARMSWITCHdisarmed", sizeof("setARMSWITCHdisarmed"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "setLOGSWITCHoff", sizeof("setLOGSWITCHoff"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 			memcpy(rf_custom_out_buffer, "setTHROTTLEbottom", sizeof("setTHROTTLEbottom"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
@@ -445,39 +466,24 @@ void SetupWizard(char *inString)
 					memcpy(rf_custom_out_buffer, "setROLLright", sizeof("setROLLright"));
 					RfCustomReply(rf_custom_out_buffer);
 					if (CheckAndSetChannel(ROLL)) {
-						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-						memcpy(rf_custom_out_buffer, "setARMSWITCHarmed", sizeof("setARMSWITCHarmed"));
+						memcpy(rf_custom_out_buffer, "calibrationcomplete", sizeof("calibrationcomplete"));
 						RfCustomReply(rf_custom_out_buffer);
-						if (CheckAndSetChannel(AUX1)) {
-							bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-							memcpy(rf_custom_out_buffer, "setLOGarmed", sizeof("setLOGarmed"));
-							RfCustomReply(rf_custom_out_buffer);
-							if (CheckAndSetChannel(AUX2)) {
-								bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-								memcpy(rf_custom_out_buffer, "loggingswitchenabled", sizeof("loggingswitchenabled"));
-								RfCustomReply(rf_custom_out_buffer);
-							} else {
-								bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-								memcpy(rf_custom_out_buffer, "loggingswitchdisabled", sizeof("loggingswitchdisabled"));
-								RfCustomReply(rf_custom_out_buffer);
-							}
-							bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-							memcpy(rf_custom_out_buffer, "calibrationcomplete", sizeof("calibrationcomplete"));
-							RfCustomReply(rf_custom_out_buffer);
-							mainConfig.rcControlsConfig.rcCalibrated = 1;
-							skipRxMap = 0;
-							bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-							memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
-							RfCustomReply(rf_custom_out_buffer);
-							SaveConfig(ADDRESS_CONFIG_START);
-							bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-							memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
-							RfCustomReply(rf_custom_out_buffer);
-						} else {
-							bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-							memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
-							RfCustomReply(rf_custom_out_buffer);
-						}
+						mainConfig.rcControlsConfig.rcCalibrated = 1;
+						SetRestOfMap();
+						skipRxMap = 0;
+						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
+						memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
+						RfCustomReply(rf_custom_out_buffer);
+						SaveConfig(ADDRESS_CONFIG_START);
+						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
+						memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
+						RfCustomReply(rf_custom_out_buffer);
+						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
+						memcpy(rf_custom_out_buffer, "Set an Arm mode using mode list", sizeof("Set an Arm mode using mode list"));
+						RfCustomReply(rf_custom_out_buffer);
+						DelayMs(3);
+						memcpy(rf_custom_out_buffer, "Aux1 high Example: modes ARMED=4=500=1000", sizeof("Aux1 high Example: modes ARMED=4=500=1000"));
+						RfCustomReply(rf_custom_out_buffer);
 					} else {
 						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 						memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
@@ -520,7 +526,7 @@ void SetupWizard(char *inString)
 			return;
 		}
 
-		if (CheckSafeMotors(15000,200000)) { //calibrate for 15 seconds safe motors for 3 seconds
+		if (CheckSafeMotors(20000,200000)) { //calibrate for 20 seconds safe motors for 3 seconds
 
 		}
 		motorOutput[0] = 0;
@@ -577,8 +583,6 @@ void OneWire(char *inString) {
 	uint32_t outputNumber;
 	uint32_t somethingHappened = 0;
 	uint32_t verbose = 1;
-	uint32_t settings = 0;
-
 
 	if (!strcmp("start", inString) || !strcmp("read", inString) || !strcmp("check", inString) || !strcmp("settings", inString) || !strcmp("auto", inString))
 	{
@@ -586,11 +590,6 @@ void OneWire(char *inString) {
 		if (!strcmp("check", inString))
 		{
 			verbose = 0;
-		}
-
-		if (!strcmp("settings", inString))
-		{
-			settings = 0;
 		}
 
 		oneWireActive = 1;
@@ -634,7 +633,7 @@ void OneWire(char *inString) {
 							}
 							else
 							{
-								snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "upgrade available\n", x, (uint8_t)( (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation.version >> 8) & 0xFF), (uint8_t)( escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].escHexLocation.version & 0xFF) );
+								snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "upgrade available\n" );
 								RfCustomReply(rf_custom_out_buffer);
 								return;
 							}
@@ -664,7 +663,7 @@ void OneWire(char *inString) {
 
 			if (!verbose)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "no upgrade available\n", x);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "no upgrade available\n");
 				RfCustomReply(rf_custom_out_buffer);
 				DelayMs(5);
 				return;
@@ -902,7 +901,7 @@ void OneWire(char *inString) {
 
 			if ( (inString[1] == 'a' ) && !strcmp("forceupgrade", modString) )
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Automatic Force Upgrading Not Allowed\n", motorNumber);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Automatic Force Upgrading Not Allowed\n");
 				RfCustomReply(rf_custom_out_buffer);
 				return;
 			}

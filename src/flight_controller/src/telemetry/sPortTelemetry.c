@@ -242,6 +242,7 @@ static void PutSportIntoReceiveState(motor_type actuator, uint32_t inverted)
 
 static void PutSportIntoSendState(motor_type actuator, uint32_t inverted)
 {
+	(void)(inverted);
 
 	//Set callback functions for send and receive
 	callbackFunctionArray[actuator.EXTICallback] = SportSoftSerialExtiCallback;

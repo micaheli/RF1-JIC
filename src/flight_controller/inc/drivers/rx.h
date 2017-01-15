@@ -84,8 +84,8 @@ enum {
 #define USING_IBUS_T           8
 #define USING_PPM_R            9
 #define USING_PPM_T            10
-#define USING_SPEKTRUM_DSM2_R  11
-#define USING_SPEKTRUM_DSM2_T  12
+#define USING_DSM2_R           11
+#define USING_DSM2_T           12
 
 extern uint32_t ppmPin;
 

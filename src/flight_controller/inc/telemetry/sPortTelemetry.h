@@ -84,4 +84,5 @@
 extern uint32_t sendSmartPortAt;
 
 extern void SendSmartPort(void);
-
+extern void CheckIfSportReadyToSend(void);
+extern void InitSoftSport(void);

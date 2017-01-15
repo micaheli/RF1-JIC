@@ -4,8 +4,8 @@ extern uint32_t activeModes;
 
 typedef struct {
     const char *modeString;
-    const int32_t modeNumber;
-    const int32_t modeMask;
+    const uint32_t modeNumber;
+    const uint32_t modeMask;
 } string_modes_rec;
 
 //also modify stringModes in modes.c
@@ -26,5 +26,6 @@ extern void InitModes(void);
 extern void EnableMode(uint32_t modeMask);
 extern void DisableMode(uint32_t modeMask);
 extern uint32_t ModeActive(uint32_t modeMask);
-extern void SetupModes(char *modeString);
+extern void SetMode(uint32_t modeMask, uint16_t channel, int16_t minRc, int16_t maxRc);
+extern void SetupModes(char *modString);
 extern void CheckRxToModes(void);

@@ -15,10 +15,11 @@ volatile uint32_t softSerialInd[2];
 volatile uint32_t softSerialCurBuf;
 volatile uint32_t softSerialLastByteProcessedLocation;
 volatile uint32_t softSerialSwitchBuffer;
-static uint8_t    proccesedSoftSerial[25]; //25 byte buffer enough?
-static uint32_t   proccesedSoftSerialIdx = 0;
-static uint32_t   softSerialLineIdleSensed = 0;
-static uint32_t   lastBitFound = 0;
+
+uint8_t    proccesedSoftSerial[25]; //25 byte buffer enough?
+uint32_t   proccesedSoftSerialIdx = 0;
+uint32_t   softSerialLineIdleSensed = 0;
+uint32_t   lastBitFound = 0;
 
 
 static void TaskProcessSoftSerial(void);
