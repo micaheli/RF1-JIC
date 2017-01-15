@@ -373,6 +373,7 @@ void getBoardHardwareDefs(void)
 	board.motors[6].timerIRQn         = TIM4_IRQn;
 	board.motors[6].motorOutputLength = 64; //bits
 	board.motors[6].EXTIn             = EXTI4_IRQn;
+	//board.motors[6].EXTICallback      = FP_EXTI4; //used for input
 	//board.motors[6].DmaCallback       = FP_DMA1_S0; //used for input
 
 	board.dmasMotor[6].enabled            = 1;
@@ -409,6 +410,7 @@ void getBoardHardwareDefs(void)
 	board.motors[7].timerIRQn         = TIM1_CC_IRQn; //TIM1_CC_IRQn //TIM1_UP_TIM10_IRQn //TIM1_BRK_TIM9_IRQn //TIM1_TRG_COM_TIM11_IRQn
 	board.motors[7].motorOutputLength = 64; //bits
 	board.motors[7].EXTIn             = EXTI9_5_IRQn;
+	board.motors[7].EXTICallback      = FP_EXTI9_5; //used for input
 	board.motors[7].DmaCallback       = FP_DMA2_S2; //used for input
 	//callbackFunctionArray[FP_EXTI9_5] = SoftSerialCallback;
 
@@ -660,15 +662,6 @@ void getBoardHardwareDefs(void)
 
 	board.serials[ENUM_USART1].SerialInstance = ENUM_USART1;  // loaded from port array
 
-	board.serials[ENUM_USART1].Protocol	      = USING_SPEKTRUM_TWO_WAY; //all below settings in this small block are automatic if you chose USING_SPEKTRUM or USING_SBUS
-	board.serials[ENUM_USART1].FrameSize	  = 16;
-	board.serials[ENUM_USART1].BaudRate       = 115200;
-	board.serials[ENUM_USART1].WordLength     = UART_WORDLENGTH_8B;
-	board.serials[ENUM_USART1].StopBits       = UART_STOPBITS_1;
-	board.serials[ENUM_USART1].Parity         = UART_PARITY_NONE;
-	board.serials[ENUM_USART1].HwFlowCtl      = UART_HWCONTROL_NONE;
-	board.serials[ENUM_USART1].Mode           = UART_MODE_TX_RX;
-
 	board.serials[ENUM_USART1].usartHandle    = ENUM_USART1;  //JUST A Define for the function name
 
 	board.serials[ENUM_USART1].serialTxBuffer = 1; //three buffers, give this one the first buffer
@@ -720,19 +713,10 @@ void getBoardHardwareDefs(void)
 
 	board.serials[ENUM_USART3].SerialInstance  = ENUM_USART3;  // loaded from port array
 
-	board.serials[ENUM_USART3].Protocol	       = USING_SPEKTRUM_ONE_WAY; //all below settings in this small block are automatic if you chose USING_SPEKTRUM or USING_SBUS
-	board.serials[ENUM_USART3].FrameSize	   = 16;
-	board.serials[ENUM_USART3].BaudRate        = 115200;
-	board.serials[ENUM_USART3].WordLength      = UART_WORDLENGTH_8B;
-	board.serials[ENUM_USART3].StopBits        = UART_STOPBITS_1;
-	board.serials[ENUM_USART3].Parity          = UART_PARITY_NONE;
-	board.serials[ENUM_USART3].HwFlowCtl       = UART_HWCONTROL_NONE;
-	board.serials[ENUM_USART3].Mode            = UART_MODE_TX_RX;
-
 	board.serials[ENUM_USART3].usartHandle     = ENUM_USART3;  //JUST A Define for the function name
 
-	board.serials[ENUM_USART3].serialTxBuffer  = 1; //three buffers, give this one the first buffer
-	board.serials[ENUM_USART3].serialRxBuffer  = 1; //three buffers, give this one the first buffer
+	board.serials[ENUM_USART3].serialTxBuffer  = 2; //three buffers, give this one the first buffer
+	board.serials[ENUM_USART3].serialRxBuffer  = 2; //three buffers, give this one the first buffer
 
 	board.serials[ENUM_USART3].TXDma 		   = ENUM_DMA1_STREAM_3;
 	board.serials[ENUM_USART3].RXDma 		   = ENUM_DMA1_STREAM_1;
@@ -764,5 +748,57 @@ void getBoardHardwareDefs(void)
 	board.dmasSerial[board.serials[ENUM_USART3].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmasSerial[board.serials[ENUM_USART3].RXDma].dmaIRQn            = DMA1_Stream1_IRQn;
 	board.dmasSerial[board.serials[ENUM_USART3].RXDma].dmaHandle          = ENUM_DMA1_STREAM_1;
+
+
+
+
+	board.serials[ENUM_USART4].enabled         = 1;
+	board.serials[ENUM_USART4].PinMode         = GPIO_MODE_AF_PP;
+	board.serials[ENUM_USART4].Pull            = GPIO_PULLUP;
+	board.serials[ENUM_USART4].Speed           = GPIO_SPEED_HIGH;
+	board.serials[ENUM_USART4].TXAlternate     = GPIO_AF8_UART4;
+	board.serials[ENUM_USART4].TXPin           = GPIO_PIN_0;
+	board.serials[ENUM_USART4].TXPort          = ENUM_PORTA;
+	board.serials[ENUM_USART4].RXAlternate     = GPIO_AF8_UART4;
+	board.serials[ENUM_USART4].RXPin           = GPIO_PIN_1;
+	board.serials[ENUM_USART4].RXPort          = ENUM_PORTA;
+
+	board.serials[ENUM_USART4].SerialInstance  = ENUM_USART4;  // loaded from port array
+
+	board.serials[ENUM_USART4].usartHandle     = ENUM_USART4;  //JUST A Define for the function name
+
+	board.serials[ENUM_USART4].serialTxBuffer  = 3; //three buffers, give this one the first buffer
+	board.serials[ENUM_USART4].serialRxBuffer  = 3; //three buffers, give this one the first buffer
+
+	board.serials[ENUM_USART4].TXDma 		   = ENUM_DMA1_STREAM_4;
+	board.serials[ENUM_USART4].RXDma 		   = ENUM_DMA1_STREAM_2;
+
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].enabled            = 1;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaStream          = board.serials[ENUM_USART4].TXDma;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaChannel         = DMA_CHANNEL_4;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaMemInc          = DMA_MINC_DISABLE;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaMode            = DMA_CIRCULAR;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaIRQn            = DMA1_Stream4_IRQn;
+	board.dmasSerial[board.serials[ENUM_USART4].TXDma].dmaHandle          = board.serials[ENUM_USART4].TXDma;
+
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].enabled            = 1;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaStream          = board.serials[ENUM_USART4].RXDma;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaChannel         = DMA_CHANNEL_4;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaMemInc          = DMA_MINC_DISABLE;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaMode            = DMA_CIRCULAR;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaIRQn            = DMA1_Stream2_IRQn;
+	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaHandle          = board.serials[ENUM_USART4].RXDma;
 
 }

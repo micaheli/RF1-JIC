@@ -15,10 +15,11 @@ volatile uint32_t softSerialInd[2];
 volatile uint32_t softSerialCurBuf;
 volatile uint32_t softSerialLastByteProcessedLocation;
 volatile uint32_t softSerialSwitchBuffer;
-static uint8_t    proccesedSoftSerial[25]; //25 byte buffer enough?
-static uint32_t   proccesedSoftSerialIdx = 0;
-static uint32_t   softSerialLineIdleSensed = 0;
-static uint32_t   lastBitFound = 0;
+
+uint8_t    proccesedSoftSerial[25]; //25 byte buffer enough?
+uint32_t   proccesedSoftSerialIdx = 0;
+uint32_t   softSerialLineIdleSensed = 0;
+uint32_t   lastBitFound = 0;
 
 
 static void TaskProcessSoftSerial(void);
@@ -75,6 +76,12 @@ void scheduler(int32_t count)
 
  void TaskProcessSoftSerial(void) {
 
+	 if (oneWireActive)
+		 FeedTheDog();
+
+	 //SoftSerialCheckLineIdle();
+
+/*
 	//TODO: Move to softSerial.c or serial.c
 	uint32_t x;
 	uint32_t currentTime;
@@ -200,12 +207,14 @@ void scheduler(int32_t count)
 		proccesedSoftSerialIdx = 0;
 	}
 
+*/
 
 }
 
 
 void TaskTelemtry(void) {
 
+	ProcessTelemtry();
 /*
 	//TODO: Move all this to telemetry.c
 
@@ -314,6 +323,7 @@ inline void TaskHandlePcComm(void)
 
 inline void TaskLed(void)
 {
+	static uint32_t ms100Counter = 0;
 	static uint32_t lastUpdate = 0;
 	static uint32_t lastColors = 0xFFFFFFFF;
 	uint32_t currentColors;
@@ -326,11 +336,13 @@ inline void TaskLed(void)
 	//Update WS2812 LEDs
 	if ( ( InlineMillis() - lastUpdate ) > 100 )
 	{
+		ms100Counter++;
 		lastUpdate = InlineMillis();
 
 		currentColors = (((uint8_t)mainConfig.ledConfig.ledGreen<<16) | ((uint8_t)mainConfig.ledConfig.ledRed<<8) | ((uint8_t)mainConfig.ledConfig.ledBlue<<0));
-		if (ws2812LedRecord.enabled && (currentColors != lastColors))
+		if (ws2812LedRecord.enabled && ( (currentColors != lastColors) || (ms100Counter == 10) ))
 		{
+			ms100Counter = 0;
 			lastColors = currentColors;
 			y = 0;
 

@@ -81,11 +81,27 @@ void InitActuators(void) {
 			InitDshotOutputOnMotors(mainConfig.mixerConfig.escProtcol);
 			return;
 			break;
+		case ESC_MULTISHOT25:
+			disarmUs    = 2.400;
+			calibrateUs = 2.500;
+			walledUs    = 10.00;
+			pwmHz       = 32000;
+			timerHz     = 48000000; // full resolution
+			//timerHz   = 12000000; // 1/4 resolution
+			break;
+		case ESC_MULTISHOT125:
+			disarmUs    = 1.220;
+			calibrateUs = 1.250;
+			walledUs    = 5.000;
+			pwmHz       = 32000;
+			timerHz     = 48000000; // full resolution
+			//timerHz   = 12000000; // 1/4 resolution
+			break;
 		case ESC_MULTISHOT:
 		default:
-			disarmUs    = 4.9;
-			calibrateUs = 5;
-			walledUs    = 24.5;
+			disarmUs    = 4.900;
+			calibrateUs = 5.000;
+			walledUs    = 22.50;
 			pwmHz       = 32000;
 			timerHz     = 48000000; // full resolution
 			//timerHz   = 12000000; // 1/4 resolution

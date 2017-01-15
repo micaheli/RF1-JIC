@@ -26,7 +26,7 @@ typedef struct {
 } mixer_config;
 
 enum {MIXER_X1234=0,MIXER_X1234RY,MIXER_X1234I,MIXER_CUSTOM,MIXER_END};
-enum {ESC_MULTISHOT=0,ESC_ONESHOT,ESC_PWM,ESC_ONESHOT42,ESC_DSHOT150,ESC_DSHOT300, ESC_DSHOT600, ESC_MEGAVOLT,ESC_PROTOCOL_END};
+enum {ESC_MULTISHOT=0,ESC_ONESHOT,ESC_PWM,ESC_ONESHOT42,ESC_DSHOT150,ESC_DSHOT300, ESC_DSHOT600, ESC_MEGAVOLT,ESC_MULTISHOT25,ESC_MULTISHOT125,ESC_PROTOCOL_END};
 
 #define ATTENUATION_CURVE_SIZE 9
 
@@ -41,6 +41,6 @@ extern actuator_mixer motorMixer[];
 
 void InitMixer(void);
 float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], volatile float motorOutput[]);
-float InlineApplyMotorMixer2(pid_output pids[], float curvedRcCommandF[], volatile float motorOutput[]);
+float InlineApplyMotorMixer2(pid_output pids[], float throttleIn, volatile float motorOutput[]);
 void InlineApplyMixer(pid_output pids[], float curvedRcCommandF[]);
 float ApplyAttenuationCurve (float input, float curve[], int curveSize);

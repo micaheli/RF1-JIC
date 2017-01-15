@@ -82,7 +82,7 @@ inline float CalculateSDSize(float data[], uint32_t size)
     float sum = 0.0, mean, standardDeviation = 0.0;
     float result;
 
-    int i;
+    uint32_t i;
 
     for(i=0; i<size; ++i)
     {

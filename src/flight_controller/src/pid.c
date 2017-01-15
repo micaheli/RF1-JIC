@@ -64,7 +64,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 
 	(void)(pidConfig);
 	(void)(actuatorRange);
-/*
+
 	//set point limiter.
 	if ( actuatorRange >= 0.90 )
 	{
@@ -103,7 +103,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 		usedFlightSetPoints[2] = flightSetPoints[2];
 
 	}
-*/
+
 	usedFlightSetPoints[0] = flightSetPoints[0];
 	usedFlightSetPoints[1] = flightSetPoints[1];
 	usedFlightSetPoints[2] = flightSetPoints[2];
@@ -138,6 +138,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 	    {
 
 			// calculate Kp
+			//flightPids[axis].kp = InlineConstrainf((pidError * pidsUsed[axis].kp), -MAX_KP, MAX_KP);
 			flightPids[axis].kp = (pidError * pidsUsed[axis].kp);
 
 			//if (axis == YAW)
@@ -147,7 +148,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 			if ( fullKiLatched )
 			{
 
-				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KD, MAX_KD); //prevent insane windup
+				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
 
 				if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
 				{
@@ -203,7 +204,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 			//	kdDelta[axis] = kdFilterState[axis].x;
 			//}
 
-			flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -0.312121f, 0.312121f);
+			flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD, MAX_KD);
 			// calculate Kd ////////////////////////// ^
 
 	    }

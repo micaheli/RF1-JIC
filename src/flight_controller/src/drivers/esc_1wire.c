@@ -3,6 +3,7 @@
 
 esc_one_wire_status escOneWireStatus[16];
 esc_hex_location escHexByPosition[50];
+uint32_t oneWireActive = 0;
 
 // EEPROM layout - BLHeli rev 20, bumped in 14.0
 const BLHeli_EEprom_t BLHeli20_EEprom = {
@@ -226,35 +227,40 @@ void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLo
 	uint32_t addressFlashEnd   = ADDRESS_FLASH_END;
 	uint32_t wordOffset;
 	uint32_t firmwareFinderData[5];
-	uint8_t firmwareFinderByteData[5 * 4];
+	uint8_t  firmwareFinderByteData[5 * 4];
 	uint32_t x;
-	uint8_t escStart[3] = {0x02, 0x19, 0xFD};
+	uint8_t  escStart[3] = {0x02, 0x19, 0xFD};
 
 	escHexLocation->startAddress = 0;
 	escHexLocation->endAddress = 0;
 	escHexLocation->version = 0;
 
 	//from ESC start address the config starts at 0x1A00 and the ESC name is at 0x1A00 + 0x50. The firmware stops at 1A6F and includes 1A6F
-	for (wordOffset = addressFlashStart; wordOffset < (addressFlashEnd - 0x1A6F); wordOffset++) { //scan up to 1mb of flash starting at after rfbl //todo:set per mcu
+	for (wordOffset = addressFlashStart; wordOffset < (addressFlashEnd - 0x1A6F); wordOffset++) //scan up to 1mb of flash starting at after rfbl //todo:set per mcu
+	{
 		//flash goes like this. RFBL -> FW -> ESCs -> fade43f4 a62fe81a -> RFBL SIZE in 16 bit hex variable -> fade43f4 a62fe81a -> RFBL
 		memcpy( &firmwareFinderData, (char *) wordOffset, sizeof(firmwareFinderData) );
-		for (x=0; x<sizeof(firmwareFinderData)/4; x++) {
+		for (x=0; x<sizeof(firmwareFinderData)/4; x++)
+		{
 			firmwareFinderData[x] = BigToLittleEndian32(firmwareFinderData[x]);
 			firmwareFinderByteData[(x * 4)+0] = ((firmwareFinderData[x]>>24)&0xff);
 			firmwareFinderByteData[(x * 4)+1] = ((firmwareFinderData[x]>>16)&0xff);
 			firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
 			firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
 		}
-		if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStart, 3)) {
+		if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStart, 3))
+		{
 			memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00+64, sizeof(firmwareFinderData) ); //get config data to look for ESC name
-			for (x=0; x<sizeof(firmwareFinderData)/4; x++) {
+			for (x=0; x<sizeof(firmwareFinderData)/4; x++)
+			{
 				firmwareFinderData[x] = BigToLittleEndian32(firmwareFinderData[x]); //switch to little endian
 				firmwareFinderByteData[(x * 4)+0] = ((firmwareFinderData[x]>>24)&0xff);
 				firmwareFinderByteData[(x * 4)+1] = ((firmwareFinderData[x]>>16)&0xff);
 				firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
 				firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
 			}
-			if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStringName, escNameStringSize)) {
+			if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStringName, escNameStringSize))
+			{
 				escHexLocation->startAddress = wordOffset;
 				escHexLocation->endAddress = wordOffset + 0x1A6F;
 				memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00, sizeof(firmwareFinderData) ); //get versionnumber
@@ -293,6 +299,7 @@ uint32_t OneWireInit(void)
 	while (tries < 5)
 	{
 
+		FeedTheDog();
 		allWork = 1;
 		tries++;
 
@@ -322,7 +329,9 @@ uint32_t OneWireInit(void)
 							SendStatusReport((char *)reportOut);
 						}
 						atLeastOneWorks++;
-					} else {
+					}
+					else
+					{
 						if (tries > 1)
 						{
 							sprintf((char *)reportOut, "ESC:%lu Read Failure", board.motors[outputNumber].actuatorArrayNum);
@@ -490,6 +499,7 @@ uint32_t OneWireSaveConfig(motor_type actuator) {
 
 	while(retry > 0) {
 
+		FeedTheDog();
 		DelayMs(25);
 
 		//read flash to inBuffer
@@ -1009,6 +1019,7 @@ const char* OneWireParameterValueToName(const oneWireParameterValue_t *valuesLis
 {
     while (valuesList->name)
     {
+    	FeedTheDog();
         if (value == valuesList->value)
         {
             return (valuesList->name);
@@ -1022,6 +1033,7 @@ int16_t OneWireParameterNameToValue(const oneWireParameterValue_t *valuesList, c
 {
     while (valuesList->name)
     {
+    	FeedTheDog();
         if (strncasecmp(valuesList->name, name, strlen(valuesList->name)) == 0)
         {
             return valuesList->value;

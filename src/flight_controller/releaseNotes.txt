@@ -257,3 +257,113 @@ Version 0.137.040:
 
 Version 0.138.040:
 	Change mixer slightly. Less floaty?
+
+Version 0.139.040:
+	Fix mixer change.
+	More robust calibration method.
+	Updated flight mode switch support. Now configurable, but not yet active.
+
+Version 0.140.040:
+	Enable S.port telemtry.
+	Fix Spektrum Telemtry RX binding.
+
+Version 0.141.041:
+	Change filter defaults.
+	Adjusted filter range.
+	Added 1wire auto command
+	Added 1wire settings command
+	Added 1wire check command
+
+Version 0.142.041:
+	fix issue in pidc.
+	IP. Begining adding MSP Telemtry.
+
+Version 0.142.041:
+	change defaults
+	change actuator curve.
+
+Version 0.143.041:
+	change internal filter settings
+	change actuator curve.
+
+Version 0.144.041:
+	change actuator curve.
+	Added MS1.25 and MS2.5 protocols (1.25 to 5 us) (2.5us to 10us)... MS is (5us to 20us)
+		set esc_protocol=7 for MS2.5 and set esc_protocol=8 for MS1.25
+	Made changes to how rap opperates.
+
+Version 0.145.042
+	Fixed LED code.
+	Added partial IBus support. (Not yet active)
+	Added partial PPM support. (Not yet active)
+	Added partial DSM2 support. (Not yet active)
+
+Version 0.146.043:
+	PPM support active and tested.
+	Ibus support active and tested.
+	Changed RX command setup:
+		Avalable commands:
+			spek_t1, spek_t3, spek_t4, spek_r1, spek_r3, spek_r4
+			sbus_t1, sbus_t3, sbus_t4, sbus_r1, sbus_r3, sbus_r4
+			sumd_t1, sumd_t3, sumd_t4, sumd_r1, sumd_r3, sumd_r4
+			ibus_t1, ibus_t3, ibus_t4, ibus_r1, ibus_r3, ibus_r4
+			ppm_t1, ppm_t3, ppm_t4, ppm_r1, ppm_r3, ppm_r4
+		"protocol" underscore "tx or rx pin" "usart number"
+	Telemtry option command:
+		set telem_sport=1
+		set telem_spek=1
+		set telem_msp=1
+		set telem_mavlink=1
+			"1 to enable and 0 to disaable right now. This will change in the future and will be used to select where the telemtry outputs"
+			"only sport is enabled at the moment"
+
+Version 0.147.044:
+	Enable Mode Support
+		Activated Horizon Mode
+		Activated Attitude Mode
+	Added "set slp": Kp for outter loop of self leveling modes.
+	Added "set sli": Ki for outter loop of self leveling modes.
+	Added "set sla": Max angle in degrees allowed for self leveling modes.
+	Change filtering.
+	Active Horizon or Attiude flight mode like so:
+		modes HORIZON=6=500=1000
+		modes ATTITUDE=6=500=1000
+		-where the first number is the channel you want to activate the mode starting from channel 0, the second number is the
+		-minimum channel value that will activate the flight mode and the third number is the maximum channel value that will
+		-activate the flight mode. Channel values are calculated from -1000 to 1000 where -1000 is the minimum and 1000 represents the maximum channel value.
+
+Version 0.148.044:
+	Changed logging method. Added it to Modes.
+	If there is no channel assigned to the logging mode the flight log will log any time the FC is armed, otherwise the flight log will log when the board is armed and the flight logging mode is enabled.
+	To enable a mode (example adding flight log mode):
+		in console:
+			-Mode channels start from 0, so the first channel on your radio is channel 0 on the FC
+			"modes list" will display all modes and what channels they are assigned to.
+			"modes LOGGING=5=500=1000" will enable the LOGGING mode on channel 5 which is the 6th radio channel usually known as AUX2 to enable when the switch is equal to or between 500 and 1000 on a scale that ranges from -1000 to 1000.
+	Flight log will automatically format in the background when "wiz cala" is run. No need to format flash separately during the setup process.
+	DSM2 protocol activated.
+	Change RC wizard. It will now only set the sticks. The switches must be assigned manually.
+	Moved arm method to Modes. It must be set after using the RC wizard (wiz rca) like so:
+		"modes ARMED=4=500=1000"
+	Added commands: dsm2_t1, dsm2_t3, dsm2_t4, dsm2_r1, dsm2_r3, dsm2_r4
+
+
+
+
+Features in current development:
+	Spektrum Telemtry
+	MSP compatibility
+	MAVlink compatibility
+	Change Horizon mode.
+	Vbat input
+	Current input
+	wizards
+	finish flight mode support
+
+Features for future development:
+	transponder output
+	single motor throttle test.
+	3D mixer
+	Sonar input
+	GPS input
+	Unobtanium detector

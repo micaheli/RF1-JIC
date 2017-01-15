@@ -47,6 +47,7 @@ typedef struct {
 } esc_hex_location;
 
 extern esc_hex_location escHexByPosition[];
+extern uint32_t oneWireActive;
 
 typedef struct BLHeli_EEprom {
     uint8_t BL_GOV_P_GAIN;

@@ -53,6 +53,14 @@ int32_t  logItterationCounter;
 uint32_t logRateTime;
 uint32_t logStartMicros;
 
+pid_output lastFlightPids[AXIS_NUMBER];
+float      lastFlightSetPoints[AXIS_NUMBER];
+float      lastFilteredGyroData[AXIS_NUMBER];
+float      lastDpsGyroArray[AXIS_NUMBER];
+float      lastFilteredAccData[AXIS_NUMBER];
+float      lastMotorOutput[AXIS_NUMBER];
+
+
 int InitFlightLogger(void)
 {
 
@@ -62,6 +70,12 @@ int InitFlightLogger(void)
 	logItteration  = 0;
 	logStartMicros = 0;
 	logRateTime    = 1000;
+	bzero(lastFlightPids, sizeof(pid_output));
+	bzero(lastFlightSetPoints, sizeof(lastFlightSetPoints));
+	bzero(lastFilteredGyroData, sizeof(lastFilteredGyroData));
+	bzero(lastDpsGyroArray, sizeof(lastDpsGyroArray));
+	bzero(lastFilteredAccData, sizeof(lastFilteredAccData));
+	bzero(lastMotorOutput, sizeof(lastMotorOutput));
 	return (1);
 
 }
@@ -77,7 +91,8 @@ void DisableLogging(void)
 }
 
 
- void FinishPage(void) {
+ void FinishPage(void)
+ {
 	uint32_t remaingBytes = (flashInfo.pageSize - (flashInfo.buffer[flashInfo.bufferNum].txBufferPtr - FLASH_CHIP_BUFFER_WRITE_DATA_START) );
 	for (uint32_t x=0;x<remaingBytes;x++)
 	{
@@ -85,7 +100,8 @@ void DisableLogging(void)
 	}
 }
 
- void FinishBlock(uint32_t count) {
+ void FinishBlock(uint32_t count)
+ {
 	uint32_t finishY = ((flashInfo.currentWriteAddress + (flashInfo.buffer[flashInfo.bufferNum].txBufferPtr - FLASH_CHIP_BUFFER_WRITE_DATA_START)) % count);
 	if (finishY != 0) {
 		for (uint32_t x=0;x<(count - finishY);x++)
@@ -95,12 +111,14 @@ void DisableLogging(void)
 	}
 }
 
-inline void InlineWrite16To8 (int16_t data) {
+inline void InlineWrite16To8 (int16_t data)
+{
 	WriteByteToFlash(  (uint8_t)( data >> 8 ) );
 	WriteByteToFlash(  (uint8_t)(data & 0xff) );
 }
 
- void WriteByteToFlash (uint8_t data) {
+ void WriteByteToFlash (uint8_t data)
+ {
 
 	buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
 
@@ -129,7 +147,8 @@ inline void InlineWrite16To8 (int16_t data) {
 
 }
 
-inline int DumbWriteString(char *string, int sizeOfString) {
+inline int DumbWriteString(char *string, int sizeOfString)
+{
 	for (int x=0; x < sizeOfString; x++)
 		WriteByteToFlash( string[x] );
 
@@ -159,22 +178,27 @@ void BlackboxWriteSignedVB(int32_t value)
     BlackboxWriteUnsignedVB(ZigzagEncode(value));
 }
 
-void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[], float dpsGyroArray[], float filteredGyroData[], float filteredAccData[] )
+void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsGyroArray[], float filteredGyroData[], float filteredAccData[] )
 {
 
-	int finishX;
-	static int loggingStartedLatch = 0;
+	uint32_t finishX;
+	static uint32_t loggingStartedLatch = 0;
 
-	(void)(dpsGyroArray);
-#ifdef DEBUG
-	if ( (trueRcCommandF[AUX2] > 0.5) && (flashInfo.enabled == FLASH_ENABLED) ) {
-#else
-	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (trueRcCommandF[AUX2] > 0.5) && (flashInfo.enabled == FLASH_ENABLED) ) {
-#endif
+	pid_output currFlightPids[AXIS_NUMBER];
+	float      currFlightSetPoints[AXIS_NUMBER];
+	float      currFilteredGyroData[AXIS_NUMBER];
+	float      currDpsGyroArray[AXIS_NUMBER];
+	float      currFilteredAccData[AXIS_NUMBER];
+	float      currMotorOutput[4];
+
+	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (ModeActive(M_LOGGING)) && (flashInfo.enabled == FLASH_ENABLED) )
+	{
 		ledStatus.status = LEDS_FASTER_BLINK;
 		LoggingEnabled = 1;
 		loggingStartedLatch = 1;
-	} else if (trueRcCommandF[AUX2] <= 0.5) {
+	}
+	else
+	{
 		if (boardArmed)
 			ledStatus.status = LEDS_MED_BLINK;
 		else
@@ -182,7 +206,8 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[], float dpsGy
 
 		LoggingEnabled = 0;
 		firstLogging = 1;
-		if (loggingStartedLatch) {
+		if (loggingStartedLatch)
+		{
 			loggingStartedLatch = 0;
 			FinishPage();
 		}
@@ -204,7 +229,8 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[], float dpsGy
 			flashInfo.bufferNum = 0;
 
 			finishX = (flashInfo.currentWriteAddress % UPDATE_BB_DATA_SIZE);
-			if (finishX != 0) {
+			if (finishX != 0)
+			{
 				flashInfo.currentWriteAddress += (UPDATE_BB_DATA_SIZE - finishX);
 			}
 
@@ -225,23 +251,57 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[], float dpsGy
 			}
 			else
 			{
+				//average all values
+				for (finishX = 0; finishX < AXIS_NUMBER; finishX++)
+				{
+					currFlightPids[finishX].kp    = ( (flightPids[finishX].kp + lastFlightPids[finishX].kp) * 0.5);
+					currFlightPids[finishX].ki    = ( (flightPids[finishX].ki + lastFlightPids[finishX].ki) * 0.5);
+					currFlightPids[finishX].kd    = ( (flightPids[finishX].kd + lastFlightPids[finishX].kd) * 0.5);
+
+					currFlightSetPoints[finishX]  = ( (flightSetPoints[finishX] + lastFlightSetPoints[finishX]) * 0.5);
+
+					currFilteredGyroData[finishX] = ( (filteredGyroData[finishX] + lastFilteredGyroData[finishX]) * 0.5);
+
+					currDpsGyroArray[finishX]     = ( (dpsGyroArray[finishX] + lastDpsGyroArray[finishX]) * 0.5);
+
+					currFilteredAccData[finishX]  = ( (filteredAccData[finishX] + lastFilteredAccData[finishX]) * 0.5);
+				}
+
+				currMotorOutput[0]      = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5);
+				currMotorOutput[1]      = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5);
+				currMotorOutput[2]      = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5);
+				currMotorOutput[3]      = ( (motorOutput[3] + lastMotorOutput[3]) * 0.5);
+
+				//copy current value to last values.
+				memcpy(lastFlightPids, flightPids, sizeof(pid_output));
+
+				memcpy(lastFlightSetPoints, flightSetPoints, sizeof(lastFlightSetPoints));
+				memcpy(lastFilteredGyroData, filteredGyroData, sizeof(lastFilteredGyroData));
+				memcpy(lastDpsGyroArray, dpsGyroArray, sizeof(lastDpsGyroArray));
+				memcpy(lastFilteredAccData, filteredAccData, sizeof(lastFilteredAccData));
+
+				lastMotorOutput[0] = motorOutput[0];
+				lastMotorOutput[1] = motorOutput[1];
+				lastMotorOutput[2] = motorOutput[2];
+				lastMotorOutput[3] = motorOutput[3];
+
 				//write iframe
 				WriteByteToFlash( 'I' );
 
 				BlackboxWriteUnsignedVB(logItteration);
 				BlackboxWriteUnsignedVB(logStartMicros + (logItteration * logRateTime) );
 
-				BlackboxWriteSignedVB( (int32_t)(flightPids[YAW].kp           * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(flightPids[YAW].ki           * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(flightPids[YAW].kd           * 1000) );
+				BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].kp           * 1000) );
+				BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].ki           * 1000) );
+				BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].kd           * 1000) );
 
-				BlackboxWriteSignedVB( (int32_t)(flightPids[ROLL].kp          * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(flightPids[ROLL].ki          * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(flightPids[ROLL].kd          * 1000) );
+				BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].kp          * 1000) );
+				BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].ki          * 1000) );
+				BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].kd          * 1000) );
 
-				BlackboxWriteSignedVB( (int32_t)(flightPids[PITCH].kp         * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(flightPids[PITCH].ki         * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(flightPids[PITCH].kd         * 1000) );
+				BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].kp         * 1000) );
+				BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].ki         * 1000) );
+				BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].kd         * 1000) );
 
 				//-1 to 1 to -500 to 500
 				BlackboxWriteSignedVB( (int32_t)( ((smoothedRcCommandF[YAW])      * 500)) ); //20
@@ -251,30 +311,32 @@ void UpdateBlackbox(pid_output *flightPids, float flightSetPoints[], float dpsGy
 				BlackboxWriteSignedVB( (int32_t)( ((smoothedRcCommandF[THROTTLE] + 1) * 500) + 1000) ); //26
 
 				//-2000.0 to 2000.0 DPS
-				BlackboxWriteSignedVB( (int32_t)(flightSetPoints[YAW]    * 16.4) ); //28
-				BlackboxWriteSignedVB( (int32_t)(flightSetPoints[ROLL]   * 16.4) ); //30
-				BlackboxWriteSignedVB( (int32_t)(flightSetPoints[PITCH]  * 16.4) ); //32
+				BlackboxWriteSignedVB( (int32_t)(currFlightSetPoints[YAW]    * 16.4) ); //28
+				BlackboxWriteSignedVB( (int32_t)(currFlightSetPoints[ROLL]   * 16.4) ); //30
+				BlackboxWriteSignedVB( (int32_t)(currFlightSetPoints[PITCH]  * 16.4) ); //32
 
 				//-2000.0 to 2000.0 DPS
-				//BlackboxWriteSignedVB( (int32_t)(dpsGyroArray[YAW]       * 16.4) ); //34
-				//BlackboxWriteSignedVB( (int32_t)(dpsGyroArray[ROLL]      * 16.4) ); //36
-				//BlackboxWriteSignedVB( (int32_t)(dpsGyroArray[PITCH]     * 16.4) ); //38
+				//BlackboxWriteSignedVB( (int32_t)(currDpsGyroArray[YAW]       * 16.4) ); //34
+				//BlackboxWriteSignedVB( (int32_t)(currDpsGyroArray[ROLL]      * 16.4) ); //36
+				//BlackboxWriteSignedVB( (int32_t)(currDpsGyroArray[PITCH]     * 16.4) ); //38
+				(void)(dpsGyroArray);
+				(void)(currDpsGyroArray);
 
 				//-2000.0 to 2000.0 DPS
-				BlackboxWriteSignedVB( (int32_t)(filteredGyroData[YAW]   * 16.4) ); //40
-				BlackboxWriteSignedVB( (int32_t)(filteredGyroData[ROLL]  * 16.4) ); //42
-				BlackboxWriteSignedVB( (int32_t)(filteredGyroData[PITCH] * 16.4) ); //44
+				BlackboxWriteSignedVB( (int32_t)(currFilteredGyroData[YAW]   * 16.4) ); //40
+				BlackboxWriteSignedVB( (int32_t)(currFilteredGyroData[ROLL]  * 16.4) ); //42
+				BlackboxWriteSignedVB( (int32_t)(currFilteredGyroData[PITCH] * 16.4) ); //44
 
 				//-16 to 16 Gees to crappy number
-				BlackboxWriteSignedVB( (int32_t)(filteredAccData[ACCX]   * 2048) ); //46
-				BlackboxWriteSignedVB( (int32_t)(filteredAccData[ACCY]   * 2048) ); //48
-				BlackboxWriteSignedVB( (int32_t)(filteredAccData[ACCZ]   * 2048) ); //50
+				BlackboxWriteSignedVB( (int32_t)(currFilteredAccData[ACCX]   * 2048) ); //46
+				BlackboxWriteSignedVB( (int32_t)(currFilteredAccData[ACCY]   * 2048) ); //48
+				BlackboxWriteSignedVB( (int32_t)(currFilteredAccData[ACCZ]   * 2048) ); //50
 
 				//0 TO 1 to 1000 to 2000
-				BlackboxWriteSignedVB( (int32_t)( (motorOutput[0] + 1) * 1000) ); //52
-				BlackboxWriteSignedVB( (int32_t)( (motorOutput[1] + 1) * 1000) ); //54
-				BlackboxWriteSignedVB( (int32_t)( (motorOutput[2] + 1) * 1000) ); //56
-				BlackboxWriteSignedVB( (int32_t)( (motorOutput[3] + 1) * 1000) ); //58
+				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[0] + 1) * 1000) ); //52
+				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[1] + 1) * 1000) ); //54
+				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[2] + 1) * 1000) ); //56
+				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[3] + 1) * 1000) ); //58
 			}
 /*
 			//pages are aligned with data at all times if we keep this at 256

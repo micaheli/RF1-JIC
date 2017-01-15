@@ -118,3 +118,71 @@ void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on)
     	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
     }
 }
+
+uint32_t GetExtinFromPin(uint16_t GPIO_Pin)
+{
+
+	switch (GPIO_Pin)
+	{
+		case GPIO_PIN_0:
+			return (EXTI0_IRQn);
+		case GPIO_PIN_1:
+			return (EXTI1_IRQn);
+		case GPIO_PIN_2:
+			return (EXTI2_IRQn);
+		case GPIO_PIN_3:
+			return (EXTI3_IRQn);
+		case GPIO_PIN_4:
+			return (EXTI4_IRQn);
+		case GPIO_PIN_5:
+		case GPIO_PIN_6:
+		case GPIO_PIN_7:
+		case GPIO_PIN_8:
+		case GPIO_PIN_9:
+			return (EXTI9_5_IRQn);
+		case GPIO_PIN_10:
+		case GPIO_PIN_11:
+		case GPIO_PIN_12:
+		case GPIO_PIN_13:
+		case GPIO_PIN_14:
+		case GPIO_PIN_15:
+			return (EXTI15_10_IRQn);
+	}
+
+	return (0);
+
+}
+
+uint32_t GetExtiCallbackFromPin(uint16_t GPIO_Pin)
+{
+
+	switch (GPIO_Pin)
+	{
+		case GPIO_PIN_0:
+			return (FP_EXTI0);
+		case GPIO_PIN_1:
+			return (FP_EXTI1);
+		case GPIO_PIN_2:
+			return (FP_EXTI2);
+		case GPIO_PIN_3:
+			return (FP_EXTI3);
+		case GPIO_PIN_4:
+			return (FP_EXTI4);
+		case GPIO_PIN_5:
+		case GPIO_PIN_6:
+		case GPIO_PIN_7:
+		case GPIO_PIN_8:
+		case GPIO_PIN_9:
+			return (FP_EXTI9_5);
+		case GPIO_PIN_10:
+		case GPIO_PIN_11:
+		case GPIO_PIN_12:
+		case GPIO_PIN_13:
+		case GPIO_PIN_14:
+		case GPIO_PIN_15:
+			return (FP_EXTI15_10);
+	}
+
+	return (0);
+
+}

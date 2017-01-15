@@ -8,6 +8,7 @@ volatile uint32_t disarmCount = 0, latchFirstArm = 0;
 
 static uint32_t packetTime = 11;
 
+uint32_t PreArmFilterCheck = 0;
 uint32_t activeFailsafe = 0;
 
 uint32_t rxData[MAXCHANNELS];
@@ -16,6 +17,14 @@ uint32_t skipRxMap = 0;
 uint32_t progMode  = 0;
 uint32_t progTimer = 0;
 volatile uint32_t armCheckLatch = 0;
+uint32_t ppmPin = 99;
+
+#define PPM_SYNC_MINIMUM_US 4000
+#define PPM_BUFFER_SIZE 25
+#define PPM_CHANNELS 8
+uint32_t ppmBufferIdx = 0;
+uint32_t ppmBuffer[PPM_BUFFER_SIZE];
+uint32_t ppmData[PPM_CHANNELS];
 
 // 2048 resolution
 #define SPEKTRUM_FRAME_SIZE 16
@@ -23,7 +32,7 @@ uint32_t spektrumChannelShift = 3;
 uint32_t spektrumChannelMask  = 0x07;
 
 static rx_calibration_records rxCalibrationRecords[3];
-
+static void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx);
 
 static void checkRxPreArmCalibration(void);
 
@@ -70,7 +79,7 @@ static void checkRxPreArmCalibration(void)
 					{
 						rxCalibrationRecords[axis].rxCalibrationRecord[y].dataValue     = rxData[axis];
 						rxCalibrationRecords[axis].rxCalibrationRecord[y].timesOccurred = 1;
-						z++;
+						break;
 					}
 				}
 			}
@@ -164,21 +173,26 @@ inline void CheckFailsafe(void)
  void RxUpdate(void) // hook for when rx updates
 {
 
-	//throttle must be low and aux must be high before we look for switching for arming
-	if ( (trueRcCommandF[AUX1] < -0.5) && (trueRcCommandF[THROTTLE] < -0.8) )
+	 //get current flight modes
+	CheckRxToModes();
+
+	//throttle must be low and board must be set to not armed before we allow an arming
+	if ( (!ModeActive(M_ARMED)) && (trueRcCommandF[THROTTLE] < -0.85) )
 		armCheckLatch = 1;
 
 	if (!latchFirstArm)
 		checkRxPreArmCalibration(); //collect rx data if not armed yet
 
-	if (armCheckLatch) {
-		if ( (latchFirstArm == 0) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) )
+	if (armCheckLatch)
+	{
+		if ( (latchFirstArm == 0) && (!boardArmed) && (ModeActive(M_ARMED)) )
 		{
 			latchFirstArm = 1;
+			PreArmFilterCheck = 1;
 			buzzerStatus.status = STATE_BUZZER_ARMING;
 			ResetGyroCalibration();
 		}
-		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (trueRcCommandF[AUX1] > 0.5) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.8) && !progMode)
+		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (ModeActive(M_ARMED)) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.85) && !progMode)
 		{ //TODO: make uncalibrated board buzz
 
 			latchFirstArm = 1; //1 is double single single single, 0 is double double double double
@@ -192,15 +206,24 @@ inline void CheckFailsafe(void)
 			ArmBoard();
 
 			//todo: make sure stick movement on these three axis are next to zero before setting centers.
+
+			if ( ABS((int32_t)rxCalibrationRecords[PITCH].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
+				mainConfig.rcControlsConfig.midRc[PITCH] = rxCalibrationRecords[PITCH].highestDataValue;
+			if ( ABS((int32_t)rxCalibrationRecords[ROLL].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[ROLL]) < 30 )
+				mainConfig.rcControlsConfig.midRc[ROLL] = rxCalibrationRecords[ROLL].highestDataValue;
+			if ( ABS((int32_t)rxCalibrationRecords[YAW].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
+				mainConfig.rcControlsConfig.midRc[YAW] = rxCalibrationRecords[YAW].highestDataValue;
+			/*
 			if ( ABS((int32_t)rxData[PITCH] - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
 				mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
 			if ( ABS((int32_t)rxData[ROLL] - (int32_t)mainConfig.rcControlsConfig.midRc[ROLL]) < 30 )
 				mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
 			if ( ABS((int32_t)rxData[YAW] - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
 				mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
+			*/
 
 		}
-		else if ( (trueRcCommandF[AUX1] < 0.5) )
+		else if ( !ModeActive(M_ARMED) )
 		{
 			if (disarmCount++ > 3)
 			{
@@ -211,7 +234,6 @@ inline void CheckFailsafe(void)
 				DisarmBoard();
 				rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_IDLE);
 			}
-
 		}
 	}
 
@@ -253,6 +275,7 @@ void SpektrumBind (uint32_t bindNumber)
 		DelayMs(2);
 
 	}
+
 }
 
 inline uint32_t ChannelMap(uint32_t inChannel)
@@ -280,16 +303,28 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	volatile uint32_t spektrumChannel;
 	uint32_t x;
 	uint32_t value;
+	uint16_t channelIdMask;
+	uint16_t servoPosMask;
 
+	channelIdMask = 0x7800;
+	servoPosMask  = 0x07FF;
+	//DSM2 is 10 bits and the others are 11 bits of data for the RX
+	if ((board.serials[serialNumber].Protocol == USING_DSM2_T) || (board.serials[serialNumber].Protocol == USING_DSM2_R))
+	{
+		channelIdMask = 0xFC00;
+		servoPosMask  = 0x03FF;
+	}
 																													// Make sure this is very first thing done in function, and its called first on interrupt
 	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SPEKTRUM_FRAME_SIZE);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
 															   	   	   	   	   	   	   	   	   	   	   	   	   	   	// We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
 
-	for (x = 2; x < 16; x += 2) {
+	for (x = 2; x < 16; x += 2)
+	{
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
-		spektrumChannel = (value & 0x7800) >> 11;
-		if (spektrumChannel < MAXCHANNELS) {
-			rxData[ChannelMap(spektrumChannel)] = value & 0x7FF;
+		spektrumChannel = (value & channelIdMask) >> 11;
+		if (spektrumChannel < MAXCHANNELS)
+		{
+			rxData[ChannelMap(spektrumChannel)] = value & servoPosMask;
 			rx_timeout = 0;
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
 				buzzerStatus.status = STATE_BUZZER_OFF;
@@ -298,16 +333,23 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	spekPhase = copiedBufferData[2] & 0x80;
 
 	//Check for vtx data
-	if (copiedBufferData[12] == 0xE0) { 
+	if (copiedBufferData[12] == 0xE0)
+	{
 		vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
 		vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
 	}
       
 	      //Check channel slot 7 for vtx power, pit, and region data
-	if (copiedBufferData[14] == 0xE0) { 
+	if (copiedBufferData[14] == 0xE0)
+	{
 		vtxData.vtxPower  = copiedBufferData[15] & 0x03;
 		vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
 		vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
+	}
+
+	if (mainConfig.telemConfig.telemSpek)
+	{
+		sendSpektrumTelem();
 	}
 
 	packetTime = 11;
@@ -426,16 +468,126 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 }
 
+void ProcessIbusPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
+{
+
+	uint32_t i;
+	uint16_t chkSum, rxSum;
+
+															// Make sure this is very first thing done in function, and its called first on interrupt
+	memcpy(copiedBufferData, serialRxBuffer, frameSize);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+															// We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
+	chkSum = 0xFFFF;
+	for (i = 0; i < 30; i++)
+		chkSum -= copiedBufferData[i];
+
+	rxSum = copiedBufferData[30] + (copiedBufferData[31] << 8);
+
+	 if (chkSum == rxSum)
+	 {
+		rxData[ChannelMap(0)] = (copiedBufferData[ 3] << 8) + copiedBufferData[ 2];
+		rxData[ChannelMap(1)] = (copiedBufferData[ 5] << 8) + copiedBufferData[ 4];
+		rxData[ChannelMap(2)] = (copiedBufferData[ 7] << 8) + copiedBufferData[ 6];
+		rxData[ChannelMap(3)] = (copiedBufferData[ 9] << 8) + copiedBufferData[ 8];
+		rxData[ChannelMap(4)] = (copiedBufferData[11] << 8) + copiedBufferData[10];
+		rxData[ChannelMap(5)] = (copiedBufferData[13] << 8) + copiedBufferData[12];
+		rxData[ChannelMap(6)] = (copiedBufferData[15] << 8) + copiedBufferData[14];
+		rxData[ChannelMap(7)] = (copiedBufferData[17] << 8) + copiedBufferData[16];
+		rxData[ChannelMap(8)] = (copiedBufferData[19] << 8) + copiedBufferData[18];
+		rxData[ChannelMap(9)] = (copiedBufferData[21] << 8) + copiedBufferData[20];
+
+		packetTime = 10;
+		rx_timeout = 0;
+
+		if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
+			buzzerStatus.status = STATE_BUZZER_OFF;
+
+		InlineCollectRcCommand();
+		RxUpdate();
+	}
+
+}
+
+void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx)
+{
+//	ppmBuffer[*ppmBufferIdx]
+
+	uint32_t x;
+	//make sure sync is correct:
+	//we have at least two times, make sure they are at least the PPM_SYNC_MINIMUM_US apart
+	if ( (*ppmBufferIdx > 17) && ( (ppmBuffer2[1] - ppmBuffer[0]) >  PPM_SYNC_MINIMUM_US ) )
+	{
+		//sync looks good, where 0 is the end of the last pulse and 1 is the beginning of the new pulse
+		//we have at least 8 channels which is 18 interrupts
+
+		ppmData[0] = (ppmBuffer[ 3] - ppmBuffer[ 2]);
+		ppmData[1] = (ppmBuffer[ 5] - ppmBuffer[ 4]);
+		ppmData[2] = (ppmBuffer[ 7] - ppmBuffer[ 6]);
+		ppmData[3] = (ppmBuffer[ 9] - ppmBuffer[ 8]);
+		ppmData[4] = (ppmBuffer[11] - ppmBuffer[10]);
+		ppmData[5] = (ppmBuffer[13] - ppmBuffer[12]);
+		ppmData[6] = (ppmBuffer[15] - ppmBuffer[14]);
+		ppmData[7] = (ppmBuffer[17] - ppmBuffer[16]);
+
+		for (x=0;x<8;x++)
+		{
+			if ( (ppmData[x] < 2200) && (ppmData[x] > 500) )
+			{
+				rxData[ChannelMap(x)] = ppmData[x];
+			}
+		}
+
+		packetTime = (ppmBuffer[17] - ppmBuffer[0]);
+		rx_timeout = 0;
+
+		if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
+			buzzerStatus.status = STATE_BUZZER_OFF;
+
+		InlineCollectRcCommand();
+		RxUpdate();
+
+		ppmBuffer[0] = ppmBuffer[*ppmBufferIdx-1];
+		*ppmBufferIdx = 1;
+	}
+	else if ( (*ppmBufferIdx > 1) && (ppmBuffer[1] - ppmBuffer[0]) <  PPM_SYNC_MINIMUM_US ) //we have at least two times and the first two aren't apart enough, so we reset the sync
+	{
+		//reset sync until we see a sync pulse
+		ppmBuffer[0] = ppmBuffer[*ppmBufferIdx-1];
+		*ppmBufferIdx = 1;
+	}
+
+}
+
 void InitRcData (void)
 {
 
 	bzero(trueRcCommandF, MAXCHANNELS);
 	bzero(curvedRcCommandF, MAXCHANNELS);
 	bzero(smoothedRcCommandF, MAXCHANNELS);
+	bzero(ppmBuffer, sizeof(ppmBuffer));
+	ppmBufferIdx = 0;
 
 	isRxDataNew = 0;
 
 }
+
+
+void PpmExtiCallback(void)
+{
+	// EXTI line interrupt detected
+	if(__HAL_GPIO_EXTI_GET_IT(ppmPin) != RESET)
+	{
+		//record time of IRQ in microseconds
+		ppmBuffer[ppmBufferIdx++] = Micros();
+		ProcessPpmPacket(ppmBuffer, &ppmBufferIdx);
+		if (ppmBufferIdx == PPM_BUFFER_SIZE)
+		{
+			ppmBufferIdx = 0;
+		}
+		__HAL_GPIO_EXTI_CLEAR_IT(ppmPin);
+	}
+}
+
 
 inline void InlineCollectRcCommand (void)
 {

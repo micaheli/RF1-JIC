@@ -41,20 +41,20 @@ inline uint32_t ModeActive(uint32_t modeMask)
 
 void CheckRxToModes(void)
 {
-	uint32_t mode = 0;
+	uint32_t mode = 1;
 	uint16_t x;
-	uint16_t channel;
+	volatile uint16_t channel;
 	float rcMin;
 	float rcMax;
 
 	for (x=0;x<FLIGHT_MODE_ARRAY_SIZE;x=x+3)
 	{
 		channel = (uint16_t)mainConfig.flightModeArray[x];
-		rcMin   = (float)mainConfig.flightModeArray[x+1];
-		rcMax   = (float)mainConfig.flightModeArray[x+2];
+		rcMin   = (float)mainConfig.flightModeArray[x+1] * 0.001;
+		rcMax   = (float)mainConfig.flightModeArray[x+2] * 0.001;
 		if ((channel > 3) && (channel < MAXCHANNELS)) //first four channels are not to be used for flight modes
 		{
-			if ( (trueRcCommandF[channel] > rcMin) && (trueRcCommandF[channel] < rcMax) )
+			if ( (trueRcCommandF[channel] >= rcMin) && (trueRcCommandF[channel] <= rcMax) )
 			{
 				EnableMode(mode);
 			}
@@ -63,7 +63,7 @@ void CheckRxToModes(void)
 				DisableMode(mode);
 			}
 		}
-		mode++;
+		mode *= 2;
 	}
 
 }
@@ -78,18 +78,17 @@ void PrintModes(void)
 		//mainConfig.flightModeArray[x+2]; //flight mode max Rc
 
 		bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s=%d=%d=%d", stringModes[x].modeString, mainConfig.flightModeArray[x+0], mainConfig.flightModeArray[x+1], mainConfig.flightModeArray[x+2] );
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s=%d=%d=%d", stringModes[x].modeString, mainConfig.flightModeArray[x*3+0], mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
 		RfCustomReply(rf_custom_out_buffer);
 		DelayMs(3);
 	}
 }
 
+/*
 void SplitString(char *inString, char *inString2, char token)
 {
 	uint32_t x;
 	uint32_t stringLength;
-
-	(void)(inString2);
 
 	stringLength = strlen(inString);
 
@@ -99,36 +98,106 @@ void SplitString(char *inString, char *inString2, char token)
 			break;
 	}
 
-	if (stringLength > x)
+	if ( stringLength > x )
 	{
 		inString2 = inString + x + 1; //put everything after the token into inString2
 	}
 
 	inString[x] = 0; //set modstrging to modeSting
 }
+*/
 
-void SetupModes(char *modeString)
+void SetMode(uint32_t modeMask, uint16_t channel, int16_t minRc, int16_t maxRc)
 {
+
+	uint32_t x;
+
+	for (x=0;x<(sizeof(stringModes)/sizeof(string_modes_rec));x++)
+	{
+		if ( stringModes[x].modeMask == modeMask)
+		{
+			mainConfig.flightModeArray[x*3+0] = channel;
+			mainConfig.flightModeArray[x*3+1] = minRc;
+			mainConfig.flightModeArray[x*3+2] = maxRc;
+			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d", stringModes[x].modeString, mainConfig.flightModeArray[x*3+0], mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+			RfCustomReply(rf_custom_out_buffer);
+		}
+	}
+}
+
+void SetupModes(char *modString)
+{
+
 	uint32_t x;
 	char *channelString = NULL;
 	char *minRcString   = NULL;
 	char *maxRcString   = NULL;
 	uint16_t channel;
-	uint16_t minRc;
-	uint16_t maxRc;
+	int16_t minRc;
+	int16_t maxRc;
+	uint32_t stringLength;
 
-	if (!strcmp("list", modeString))
+	if (!strcmp("list", modString))
 	{
 		PrintModes();
 	}
 	else
 	{
 		//look for "MODE=CHANEL=MINRX=MAXRC"
-		StripSpaces(modeString);
+		StripSpaces(modString);
 
-		SplitString(modeString,    channelString, '=');
-		SplitString(channelString, minRcString,   '=');
-		SplitString(minRcString,   maxRcString,   '=');
+		stringLength = strlen(modString);
+
+		for (x = 0; x < stringLength; x++)
+		{
+			if (modString[x] == '=')
+				break;
+		}
+
+		if ( stringLength > x )
+		{
+			channelString = modString + x + 1; //put everything after the token into inString2
+		}
+
+		modString[x] = 0; //set modstrging to modeSting
+
+		stringLength = strlen(channelString);
+
+		for (x = 0; x < stringLength; x++)
+		{
+			if (channelString[x] == '=')
+				break;
+		}
+
+		if ( stringLength > x )
+		{
+			minRcString = channelString + x + 1; //put everything after the token into inString2
+		}
+
+		channelString[x] = 0; //set modstrging to modeSting
+
+
+
+
+		stringLength = strlen(minRcString);
+
+		for (x = 0; x < stringLength; x++)
+		{
+			if (minRcString[x] == '=')
+				break;
+		}
+
+		if ( stringLength > x )
+		{
+			maxRcString = minRcString + x + 1; //put everything after the token into inString2
+		}
+
+		minRcString[x] = 0; //set modstring to modeSting
+
+		//SplitString(modeString,    channelString, '=');
+		//SplitString(channelString, minRcString,   '=');
+		//SplitString(minRcString,   maxRcString,   '=');
 
 		channel = atoi(channelString);
 		minRc   = atoi(minRcString);
@@ -136,13 +205,13 @@ void SetupModes(char *modeString)
 
 		for (x=0;x<(sizeof(stringModes)/sizeof(string_modes_rec));x++)
 		{
-			if (!strcmp(stringModes[x].modeString, modeString))
+			if (!strcmp(stringModes[x].modeString, modString))
 			{
-				mainConfig.flightModeArray[x+0] = channel;
-				mainConfig.flightModeArray[x+1] = minRc;
-				mainConfig.flightModeArray[x+2] = maxRc;
+				mainConfig.flightModeArray[x*3+0] = channel;
+				mainConfig.flightModeArray[x*3+1] = minRc;
+				mainConfig.flightModeArray[x*3+2] = maxRc;
 				bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d", stringModes[x].modeString, mainConfig.flightModeArray[x+0], mainConfig.flightModeArray[x+1], mainConfig.flightModeArray[x+2] );
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d", stringModes[x].modeString, mainConfig.flightModeArray[x*3+0], mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
 				RfCustomReply(rf_custom_out_buffer);
 			}
 		}

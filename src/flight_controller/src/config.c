@@ -23,13 +23,15 @@ static void EncodeBlock( unsigned char *in, unsigned char *out, int len )
 
 const string_comp_rec stringCompTable[] = {
 		//mixer.h
-		{"ESC_MULTISHOT", ESC_MULTISHOT },
-		{"ESC_ONESHOT",   ESC_ONESHOT },
-		{"ESC_PWM",       ESC_PWM },
-		{"ESC_ONESHOT42", ESC_ONESHOT42 },
-		{"ESC_DSHOT600",  ESC_DSHOT600 },
-		{"ESC_DSHOT300",  ESC_DSHOT300 },
-		{"ESC_DSHOT150",  ESC_DSHOT150 },
+		{"ESC_MULTISHOT",    ESC_MULTISHOT },
+		{"ESC_ONESHOT",      ESC_ONESHOT },
+		{"ESC_PWM",          ESC_PWM },
+		{"ESC_ONESHOT42",    ESC_ONESHOT42 },
+		{"ESC_DSHOT600",     ESC_DSHOT600 },
+		{"ESC_DSHOT300",     ESC_DSHOT300 },
+		{"ESC_DSHOT150",     ESC_DSHOT150 },
+		{"ESC_MULTISHOT25",  ESC_MULTISHOT25 },
+		{"ESC_MULTISHOT125", ESC_MULTISHOT125 },
 //		{"ESC_MEGAVOLT",  ESC_MEGAVOLT },
 
 		//mixer.h
@@ -67,12 +69,16 @@ const string_comp_rec stringCompTable[] = {
 
 		//rx.h
 //		{"USING_MANUAL",           USING_MANUAL},
-		{"USING_SPEKTRUM_ONE_WAY", USING_SPEKTRUM_ONE_WAY},
-		{"USING_SPEKTRUM_TWO_WAY", USING_SPEKTRUM_TWO_WAY},
-		{"USING_SBUS",             USING_SBUS},
-		{"USING_SBUS_SPORT",       USING_SBUS_SPORT},
-		{"USING_SUMD",             USING_SUMD},
-		{"USING_SUMD_TWO_WAY",     USING_SUMD_TWO_WAY},
+		{"USING_SPEKTRUM_R",       USING_SPEKTRUM_R},
+		{"USING_SPEKTRUM_T",       USING_SPEKTRUM_T},
+		{"USING_SBUS_R",           USING_SBUS_R},
+		{"USING_SBUS_T",           USING_SBUS_T},
+		{"USING_SUMD_R",           USING_SUMD_R},
+		{"USING_SUMD_T",           USING_SUMD_T},
+		{"USING_IBUS_R",           USING_IBUS_R},
+		{"USING_IBUS_T",           USING_IBUS_T},
+		{"USING_PPM_R",            USING_PPM_R},
+		{"USING_PPM_T",            USING_PPM_T},
 
 };
 
@@ -82,7 +88,7 @@ const config_variables_rec valueTable[] = {
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtcol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 5, "" },
-		{ "motor_mixer", 		typeUINT,  "mixr", &mainConfig.mixerConfig.motorMixer,					0, 2, 1, "" },
+		{ "motor_mixer", 		typeUINT,  "mixr", &mainConfig.mixerConfig.motorMixer,					0, 2, 0, "" },
 		{ "mout1", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[0],				0, 9, 0, "" },
 		{ "mout2", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[1],				0, 9, 1, "" },
 		{ "mout3", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[2],				0, 9, 2, "" },
@@ -97,52 +103,61 @@ const config_variables_rec valueTable[] = {
 		{ "led_green",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledGreen,						0, 255, 0, "" },
 		{ "led_blue",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledBlue,						0, 255, 0, "" },
 
+		{ "telem_sport",		typeUINT,  "telm", &mainConfig.telemConfig.telemSport,					0, TELEM_LAST, TELEM_OFF, "" },
+		{ "telem_spek",	 		typeUINT,  "telm", &mainConfig.telemConfig.telemSpek,					0, TELEM_LAST, TELEM_OFF, "" },
+		{ "telem_msp",	 		typeUINT,  "telm", &mainConfig.telemConfig.telemMsp,					0, TELEM_LAST, TELEM_OFF, "" },
+		{ "telem_mavlink", 		typeUINT,  "telm", &mainConfig.telemConfig.telemMav,					0, TELEM_LAST, TELEM_OFF, "" },
+
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, 12, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1,  0, "" },
 		{ "sml_board_rot_x", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],		0, 10, 0, "" },
 		{ "sml_board_rot_y", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Y],		0, 10, 0, "" },
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		0, 10, 0, "" },
-		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_H32, LOOP_H32, "" },
+		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 		{ "gyro_filter_type",	typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeGyro, 				0, 2, 0, "" },
 		{ "kd_filter_type",		typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeKd, 				0, 2, 2, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 300, 305.00, "" }, //1000 18
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 300, 110.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 300, 135.00, "" },
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 300, 475.00, "" }, //1000 14
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 300, 370.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 300, 435.00, "" },
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 300, 2100.00, "" }, //1000000 114
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 300, 800.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 300, 1000.00, "" },
-		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 						0, 300, 2, "" },
-		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 						0, 300, 4, "" },
-		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 					0, 300, 4, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 300, 250.00, "" }, //1000 18
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 300, 150.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 300, 200.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 300, 600.00, "" }, //1000 14
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 300, 500.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 300, 550.00, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 300, 700.00, "" }, //1000000 114
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 300, 700.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 300, 800.00, "" },
+		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 						0, 300, 0, "" },
+		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 						0, 300, 0, "" },
+		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 					0, 300, 0, "" },
 
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 3, "" },
-		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 3, "" },
-		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 3, "" },
+		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 0, "" },
+		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
+		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
 
-		{ "dial",	 			typeUINT,  "filt", &mainConfig.filterConfig[YAW].dial, 		    		0, 10, 0, "" },
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 10, 0.0070, "" },
-		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 10, 150.00, "" },
-		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 				0, 10, 0.1500, "" },
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 10, 0.0070, "" },
-		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 10, 100.00, "" },
-		{ "roll_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.p, 				0, 10, 0.1500, "" },
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 10, 0.0070, "" },
-		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 10, 100.00, "" },
-		{ "pitch_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.p, 				0, 10, 0.1500, "" },
+		{ "slp", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 32, 20, "" },
+		{ "sli", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 32, 20, "" },
+		{ "sla", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 32, 40, "" },
+		{ "sld", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 32, 0.65, "" },
 
-		{ "yaw_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.q, 					0, 10, 0.1000, "" },
-		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 10, 75.000, "" },
-		{ "yaw_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.p, 					0, 10, 0.1500, "" },
-		{ "roll_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.q, 				0, 10, 0.1000, "" },
-		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 10, 80.000, "" },
-		{ "roll_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.p, 				0, 10, 0.1500, "" },
-		{ "pitch_kd_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.q, 				0, 10, 0.1000, "" },
-		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 10, 80.000, "" },
-		{ "pitch_kd_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.p, 				0, 10, 0.1500, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 10, 30.000, "" },
+		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 10, 88.000, "" },
+		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 				0, 10, 0.0000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 10, 30.000, "" },
+		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 10, 88.000, "" },
+		{ "roll_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.p, 				0, 10, 0.0000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 10, 30.000, "" },
+		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 10, 88.000, "" },
+		{ "pitch_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.p, 				0, 10, 0.0000, "" },
+
+		{ "yaw_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.q, 					0, 10, 0.0000, "" },
+		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 10, 90.000, "" },
+		{ "yaw_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.p, 					0, 10, 0.0000, "" },
+		{ "roll_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.q, 				0, 10, 0.0000, "" },
+		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 10, 90.000, "" },
+		{ "roll_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.p, 				0, 10, 0.0000, "" },
+		{ "pitch_kd_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.q, 				0, 10, 0.0000, "" },
+		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 10, 90.000, "" },
+		{ "pitch_kd_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.p, 				0, 10, 0.0000, "" },
 
 		{ "yaw_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kdBq.lpfHz, 			0, 200, 68.00, "" },
 		{ "roll_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kdBq.lpfHz, 			0, 200, 68.00, "" },
@@ -150,16 +165,16 @@ const config_variables_rec valueTable[] = {
 
 
 		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 				0, 10, 2.0000, "" },
-		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 055.00, "" },
-		{ "x_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.p, 				0, 10, 0.0500, "" },
+		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 025.00, "" },
+		{ "x_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.p, 				0, 10, 0.0150, "" },
 		{ "y_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.q, 				0, 10, 2.0000, "" },
-		{ "y_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.r, 				0, 10, 055.00, "" },
+		{ "y_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.r, 				0, 10, 025.00, "" },
 		{ "y_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.p, 				0, 10, 0.0500, "" },
 		{ "z_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.q, 				0, 10, 2.0000, "" },
-		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 055.00, "" },
+		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 025.00, "" },
 		{ "z_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.p, 				0, 10, 0.0500, "" },
 
-		{ "rx_protocol", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxProtcol, 				0, 10, USING_SPEKTRUM_TWO_WAY, "" },
+		{ "rx_protocol", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxProtcol, 				0, 10, USING_SPEKTRUM_T, "" },
 		{ "rx_usart", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxUsart, 				0, MAX_USARTS-1, ENUM_USART1, "" },
 
 		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 		0, 0.1, 0.003, "" },
@@ -560,7 +575,7 @@ int32_t SetVariable(char *inString)
 		{
 			SetValueOrString(x, args);
 			autoSaveTimer = InlineMillis();
-			if ( (!strcmp(valueTable[x].group, "mixr")) || (!strcmp(valueTable[x].group, "gyro")) || (!strcmp(valueTable[x].group, "filt"))  || (!strcmp(valueTable[x].group, "rccf")) ) {
+			if ( (!strcmp(valueTable[x].group, "telm")) || (!strcmp(valueTable[x].group, "mixr")) || (!strcmp(valueTable[x].group, "gyro")) || (!strcmp(valueTable[x].group, "filt"))  || (!strcmp(valueTable[x].group, "rccf")) ) {
 				resetBoard=1;
 			}
 			return (1);
@@ -791,7 +806,7 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 
 		}
-	else if (!strcmp("taranis_1", inString) || !strcmp("taranis_3", inString) || !strcmp("taranis_t_1", inString) || !strcmp("taranis_t_3", inString))
+	else if (!strcmp("sbus_r1", inString) || !strcmp("sbus_r3", inString) || !strcmp("sbus_r4", inString) || !strcmp("sbus_t1", inString) || !strcmp("sbus_t3", inString) || !strcmp("sbus_t4", inString))
 		{
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 985;
 			mainConfig.rcControlsConfig.midRc[ROLL]          = 985;
@@ -808,8 +823,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 172;
 			mainConfig.rcControlsConfig.minRc[AUX1]          = 1811;
 			mainConfig.rcControlsConfig.minRc[AUX2]          = 172;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 0;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 172;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 172;
 
 			mainConfig.rcControlsConfig.maxRc[PITCH]         = 1811;
 			mainConfig.rcControlsConfig.maxRc[ROLL]          = 1811;
@@ -817,8 +832,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 1811;
 			mainConfig.rcControlsConfig.maxRc[AUX1]          = 172;
 			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1811;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1000000;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1811;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1811;
 
 			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
 			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
@@ -826,8 +841,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
 			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
@@ -839,27 +854,42 @@ void ProcessCommand(char *inString)
 
 			mainConfig.rcControlsConfig.rcCalibrated         = 1;
 
-			if(!strcmp("taranis_t_1", inString)) {
+			if(!strcmp("sbus_r1", inString))
+			{
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_SPORT; //this is used by serial.c
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_R;       //this is used by serial.c
 			}
-			if(!strcmp("taranis_t_3", inString)) {
+			if(!strcmp("sbus_r3", inString))
+			{
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_SPORT; //this is used by serial.c
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_R;       //this is used by serial.c
 			}
-			if(!strcmp("taranis_1", inString)) {
+			if(!strcmp("sbus_r4", inString))
+			{
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_R;       //this is used by serial.c
+			}
+			if(!strcmp("sbus_t1", inString))
+			{
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS; //this is used by serial.c
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_T; //this is used by serial.c
 			}
-			if(!strcmp("taranis_3", inString)) {
+			if(!strcmp("sbus_t3", inString))
+			{
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS; //this is used by serial.c
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_T; //this is used by serial.c
+			}
+			if(!strcmp("sbus_t4", inString))
+			{
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_T; //this is used by serial.c
 			}
 
+			SetMode(M_ARMED, 4, 500, 1000);
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "settingdefaultstotaranis\n", sizeof("settingdefaultstotaranis\n"));
+			memcpy(rf_custom_out_buffer, "settingdefaultstosbus\n", sizeof("settingdefaultstosbus\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
@@ -869,7 +899,7 @@ void ProcessCommand(char *inString)
 			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
-	else if (!strcmp("sumd_1", inString) || !strcmp("sumd_3", inString))
+	else if (!strcmp("sumd_t1", inString) || !strcmp("sumd_t3", inString) || !strcmp("sumd_t4", inString) || !strcmp("sumd_r1", inString) || !strcmp("sumd_r3", inString) || !strcmp("sumd_r3", inString))
 		{
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 12000;
 			mainConfig.rcControlsConfig.midRc[ROLL]          = 12000;
@@ -886,8 +916,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 16000;
 			mainConfig.rcControlsConfig.minRc[AUX1]          = 8000;
 			mainConfig.rcControlsConfig.minRc[AUX2]          = 8000;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 0;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 8000;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 8000;
 
 			mainConfig.rcControlsConfig.maxRc[PITCH]         = 16000;
 			mainConfig.rcControlsConfig.maxRc[ROLL]          = 8000;
@@ -895,8 +925,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 8000;
 			mainConfig.rcControlsConfig.maxRc[AUX1]          = 16000;
 			mainConfig.rcControlsConfig.maxRc[AUX2]          = 16000;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1000000;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 16000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 16000;
 
 			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
 			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
@@ -904,8 +934,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
 			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
@@ -917,15 +947,32 @@ void ProcessCommand(char *inString)
 
 			mainConfig.rcControlsConfig.rcCalibrated         = 1;
 
-			if(!strcmp("sumd_1", inString)) {
+			if(!strcmp("sumd_t1", inString)) {
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_TWO_WAY; //this is used by serial.c
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_T; //this is used by serial.c
 			}
-			if(!strcmp("sumd_3", inString)) {
+			if(!strcmp("sumd_t3", inString)) {
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD; //this is used by serial.c
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_T; //this is used by serial.c
+			}
+			if(!strcmp("sumd_t4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_T; //this is used by serial.c
+			}
+			if(!strcmp("sumd_r1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_R; //this is used by serial.c
+			}
+			if(!strcmp("sumd_r3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_R; //this is used by serial.c
+			}
+			if(!strcmp("sumd_r4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_R; //this is used by serial.c
 			}
 
+			SetMode(M_ARMED, 4, 500, 1000);
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -939,43 +986,217 @@ void ProcessCommand(char *inString)
 			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
+	else if (!strcmp("ibus_t1", inString) || !strcmp("ibus_t3", inString) || !strcmp("ibus_t4", inString) || !strcmp("ibus_r1", inString) || !strcmp("ibus_r3", inString) || !strcmp("ibus_r3", inString))
+		{
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1500;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1500;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1500;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1500;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 1000;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 1000;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 1000;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 1000;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2000;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2000;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 3;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 2;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 1;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
+
+			mainConfig.rcControlsConfig.rcCalibrated         = 1;
+
+			if(!strcmp("ibus_t1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_T; //this is used by serial.c
+			}
+			if(!strcmp("ibus_t3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_T; //this is used by serial.c
+			}
+			if(!strcmp("ibus_t4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_T; //this is used by serial.c
+			}
+			if(!strcmp("ibus_r1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_R; //this is used by serial.c
+			}
+			if(!strcmp("ibus_r3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_R; //this is used by serial.c
+			}
+			if(!strcmp("ibus_r4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_R; //this is used by serial.c
+			}
+
+			SetMode(M_ARMED, 4, 500, 1000);
+			resetBoard = 1;
+
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "settingdefaultstoibus\n", sizeof("settingdefaultstoibus\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			SaveConfig(ADDRESS_CONFIG_START);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
+	else if (!strcmp("ppm_t1", inString) || !strcmp("ppm_t3", inString) || !strcmp("ppm_t4", inString) || !strcmp("ppm_r1", inString) || !strcmp("ppm_r3", inString) || !strcmp("ppm_r4", inString))
+		{
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1500;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1500;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1500;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1500;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 1000;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 1000;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 1000;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 1000;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2000;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2000;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
+
+			mainConfig.rcControlsConfig.rcCalibrated         = 1;
+
+			if(!strcmp("ppm_t1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_T; //this is used by serial.c
+			}
+			if(!strcmp("ppm_t3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_T; //this is used by serial.c
+			}
+			if(!strcmp("ppm_t4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_T; //this is used by serial.c
+			}
+			if(!strcmp("ppm_r1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_R; //this is used by serial.c
+			}
+			if(!strcmp("ppm_r3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_R; //this is used by serial.c
+			}
+			if(!strcmp("ppm_r4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_R; //this is used by serial.c
+			}
+
+			SetMode(M_ARMED, 4, 500, 1000);
+			resetBoard = 1;
+
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "settingdefaultstoppm\n", sizeof("settingdefaultstoppm\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			SaveConfig(ADDRESS_CONFIG_START);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
 	else if (!strcmp("pidsdefault", inString))
 		{
-			mainConfig.pidConfig[YAW].kp   = 305.00;
-			mainConfig.pidConfig[ROLL].kp  = 110.00;
-			mainConfig.pidConfig[PITCH].kp = 135.00;
+			mainConfig.pidConfig[YAW].kp   = 250.00;
+			mainConfig.pidConfig[ROLL].kp  = 150.00;
+			mainConfig.pidConfig[PITCH].kp = 200.00;
 
-			mainConfig.pidConfig[YAW].ki   = 475.00;
-			mainConfig.pidConfig[ROLL].ki  = 370.00;
-			mainConfig.pidConfig[PITCH].ki = 435.00;
+			mainConfig.pidConfig[YAW].ki   = 600.00;
+			mainConfig.pidConfig[ROLL].ki  = 500.00;
+			mainConfig.pidConfig[PITCH].ki = 550.00;
 
-			mainConfig.pidConfig[YAW].kd   = 2100.00;
-			mainConfig.pidConfig[ROLL].kd  = 800.00;
-			mainConfig.pidConfig[PITCH].kd = 1000.00;
+			mainConfig.pidConfig[YAW].kd   = 700.00;
+			mainConfig.pidConfig[ROLL].kd  = 700.00;
+			mainConfig.pidConfig[PITCH].kd = 800.00;
 
-			mainConfig.pidConfig[YAW].ga   = 3.00;
-			mainConfig.pidConfig[ROLL].ga  = 3.00;
-			mainConfig.pidConfig[PITCH].ga = 3.00;
+			mainConfig.pidConfig[YAW].ga   = 0.00;
+			mainConfig.pidConfig[ROLL].ga  = 0.00;
+			mainConfig.pidConfig[PITCH].ga = 0.00;
 
-			mainConfig.pidConfig[YAW].wc   = 4;
-			mainConfig.pidConfig[ROLL].wc  = 4;
-			mainConfig.pidConfig[PITCH].wc = 2;
+			mainConfig.pidConfig[YAW].wc   = 0;
+			mainConfig.pidConfig[ROLL].wc  = 0;
+			mainConfig.pidConfig[PITCH].wc = 0;
 
-			mainConfig.filterConfig[YAW].gyro.r   = 150.00;
-			mainConfig.filterConfig[ROLL].gyro.r  = 100.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 100.00;
+			mainConfig.filterConfig[YAW].gyro.r   = 88.000;
+			mainConfig.filterConfig[ROLL].gyro.r  = 88.000;
+			mainConfig.filterConfig[PITCH].gyro.r = 88.000;
 
-			mainConfig.filterConfig[YAW].gyro.q   = 0.010;
-			mainConfig.filterConfig[ROLL].gyro.q  = 0.010;
-			mainConfig.filterConfig[PITCH].gyro.q = 0.010;
+			mainConfig.filterConfig[YAW].gyro.q   = 30.00;
+			mainConfig.filterConfig[ROLL].gyro.q  = 30.00;
+			mainConfig.filterConfig[PITCH].gyro.q = 30.00;
 
-			mainConfig.filterConfig[YAW].gyro.p   = 0.150;
-			mainConfig.filterConfig[ROLL].gyro.p  = 0.150;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.150;
+			mainConfig.filterConfig[YAW].gyro.p   = 0.000;
+			mainConfig.filterConfig[ROLL].gyro.p  = 0.000;
+			mainConfig.filterConfig[PITCH].gyro.p = 0.000;
 
-			mainConfig.filterConfig[YAW].kd.r   = 75.0;
-			mainConfig.filterConfig[ROLL].kd.r  = 80.0;
-			mainConfig.filterConfig[PITCH].kd.r = 80.0;
+			mainConfig.filterConfig[YAW].kd.r   = 90.0;
+			mainConfig.filterConfig[ROLL].kd.r  = 90.0;
+			mainConfig.filterConfig[PITCH].kd.r = 90.0;
 
 			mainConfig.gyroConfig.filterTypeGyro = 0;
 			mainConfig.gyroConfig.filterTypeKd   = 2;
@@ -1031,8 +1252,8 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[ROLL].kd.r    = 90.0;
 			mainConfig.filterConfig[PITCH].kd.r   = 90.0;
 
-			mainConfig.gyroConfig.filterTypeGyro   = 0;
-			mainConfig.gyroConfig.filterTypeKd     = 2;
+			mainConfig.gyroConfig.filterTypeGyro  = 0;
+			mainConfig.gyroConfig.filterTypeKd    = 2;
 
 			resetBoard = 1;
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -1048,46 +1269,48 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("pidsrs2k", inString))
 		{
-			mainConfig.pidConfig[YAW].kp   = 305.00;
-			mainConfig.pidConfig[ROLL].kp  = 110.00;
-			mainConfig.pidConfig[PITCH].kp = 135.00;
 
-			mainConfig.pidConfig[YAW].ki   = 475.00;
-			mainConfig.pidConfig[ROLL].ki  = 370.00;
-			mainConfig.pidConfig[PITCH].ki = 435.00;
+			mainConfig.pidConfig[YAW].kp   = 250.00;
+			mainConfig.pidConfig[ROLL].kp  = 150.00;
+			mainConfig.pidConfig[PITCH].kp = 200.00;
 
-			mainConfig.pidConfig[YAW].kd   = 2100.00;
-			mainConfig.pidConfig[ROLL].kd  = 800.00;
-			mainConfig.pidConfig[PITCH].kd = 1000.00;
+			mainConfig.pidConfig[YAW].ki   = 600.00;
+			mainConfig.pidConfig[ROLL].ki  = 500.00;
+			mainConfig.pidConfig[PITCH].ki = 550.00;
 
-			mainConfig.pidConfig[YAW].ga   = 3.00;
-			mainConfig.pidConfig[ROLL].ga  = 3.00;
-			mainConfig.pidConfig[PITCH].ga = 3.00;
+			mainConfig.pidConfig[YAW].kd   = 700.00;
+			mainConfig.pidConfig[ROLL].kd  = 700.00;
+			mainConfig.pidConfig[PITCH].kd = 800.00;
 
-			mainConfig.pidConfig[YAW].wc   = 4;
-			mainConfig.pidConfig[ROLL].wc  = 4;
-			mainConfig.pidConfig[PITCH].wc = 2;
+			mainConfig.pidConfig[YAW].ga   = 0.00;
+			mainConfig.pidConfig[ROLL].ga  = 0.00;
+			mainConfig.pidConfig[PITCH].ga = 0.00;
 
-			mainConfig.filterConfig[YAW].gyro.r   = 150.00;
-			mainConfig.filterConfig[ROLL].gyro.r  = 100.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 100.00;
+			mainConfig.pidConfig[YAW].wc   = 0;
+			mainConfig.pidConfig[ROLL].wc  = 0;
+			mainConfig.pidConfig[PITCH].wc = 0;
 
-			mainConfig.filterConfig[YAW].gyro.q   = 0.010;
-			mainConfig.filterConfig[ROLL].gyro.q  = 0.010;
-			mainConfig.filterConfig[PITCH].gyro.q = 0.010;
+			mainConfig.filterConfig[YAW].gyro.r   = 88.000;
+			mainConfig.filterConfig[ROLL].gyro.r  = 88.000;
+			mainConfig.filterConfig[PITCH].gyro.r = 88.000;
 
-			mainConfig.filterConfig[YAW].gyro.p   = 0.150;
-			mainConfig.filterConfig[ROLL].gyro.p  = 0.150;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.150;
+			mainConfig.filterConfig[YAW].gyro.q   = 30.00;
+			mainConfig.filterConfig[ROLL].gyro.q  = 30.00;
+			mainConfig.filterConfig[PITCH].gyro.q = 30.00;
 
-			mainConfig.filterConfig[YAW].kd.r   = 75.0;
-			mainConfig.filterConfig[ROLL].kd.r  = 80.0;
-			mainConfig.filterConfig[PITCH].kd.r = 80.0;
+			mainConfig.filterConfig[YAW].gyro.p   = 0.000;
+			mainConfig.filterConfig[ROLL].gyro.p  = 0.000;
+			mainConfig.filterConfig[PITCH].gyro.p = 0.000;
 
-			mainConfig.gyroConfig.filterTypeGyro = 0;
-			mainConfig.gyroConfig.filterTypeKd   = 2;
+			mainConfig.filterConfig[YAW].kd.r   = 90.0;
+			mainConfig.filterConfig[ROLL].kd.r  = 90.0;
+			mainConfig.filterConfig[PITCH].kd.r = 90.0;
+
+			mainConfig.gyroConfig.filterTypeGyro  = 0;
+			mainConfig.gyroConfig.filterTypeKd    = 2;
 
 			resetBoard = 1;
+
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "pidsrs2ksaving\n", sizeof("pidsrs2ksaving\n"));
 			RfCustomReply(rf_custom_out_buffer);
@@ -1133,12 +1356,12 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[ROLL].gyro.p  = 0.150;
 			mainConfig.filterConfig[PITCH].gyro.p = 0.150;
 
-			mainConfig.filterConfig[YAW].kd.r   = 80.0;
-			mainConfig.filterConfig[ROLL].kd.r  = 80.0;
-			mainConfig.filterConfig[PITCH].kd.r = 80.0;
+			mainConfig.filterConfig[YAW].kd.r     = 80.0;
+			mainConfig.filterConfig[ROLL].kd.r    = 80.0;
+			mainConfig.filterConfig[PITCH].kd.r   = 80.0;
 
-			mainConfig.gyroConfig.filterTypeGyro = 0;
-			mainConfig.gyroConfig.filterTypeKd   = 2;
+			mainConfig.gyroConfig.filterTypeGyro   = 0;
+			mainConfig.gyroConfig.filterTypeKd     = 2;
 
 			resetBoard = 1;
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -1313,7 +1536,7 @@ void ProcessCommand(char *inString)
 			RfCustomReply(rf_custom_out_buffer);
 
 		}
-	else if (!strcmp("spek_1", inString) || !strcmp("spek_3", inString) || !strcmp("spek_t_1", inString) || !strcmp("spek_t_3", inString))
+	else if (!strcmp("spek_t1", inString) || !strcmp("spek_t3", inString) || !strcmp("spek_t4", inString) || !strcmp("spek_r1", inString) || !strcmp("spek_r3", inString) || !strcmp("spek_r4", inString))
 		{
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
 			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
@@ -1329,18 +1552,18 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
 			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
 			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 1706;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
 			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 0;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
 
 			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
 			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
 			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
 			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
 			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 342;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
 			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1000000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
 
 			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
 			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
@@ -1349,7 +1572,7 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
 			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
 			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
 			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
@@ -1361,27 +1584,123 @@ void ProcessCommand(char *inString)
 
 			mainConfig.rcControlsConfig.rcCalibrated         = 1;
 
-			if(!strcmp("spek_t_1", inString)) {
+			if(!strcmp("spek_t1", inString)) {
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_TWO_WAY; //this is used by serial.c
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_T; //this is used by serial.c
 			}
-			if(!strcmp("spek_t_3", inString)) {
+			if(!strcmp("spek_t3", inString)) {
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_TWO_WAY; //this is used by serial.c
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_T; //this is used by serial.c
 			}
-			if(!strcmp("spek_1", inString)) {
+			if(!strcmp("spek_t4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_T; //this is used by serial.c
+			}
+			if(!strcmp("spek_r1", inString)) {
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_TWO_WAY; //this is used by serial.c
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_R; //this is used by serial.c
 			}
-			if(!strcmp("spek_3", inString)) {
+			if(!strcmp("spek_r3", inString)) {
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_ONE_WAY; //this is used by serial.c
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_R; //this is used by serial.c
+			}
+			if(!strcmp("spek_r4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_R; //this is used by serial.c
 			}
 
+			SetMode(M_ARMED, 4, 500, 1000);
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "settingdefaultstospektrumsupport\n", sizeof("settingdefaultstospektrumsupport\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
+			RfCustomReply(rf_custom_out_buffer);
+			SaveConfig(ADDRESS_CONFIG_START);
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
+			RfCustomReply(rf_custom_out_buffer);
+		}
+	else if (!strcmp("dsm2_t1", inString) || !strcmp("dsm2_t3", inString) || !strcmp("dsm2_t4", inString) || !strcmp("dsm2_r1", inString) || !strcmp("dsm2_r3", inString) || !strcmp("dsm2_r4", inString))
+		{
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
+
+			mainConfig.rcControlsConfig.rcCalibrated         = 1;
+
+			if(!strcmp("dsm2_t1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_T; //this is used by serial.c
+			}
+			if(!strcmp("dsm2_t3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_T; //this is used by serial.c
+			}
+			if(!strcmp("dsm2_t4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_T; //this is used by serial.c
+			}
+			if(!strcmp("dsm2_r1", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_R; //this is used by serial.c
+			}
+			if(!strcmp("dsm2_r3", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_R; //this is used by serial.c
+			}
+			if(!strcmp("dsm2_r4", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_R; //this is used by serial.c
+			}
+
+			SetMode(M_ARMED, 4, 500, 1000);
+			resetBoard = 1;
+
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			memcpy(rf_custom_out_buffer, "settingdefaultstodsm2support\n", sizeof("settingdefaultstodsm2support\n"));
 			RfCustomReply(rf_custom_out_buffer);
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
@@ -1842,15 +2161,14 @@ void ProcessCommand(char *inString)
 			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
-	else if (!strcmp("bind", inString))
+	else if (!strcmp("binds", inString))
 		{
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
-			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
+			sendSpektrumBind();
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "binding9\n", sizeof("binding9\n"));
+			memcpy(rf_custom_out_buffer, "sendingserialbind\n", sizeof("sendingserialbind\n"));
 			RfCustomReply(rf_custom_out_buffer);
 		}
-	else if (!strcmp("bind9", inString))
+	else if ( (!strcmp("bind9", inString)) || (!strcmp("bind", inString)) )
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
 			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);

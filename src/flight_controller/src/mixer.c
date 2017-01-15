@@ -67,9 +67,9 @@ static float stabilizerAttenuation;
 volatile float motorOutput[MAX_MOTOR_NUMBER];
 volatile float servoOutput[MAX_SERVO_NUMBER];
 int32_t activeMotorCounter = -1; //number of active motors minus 1
-float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.2, 1.1, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
-float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.2, 1.1, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
+float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.30, 1.25, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
+float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
+float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
 
 void InitMixer(void) {
 	int32_t i;
@@ -220,13 +220,13 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 }
 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
-inline float InlineApplyMotorMixer2(pid_output pids[], float curvedRcCommandF[], volatile float motorOutputHere[])
+inline float InlineApplyMotorMixer2(pid_output pids[], float throttleIn, volatile float motorOutputHere[])
 {
 
 	float highestMotor  = -100.0f;
 	float lowestMotor   =  100.0f;
 	float actuatorRange =    0.0f;
-	float rangedThrottle;
+	volatile float rangedThrottle;
 	float throttle;
 	float throttleOffset;
 	int32_t i           = 0;
@@ -268,13 +268,13 @@ inline float InlineApplyMotorMixer2(pid_output pids[], float curvedRcCommandF[],
 	else
 	{
 		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
-		rangedThrottle = InlineChangeRangef(curvedRcCommandF[THROTTLE], 1.0, -1.0, 1.0, 0.0);
+		rangedThrottle = InlineChangeRangef(throttleIn, 1.0, -1.0, 1.0, 0.0);
 		throttleOffset = actuatorRange / 2.0f;
-		throttle = InlineConstrainf(rangedThrottle - (1.0f - actuatorRange), throttleOffset, 1.0f - throttleOffset);
-		if (throttle > lowestMotor)
-		{
-			throttle = lowestMotor;
-		}
+		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset);
+		//if (throttle > lowestMotor)
+		//{
+		//	throttle = lowestMotor;
+		//}
 	}
 
 	for(i=7; i>=0; i--)
