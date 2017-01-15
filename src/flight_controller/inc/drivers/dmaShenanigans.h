@@ -44,7 +44,6 @@ extern ws2812Led_t WS2812_IO_colors[];
 
 
 extern void InitDshotOutputOnMotors(uint32_t usedFor);
-extern void InitOdd(motor_type actuator);
 extern void InitDmaInputOnMotors(motor_type actuator);
 extern void InitDmaOutputOnMotors(uint32_t usedFor);
 extern void Ws2812LedInit(void);
@@ -58,7 +57,7 @@ extern void     InitDmaOutputForSoftSerial(uint32_t usedFor, motor_type actuator
 extern void     DeInitDmaOutputForSoftSerial(motor_type actuator);
 extern uint32_t IsDshotEnabled(void);
 extern uint32_t IsDshotActiveOnActuator(motor_type actuator);
-extern void     InitAllowedSoftOutputs(void);
+//extern void     InitAllowedSoftOutputs(void);
 extern void     DeInitAllowedSoftOutputs(void);
 extern uint32_t DoesDmaConflictWithActiveDmas(motor_type actuator);
 extern void     SetActiveDmaToActuatorDma(motor_type actuator);
