@@ -34,30 +34,35 @@ extern void InitializeGpioInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 extern void ErrorHandler(uint32_t error);
 extern void InitFlight(void);
 
-#define GYRO_INIT_FAILIURE                0
-#define SERIAL_INIT_FAILIURE              1
-#define DMA_INIT_FAILIURE                 2
-#define FLASH_INIT_FAILIURE               3
-#define WS2812_LED_INIT_FAILIURE          4
-#define FLASH_SPI_INIT_FAILIURE           5
-#define GYRO_SETUP_COMMUNICATION_FAILIURE 6
-#define SERIAL_HALF_DUPLEX_INIT_FAILURE   7
-#define SERIAL_INIT_FAILURE               8
-#define MSP_DMA_GYRO_RX_INIT_FAILIURE     9
-#define MSP_DMA_GYRO_TX_INIT_FAILIURE     10
-#define MSP_DMA_SPI_RX_INIT_FAILIURE      11
-#define MSP_DMA_SPI_TX_INIT_FAILIURE      12
-#define NOT_USED1					      13
-#define NOT_USED2					      14
-#define NOT_USED3					      15
-#define NOT_USED4					      16
-#define HARD_FAULT                        17
-#define MEM_FAULT                         18
-#define BUS_FAULT                         19
-#define USAGE_FAULT                       20
-#define GYRO_SPI_INIT_FAILIURE            21
-#define TIMER_INPUT_INIT_FAILIURE         22
+extern uint32_t errorMask;
 
+enum {
+	GYRO_INIT_FAILIURE                =  (1 << 0),
+	SERIAL_INIT_FAILIURE              =  (1 << 1),
+	DMA_INIT_FAILIURE                 =  (1 << 2),
+	FLASH_INIT_FAILIURE               =  (1 << 3),
+	WS2812_LED_INIT_FAILIURE          =  (1 << 4),
+	FLASH_SPI_INIT_FAILIURE           =  (1 << 5),
+	GYRO_SETUP_COMMUNICATION_FAILIURE =  (1 << 6),
+	SERIAL_HALF_DUPLEX_INIT_FAILURE   =  (1 << 7),
+	SERIAL_INIT_FAILURE               =  (1 << 8),
+	MSP_DMA_GYRO_RX_INIT_FAILIURE     =  (1 << 9),
+	MSP_DMA_GYRO_TX_INIT_FAILIURE     =  (1 << 10),
+	MSP_DMA_SPI_RX_INIT_FAILIURE      =  (1 << 11),
+	MSP_DMA_SPI_TX_INIT_FAILIURE      =  (1 << 12),
+	NOT_USED1					      =  (1 << 13),
+	NOT_USED2					      =  (1 << 14),
+	NOT_USED3					      =  (1 << 15),
+	NOT_USED4					      =  (1 << 16),
+	HARD_FAULT                        =  (1 << 17),
+	MEM_FAULT                         =  (1 << 18),
+	BUS_FAULT                         =  (1 << 19),
+	USAGE_FAULT                       =  (1 << 20),
+	GYRO_SPI_INIT_FAILIURE            =  (1 << 21),
+	TIMER_INPUT_INIT_FAILIURE         =  (1 << 22),
+	ADC_INIT_FAILIURE                 =  (1 << 23),
+	ADC_DMA_INIT_FAILIURE             =  (1 << 24),
+};
 
 #define RFBU					0x52464255
 #define RFBL					0x5246424C

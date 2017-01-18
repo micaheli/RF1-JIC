@@ -53,6 +53,7 @@
 
 
 volatile uint32_t hidToPcReady = 1;
+volatile uint32_t sendAckMode = 0;
 
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
@@ -506,7 +507,9 @@ static uint8_t  USBD_HID_DataIn (USBD_HandleTypeDef *pdev,
   /* Ensure that the FIFO is empty before a new transfer, this condition could 
   be caused by  a new transfer before the end of the previous transfer */
   ((USBD_HID_HandleTypeDef *)pdev->pClassData)->state = HID_IDLE;
-  hidToPcReady = 1;
+  if (!sendAckMode)
+	  hidToPcReady = 1;
+
   return USBD_OK;
 }
 
@@ -528,6 +531,12 @@ static uint8_t  USBD_HID_DataOut (USBD_HandleTypeDef *pdev,
     {
     	tOutBuffer[i] = USB_Rx_Buffer[i];
         i++;
+    }
+
+    if ( (tOutBuffer[0]==2) && (tOutBuffer[1]=='a') && (tOutBuffer[2]=='c') && (tOutBuffer[3]=='k') && (tOutBuffer[4]==0) )
+    {
+    	hidToPcReady = 1;
+    	tOutBuffer[0] = 0;
     }
 
     USBD_LL_PrepareReceive(pdev,

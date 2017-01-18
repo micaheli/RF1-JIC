@@ -77,7 +77,7 @@ static int32_t FindRxMinMax(void) {
 		DelayMs(20);
 
 		bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(rxData[0]));
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u-%u-%u-%u", (volatile unsigned int)(rxData[0]), (volatile unsigned int)(rxData[1]), (volatile unsigned int)(rxData[2]), (volatile unsigned int)(rxData[3]));
 		RfCustomReply(rf_custom_out_buffer);
 
 		for (uint32_t x = 0;x<MAXCHANNELS;x++) {
@@ -453,24 +453,25 @@ void SetupWizard(char *inString)
 		memcpy(rf_custom_out_buffer, "setTHROTTLEtop", sizeof("setTHROTTLEtop"));
 		RfCustomReply(rf_custom_out_buffer);
 
-		if (CheckAndSetChannel(THROTTLE)) {
+		if (CheckAndSetChannel(THROTTLE) > -1) {
 			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 			memcpy(rf_custom_out_buffer, "setYAWright", sizeof("setYAWright"));
 			RfCustomReply(rf_custom_out_buffer);
-			if (CheckAndSetChannel(YAW)) {
+			if (CheckAndSetChannel(YAW) > -1) {
 				bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 				memcpy(rf_custom_out_buffer, "setPITCHtop", sizeof("setPITCHtop"));
 				RfCustomReply(rf_custom_out_buffer);
-				if (CheckAndSetChannel(PITCH)) {
+				if (CheckAndSetChannel(PITCH) > -1) {
 					bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 					memcpy(rf_custom_out_buffer, "setROLLright", sizeof("setROLLright"));
 					RfCustomReply(rf_custom_out_buffer);
-					if (CheckAndSetChannel(ROLL)) {
+					if (CheckAndSetChannel(ROLL) > -1) {
 						memcpy(rf_custom_out_buffer, "calibrationcomplete", sizeof("calibrationcomplete"));
 						RfCustomReply(rf_custom_out_buffer);
 						mainConfig.rcControlsConfig.rcCalibrated = 1;
 						SetRestOfMap();
 						skipRxMap = 0;
+						DelayMs(3000); //don't save for three seconds
 						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 						memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
 						RfCustomReply(rf_custom_out_buffer);
@@ -481,7 +482,7 @@ void SetupWizard(char *inString)
 						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 						memcpy(rf_custom_out_buffer, "Set an Arm mode using mode list", sizeof("Set an Arm mode using mode list"));
 						RfCustomReply(rf_custom_out_buffer);
-						DelayMs(3);
+						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 						memcpy(rf_custom_out_buffer, "Aux1 high Example: modes ARMED=4=500=1000", sizeof("Aux1 high Example: modes ARMED=4=500=1000"));
 						RfCustomReply(rf_custom_out_buffer);
 					} else {

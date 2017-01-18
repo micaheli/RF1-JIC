@@ -347,7 +347,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
 	}
 
-	if (mainConfig.telemConfig.telemSpek)
+	if (!spekPhase && mainConfig.telemConfig.telemSpek)
 	{
 		sendSpektrumTelem();
 	}

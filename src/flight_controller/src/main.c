@@ -16,6 +16,7 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
+uint32_t errorMask = 0;
 uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 
 /* Private function prototypes -----------------------------------------------*/
@@ -91,7 +92,7 @@ void InitFlight(void) {
 
 	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl))
 	{
-		//ErrorHandler(GYRO_INIT_FAILIURE);
+		ErrorHandler(GYRO_INIT_FAILIURE);
 	}
 
 	InitTelemtry();
@@ -103,8 +104,12 @@ void InitFlight(void) {
 
 void ErrorHandler(uint32_t error)
 {
+	errorMask |= (error);
+
 	switch (error) {
 		case TIMER_INPUT_INIT_FAILIURE:
+		case ADC_INIT_FAILIURE:
+		case ADC_DMA_INIT_FAILIURE:
 		case MSP_DMA_GYRO_RX_INIT_FAILIURE:
 		case MSP_DMA_GYRO_TX_INIT_FAILIURE:
 		case MSP_DMA_SPI_RX_INIT_FAILIURE:
@@ -128,13 +133,15 @@ void ErrorHandler(uint32_t error)
 			//ping warning to user here, not a valid reason to crash the board though
 			return;
 			break;
+		case GYRO_SPI_INIT_FAILIURE: //gyro failed to init. Can't fly like this.
+		case GYRO_INIT_FAILIURE: //gyro failed to init. Can't fly like this.
+		case GYRO_SETUP_COMMUNICATION_FAILIURE: //gyro init success, but setting up register failed. Can't fly like this.
+			return;
+			break;
 		case HARD_FAULT:  //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
 		case MEM_FAULT:   //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
 		case BUS_FAULT:   //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
 		case USAGE_FAULT: //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
-		case GYRO_SPI_INIT_FAILIURE: //gyro failed to init. Can't fly like this.
-		case GYRO_INIT_FAILIURE: //gyro failed to init. Can't fly like this.
-		case GYRO_SETUP_COMMUNICATION_FAILIURE: //gyro init success, but setting up register failed. Can't fly like this.
 		default:
 			break;
 	}

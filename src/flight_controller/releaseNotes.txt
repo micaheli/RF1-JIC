@@ -346,6 +346,24 @@ Version 0.148.044:
 	Moved arm method to Modes. It must be set after using the RC wizard (wiz rca) like so:
 		"modes ARMED=4=500=1000"
 	Added commands: dsm2_t1, dsm2_t3, dsm2_t4, dsm2_r1, dsm2_r3, dsm2_r4
+	Fix LED Code.
+
+Version 0.149.045:
+	Modified filters.
+	Added usb ack.
+	Improved HID speed.
+	try rap to 1, 88 or manual
+	try yaw_press to 0, 1 or 2. (yaw press is a filter modifier)
+	added command "error" for error diagnostics
+	Changes to HID I/O commands.
+
+Version 0.150.045:
+	Changes to HID I/O commands.
+
+Version 0.151.046:
+	Added LED modes.
+
+
 
 
 
@@ -358,7 +376,6 @@ Features in current development:
 	Vbat input
 	Current input
 	wizards
-	finish flight mode support
 
 Features for future development:
 	transponder output

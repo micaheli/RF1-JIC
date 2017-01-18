@@ -71,6 +71,10 @@ void CheckRxToModes(void)
 void PrintModes(void)
 {
 	uint32_t x;
+
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dumpmodesstarted\n" );
+	RfCustomReply(rf_custom_out_buffer);
+
 	for (x=0;x<(sizeof(stringModes)/sizeof(string_modes_rec));x++)
 	{
 		//mainConfig.flightModeArray[x];   //flight mode
@@ -80,8 +84,10 @@ void PrintModes(void)
 		bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s=%d=%d=%d", stringModes[x].modeString, mainConfig.flightModeArray[x*3+0], mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
 		RfCustomReply(rf_custom_out_buffer);
-		DelayMs(3);
 	}
+
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dumpmodescomplete\n" );
+	RfCustomReply(rf_custom_out_buffer);
 }
 
 /*

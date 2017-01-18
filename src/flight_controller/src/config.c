@@ -102,6 +102,7 @@ const config_variables_rec valueTable[] = {
 		{ "led_red",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledRed,						0, 255, 1, "" },
 		{ "led_green",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledGreen,						0, 255, 0, "" },
 		{ "led_blue",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledBlue,						0, 255, 0, "" },
+		{ "led_mode",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledMode,						0, 255, 0, "" },
 
 		{ "telem_sport",		typeUINT,  "telm", &mainConfig.telemConfig.telemSport,					0, TELEM_LAST, TELEM_OFF, "" },
 		{ "telem_spek",	 		typeUINT,  "telm", &mainConfig.telemConfig.telemSpek,					0, TELEM_LAST, TELEM_OFF, "" },
@@ -117,15 +118,15 @@ const config_variables_rec valueTable[] = {
 		{ "gyro_filter_type",	typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeGyro, 				0, 2, 0, "" },
 		{ "kd_filter_type",		typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeKd, 				0, 2, 2, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 300, 250.00, "" }, //1000 18
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 300, 150.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 300, 200.00, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 300, 212.00, "" }, //1000 18
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 300, 110.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 300, 120.00, "" },
 		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 300, 600.00, "" }, //1000 14
 		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 300, 500.00, "" },
 		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 300, 550.00, "" },
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 300, 700.00, "" }, //1000000 114
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 300, 700.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 300, 800.00, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 300, 1100.00, "" }, //1000000 114
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 300, 1000.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 300, 1200.00, "" },
 		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 						0, 300, 0, "" },
 		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 						0, 300, 0, "" },
 		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 					0, 300, 0, "" },
@@ -139,15 +140,15 @@ const config_variables_rec valueTable[] = {
 		{ "sla", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 32, 40, "" },
 		{ "sld", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 32, 0.65, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 10, 30.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 10, 60.000, "" },
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 10, 88.000, "" },
-		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 				0, 10, 0.0000, "" },
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 10, 30.000, "" },
+		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 				0, 10, 1.0000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 10, 60.000, "" },
 		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 10, 88.000, "" },
-		{ "roll_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.p, 				0, 10, 0.0000, "" },
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 10, 30.000, "" },
+		{ "roll_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.p, 				0, 10, 1.0000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 10, 60.000, "" },
 		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 10, 88.000, "" },
-		{ "pitch_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.p, 				0, 10, 0.0000, "" },
+		{ "pitch_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.p, 				0, 10, 1.0000, "" },
 
 		{ "yaw_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.q, 					0, 10, 0.0000, "" },
 		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 10, 90.000, "" },
@@ -662,7 +663,7 @@ int RfCustomReply(char *rf_custom_out_buffer)
 			hidToPcReady = 0;
 			return(1);
 		}
-		DelayMs(1); //wait 10 ms max
+		delayUs(10); //wait 20 ms max
 	}
 	return(0);
 }
@@ -683,19 +684,25 @@ void ProcessCommand(char *inString)
 	char *originalString = inString;
 	uint32_t x;
 
-	if (originalString[1] == 77) {
+	if (originalString[1] == 77)
+	{
 		inString = originalString;
-	} else
+	}
+	else
+	{
 		inString = CleanupString(inString);
+	}
 
 	inStringLength = strlen(inString);
 
-	for (x = 0; x < inStringLength; x++) {
+	for (x = 0; x < inStringLength; x++)
+	{
 		if ( (inString[x] == ' ') || (inString[x] == 220) )
 			break;
 	}
 
-	if (inStringLength > x) {
+	if (inStringLength > x)
+	{
 		args = inString + x + 1;
 	}
 
@@ -706,8 +713,10 @@ void ProcessCommand(char *inString)
 
 	inStringLength = strlen(args);
 
-	for (x = 0; x < inStringLength; x++) {
-		if ( (inString[x] == ' ') || (inString[x] == 220) ) {
+	for (x = 0; x < inStringLength; x++)
+	{
+		if ( (inString[x] == ' ') || (inString[x] == 220) )
+		{
 			args[x] = 0;
 			break;
 		}
@@ -723,13 +732,43 @@ void ProcessCommand(char *inString)
 	if (inString[0] == '#')
 		return;
 
-	if (!strcmp("set", inString))
+	if (!strcmp("ack", inString))
 		{
-			if (SetVariable(args)) {
+			return;
+		}
+	else if (!strcmp("error", inString))
+		{
+			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu %lu", deviceWhoAmI, errorMask);
+			RfCustomReply(rf_custom_out_buffer);
+			return;
+		}
+	else if (!strcmp("fakeflash", inString))
+		{
+			flashInfo.enabled = FLASH_ENABLED;
+			flashInfo.currentWriteAddress = atoi(args);
+			return;
+		}
+	else if (!strcmp("setack", inString))
+		{
+			sendAckMode = 1;
+			return;
+		}
+	else if (!strcmp("unsetack", inString))
+		{
+			sendAckMode = 0;
+			return;
+		}
+	else if (!strcmp("set", inString))
+		{
+			if (SetVariable(args))
+			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "variablesetsuccess:%s", args);
 				RfCustomReply(rf_custom_out_buffer);
-			} else {
+			}
+			else
+			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "noargumentsfoundforargument:%s", args);
 				RfCustomReply(rf_custom_out_buffer);
@@ -738,7 +777,8 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("rxdata", inString))
 		{
-			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++) {
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
+			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (volatile unsigned int)(rxData[xx]));
 				RfCustomReply(rf_custom_out_buffer);
@@ -746,7 +786,8 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("rcdata", inString))
 		{
-			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++) {
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
+			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%d", (volatile int)(trueRcCommandF[xx]*1000));
 				RfCustomReply(rf_custom_out_buffer);
@@ -754,11 +795,12 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("rcboth", inString))
 		{
-			//for (uint32_t xx = 0; xx < MAXCHANNELS;xx++) {
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
+			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u : %d", (volatile unsigned int)(rxData[0]), (volatile int)(trueRcCommandF[0]*1000));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u : %d", (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000));
 				RfCustomReply(rf_custom_out_buffer);
-			//}
+			}
 		}
 	else if (!strcmp("telem", inString))
 		{
@@ -1162,25 +1204,26 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("pidsdefault", inString))
 		{
-			mainConfig.pidConfig[YAW].kp   = 250.00;
-			mainConfig.pidConfig[ROLL].kp  = 150.00;
-			mainConfig.pidConfig[PITCH].kp = 200.00;
 
-			mainConfig.pidConfig[YAW].ki   = 600.00;
-			mainConfig.pidConfig[ROLL].ki  = 500.00;
-			mainConfig.pidConfig[PITCH].ki = 550.00;
+			mainConfig.pidConfig[YAW].kp          = 212.00;
+			mainConfig.pidConfig[ROLL].kp         = 110.00;
+			mainConfig.pidConfig[PITCH].kp        = 120.00;
 
-			mainConfig.pidConfig[YAW].kd   = 700.00;
-			mainConfig.pidConfig[ROLL].kd  = 700.00;
-			mainConfig.pidConfig[PITCH].kd = 800.00;
+			mainConfig.pidConfig[YAW].ki          = 600.00;
+			mainConfig.pidConfig[ROLL].ki         = 500.00;
+			mainConfig.pidConfig[PITCH].ki        = 550.00;
 
-			mainConfig.pidConfig[YAW].ga   = 0.00;
-			mainConfig.pidConfig[ROLL].ga  = 0.00;
-			mainConfig.pidConfig[PITCH].ga = 0.00;
+			mainConfig.pidConfig[YAW].kd          = 1100.00;
+			mainConfig.pidConfig[ROLL].kd         = 1000.00;
+			mainConfig.pidConfig[PITCH].kd        = 1200.00;
 
-			mainConfig.pidConfig[YAW].wc   = 0;
-			mainConfig.pidConfig[ROLL].wc  = 0;
-			mainConfig.pidConfig[PITCH].wc = 0;
+			mainConfig.pidConfig[YAW].ga          = 0.00;
+			mainConfig.pidConfig[ROLL].ga         = 0.00;
+			mainConfig.pidConfig[PITCH].ga        = 0.00;
+
+			mainConfig.pidConfig[YAW].wc          = 0;
+			mainConfig.pidConfig[ROLL].wc         = 0;
+			mainConfig.pidConfig[PITCH].wc        = 0;
 
 			mainConfig.filterConfig[YAW].gyro.r   = 88.000;
 			mainConfig.filterConfig[ROLL].gyro.r  = 88.000;
@@ -1190,16 +1233,16 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[ROLL].gyro.q  = 30.00;
 			mainConfig.filterConfig[PITCH].gyro.q = 30.00;
 
-			mainConfig.filterConfig[YAW].gyro.p   = 0.000;
-			mainConfig.filterConfig[ROLL].gyro.p  = 0.000;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.000;
+			mainConfig.filterConfig[YAW].gyro.p   = 1.000;
+			mainConfig.filterConfig[ROLL].gyro.p  = 1.000;
+			mainConfig.filterConfig[PITCH].gyro.p = 1.000;
 
-			mainConfig.filterConfig[YAW].kd.r   = 90.0;
-			mainConfig.filterConfig[ROLL].kd.r  = 90.0;
-			mainConfig.filterConfig[PITCH].kd.r = 90.0;
+			mainConfig.filterConfig[YAW].kd.r     = 90.0;
+			mainConfig.filterConfig[ROLL].kd.r    = 90.0;
+			mainConfig.filterConfig[PITCH].kd.r   = 90.0;
 
-			mainConfig.gyroConfig.filterTypeGyro = 0;
-			mainConfig.gyroConfig.filterTypeKd   = 2;
+			mainConfig.gyroConfig.filterTypeGyro  = 0;
+			mainConfig.gyroConfig.filterTypeKd    = 2;
 
 			resetBoard = 1;
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -1270,25 +1313,25 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("pidsrs2k", inString))
 		{
 
-			mainConfig.pidConfig[YAW].kp   = 250.00;
-			mainConfig.pidConfig[ROLL].kp  = 150.00;
-			mainConfig.pidConfig[PITCH].kp = 200.00;
+			mainConfig.pidConfig[YAW].kp          = 212.00;
+			mainConfig.pidConfig[ROLL].kp         = 110.00;
+			mainConfig.pidConfig[PITCH].kp        = 120.00;
 
-			mainConfig.pidConfig[YAW].ki   = 600.00;
-			mainConfig.pidConfig[ROLL].ki  = 500.00;
-			mainConfig.pidConfig[PITCH].ki = 550.00;
+			mainConfig.pidConfig[YAW].ki          = 600.00;
+			mainConfig.pidConfig[ROLL].ki         = 500.00;
+			mainConfig.pidConfig[PITCH].ki        = 550.00;
 
-			mainConfig.pidConfig[YAW].kd   = 700.00;
-			mainConfig.pidConfig[ROLL].kd  = 700.00;
-			mainConfig.pidConfig[PITCH].kd = 800.00;
+			mainConfig.pidConfig[YAW].kd          = 1100.00;
+			mainConfig.pidConfig[ROLL].kd         = 1000.00;
+			mainConfig.pidConfig[PITCH].kd        = 1200.00;
 
-			mainConfig.pidConfig[YAW].ga   = 0.00;
-			mainConfig.pidConfig[ROLL].ga  = 0.00;
-			mainConfig.pidConfig[PITCH].ga = 0.00;
+			mainConfig.pidConfig[YAW].ga          = 0.00;
+			mainConfig.pidConfig[ROLL].ga         = 0.00;
+			mainConfig.pidConfig[PITCH].ga        = 0.00;
 
-			mainConfig.pidConfig[YAW].wc   = 0;
-			mainConfig.pidConfig[ROLL].wc  = 0;
-			mainConfig.pidConfig[PITCH].wc = 0;
+			mainConfig.pidConfig[YAW].wc          = 0;
+			mainConfig.pidConfig[ROLL].wc         = 0;
+			mainConfig.pidConfig[PITCH].wc        = 0;
 
 			mainConfig.filterConfig[YAW].gyro.r   = 88.000;
 			mainConfig.filterConfig[ROLL].gyro.r  = 88.000;
@@ -1298,17 +1341,16 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[ROLL].gyro.q  = 30.00;
 			mainConfig.filterConfig[PITCH].gyro.q = 30.00;
 
-			mainConfig.filterConfig[YAW].gyro.p   = 0.000;
-			mainConfig.filterConfig[ROLL].gyro.p  = 0.000;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.000;
+			mainConfig.filterConfig[YAW].gyro.p   = 1.000;
+			mainConfig.filterConfig[ROLL].gyro.p  = 1.000;
+			mainConfig.filterConfig[PITCH].gyro.p = 1.000;
 
-			mainConfig.filterConfig[YAW].kd.r   = 90.0;
-			mainConfig.filterConfig[ROLL].kd.r  = 90.0;
-			mainConfig.filterConfig[PITCH].kd.r = 90.0;
+			mainConfig.filterConfig[YAW].kd.r     = 90.0;
+			mainConfig.filterConfig[ROLL].kd.r    = 90.0;
+			mainConfig.filterConfig[PITCH].kd.r   = 90.0;
 
 			mainConfig.gyroConfig.filterTypeGyro  = 0;
 			mainConfig.gyroConfig.filterTypeKd    = 2;
-
 			resetBoard = 1;
 
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -1733,19 +1775,24 @@ void ProcessCommand(char *inString)
 
 
 
-			if ( (!strcmp("", args)) || (!strcmp("all", args)) ) {
+			if ( (!strcmp("", args)) || (!strcmp("all", args)) )
+			{
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
 					OutputVar(x);
 					argsOutputted++;
 				}
-			} else if ( (!strcmp("back", args)) ) {
+			}
+			else if ( (!strcmp("back", args)) )
+			{
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
 					OutputVarSet(x);
 					argsOutputted++;
 				}
-			} else {
+			}
+			else
+			{
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
 					if (!strcmp(valueTable[x].group, args)) {
@@ -1759,29 +1806,31 @@ void ProcessCommand(char *inString)
 			//ftoa(pitchAttitude, pitchString);
 			//StripSpaces(yawString);
 
-			if (argsOutputted == 0) {
+			if (argsOutputted == 0)
+			{
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "noargumentsfoundforargument:%s\n", args);
 				RfCustomReply(rf_custom_out_buffer);
 			}
 
 			//output flash here:
-			if ( (!strcmp("", args)) || (!strcmp("all", args)) || (!strcmp("flash", args)) ) {
+			if ( (!strcmp("", args)) || (!strcmp("all", args)) || (!strcmp("flash", args)) )
+			{
 				if ( (!strcmp("back", args)) )
 				{
 
 				}
 				else
 				{
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflused=%u\n", (unsigned int)(flashInfo.currentWriteAddress));
-					RfCustomReply(rf_custom_out_buffer);
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlfltotal=%u\n", (unsigned int)(flashInfo.totalSize));
-					RfCustomReply(rf_custom_out_buffer);
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflsectors=%u\n", (unsigned int)(flashInfo.flashSectors));
-					RfCustomReply(rf_custom_out_buffer);
+					//bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflused=%u\n", (unsigned int)(flashInfo.currentWriteAddress));
+					//RfCustomReply(rf_custom_out_buffer);
+					//bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlfltotal=%u\n", (unsigned int)(flashInfo.totalSize));
+					//RfCustomReply(rf_custom_out_buffer);
+					//bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "dlflsectors=%u\n", (unsigned int)(flashInfo.flashSectors));
+					//RfCustomReply(rf_custom_out_buffer);
 				}
 			}
 
@@ -1888,8 +1937,6 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("dlflsize", inString))
 		{
-
-
 			if (flashInfo.enabled) {
 
 				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
@@ -1902,6 +1949,40 @@ void ProcessCommand(char *inString)
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)0);
 				RfCustomReply(rf_custom_out_buffer);
 
+			}
+		}
+	else if (!strcmp("dlflstatusdump", inString))
+		{
+			if (flashInfo.enabled)
+			{
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dlflstatusdumpstarted\n");
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "size=%u\n", (unsigned int)(flashInfo.currentWriteAddress));
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "total=%u\n", (unsigned int)(flashInfo.totalSize));
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dlflstatusdumpfinished\n");
+				RfCustomReply(rf_custom_out_buffer);
+
+			}
+			else
+			{
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dlflstatusdumpstarted\n");
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "size=0\n");
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "total=0\n");
+				RfCustomReply(rf_custom_out_buffer);
+				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dlflstatusdumpfinished\n");
+				RfCustomReply(rf_custom_out_buffer);
 			}
 		}
 	else if (!strcmp("dlfltotal", inString))

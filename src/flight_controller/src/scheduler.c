@@ -323,24 +323,27 @@ inline void TaskHandlePcComm(void)
 
 inline void TaskLed(void)
 {
+	static uint32_t updateInterval = 100;
+	static uint32_t onceDone = 0;
 	static uint32_t ms100Counter = 0;
 	static uint32_t lastUpdate = 0;
 	static uint32_t lastColors = 0xFFFFFFFF;
 	uint32_t currentColors;
 	uint32_t x;
 	uint32_t y;
-	uint8_t  rgbArray[96];
+	uint8_t  rgbArray[WS2812_MAX_LEDS*3];
 
 	UpdateLeds(); //update status LEDs
 
+
 	//Update WS2812 LEDs
-	if ( ( InlineMillis() - lastUpdate ) > 100 )
+	if ( ( InlineMillis() - lastUpdate ) > updateInterval )
 	{
 		ms100Counter++;
 		lastUpdate = InlineMillis();
 
 		currentColors = (((uint8_t)mainConfig.ledConfig.ledGreen<<16) | ((uint8_t)mainConfig.ledConfig.ledRed<<8) | ((uint8_t)mainConfig.ledConfig.ledBlue<<0));
-		if (ws2812LedRecord.enabled && ( (currentColors != lastColors) || (ms100Counter == 10) ))
+		if (ws2812LedRecord.enabled && ( (mainConfig.ledConfig.ledMode != 0) || (currentColors != lastColors) || (ms100Counter == 10) ))
 		{
 			ms100Counter = 0;
 			lastColors = currentColors;
@@ -350,6 +353,125 @@ inline void TaskLed(void)
 
 			for (x = 0; x < mainConfig.ledConfig.ledCount; x++)
 			{
+				if (mainConfig.ledConfig.ledMode == 1)
+				{
+					updateInterval = 20;
+
+					mainConfig.ledConfig.ledRed   = (rand() & 0xF0) + 1;
+					mainConfig.ledConfig.ledGreen = (rand() & 0xF0) + 1;
+					mainConfig.ledConfig.ledBlue  = (rand() & 0xF0) + 1;
+				}
+				else if (mainConfig.ledConfig.ledMode == 2)
+				{
+					updateInterval = 20;
+
+					mainConfig.ledConfig.ledRed   = (rand() & 0xF0) + 1;
+					mainConfig.ledConfig.ledGreen = (rand() & 0xF0) + 1;
+					mainConfig.ledConfig.ledBlue  = (rand() & 0xF0) + 1;
+
+					if (mainConfig.ledConfig.ledRed > mainConfig.ledConfig.ledGreen)
+						mainConfig.ledConfig.ledGreen = 0;
+					if (mainConfig.ledConfig.ledRed > mainConfig.ledConfig.ledBlue)
+						mainConfig.ledConfig.ledBlue = 0;
+
+					if (mainConfig.ledConfig.ledBlue > mainConfig.ledConfig.ledGreen)
+						mainConfig.ledConfig.ledGreen = 0;
+					if (mainConfig.ledConfig.ledBlue > mainConfig.ledConfig.ledRed)
+						mainConfig.ledConfig.ledRed = 0;
+
+					if (mainConfig.ledConfig.ledGreen > mainConfig.ledConfig.ledBlue)
+						mainConfig.ledConfig.ledBlue = 0;
+					if (mainConfig.ledConfig.ledGreen > mainConfig.ledConfig.ledRed)
+						mainConfig.ledConfig.ledRed = 0;
+
+				}
+				else if (mainConfig.ledConfig.ledMode == 3)
+				{
+					updateInterval = 100;
+
+					mainConfig.ledConfig.ledRed   = (rand() & 0xF0) + 1;
+					mainConfig.ledConfig.ledGreen = (rand() & 0xF0) + 1;
+					mainConfig.ledConfig.ledBlue  = (rand() & 0xF0) + 1;
+
+					if (mainConfig.ledConfig.ledRed > mainConfig.ledConfig.ledGreen)
+						mainConfig.ledConfig.ledGreen = 0;
+					if (mainConfig.ledConfig.ledRed > mainConfig.ledConfig.ledBlue)
+						mainConfig.ledConfig.ledBlue = 0;
+
+					if (mainConfig.ledConfig.ledBlue > mainConfig.ledConfig.ledGreen)
+						mainConfig.ledConfig.ledGreen = 0;
+					if (mainConfig.ledConfig.ledBlue > mainConfig.ledConfig.ledRed)
+						mainConfig.ledConfig.ledRed = 0;
+
+					if (mainConfig.ledConfig.ledGreen > mainConfig.ledConfig.ledBlue)
+						mainConfig.ledConfig.ledBlue = 0;
+					if (mainConfig.ledConfig.ledGreen > mainConfig.ledConfig.ledRed)
+						mainConfig.ledConfig.ledRed = 0;
+
+				}
+				else if (mainConfig.ledConfig.ledMode == 4)
+				{
+					updateInterval = 5;
+
+					mainConfig.ledConfig.ledRed   = (uint8_t)CONSTRAIN(ABS(filteredGyroData[YAW] * 2),0,255);
+					mainConfig.ledConfig.ledGreen = (uint8_t)CONSTRAIN(ABS(filteredGyroData[ROLL] * 2),0,255);
+					mainConfig.ledConfig.ledBlue  = (uint8_t)CONSTRAIN(ABS(filteredGyroData[PITCH] * 2),0,255);
+				}
+				else if (mainConfig.ledConfig.ledMode == 5)
+				{
+					static uint8_t colorChoice = 0;
+					updateInterval = 40;
+
+					colorChoice += 1;
+
+					if(colorChoice > 254)
+					{
+						colorChoice = 0;
+					}
+
+					mainConfig.ledConfig.ledRed   = colorChoice;
+					mainConfig.ledConfig.ledGreen = colorChoice;
+					mainConfig.ledConfig.ledBlue  = colorChoice;
+
+
+				}
+				else if (mainConfig.ledConfig.ledMode == 6)
+				{
+					static uint32_t currentLed = 0;
+					static uint8_t color = 0;
+					updateInterval = 40;
+
+					color += 1;
+
+					if(color > 254)
+					{
+						currentLed++;
+						color = 0;
+					}
+
+					switch (currentLed)
+					{
+						case 3:
+							currentLed = 0;
+						case 0:
+							mainConfig.ledConfig.ledRed   = color;
+							mainConfig.ledConfig.ledGreen = 0;
+							mainConfig.ledConfig.ledBlue  = 0;
+							break;
+						case 1:
+							mainConfig.ledConfig.ledRed   = 0;
+							mainConfig.ledConfig.ledGreen = color;
+							mainConfig.ledConfig.ledBlue  = 0;
+							break;
+						case 2:
+							mainConfig.ledConfig.ledRed   = 0;
+							mainConfig.ledConfig.ledGreen = 0;
+							mainConfig.ledConfig.ledBlue  = color;
+							break;
+					}
+
+				}
+
 				rgbArray[y++] = ~(uint8_t)mainConfig.ledConfig.ledGreen;
 				rgbArray[y++] = ~(uint8_t)mainConfig.ledConfig.ledRed;
 				rgbArray[y++] = ~(uint8_t)mainConfig.ledConfig.ledBlue;

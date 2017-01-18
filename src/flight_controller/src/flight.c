@@ -656,11 +656,17 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				//sprintf((char *)reportOut, "%lu,%lu,%lu\n", cat, dog, rat);
 				//SendStatusReport((char *)reportOut);
 				//PreArmFilterCheck
+
 				gyroStdDeviationLatch = 1;
 				PreArmFilterCheck = 0;
-				pafGyroStates[YAW]   = InitPaf( mainConfig.filterConfig[YAW].gyro.q, yy[YAW] * 100, 0.0f, filteredGyroData[YAW]);
-				pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q, yy[ROLL] * 100, 0.0f, filteredGyroData[ROLL]);
-				pafGyroStates[PITCH]   = InitPaf( mainConfig.filterConfig[PITCH].gyro.q, yy[PITCH] * 100, 0.0f, filteredGyroData[PITCH]);
+
+				if (mainConfig.filterConfig[YAW].gyro.r == 1)
+					pafGyroStates[YAW]   = InitPaf( mainConfig.filterConfig[YAW].gyro.q, yy[YAW] * 100, 0.0f, filteredGyroData[YAW]);
+				if (mainConfig.filterConfig[ROLL].gyro.r == 1)
+					pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q, yy[ROLL] * 100, 0.0f, filteredGyroData[ROLL]);
+				if (mainConfig.filterConfig[PITCH].gyro.r == 1)
+					pafGyroStates[PITCH]   = InitPaf( mainConfig.filterConfig[PITCH].gyro.q, yy[PITCH] * 100, 0.0f, filteredGyroData[PITCH]);
+
 		//		gyroStdDeviationLatch = 1;
 		//		mainConfig.filterConfig[YAW].gyro.r = 86;//CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE)     * 100;
 		//		mainConfig.filterConfig[ROLL].gyro.r = 86;//CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE)   * 100;

@@ -113,7 +113,7 @@ int AccGyroDeviceInit(loopCtrl_e gyroLoop)
 
     // reset gyro
 	AccGyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
-    HAL_Delay(150);
+	DelayMs(150);
 
     // set gyro clock to Z axis gyro
     AccGyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_Z);
@@ -160,22 +160,24 @@ int AccGyroDeviceDetect(void)
 
     // reset gyro
     AccGyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
-    HAL_Delay(151);
+    DelayMs(151);
     AccGyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
 
     // poll for the who am i register while device resets
-    for (attempt = 0; attempt < 100; attempt++) {
-        HAL_Delay(151);
+    for (attempt = 0; attempt < 100; attempt++)
+    {
+        DelayMs(151);
 
         AccGyroReadData(INVENS_RM_WHO_AM_I, &data, 1);
-        switch (data) {
+        switch (data)
+        {
         	case MPU6000_WHO_AM_I:
         	case MPU6500_WHO_AM_I:
             case MPU6555_WHO_AM_I:
             case MPU9250_WHO_AM_I:
             case ICM20689_WHO_AM_I:
             case ICM20608G_WHO_AM_I:
-            	deviceWhoAmI = 0;
+            	deviceWhoAmI = data;
 				return 0;
 				break;
             case ICM20602_WHO_AM_I:
@@ -185,11 +187,13 @@ int AccGyroDeviceDetect(void)
         }
 
     }
-    if (attempt == 100) {
-        return 0;
+
+    if (attempt == 100)
+    {
+        return (0);
     }
 
-    return 0;
+    return (0);
     /* No need to do this
     // read the product id
     AccGyroReadData(INVENS_RM_PRODUCT_ID, &data, 1);

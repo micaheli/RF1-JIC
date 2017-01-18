@@ -1,4 +1,4 @@
-#define WS2812_MAX_LEDS 32
+#define WS2812_MAX_LEDS 64
 #define MAX_LED_COLORS 7
 
 
@@ -27,6 +27,7 @@ typedef struct {
     uint32_t ledRed;
     uint32_t ledGreen;
     uint32_t ledBlue;
+    uint32_t ledMode;
 } led_config;
 
 

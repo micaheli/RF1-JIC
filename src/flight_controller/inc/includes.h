@@ -43,6 +43,7 @@
 
 
 //all drivers
+#include "drivers/adc.h"
 #include "drivers/esc_1wire.h"
 #include "drivers/softSerial.h"
 #include "drivers/transponder.h"

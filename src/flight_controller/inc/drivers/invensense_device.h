@@ -13,6 +13,7 @@ typedef struct {
 } gyro_device_config;
 
 extern gyro_device_config gyroConfig;
+extern uint32_t deviceWhoAmI;
 
 int AccGyroDeviceInit(loopCtrl_e gyroLoop);
 int AccGyroDeviceDetect(void);
