@@ -360,9 +360,16 @@ Version 0.149.045:
 Version 0.150.045:
 	Changes to HID I/O commands.
 
-Version 0.151.046:
+Version 0.151.047:
 	Added LED modes.
-
+	Added "idle" command and "idlestop" command.
+	Change logic for modes:
+		channel now starts at 1 and goes to 16. channels 1-4 are reserved and cannot be set to a mode.
+		range is now -100 to 100. -100 is the minium a channel can go (1000 us for traditional PPM). 100 is the max (2000 us for traditional PPM) 0 is middle. (1500 us for traditional PPM).
+	Changed dump command output to always list modes, version and flight log info.
+	Changed defaults.
+	Fixed DSM2 1024, added DSM2 1024 bind option, changed bid opperations
+	Changed RXdata dump, Changed RCdata dump
 
 
 

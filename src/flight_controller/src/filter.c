@@ -2,12 +2,26 @@
 
 paf_state InitPaf(float q, float r, float p, float intial_value)
 {
+	float modifier;
+
+	if (mainConfig.filterConfig[YAW].gyro.p < 0.5)
+	{
+		modifier = 16.4;
+	}
+	else if (mainConfig.filterConfig[YAW].gyro.p < 1.5)
+	{
+		modifier = 164.0;
+	}
+	else
+	{
+		modifier = 1;
+	}
+
 	paf_state result;
 	result.q = q * 0.000001;
 	result.r = r * 0.001;
 	result.p = p * 0.001;
-//	result.x = intial_value * 16.4;
-	result.x = intial_value;
+	result.x = intial_value * modifier;
 
 	return result;
 }

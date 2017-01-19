@@ -253,28 +253,45 @@ inline void CheckFailsafe(void)
 void SpektrumBind (uint32_t bindNumber)
 {
 
+	if (!bindNumber)
+		return;
+
 	uint32_t i;
 
 	//todo: init all RX ports and ping each one as a spektrum port, maybe check each one to see if it allows spektrum binding
-	InitializeGpio(GPIOB, GPIO_PIN_11, 1);
 	InitializeGpio(GPIOA, GPIO_PIN_9, 1);
+	InitializeGpio(GPIOA, GPIO_PIN_10, 1);
 
-	DelayMs(70);
+	InitializeGpio(GPIOB, GPIO_PIN_10, 1);
+	InitializeGpio(GPIOB, GPIO_PIN_11, 1);
+
+
+	DelayMs(2);
 
 	if (!bindNumber)
 		bindNumber = 9;
 
 	for (i=0; i < bindNumber; i++) {
 
-		inlineDigitalLo(GPIOB, GPIO_PIN_11);
 		inlineDigitalLo(GPIOA, GPIO_PIN_9);
+		inlineDigitalLo(GPIOA, GPIO_PIN_10);
+		inlineDigitalLo(GPIOB, GPIO_PIN_10);
+		inlineDigitalLo(GPIOB, GPIO_PIN_11);
 		DelayMs(2);
 
-		inlineDigitalHi(GPIOB, GPIO_PIN_11);
 		inlineDigitalHi(GPIOA, GPIO_PIN_9);
+		inlineDigitalHi(GPIOA, GPIO_PIN_10);
+		inlineDigitalHi(GPIOB, GPIO_PIN_10);
+		inlineDigitalHi(GPIOB, GPIO_PIN_11);
 		DelayMs(2);
 
 	}
+
+    if (mainConfig.rcControlsConfig.bind)
+    {
+    	mainConfig.rcControlsConfig.bind = 0;
+    	SaveConfig(ADDRESS_CONFIG_START);
+    }
 
 }
 
@@ -305,14 +322,17 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	uint32_t value;
 	uint16_t channelIdMask;
 	uint16_t servoPosMask;
+	uint32_t bitShift;
 
 	channelIdMask = 0x7800;
 	servoPosMask  = 0x07FF;
+	bitShift      = 11;
 	//DSM2 is 10 bits and the others are 11 bits of data for the RX
 	if ((board.serials[serialNumber].Protocol == USING_DSM2_T) || (board.serials[serialNumber].Protocol == USING_DSM2_R))
 	{
 		channelIdMask = 0xFC00;
 		servoPosMask  = 0x03FF;
+		bitShift      = 10;
 	}
 																													// Make sure this is very first thing done in function, and its called first on interrupt
 	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SPEKTRUM_FRAME_SIZE);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
@@ -321,7 +341,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	for (x = 2; x < 16; x += 2)
 	{
 		value = (copiedBufferData[x] << 8) + (copiedBufferData[x+1]);
-		spektrumChannel = (value & channelIdMask) >> 11;
+		spektrumChannel = (value & channelIdMask) >> bitShift;
 		if (spektrumChannel < MAXCHANNELS)
 		{
 			rxData[ChannelMap(spektrumChannel)] = value & servoPosMask;
@@ -330,29 +350,37 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 				buzzerStatus.status = STATE_BUZZER_OFF;
 		}
 	}
-	spekPhase = copiedBufferData[2] & 0x80;
 
-	//Check for vtx data
-	if (copiedBufferData[12] == 0xE0)
+	if ( !(board.serials[serialNumber].Protocol == USING_DSM2_T) && !(board.serials[serialNumber].Protocol == USING_DSM2_R) )
 	{
-		vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
-		vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
+		spekPhase = copiedBufferData[2] & 0x80;
+
+		//Check for vtx data
+		if (copiedBufferData[12] == 0xE0)
+		{
+			vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
+			vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
+		}
+
+			  //Check channel slot 7 for vtx power, pit, and region data
+		if (copiedBufferData[14] == 0xE0)
+		{
+			vtxData.vtxPower  = copiedBufferData[15] & 0x03;
+			vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
+			vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
+		}
+
+		if (!spekPhase && mainConfig.telemConfig.telemSpek)
+		{
+			sendSpektrumTelem();
+		}
+		packetTime = 11;
 	}
-      
-	      //Check channel slot 7 for vtx power, pit, and region data
-	if (copiedBufferData[14] == 0xE0)
+	else
 	{
-		vtxData.vtxPower  = copiedBufferData[15] & 0x03;
-		vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
-		vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
+		packetTime = 22;
 	}
 
-	if (!spekPhase && mainConfig.telemConfig.telemSpek)
-	{
-		sendSpektrumTelem();
-	}
-
-	packetTime = 11;
 	InlineCollectRcCommand();
 	RxUpdate();
 }

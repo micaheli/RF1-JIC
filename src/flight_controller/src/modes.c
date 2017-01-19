@@ -15,6 +15,8 @@ string_modes_rec stringModes[] = {
 		{"FAILSAFE", 5, M_FAILSAFE },
 		{"LOGGING",  6, M_LOGGING },
 		{"BUZZER",   7, M_BUZZER },
+		{"LEDMODE",  8, M_LEDMODE },
+		{"LEDCOLOR", 9, M_LEDCOLOR },
 };
 
 
@@ -50,8 +52,8 @@ void CheckRxToModes(void)
 	for (x=0;x<FLIGHT_MODE_ARRAY_SIZE;x=x+3)
 	{
 		channel = (uint16_t)mainConfig.flightModeArray[x];
-		rcMin   = (float)mainConfig.flightModeArray[x+1] * 0.001;
-		rcMax   = (float)mainConfig.flightModeArray[x+2] * 0.001;
+		rcMin   = (float)mainConfig.flightModeArray[x+1] * 0.01;
+		rcMax   = (float)mainConfig.flightModeArray[x+2] * 0.01;
 		if ((channel > 3) && (channel < MAXCHANNELS)) //first four channels are not to be used for flight modes
 		{
 			if ( (trueRcCommandF[channel] >= rcMin) && (trueRcCommandF[channel] <= rcMax) )
@@ -68,21 +70,33 @@ void CheckRxToModes(void)
 
 }
 
-void PrintModes(void)
+void PrintModes(uint32_t backupText)
 {
 	uint32_t x;
+	uint32_t channel;
 
 	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dumpmodesstarted\n" );
 	RfCustomReply(rf_custom_out_buffer);
 
 	for (x=0;x<(sizeof(stringModes)/sizeof(string_modes_rec));x++)
 	{
-		//mainConfig.flightModeArray[x];   //flight mode
-		//mainConfig.flightModeArray[x+1]; //flight mode min Rc
-		//mainConfig.flightModeArray[x+2]; //flight mode max Rc
+		//display corrected output using the channel variable
+		channel = mainConfig.flightModeArray[x*3+0];
+
+		if (channel < 4)
+			channel = 0;
+		else
+			channel += 1;
 
 		bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s=%d=%d=%d", stringModes[x].modeString, mainConfig.flightModeArray[x*3+0], mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+		if (backupText)
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "modes %s=%d=%d=%d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+		}
+		else
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s=%d=%d=%d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+		}
 		RfCustomReply(rf_custom_out_buffer);
 	}
 
@@ -139,14 +153,14 @@ void SetupModes(char *modString)
 	char *channelString = NULL;
 	char *minRcString   = NULL;
 	char *maxRcString   = NULL;
-	uint16_t channel;
+	int16_t channel;
 	int16_t minRc;
 	int16_t maxRc;
 	uint32_t stringLength;
 
 	if (!strcmp("list", modString))
 	{
-		PrintModes();
+		PrintModes(1);
 	}
 	else
 	{
@@ -205,9 +219,32 @@ void SetupModes(char *modString)
 		//SplitString(channelString, minRcString,   '=');
 		//SplitString(minRcString,   maxRcString,   '=');
 
-		channel = atoi(channelString);
+		channel = atoi(channelString) - 1;
 		minRc   = atoi(minRcString);
 		maxRc   = atoi(maxRcString);
+
+		//add logic since people can set this manually.
+		if (minRc < -100)
+			minRc = -100;
+		if (minRc > 100)
+			minRc = 100;
+
+		if (maxRc < -100)
+			maxRc = -100;
+		if (maxRc > 100)
+			maxRc = 100;
+
+		if (minRc > maxRc)
+			minRc = maxRc;
+
+		if (maxRc < minRc)
+			maxRc = minRc;
+		//
+		if (channel < 4)
+			channel = 0;
+
+		if (channel >= MAXCHANNELS)
+			channel = 0;
 
 		for (x=0;x<(sizeof(stringModes)/sizeof(string_modes_rec));x++)
 		{
@@ -216,8 +253,15 @@ void SetupModes(char *modString)
 				mainConfig.flightModeArray[x*3+0] = channel;
 				mainConfig.flightModeArray[x*3+1] = minRc;
 				mainConfig.flightModeArray[x*3+2] = maxRc;
+
+				//display corrected output using the channel variable
+				if (channel < 5)
+					channel = 0;
+				else
+					channel += 1;
+
 				bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d", stringModes[x].modeString, mainConfig.flightModeArray[x*3+0], mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
 				RfCustomReply(rf_custom_out_buffer);
 			}
 		}

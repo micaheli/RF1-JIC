@@ -19,6 +19,7 @@ typedef struct {
     uint32_t rcCalibrated;
     uint32_t rxProtcol;
     uint32_t rxUsart;
+    uint32_t bind;
 } rc_control_config;
 
 typedef struct

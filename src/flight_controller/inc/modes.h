@@ -18,10 +18,13 @@ enum {
 	M_FAILSAFE = (1 << 5),
 	M_LOGGING  = (1 << 6),
 	M_BUZZER   = (1 << 7),
+	M_LEDMODE  = (1 << 8),
+	M_LEDCOLOR = (1 << 9),
 };
 
 extern string_modes_rec stringModes[];
 
+extern void PrintModes(uint32_t backupText);
 extern void InitModes(void);
 extern void EnableMode(uint32_t modeMask);
 extern void DisableMode(uint32_t modeMask);

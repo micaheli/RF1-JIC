@@ -4,6 +4,16 @@
 
 ledStatus_t ledStatus;
 
+uint8_t colorChart[COLOR_CHART_SIZE][3] = {
+		{255, 255, 255},
+		{255, 255, 000},
+		{255, 000, 000},
+		{000, 255, 000},
+		{000, 255, 255},
+		{000, 000, 255},
+		{255, 000, 255},
+};
+
 //todo: Do we want to init LEDs like this? Maybe an array is a better method
 void InitLeds (void)
 {

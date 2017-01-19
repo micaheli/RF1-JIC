@@ -43,6 +43,8 @@ int main(void)
 
     LoadConfig(ADDRESS_CONFIG_START);
 
+    SpektrumBind (mainConfig.rcControlsConfig.bind);
+
     HandleFcStartupReg();
 
     InitBuzzer();
@@ -73,6 +75,9 @@ int main(void)
 void InitFlight(void) {
 
     //TODO: move the check into the init functions.
+
+	DeInitAllowedSoftOutputs();
+
     if (board.flash[0].enabled)
     {
     	InitFlashChip();

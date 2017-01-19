@@ -323,163 +323,263 @@ inline void TaskHandlePcComm(void)
 
 inline void TaskLed(void)
 {
+
+	uint8_t redAmount;
+	uint8_t greenAmount;
+	uint8_t blueAmount;
+	uint8_t rgbArray[WS2812_MAX_LEDS*3];
+	static uint8_t currentLedPulse = 0;
+	static uint8_t colorPulse = 0;
+
+	static uint32_t currentLedMode = 0;
+	static uint32_t currentColorChart = 0;
+	static uint32_t colorLatch = 0;
+	static uint32_t modeLatch  = 0;
 	static uint32_t updateInterval = 100;
-	static uint32_t onceDone = 0;
-	static uint32_t ms100Counter = 0;
+	//static uint32_t onceDone = 0;
 	static uint32_t lastUpdate = 0;
-	static uint32_t lastColors = 0xFFFFFFFF;
-	uint32_t currentColors;
 	uint32_t x;
 	uint32_t y;
-	uint8_t  rgbArray[WS2812_MAX_LEDS*3];
 
 	UpdateLeds(); //update status LEDs
+
+	if (!ws2812LedRecord.enabled)
+		return;
+
+	//check color and mode change modes
+	if ( ModeActive(M_LEDCOLOR) && !colorLatch )
+	{
+		colorLatch = 1;
+		if (currentColorChart >= COLOR_CHART_SIZE)
+		{
+			currentColorChart = 0;
+		}
+		redAmount   = colorChart[currentColorChart++][0];
+		greenAmount = colorChart[currentColorChart++][1];
+		blueAmount  = colorChart[currentColorChart++][2];
+	}
+	else if (!ModeActive(M_LEDCOLOR))
+	{
+		colorLatch = 0;
+	}
+
+
+	if ( ModeActive(M_LEDMODE) && !modeLatch )
+	{
+		modeLatch = 1;
+		currentLedMode ++;
+		if (currentLedMode >= MAX_LED_MODES)
+		{
+			currentLedMode = 0;
+		}
+		mainConfig.ledConfig.ledMode = currentLedMode;
+	}
+	else if (!ModeActive(M_LEDMODE))
+	{
+		modeLatch = 0;
+	}
 
 
 	//Update WS2812 LEDs
 	if ( ( InlineMillis() - lastUpdate ) > updateInterval )
 	{
-		ms100Counter++;
 		lastUpdate = InlineMillis();
 
-		currentColors = (((uint8_t)mainConfig.ledConfig.ledGreen<<16) | ((uint8_t)mainConfig.ledConfig.ledRed<<8) | ((uint8_t)mainConfig.ledConfig.ledBlue<<0));
-		if (ws2812LedRecord.enabled && ( (mainConfig.ledConfig.ledMode != 0) || (currentColors != lastColors) || (ms100Counter == 10) ))
+		mainConfig.ledConfig.ledCount = CONSTRAIN(mainConfig.ledConfig.ledCount, 1, WS2812_MAX_LEDS);
+
+		switch (mainConfig.ledConfig.ledMode)
 		{
-			ms100Counter = 0;
-			lastColors = currentColors;
-			y = 0;
+			case 0:
+				//leds off
+				updateInterval = 250;
+				redAmount      = 0;
+				greenAmount    = 0;
+				blueAmount     = 0;
+				break;
+			case 1:
+				//leds on
+				updateInterval = 250;
+				redAmount      = mainConfig.ledConfig.ledRed;
+				greenAmount    = mainConfig.ledConfig.ledGreen;
+				blueAmount     = mainConfig.ledConfig.ledBlue;
+				break;
+			case 2:
+				//Disco Fast
+				updateInterval = 20;
+				redAmount      = (rand() & 0xF0) + 1;
+				greenAmount    = (rand() & 0xF0) + 1;
+				blueAmount     = (rand() & 0xF0) + 1;
+				break;
+			case 3:
+				//Disco Slow
+				updateInterval = 100;
+				redAmount      = (rand() & 0xF0) + 1;
+				greenAmount    = (rand() & 0xF0) + 1;
+				blueAmount     = (rand() & 0xF0) + 1;
+				break;
+			case 4:
+				//Party Fast
+				updateInterval = 20;
+				redAmount   = (rand() & 0xF0) + 1;
+				greenAmount = (rand() & 0xF0) + 1;
+				blueAmount  = (rand() & 0xF0) + 1;
 
-			mainConfig.ledConfig.ledCount = CONSTRAIN(mainConfig.ledConfig.ledCount, 1, WS2812_MAX_LEDS);
+				if (redAmount > greenAmount)
+					greenAmount = 0;
+				if (redAmount > blueAmount)
+					blueAmount = 0;
 
-			for (x = 0; x < mainConfig.ledConfig.ledCount; x++)
+				if (blueAmount > greenAmount)
+					greenAmount = 0;
+				if (blueAmount > redAmount)
+					redAmount = 0;
+
+				if (greenAmount > blueAmount)
+					blueAmount = 0;
+				if (greenAmount > redAmount)
+					blueAmount = 0;
+				break;
+			case 5:
+				//Party Slow
+				updateInterval = 100;
+				redAmount   = (rand() & 0xF0) + 1;
+				greenAmount = (rand() & 0xF0) + 1;
+				blueAmount  = (rand() & 0xF0) + 1;
+
+				if (redAmount > greenAmount)
+					greenAmount = 0;
+				if (redAmount > blueAmount)
+					blueAmount = 0;
+
+				if (blueAmount > greenAmount)
+					greenAmount = 0;
+				if (blueAmount > redAmount)
+					redAmount = 0;
+
+				if (greenAmount > blueAmount)
+					blueAmount = 0;
+				if (greenAmount > redAmount)
+					blueAmount = 0;
+				break;
+			case 6:
+				//Gyro motion Slow
+				updateInterval = 5;
+
+				redAmount   = (uint8_t)CONSTRAIN(ABS(filteredGyroData[YAW]),0,254)+1;
+				greenAmount = (uint8_t)CONSTRAIN(ABS(filteredGyroData[ROLL]),0,254)+1;
+				blueAmount  = (uint8_t)CONSTRAIN(ABS(filteredGyroData[PITCH]),0,254)+1;
+				break;
+			case 7:
+				//Color Pulse
+				updateInterval = 40;
+
+				colorPulse += 1;
+
+				if(colorPulse > 254)
+				{
+					currentLedPulse++;
+					colorPulse = 0;
+				}
+
+				switch (currentLedPulse)
+				{
+					case 3:
+						currentLedPulse = 0;
+					case 0:
+						redAmount   = colorPulse;
+						greenAmount = 0;
+						blueAmount  = 0;
+						break;
+					case 1:
+						redAmount   = 0;
+						greenAmount = colorPulse;
+						blueAmount  = 0;
+						break;
+					case 2:
+						redAmount   = 0;
+						greenAmount = 0;
+						blueAmount  = colorPulse;
+						break;
+				}
+				break;
+		}
+
+
+		//fill the buffer
+		y = 0;
+
+		for (x = 0; x < mainConfig.ledConfig.ledCount; x++)
+		{
+			switch (mainConfig.ledConfig.ledMode)
 			{
-				if (mainConfig.ledConfig.ledMode == 1)
-				{
+				case 8:
+					//Disco Fast
 					updateInterval = 20;
-
-					mainConfig.ledConfig.ledRed   = (rand() & 0xF0) + 1;
-					mainConfig.ledConfig.ledGreen = (rand() & 0xF0) + 1;
-					mainConfig.ledConfig.ledBlue  = (rand() & 0xF0) + 1;
-				}
-				else if (mainConfig.ledConfig.ledMode == 2)
-				{
-					updateInterval = 20;
-
-					mainConfig.ledConfig.ledRed   = (rand() & 0xF0) + 1;
-					mainConfig.ledConfig.ledGreen = (rand() & 0xF0) + 1;
-					mainConfig.ledConfig.ledBlue  = (rand() & 0xF0) + 1;
-
-					if (mainConfig.ledConfig.ledRed > mainConfig.ledConfig.ledGreen)
-						mainConfig.ledConfig.ledGreen = 0;
-					if (mainConfig.ledConfig.ledRed > mainConfig.ledConfig.ledBlue)
-						mainConfig.ledConfig.ledBlue = 0;
-
-					if (mainConfig.ledConfig.ledBlue > mainConfig.ledConfig.ledGreen)
-						mainConfig.ledConfig.ledGreen = 0;
-					if (mainConfig.ledConfig.ledBlue > mainConfig.ledConfig.ledRed)
-						mainConfig.ledConfig.ledRed = 0;
-
-					if (mainConfig.ledConfig.ledGreen > mainConfig.ledConfig.ledBlue)
-						mainConfig.ledConfig.ledBlue = 0;
-					if (mainConfig.ledConfig.ledGreen > mainConfig.ledConfig.ledRed)
-						mainConfig.ledConfig.ledRed = 0;
-
-				}
-				else if (mainConfig.ledConfig.ledMode == 3)
-				{
+					redAmount      = (rand() & 0xF0) + 1;
+					greenAmount    = (rand() & 0xF0) + 1;
+					blueAmount     = (rand() & 0xF0) + 1;
+					break;
+				case 9:
+					//Disco Slow
 					updateInterval = 100;
+					redAmount      = (rand() & 0xF0) + 1;
+					greenAmount    = (rand() & 0xF0) + 1;
+					blueAmount     = (rand() & 0xF0) + 1;
+					break;
+				case 10:
+					//Party Fast
+					updateInterval = 20;
+					redAmount   = (rand() & 0xF0) + 1;
+					greenAmount = (rand() & 0xF0) + 1;
+					blueAmount  = (rand() & 0xF0) + 1;
 
-					mainConfig.ledConfig.ledRed   = (rand() & 0xF0) + 1;
-					mainConfig.ledConfig.ledGreen = (rand() & 0xF0) + 1;
-					mainConfig.ledConfig.ledBlue  = (rand() & 0xF0) + 1;
+					if (redAmount > greenAmount)
+						greenAmount = 0;
+					if (redAmount > blueAmount)
+						blueAmount = 0;
 
-					if (mainConfig.ledConfig.ledRed > mainConfig.ledConfig.ledGreen)
-						mainConfig.ledConfig.ledGreen = 0;
-					if (mainConfig.ledConfig.ledRed > mainConfig.ledConfig.ledBlue)
-						mainConfig.ledConfig.ledBlue = 0;
+					if (blueAmount > greenAmount)
+						greenAmount = 0;
+					if (blueAmount > redAmount)
+						redAmount = 0;
 
-					if (mainConfig.ledConfig.ledBlue > mainConfig.ledConfig.ledGreen)
-						mainConfig.ledConfig.ledGreen = 0;
-					if (mainConfig.ledConfig.ledBlue > mainConfig.ledConfig.ledRed)
-						mainConfig.ledConfig.ledRed = 0;
+					if (greenAmount > blueAmount)
+						blueAmount = 0;
+					if (greenAmount > redAmount)
+						blueAmount = 0;
+					break;
+				case 11:
+					//Party Slow
+					updateInterval = 100;
+					redAmount   = (rand() & 0xF0) + 1;
+					greenAmount = (rand() & 0xF0) + 1;
+					blueAmount  = (rand() & 0xF0) + 1;
 
-					if (mainConfig.ledConfig.ledGreen > mainConfig.ledConfig.ledBlue)
-						mainConfig.ledConfig.ledBlue = 0;
-					if (mainConfig.ledConfig.ledGreen > mainConfig.ledConfig.ledRed)
-						mainConfig.ledConfig.ledRed = 0;
+					if (redAmount > greenAmount)
+						greenAmount = 0;
+					if (redAmount > blueAmount)
+						blueAmount = 0;
 
-				}
-				else if (mainConfig.ledConfig.ledMode == 4)
-				{
-					updateInterval = 5;
+					if (blueAmount > greenAmount)
+						greenAmount = 0;
+					if (blueAmount > redAmount)
+						redAmount = 0;
 
-					mainConfig.ledConfig.ledRed   = (uint8_t)CONSTRAIN(ABS(filteredGyroData[YAW] * 2),0,255);
-					mainConfig.ledConfig.ledGreen = (uint8_t)CONSTRAIN(ABS(filteredGyroData[ROLL] * 2),0,255);
-					mainConfig.ledConfig.ledBlue  = (uint8_t)CONSTRAIN(ABS(filteredGyroData[PITCH] * 2),0,255);
-				}
-				else if (mainConfig.ledConfig.ledMode == 5)
-				{
-					static uint8_t colorChoice = 0;
-					updateInterval = 40;
-
-					colorChoice += 1;
-
-					if(colorChoice > 254)
-					{
-						colorChoice = 0;
-					}
-
-					mainConfig.ledConfig.ledRed   = colorChoice;
-					mainConfig.ledConfig.ledGreen = colorChoice;
-					mainConfig.ledConfig.ledBlue  = colorChoice;
-
-
-				}
-				else if (mainConfig.ledConfig.ledMode == 6)
-				{
-					static uint32_t currentLed = 0;
-					static uint8_t color = 0;
-					updateInterval = 40;
-
-					color += 1;
-
-					if(color > 254)
-					{
-						currentLed++;
-						color = 0;
-					}
-
-					switch (currentLed)
-					{
-						case 3:
-							currentLed = 0;
-						case 0:
-							mainConfig.ledConfig.ledRed   = color;
-							mainConfig.ledConfig.ledGreen = 0;
-							mainConfig.ledConfig.ledBlue  = 0;
-							break;
-						case 1:
-							mainConfig.ledConfig.ledRed   = 0;
-							mainConfig.ledConfig.ledGreen = color;
-							mainConfig.ledConfig.ledBlue  = 0;
-							break;
-						case 2:
-							mainConfig.ledConfig.ledRed   = 0;
-							mainConfig.ledConfig.ledGreen = 0;
-							mainConfig.ledConfig.ledBlue  = color;
-							break;
-					}
-
-				}
-
-				rgbArray[y++] = ~(uint8_t)mainConfig.ledConfig.ledGreen;
-				rgbArray[y++] = ~(uint8_t)mainConfig.ledConfig.ledRed;
-				rgbArray[y++] = ~(uint8_t)mainConfig.ledConfig.ledBlue;
+					if (greenAmount > blueAmount)
+						blueAmount = 0;
+					if (greenAmount > redAmount)
+						blueAmount = 0;
+					break;
 			}
 
-			OutputSerialDmaByte(rgbArray, y, ws2812LedRecord.ws2812Actuator, 1, 0, 0);
+			rgbArray[y++] = ~(uint8_t)greenAmount;
+			rgbArray[y++] = ~(uint8_t)redAmount;
+			rgbArray[y++] = ~(uint8_t)blueAmount;
 
 		}
+
+		OutputSerialDmaByte(rgbArray, y, ws2812LedRecord.ws2812Actuator, 1, 0, 0);
+
 	}
 
 }

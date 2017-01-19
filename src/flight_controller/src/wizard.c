@@ -584,6 +584,8 @@ void OneWire(char *inString) {
 	uint32_t outputNumber;
 	uint32_t somethingHappened = 0;
 	uint32_t verbose = 1;
+	uint32_t doingAuto = 0;
+	uint32_t doingSettings = 0;
 
 	if (!strcmp("start", inString) || !strcmp("read", inString) || !strcmp("check", inString) || !strcmp("settings", inString) || !strcmp("auto", inString))
 	{
@@ -591,6 +593,15 @@ void OneWire(char *inString) {
 		if (!strcmp("check", inString))
 		{
 			verbose = 0;
+		}
+
+		if (!strcmp("auto", inString))
+		{
+			doingAuto = 1;
+		}
+		if (!strcmp("settings", inString))
+		{
+			doingSettings = 1;
 		}
 
 		oneWireActive = 1;
@@ -669,7 +680,7 @@ void OneWire(char *inString) {
 				DelayMs(5);
 				return;
 			}
-			if (!strcmp("settings", inString) || !strcmp("auto", inString))
+			if ( doingSettings || doingAuto )
 			{
 				for (x = 0; x < MAX_MOTOR_NUMBER; x++)
 				{
@@ -694,7 +705,7 @@ void OneWire(char *inString) {
 
 				}
 			}
-			if (!strcmp("auto", inString))
+			if (doingAuto)
 			{
 				inString = "ma=upgrade";
 				OneWire(inString);
