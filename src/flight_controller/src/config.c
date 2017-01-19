@@ -660,7 +660,7 @@ int RfCustomReply(char *rf_custom_out_buffer)
 	rfReplyBuffer[0]=1;
 	memcpy((char *)(rfReplyBuffer+1), rf_custom_out_buffer, RF_BUFFER_SIZE);
 
-	for (forCounter = 0; forCounter < 3000; forCounter++) {
+	for (forCounter = 0; forCounter < 6000; forCounter++) {
 		if (hidToPcReady) {
 			USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
 			hidToPcReady = 0;
@@ -743,15 +743,14 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("idle", inString))
 		{
+			uint32_t motorToSpin = CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER);
 			DisarmBoard();
 			SKIP_GYRO=1;
 			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "spinningmotor%lu\n", CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER) );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "spinningmotor %lu\n", motorToSpin );
 			RfCustomReply(rf_custom_out_buffer);
 			DelayMs(10);
-			IdleActuator( CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER) );
-			DelayMs(10);
-			IdleActuator( CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER) );
+			IdleActuator( motorToSpin );
 			return;
 		}
 	else if (!strcmp("idlestop", inString))

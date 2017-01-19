@@ -371,9 +371,12 @@ Version 0.151.047:
 	Fixed DSM2 1024, added DSM2 1024 bind option, changed bid opperations
 	Changed RXdata dump, Changed RCdata dump
 
+Version 0.152.047:
+	Adjust HID timeouts.
+	Adjust 1wire command logic.
 
-
-
+Version 0.153.047:
+	Adjust HID timeouts.
 
 Features in current development:
 	Spektrum Telemtry
