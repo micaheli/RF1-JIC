@@ -197,6 +197,12 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 		LoggingEnabled = 1;
 		loggingStartedLatch = 1;
 	}
+	else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (!ModeSet(M_LOGGING)) && (flashInfo.enabled == FLASH_ENABLED) )
+	{
+		ledStatus.status = LEDS_FASTER_BLINK;
+		LoggingEnabled = 1;
+		loggingStartedLatch = 1;
+	}
 	else
 	{
 		if (boardArmed)

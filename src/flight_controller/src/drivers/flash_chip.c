@@ -366,6 +366,7 @@ void FlashDeinit(void)
 {
 
 	flashInfo.enabled = FLASH_DISABLED;
+	flashInfo.totalSize = 0;
 
 	//set CS high
     inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);

@@ -16,9 +16,21 @@ paf_state InitPaf(float q, float r, float p, float intial_value)
 	{
 		modifier = 164.0;
 	}
-	else
+	else if (mainConfig.filterConfig[YAW].gyro.p < 3.5)
 	{
 		modifier = 328.0;
+	}
+	else if (mainConfig.filterConfig[YAW].gyro.p < 4.5)
+	{
+		modifier = 656.0;
+	}
+	else if (mainConfig.filterConfig[YAW].gyro.p < 5.5)
+	{
+		modifier = 1312.0;
+	}
+	else
+	{
+		modifier = 2624.0;
 	}
 
 	paf_state result;
@@ -46,9 +58,21 @@ void PafUpdate(paf_state *state, float measurement)
 	{
 		modifier = 164.0;
 	}
-	else
+	else if (mainConfig.filterConfig[YAW].gyro.p < 3.5)
 	{
 		modifier = 328.0;
+	}
+	else if (mainConfig.filterConfig[YAW].gyro.p < 4.5)
+	{
+		modifier = 656.0;
+	}
+	else if (mainConfig.filterConfig[YAW].gyro.p < 5.5)
+	{
+		modifier = 1312.0;
+	}
+	else
+	{
+		modifier = 2624.0;
 	}
 
 	//prediction update

@@ -49,7 +49,9 @@ static void checkRxPreArmCalibration(void)
 	{
 		highestCount=0;
 		//if pitch is near center, we add it to array
-		if ( ABS((int32_t)rxData[axis] - (int32_t)mainConfig.rcControlsConfig.midRc[axis]) < 30 )
+		//mainConfig.rcControlsConfig.midRc[ChannelMap(axis)]
+		//cruiser
+		if ( ABS((int32_t)rxData[axis] - (int32_t)mainConfig.rcControlsConfig.midRc[axis]) < 50 )
 		{
 			z = 0;
 			//check each value for
@@ -206,6 +208,8 @@ inline void CheckFailsafe(void)
 			ArmBoard();
 
 			//todo: make sure stick movement on these three axis are next to zero before setting centers.
+
+			//ChannelMap(PITCH)
 
 			if ( ABS((int32_t)rxCalibrationRecords[PITCH].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
 				mainConfig.rcControlsConfig.midRc[PITCH] = rxCalibrationRecords[PITCH].highestDataValue;
@@ -644,16 +648,16 @@ inline void InlineCollectRcCommand (void)
 		if (axis == THROTTLE)
 		{
 			if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
-				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[axis], mainConfig.rcControlsConfig.minRc[axis], 0 + mainConfig.rcControlsConfig.deadBand[axis], -1.0); //-1 to 0
+				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0 + mainConfig.rcControlsConfig.deadBand[axis], -1.0); //-1 to 0
 			else
-				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[axis], mainConfig.rcControlsConfig.midRc[axis], 1.0, 0 - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
+				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.0, 0 - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
 		}
 		else
 		{
 			if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
-				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[axis], mainConfig.rcControlsConfig.minRc[axis], 0 + mainConfig.rcControlsConfig.deadBand[axis], -1.0); //-1 to 0
+				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0 + mainConfig.rcControlsConfig.deadBand[axis], -1.0); //-1 to 0
 			else
-				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[axis], mainConfig.rcControlsConfig.midRc[axis], 1.0, 0 - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
+				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.0, 0 - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
 
 		}
 

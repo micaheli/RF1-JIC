@@ -378,6 +378,34 @@ Version 0.152.047:
 Version 0.153.047:
 	Adjust HID timeouts.
 
+Version 0.154.047:
+	Adjust HID timeouts.
+	Rewrote I/O format
+
+Version 0.155.047:
+	Adjust wizard I/O.
+
+Version 0.156.047:
+	Adjust RCdata storage
+	Rescaled Acro+ to be 0 to 300 instead of 0 to 3.
+
+Version 0.157.048:
+	Allow multiple lines of commands through console.
+
+Version 0.158.048:
+	Fix bug in rc wizard
+
+Version 0.159.048:
+	Fix log downloading.
+	Allow logging when armed by default if no logging mode is assigned.
+	Added direct flight mode.
+
+Version 0.160.048:
+	Automatic RX detection: wiz rx
+
+
+
+
 Features in current development:
 	Spektrum Telemtry
 	MSP compatibility

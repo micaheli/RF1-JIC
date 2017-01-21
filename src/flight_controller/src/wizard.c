@@ -77,7 +77,7 @@ static int32_t FindRxMinMax(void) {
 		DelayMs(20);
 
 		bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u-%u-%u-%u", (volatile unsigned int)(rxData[0]), (volatile unsigned int)(rxData[1]), (volatile unsigned int)(rxData[2]), (volatile unsigned int)(rxData[3]));
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u %u %u %u", (volatile unsigned int)(rxData[0]), (volatile unsigned int)(rxData[1]), (volatile unsigned int)(rxData[2]), (volatile unsigned int)(rxData[3]));
 		RfCustomReply(rf_custom_out_buffer);
 
 		for (uint32_t x = 0;x<MAXCHANNELS;x++) {
@@ -287,17 +287,23 @@ void MixerWizard(char *inString)
 void SetRestOfMap(void)
 {
 
+	uint32_t x;
+
+	uint32_t minRc[MAXCHANNELS];
+	uint32_t midRc[MAXCHANNELS];
+	uint32_t maxRc[MAXCHANNELS];
+
 	uint32_t highestMappedChannel[MAXCHANNELS];
 
 	bzero(highestMappedChannel, sizeof(highestMappedChannel));
 
-	for (uint32_t x = 0;x<MAXCHANNELS;x++)
+	for (x = 0;x<MAXCHANNELS;x++)
 	{
 		if (mainConfig.rcControlsConfig.channelMap[x] < 40)
 			highestMappedChannel[mainConfig.rcControlsConfig.channelMap[x]]=1;
 	}
 
-	for (uint32_t x = 0;x<MAXCHANNELS;x++)
+	for (x = 0;x<MAXCHANNELS;x++)
 	{
 		if (!highestMappedChannel[x])
 		{
@@ -308,6 +314,128 @@ void SetRestOfMap(void)
 		}
 	}
 
+	//copy channel map to temp channel map
+	for (x = 0;x<MAXCHANNELS;x++)
+	{
+		minRc[x] = mainConfig.rcControlsConfig.minRc[mainConfig.rcControlsConfig.channelMap[x]];
+		midRc[x] = mainConfig.rcControlsConfig.midRc[mainConfig.rcControlsConfig.channelMap[x]];
+		maxRc[x] = mainConfig.rcControlsConfig.maxRc[mainConfig.rcControlsConfig.channelMap[x]];
+	}
+	for (x = 0;x<MAXCHANNELS;x++)
+	{
+		mainConfig.rcControlsConfig.minRc[x] = minRc[x];
+		mainConfig.rcControlsConfig.midRc[x] = midRc[x];
+		mainConfig.rcControlsConfig.maxRc[x] = maxRc[x];
+	}
+
+}
+
+uint32_t CheckRxDataLooksValid()
+{
+	uint32_t correct = 0;
+	ProcessCommand("rxrcdata");
+
+	//if processed data is within 5% of center on 3 axis it's safe to assume it's valid data
+	if ( (trueRcCommandF[YAW] < 0.05) && (trueRcCommandF[YAW] > - 0.05) )
+		correct ++;
+	if ( (trueRcCommandF[ROLL] < 0.05) && (trueRcCommandF[ROLL] > - 0.05) )
+		correct ++;
+	if ( (trueRcCommandF[PITCH] < 0.05) && (trueRcCommandF[PITCH] > - 0.05) )
+		correct ++;
+	if ( (trueRcCommandF[THROTTLE] < 0.05) && (trueRcCommandF[THROTTLE] > - 0.05) )
+		correct ++;
+
+	if (correct > 2)
+	{
+		return(1);
+	}
+	return(0);
+}
+
+int CheckProtocol(char *inString)
+{
+	disableSaving=1;
+	DisarmBoard();
+	DeInitBoardUsarts();
+	bzero(rxData, sizeof(rxData));
+	trueRcCommandF[0] = -1;
+	trueRcCommandF[1] = -1;
+	trueRcCommandF[2] = -1;
+	trueRcCommandF[3] = -1;
+	ProcessCommand(inString);
+	InitBoardUsarts();
+	DelayMs(60);
+	DisarmBoard();
+	if (CheckRxDataLooksValid())
+	{
+		disableSaving=0;
+		return(1);
+	}
+	DelayMs(2);
+	DisarmBoard();
+	disableSaving=0;
+	return(0);
+
+}
+
+void AutoFindRx()
+{
+
+	//first find which port data is on
+	if (CheckProtocol("spek_t1")) { ProcessCommand("spek_t1");goto endingRx; }
+	if (CheckProtocol("spek_r1")) { ProcessCommand("spek_r1");goto endingRx; }
+	if (CheckProtocol("spek_t3")) { ProcessCommand("spek_t3");goto endingRx; }
+	if (CheckProtocol("spek_r3")) { ProcessCommand("spek_r3");goto endingRx; }
+	if (CheckProtocol("spek_t4")) { ProcessCommand("spek_t4");goto endingRx; }
+	if (CheckProtocol("spek_r4")) { ProcessCommand("spek_r4");goto endingRx; }
+
+	if (CheckProtocol("sbus_t1")) { ProcessCommand("sbus_t1");goto endingRx; }
+	if (CheckProtocol("sbus_r1")) { ProcessCommand("sbus_r1");goto endingRx; }
+	if (CheckProtocol("sbus_t3")) { ProcessCommand("sbus_t3");goto endingRx; }
+	if (CheckProtocol("sbus_r3")) { ProcessCommand("sbus_r3");goto endingRx; }
+	if (CheckProtocol("sbus_t4")) { ProcessCommand("sbus_t4");goto endingRx; }
+	if (CheckProtocol("sbus_r4")) { ProcessCommand("sbus_r4");goto endingRx; }
+
+	if (CheckProtocol("ibus_t1")) { ProcessCommand("ibus_t1");goto endingRx; }
+	if (CheckProtocol("ibus_r1")) { ProcessCommand("ibus_r1");goto endingRx; }
+	if (CheckProtocol("ibus_t3")) { ProcessCommand("ibus_t3");goto endingRx; }
+	if (CheckProtocol("ibus_r3")) { ProcessCommand("ibus_r3");goto endingRx; }
+	if (CheckProtocol("ibus_t4")) { ProcessCommand("ibus_t4");goto endingRx; }
+	if (CheckProtocol("ibus_r4")) { ProcessCommand("ibus_r4");goto endingRx; }
+
+	if (CheckProtocol("sumd_t1")) { ProcessCommand("sumd_t1");goto endingRx; }
+	if (CheckProtocol("sumd_r1")) { ProcessCommand("sumd_r1");goto endingRx; }
+	if (CheckProtocol("sumd_t3")) { ProcessCommand("sumd_t3");goto endingRx; }
+	if (CheckProtocol("sumd_r3")) { ProcessCommand("sumd_r3");goto endingRx; }
+	if (CheckProtocol("sumd_t4")) { ProcessCommand("sumd_t4");goto endingRx; }
+	if (CheckProtocol("sumd_r4")) { ProcessCommand("sumd_r4");goto endingRx; }
+
+	if (CheckProtocol("dsm2_t1")) { ProcessCommand("dsm2_t1");goto endingRx; }
+	if (CheckProtocol("dsm2_r1")) { ProcessCommand("dsm2_r1");goto endingRx; }
+	if (CheckProtocol("dsm2_t3")) { ProcessCommand("dsm2_t3");goto endingRx; }
+	if (CheckProtocol("dsm2_r3")) { ProcessCommand("dsm2_r3");goto endingRx; }
+	if (CheckProtocol("dsm2_t4")) { ProcessCommand("dsm2_t4");goto endingRx; }
+	if (CheckProtocol("dsm2_r4")) { ProcessCommand("dsm2_r4");goto endingRx; }
+
+//	if (CheckProtocol("ppm_t1")) { ProcessCommand("ppm_t1");goto endingRx; }
+//	if (CheckProtocol("ppm_r1")) { ProcessCommand("ppm_r1");goto endingRx; }
+//	if (CheckProtocol("ppm_t3")) { ProcessCommand("ppm_t3");goto endingRx; }
+//	if (CheckProtocol("ppm_r3")) { ProcessCommand("ppm_r3");goto endingRx; }
+//	if (CheckProtocol("ppm_t4")) { ProcessCommand("ppm_t4");goto endingRx; }
+//	if (CheckProtocol("ppm_r4")) { ProcessCommand("ppm_r4");goto endingRx; }
+
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me No RX found. Is your radio on?" );
+	RfCustomReply(rf_custom_out_buffer);
+
+	goto EofAutoFindRx;
+endingRx:
+
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX Found" );
+	RfCustomReply(rf_custom_out_buffer);
+
+EofAutoFindRx:
+	bzero(trueRcCommandF, sizeof(trueRcCommandF));
+
 }
 
 void SetupWizard(char *inString)
@@ -315,7 +443,11 @@ void SetupWizard(char *inString)
 
 	int32_t returnedValue = 0;
 
-	if (!strcmp("mixera", inString))
+	if (!strcmp("rx", inString))
+	{
+		AutoFindRx();
+	}
+	else if (!strcmp("mixera", inString))
 	{
 		MixerWizard(inString);
 	}
@@ -351,13 +483,7 @@ void SetupWizard(char *inString)
 			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 			memcpy(rf_custom_out_buffer, "calibrate2finished\n", sizeof("calibrate2finished\n"));
 			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
+			SaveAndSend();
 
 		} else {
 
@@ -472,13 +598,7 @@ void SetupWizard(char *inString)
 						SetRestOfMap();
 						skipRxMap = 0;
 						DelayMs(3000); //don't save for three seconds
-						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-						memcpy(rf_custom_out_buffer, "saving", sizeof("saving"));
-						RfCustomReply(rf_custom_out_buffer);
-						SaveConfig(ADDRESS_CONFIG_START);
-						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-						memcpy(rf_custom_out_buffer, "savecomplete", sizeof("savecomplete"));
-						RfCustomReply(rf_custom_out_buffer);
+						SaveAndSend();
 						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 						memcpy(rf_custom_out_buffer, "Set an Arm mode using mode list", sizeof("Set an Arm mode using mode list"));
 						RfCustomReply(rf_custom_out_buffer);

@@ -577,13 +577,22 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		//get setpoint for PIDC
 		if (!ModeActive(M_ATTITUDE) && !ModeActive(M_HORIZON)) //if rateMode
 		{
-			flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
-			flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL]);
-			flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH]);
+			if (ModeActive(M_DIRECT))
+			{
+				flightSetPoints[YAW]   = InlineGetSetPoint(curvedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01); //yaw is backwards for some reason
+				flightSetPoints[ROLL]  = InlineGetSetPoint(curvedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01);
+				flightSetPoints[PITCH] = -InlineGetSetPoint(curvedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01);
+			}
+			else
+			{
+				flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01); //yaw is backwards for some reason
+				flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01);
+				flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01);
+			}
 		}
 		else //if angleMode
 		{
-			flightSetPoints[YAW]     = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW]); //yaw is backwards for some reason
+			flightSetPoints[YAW]     = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01); //yaw is backwards for some reason
 			rollAttitudeError        = ( (trueRcCommandF[ROLL] * mainConfig.pidConfig[PITCH].sla) - rollAttitude );
 			pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla) - pitchAttitude );
 			rollAttitudeErrorKi      = (rollAttitudeErrorKi + rollAttitudeError * mainConfig.pidConfig[PITCH].sli * loopSpeed.dT);

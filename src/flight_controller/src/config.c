@@ -4,8 +4,12 @@
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
 main_config mainConfig;
+volatile uint32_t disableSaving=0;
+uint32_t sendReturn = 0;
 uint32_t resetBoard = 0;
 char rf_custom_out_buffer[RF_BUFFER_SIZE];
+//char rfCustomSendBufferAdder[RF_BUFFER_SIZE];
+//char rfCustomSendBuffer[2048];
 
 static uint32_t ValidateConfig (uint32_t addresConfigStart);
 static void     SetValueOrString(uint32_t position, char *value);
@@ -89,15 +93,15 @@ const config_variables_rec valueTable[] = {
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtcol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 5, "" },
-		{ "motor_mixer", 		typeUINT,  "mixr", &mainConfig.mixerConfig.motorMixer,					0, 2, 0, "" },
-		{ "mout1", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[0],				0, 9, 0, "" },
-		{ "mout2", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[1],				0, 9, 1, "" },
-		{ "mout3", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[2],				0, 9, 2, "" },
-		{ "mout4", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[3],				0, 9, 3, "" },
-		{ "mout5", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[4],				0, 9, 4, "" },
-		{ "mout6", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[5],				0, 9, 5, "" },
-		{ "mout7", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[6],				0, 9, 6, "" },
-		{ "mout8", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[7],				0, 9, 7, "" },
+		{ "motor_mixer", 		typeUINT,  "mixr", &mainConfig.mixerConfig.motorMixer,					0, 7, 0, "" },
+		{ "mout1", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[0],				0, 7, 0, "" },
+		{ "mout2", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[1],				0, 7, 1, "" },
+		{ "mout3", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[2],				0, 7, 2, "" },
+		{ "mout4", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[3],				0, 7, 3, "" },
+		{ "mout5", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[4],				0, 7, 4, "" },
+		{ "mout6", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[5],				0, 7, 5, "" },
+		{ "mout7", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[6],				0, 7, 6, "" },
+		{ "mout8", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[7],				0, 7, 7, "" },
 
 		{ "led_count",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledCount,						0, WS2812_MAX_LEDS, 8, "" },
 		{ "led_red",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledRed,						0, 255, 1, "" },
@@ -110,7 +114,7 @@ const config_variables_rec valueTable[] = {
 		{ "telem_msp",	 		typeUINT,  "telm", &mainConfig.telemConfig.telemMsp,					0, TELEM_LAST, TELEM_OFF, "" },
 		{ "telem_mavlink", 		typeUINT,  "telm", &mainConfig.telemConfig.telemMav,					0, TELEM_LAST, TELEM_OFF, "" },
 
-		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, 12, CW0, "" },
+		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, CW315_INV, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1,  0, "" },
 		{ "sml_board_rot_x", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],		0, 10, 0, "" },
 		{ "sml_board_rot_y", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Y],		0, 10, 0, "" },
@@ -119,47 +123,47 @@ const config_variables_rec valueTable[] = {
 		{ "gyro_filter_type",	typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeGyro, 				0, 2, 0, "" },
 		{ "kd_filter_type",		typeUINT,  "gyro", &mainConfig.gyroConfig.filterTypeKd, 				0, 2, 2, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 300, 212.00, "" }, //1000 18
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 300, 110.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 300, 120.00, "" },
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 300, 600.00, "" }, //1000 14
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 300, 500.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 300, 550.00, "" },
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 300, 1100.00, "" }, //1000000 114
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 300, 1000.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 300, 1200.00, "" },
-		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 						0, 300, 0, "" },
-		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 						0, 300, 0, "" },
-		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 					0, 300, 0, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 212.00, "" }, //1000 18
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 110.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 120.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 600.00, "" }, //1000 14
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 500.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 550.00, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1100.00, "" }, //1000000 114
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 1000.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1200.00, "" },
+		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 						0, 32, 0, "" },
+		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 						0, 32, 0, "" },
+		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 					0, 32, 0, "" },
 
 		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 0, "" },
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
 
-		{ "slp", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 32, 20, "" },
-		{ "sli", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 32, 20, "" },
-		{ "sla", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 32, 40, "" },
-		{ "sld", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 32, 0.65, "" },
+		{ "slp", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25, 20, "" },
+		{ "sli", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25, 20, "" },
+		{ "sla", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 50, 40, "" },
+		{ "sld", 				typeFLOAT,  "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.9, 0.65, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 10, 60.000, "" },
-		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 10, 88.000, "" },
-		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 				0, 10, 00.000, "" },
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 10, 60.000, "" },
-		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 10, 88.000, "" },
-		{ "roll_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.p, 				0, 10, 00.000, "" },
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 10, 60.000, "" },
-		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 10, 88.000, "" },
-		{ "pitch_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.p, 				0, 10, 00.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 60.000, "" },
+		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 200, 88.000, "" },
+		{ "yaw_press", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.p, 				0, 100, 00.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 60.000, "" },
+		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 200, 88.000, "" },
+		{ "roll_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.p, 				0, 100, 00.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 60.000, "" },
+		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 200, 88.000, "" },
+		{ "pitch_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.p, 				0, 100, 00.000, "" },
 
-		{ "yaw_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.q, 					0, 10, 00.000, "" },
-		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 10, 90.000, "" },
-		{ "yaw_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.p, 					0, 10, 00.000, "" },
-		{ "roll_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.q, 				0, 10, 00.000, "" },
-		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 10, 90.000, "" },
-		{ "roll_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.p, 				0, 10, 00.000, "" },
-		{ "pitch_kd_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.q, 				0, 10, 00.000, "" },
-		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 10, 90.000, "" },
-		{ "pitch_kd_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.p, 				0, 10, 00.000, "" },
+		{ "yaw_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.q, 					0, 100, 00.000, "" },
+		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
+		{ "yaw_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.p, 					0, 100, 00.000, "" },
+		{ "roll_kd_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.q, 				0, 100, 00.000, "" },
+		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 90.000, "" },
+		{ "roll_kd_press", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.p, 				0, 100, 00.000, "" },
+		{ "pitch_kd_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.q, 				0, 100, 00.000, "" },
+		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 100, 90.000, "" },
+		{ "pitch_kd_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.p, 				0, 100, 00.000, "" },
 
 		{ "yaw_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kdBq.lpfHz, 			0, 200, 68.00, "" },
 		{ "roll_kd_lpf", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kdBq.lpfHz, 			0, 200, 68.00, "" },
@@ -176,7 +180,7 @@ const config_variables_rec valueTable[] = {
 		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 025.00, "" },
 		{ "z_vector_press", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.p, 				0, 10, 0.0500, "" },
 
-		{ "rx_protocol", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxProtcol, 				0, 10, USING_SPEKTRUM_T, "" },
+		{ "rx_protocol", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxProtcol, 				0, USING_DSM2_T, USING_SPEKTRUM_T, "" },
 		{ "rx_usart", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxUsart, 				0, MAX_USARTS-1, ENUM_USART1, "" },
 
 		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 		0, 0.1, 0.003, "" },
@@ -190,49 +194,49 @@ const config_variables_rec valueTable[] = {
 
 		//spektrum is 1024
 		//sbus is 998
-		{ "pitch_midrc",		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[PITCH], 			0, 2148, 1024, "" },
-		{ "roll_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[ROLL], 			0, 2148, 1024, "" },
-		{ "yaw_midrc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[YAW], 			0, 2148, 1024, "" },
-		{ "throttle_midrc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[THROTTLE],		0, 2148, 1024, "" },
-		{ "aux1_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX1], 			0, 2148, 1024, "" },
-		{ "aux2_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX2], 			0, 2148, 1024, "" },
-		{ "aux3_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX3], 			0, 2148, 1024, "" },
-		{ "aux4_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX4], 			0, 2148, 1024, "" },
+		{ "pitch_midrc",		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[PITCH], 			0, 21480, 1024, "" },
+		{ "roll_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[ROLL], 			0, 21480, 1024, "" },
+		{ "yaw_midrc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[YAW], 			0, 21480, 1024, "" },
+		{ "throttle_midrc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[THROTTLE],		0, 21480, 1024, "" },
+		{ "aux1_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX1], 			0, 21480, 1024, "" },
+		{ "aux2_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX2], 			0, 21480, 1024, "" },
+		{ "aux3_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX3], 			0, 21480, 1024, "" },
+		{ "aux4_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[AUX4], 			0, 21480, 1024, "" },
 
-		{ "pitch_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[PITCH], 			0, 2148, 0, "" },
-		{ "roll_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[ROLL], 			0, 2148, 0, "" },
-		{ "yaw_minrc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[YAW], 			0, 2148, 0, "" },
-		{ "throttle_minrc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[THROTTLE], 		0, 2148, 0, "" },
-		{ "aux1_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX1], 			0, 2148, 0, "" },
-		{ "aux2_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX2], 			0, 2148, 0, "" },
-		{ "aux3_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX3], 			0, 2148, 0, "" },
-		{ "aux4_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX4], 			0, 2148, 0, "" },
+		{ "pitch_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[PITCH], 			0, 21480, 0, "" },
+		{ "roll_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[ROLL], 			0, 21480, 0, "" },
+		{ "yaw_minrc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[YAW], 			0, 21480, 0, "" },
+		{ "throttle_minrc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[THROTTLE], 		0, 21480, 0, "" },
+		{ "aux1_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX1], 			0, 21480, 0, "" },
+		{ "aux2_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX2], 			0, 21480, 0, "" },
+		{ "aux3_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX3], 			0, 21480, 0, "" },
+		{ "aux4_minrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.minRc[AUX4], 			0, 21480, 0, "" },
 
-		{ "pitch_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[PITCH], 			0, 2148, 2048, "" },
-		{ "roll_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[ROLL], 			0, 2148, 2048, "" },
-		{ "yaw_maxrc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[YAW], 			0, 2148, 2048, "" },
-		{ "throttle_maxrc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[THROTTLE], 		0, 2148, 2048, "" },
-		{ "aux1_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX1], 			0, 2148, 2048, "" },
-		{ "aux2_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX2], 			0, 2148, 2048, "" },
-		{ "aux3_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX3], 			0, 2148, 2048, "" },
-		{ "aux4_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX4], 			0, 2148, 2048, "" },
+		{ "pitch_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[PITCH], 			0, 21480, 2048, "" },
+		{ "roll_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[ROLL], 			0, 21480, 2048, "" },
+		{ "yaw_maxrc", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[YAW], 			0, 21480, 2048, "" },
+		{ "throttle_maxrc", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[THROTTLE], 		0, 21480, 2048, "" },
+		{ "aux1_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX1], 			0, 21480, 2048, "" },
+		{ "aux2_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX2], 			0, 21480, 2048, "" },
+		{ "aux3_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX3], 			0, 21480, 2048, "" },
+		{ "aux4_maxrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.maxRc[AUX4], 			0, 21480, 2048, "" },
 
-		{ "pitch_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[PITCH], 		0, 1000, 2, "" },
-		{ "roll_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[ROLL], 		0, 1000, 1, "" },
-		{ "yaw_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[YAW], 		0, 1000, 0, "" },
-		{ "throttle_map", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[THROTTLE],	0, 1000, 3, "" },
-		{ "aux1_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX1], 		0, 1000, 4, "" },
-		{ "aux2_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX2], 		0, 1000, 5, "" },
-		{ "aux3_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX3], 		0, 1000, 6, "" },
-		{ "aux4_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX4], 		0, 1000, 7, "" },
-		{ "aux5_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX5], 		0, 1000, 100, "" },
-		{ "aux6_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX6], 		0, 1000, 100, "" },
-		{ "aux7_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX7], 		0, 1000, 100, "" },
-		{ "aux8_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX8], 		0, 1000, 100, "" },
-		{ "aux9_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX9], 		0, 1000, 100, "" },
-		{ "aux10_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX10], 		0, 1000, 100, "" },
-		{ "aux11_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX11], 		0, 1000, 100, "" },
-		{ "aux12_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX12], 		0, 1000, 100, "" },
+		{ "pitch_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[PITCH], 		0, 100, 2, "" },
+		{ "roll_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[ROLL], 		0, 100, 1, "" },
+		{ "yaw_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[YAW], 		0, 100, 0, "" },
+		{ "throttle_map", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[THROTTLE],	0, 100, 3, "" },
+		{ "aux1_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX1], 		0, 100, 4, "" },
+		{ "aux2_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX2], 		0, 100, 5, "" },
+		{ "aux3_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX3], 		0, 100, 6, "" },
+		{ "aux4_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX4], 		0, 100, 7, "" },
+		{ "aux5_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX5], 		0, 100, 100, "" },
+		{ "aux6_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX6], 		0, 100, 100, "" },
+		{ "aux7_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX7], 		0, 100, 100, "" },
+		{ "aux8_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX8], 		0, 100, 100, "" },
+		{ "aux9_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX9], 		0, 100, 100, "" },
+		{ "aux10_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX10], 		0, 100, 100, "" },
+		{ "aux11_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX11], 		0, 100, 100, "" },
+		{ "aux12_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX12], 		0, 100, 100, "" },
 
 		{ "rc_calibrated", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rcCalibrated,			0, 1, 0, "" },
 
@@ -260,9 +264,9 @@ const config_variables_rec valueTable[] = {
 		{ "roll_rate", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.rates[ROLL],			0, 1400, 400, "" },
 		{ "yaw_rate", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.rates[YAW],				0, 1400, 400, "" },
 
-		{ "pitch_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[PITCH],		0, 4, 1.4, "" },
-		{ "roll_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[ROLL],			0, 4, 1.4, "" },
-		{ "yaw_acrop", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[YAW],			0, 4, 1.4, "" }
+		{ "pitch_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[PITCH],		0, 300, 140, "" },
+		{ "roll_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[ROLL],			0, 300, 140, "" },
+		{ "yaw_acrop", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[YAW],			0, 300, 140, "" }
 
 };
 
@@ -316,6 +320,34 @@ char *ftoa(float x, char *floatString)
     return(floatString);
 }
 
+void ValidateConfigSettings(void)
+{
+	uint32_t x;
+
+	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+	{
+		switch(valueTable[x].type)
+		{
+			case typeUINT:
+				if ( ( *(uint32_t *)valueTable[x].ptr < (uint32_t)valueTable[x].Min ) || ( *(uint32_t *)valueTable[x].ptr > (uint32_t)valueTable[x].Max ) )
+					*(uint32_t *)valueTable[x].ptr = (uint32_t)valueTable[x].Default;
+				break;
+
+			case typeINT:
+				if ( ( *(int32_t *)valueTable[x].ptr < (int32_t)valueTable[x].Min ) || ( *(int32_t *)valueTable[x].ptr > (int32_t)valueTable[x].Max ) )
+					*(int32_t *)valueTable[x].ptr = (int32_t)valueTable[x].Default;
+				break;
+
+			case typeFLOAT:
+				if ( ( *(float *)valueTable[x].ptr < (float)valueTable[x].Min ) || ( *(float *)valueTable[x].ptr > (float)valueTable[x].Max ) )
+					*(float *)valueTable[x].ptr = (float)valueTable[x].Default;
+				break;
+
+		}
+
+	}
+
+}
 
 void GenerateConfig(void)
 {
@@ -356,7 +388,7 @@ void SaveConfig (uint32_t addresConfigStart)
 	uint32_t addressOffset;
 
 	DisarmBoard();
-
+	SKIP_GYRO=1;
 	if (resetBoard) {
 
 		//This function does a shotgun startup of the flight code.
@@ -374,7 +406,7 @@ void SaveConfig (uint32_t addresConfigStart)
 		WriteFlash(*(uint32_t *) ((char *) &mainConfig + addressOffset), addresConfigStart+addressOffset );
 	}
 	FinishFlash();
-
+	SKIP_GYRO=0;
 }
 
 uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length)
@@ -415,6 +447,7 @@ void LoadConfig (uint32_t addresConfigStart)
 {
 	if (ValidateConfig(addresConfigStart) ) {
 		memcpy(&mainConfig, (char *) addresConfigStart, sizeof(main_config));
+		ValidateConfigSettings();
 	} else {
 		GenerateConfig();
 		SaveConfig(addresConfigStart);
@@ -538,7 +571,7 @@ void SetValue(uint32_t position, char *value)
 
 void SendStatusReport(char *inString)
 {
-	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "STAT:%s\n", inString);
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ss %s", inString);
 	RfCustomReply(rf_custom_out_buffer);
 }
 
@@ -565,14 +598,6 @@ int32_t SetVariable(char *inString)
 	for (x = 0; x < strlen(inString); x++)
 		inString[x] = tolower((unsigned char)inString[x]);
 
-	//TODO: Remove
-	if (!strcmp("board_calibrated", inString)) {
-		memcpy(rf_custom_out_buffer, "board_calibrated cannot be set manually. Please run the board calibration routine.\0", sizeof("board_calibrated cannot be set manually. Please run the board calibration routine.\0"));
-		RfCustomReply(rf_custom_out_buffer);
-		return (0);
-	}
-
-
 	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 	{
 		if (!strcmp(valueTable[x].name, inString))
@@ -582,6 +607,8 @@ int32_t SetVariable(char *inString)
 			if ( (!strcmp(valueTable[x].group, "telm")) || (!strcmp(valueTable[x].group, "mixr")) || (!strcmp(valueTable[x].group, "gyro")) || (!strcmp(valueTable[x].group, "filt"))  || (!strcmp(valueTable[x].group, "rccf")) ) {
 				resetBoard=1;
 			}
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me %s=%s", inString, args);
+			RfCustomReply(rf_custom_out_buffer);
 			return (1);
 		}
 	}
@@ -596,23 +623,22 @@ void OutputVarSet(uint32_t position)
 {
 	char fString[20];
 
-	bzero(rf_custom_out_buffer, RF_BUFFER_SIZE);
 	switch (valueTable[position].type) {
 
 	case typeUINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeFLOAT:
 		ftoa(*(float *)valueTable[position].ptr, fString);
 		StripSpaces(fString);
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%s\n", valueTable[position].name, fString);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%s", valueTable[position].name, fString);
 		break;
 	}
 
@@ -623,23 +649,22 @@ void OutputVar(uint32_t position)
 {
 	char fString[20];
 
-	bzero(rf_custom_out_buffer, RF_BUFFER_SIZE);
 	switch (valueTable[position].type) {
 
 	case typeUINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeFLOAT:
 		ftoa(*(float *)valueTable[position].ptr, fString);
 		StripSpaces(fString);
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%s\n", valueTable[position].name, fString);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%s", valueTable[position].name, fString);
 		break;
 	}
 
@@ -653,6 +678,12 @@ int RfCustomReply(char *rf_custom_out_buffer)
 
 	uint32_t forCounter;
 
+	if (disableSaving)
+		return(0);
+
+	if (sendReturn)
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s\n", rf_custom_out_buffer);
+
 	unsigned char rfReplyBuffer[RF_BUFFER_SIZE];
 
 	bzero((rfReplyBuffer+1), (sizeof(rfReplyBuffer)-1));
@@ -660,15 +691,16 @@ int RfCustomReply(char *rf_custom_out_buffer)
 	rfReplyBuffer[0]=1;
 	memcpy((char *)(rfReplyBuffer+1), rf_custom_out_buffer, RF_BUFFER_SIZE);
 
-	for (forCounter = 0; forCounter < 6000; forCounter++) {
+	for (forCounter = 0; forCounter < 100000; forCounter++) {
 		if (hidToPcReady) {
 			USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
 			hidToPcReady = 0;
 			return(1);
 		}
-		delayUs(10); //wait 30 ms max
+		delayUs(10); //wait 1 second max
 	}
 	return(0);
+
 }
 
 
@@ -746,9 +778,10 @@ void ProcessCommand(char *inString)
 			uint32_t motorToSpin = CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER);
 			DisarmBoard();
 			SKIP_GYRO=1;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "spinningmotor %lu\n", motorToSpin );
+
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Spinning Motor %lu", motorToSpin );
 			RfCustomReply(rf_custom_out_buffer);
+
 			DelayMs(10);
 			IdleActuator( motorToSpin );
 			return;
@@ -762,7 +795,6 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("error", inString))
 		{
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu %lu", deviceWhoAmI, errorMask);
 			RfCustomReply(rf_custom_out_buffer);
 			return;
@@ -771,70 +803,56 @@ void ProcessCommand(char *inString)
 		{
 			flashInfo.enabled = FLASH_ENABLED;
 			flashInfo.currentWriteAddress = atoi(args);
+
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me It's a FAAAAKE" );
+			RfCustomReply(rf_custom_out_buffer);
+
 			return;
 		}
 	else if (!strcmp("setack", inString))
 		{
+
+			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ACK SET" );
+			//RfCustomReply(rf_custom_out_buffer);
 			sendAckMode = 1;
 			return;
 		}
 	else if (!strcmp("unsetack", inString))
 		{
+			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ACK UNSET" );
+			//RfCustomReply(rf_custom_out_buffer);
 			sendAckMode = 0;
 			return;
 		}
 	else if (!strcmp("set", inString))
 		{
-			if (SetVariable(args))
+			if (!SetVariable(args))
 			{
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "variablesetsuccess:%s", args);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Setting Not Found:%s", inString);
 				RfCustomReply(rf_custom_out_buffer);
 			}
-			else
-			{
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "noargumentsfoundforargument:%s", args);
-				RfCustomReply(rf_custom_out_buffer);
-			}
-
 		}
 	else if (!strcmp("rxdata", inString))
 		{
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dumprxstarted");
-			RfCustomReply(rf_custom_out_buffer);
-			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx=xx+4)
 			{
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u=%u", (volatile unsigned int)xx, (volatile unsigned int)(rxData[xx]));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rx %u=%u\n#rx %u=%u\n#rx %u=%u\n#rx %u=%u\n", (volatile unsigned int)xx, (volatile unsigned int)(rxData[xx]), (volatile unsigned int)xx+1, (volatile unsigned int)(rxData[xx+1]), (volatile unsigned int)xx+2, (volatile unsigned int)(rxData[xx+2]), (volatile unsigned int)xx+3, (volatile unsigned int)(rxData[xx+3]));
 				RfCustomReply(rf_custom_out_buffer);
 			}
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dumprxfinished");
-			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("rcdata", inString))
 		{
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dumprcstarted");
-			RfCustomReply(rf_custom_out_buffer);
-			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx=xx+4)
 			{
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%d=%d", (volatile int)xx, (volatile int)(trueRcCommandF[xx]*1000));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rc %d=%d\n#rx %d=%d\n#rx %d=%d\n#rx %d=%d\n", (volatile int)xx, (volatile int)(trueRcCommandF[xx]), (volatile int)xx+1, (volatile int)(trueRcCommandF[xx+1]), (volatile int)xx+2, (volatile int)(trueRcCommandF[xx+2]), (volatile int)xx+3, (volatile int)(trueRcCommandF[xx+3]));
 				RfCustomReply(rf_custom_out_buffer);
 			}
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dumprcfinished");
-			RfCustomReply(rf_custom_out_buffer);
 		}
-	else if (!strcmp("rcboth", inString))
+	else if (!strcmp("rxrcdata", inString))
 		{
-			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx=xx+2)
 			{
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u : %d", (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rb %u=%u:%d\n#rb %u=%u:%d\n", (volatile unsigned int)(xx), (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000), (volatile unsigned int)(xx+1), (volatile unsigned int)(rxData[xx+1]), (volatile int)(trueRcCommandF[xx+1]*1000));
 				RfCustomReply(rf_custom_out_buffer);
 			}
 		}
@@ -873,14 +891,12 @@ void ProcessCommand(char *inString)
 			StripSpaces(gy);
 			StripSpaces(gz);
 
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "telemstarted\npitch=%s\nroll=%s\nheading=%s\n", pitchString,rollString,yawString);
+			//todo: make a way to combine strings
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm pitch=%s\n#tm roll=%s\n#tm heading=%s\n", pitchString,rollString,yawString);
 			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ax=%s\nay=%s\naz=%s\n", ax,ay,az);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm ax=%s\n#tm ay=%s\n#tm az=%s\n", ax,ay,az);
 			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "gx=%s\ngy=%s\ngz=%s\ntelemcomplete\n", gx,gy,gz);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm gx=%s\n#tm gy=%s\n#tm gz=%s\n", gx,gy,gz);
 			RfCustomReply(rf_custom_out_buffer);
 
 		}
@@ -964,18 +980,13 @@ void ProcessCommand(char *inString)
 			}
 
 			SetMode(M_ARMED, 4, 50, 100);
+
 			resetBoard = 1;
 
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "settingdefaultstosbus\n", sizeof("settingdefaultstosbus\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SBUS Defaults");
 			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
+
+			SaveAndSend();
 		}
 	else if (!strcmp("sumd_t1", inString) || !strcmp("sumd_t3", inString) || !strcmp("sumd_t4", inString) || !strcmp("sumd_r1", inString) || !strcmp("sumd_r3", inString) || !strcmp("sumd_r3", inString))
 		{
@@ -1053,16 +1064,10 @@ void ProcessCommand(char *inString)
 			SetMode(M_ARMED, 4, 50, 100);
 			resetBoard = 1;
 
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "settingdefaultstosumd\n", sizeof("settingdefaultstosumd\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SUMD Defaults");
 			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
+
+			SaveAndSend();
 		}
 	else if (!strcmp("ibus_t1", inString) || !strcmp("ibus_t3", inString) || !strcmp("ibus_t4", inString) || !strcmp("ibus_r1", inString) || !strcmp("ibus_r3", inString) || !strcmp("ibus_r3", inString))
 		{
@@ -1138,18 +1143,13 @@ void ProcessCommand(char *inString)
 			}
 
 			SetMode(M_ARMED, 4, 50, 100);
+
 			resetBoard = 1;
 
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "settingdefaultstoibus\n", sizeof("settingdefaultstoibus\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me IBUS Defaults");
 			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
+
+			SaveAndSend();
 		}
 	else if (!strcmp("ppm_t1", inString) || !strcmp("ppm_t3", inString) || !strcmp("ppm_t4", inString) || !strcmp("ppm_r1", inString) || !strcmp("ppm_r3", inString) || !strcmp("ppm_r4", inString))
 		{
@@ -1225,18 +1225,13 @@ void ProcessCommand(char *inString)
 			}
 
 			SetMode(M_ARMED, 4, 50, 100);
+
 			resetBoard = 1;
 
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "settingdefaultstoppm\n", sizeof("settingdefaultstoppm\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me PPM Defaults");
 			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
+
+			SaveAndSend();
 		}
 	else if (!strcmp("pidsdefault", inString))
 		{
@@ -1281,70 +1276,12 @@ void ProcessCommand(char *inString)
 			mainConfig.gyroConfig.filterTypeKd    = 2;
 
 			resetBoard = 1;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "pidsdefaultsaving\n", sizeof("pidsdefaultsaving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Default PIDs");
 			RfCustomReply(rf_custom_out_buffer);
 
-		}
-	else if (!strcmp("pidsxdc", inString))
-		{
-			mainConfig.pidConfig[YAW].kp   = 345.00;
-			mainConfig.pidConfig[ROLL].kp  = 140.00;
-			mainConfig.pidConfig[PITCH].kp = 175.00;
+			SaveAndSend();
 
-			mainConfig.pidConfig[YAW].ki   = 475.00;
-			mainConfig.pidConfig[ROLL].ki  = 370.00;
-			mainConfig.pidConfig[PITCH].ki = 435.00;
-
-			mainConfig.pidConfig[YAW].kd   = 2100.00;
-			mainConfig.pidConfig[ROLL].kd  = 800.00;
-			mainConfig.pidConfig[PITCH].kd = 1000.00;
-
-			mainConfig.pidConfig[YAW].ga   = 0.00;
-			mainConfig.pidConfig[ROLL].ga  = 0.00;
-			mainConfig.pidConfig[PITCH].ga = 0.00;
-
-			mainConfig.pidConfig[YAW].wc   = 0;
-			mainConfig.pidConfig[ROLL].wc  = 0;
-			mainConfig.pidConfig[PITCH].wc = 0;
-
-			mainConfig.filterConfig[YAW].gyro.r   = 150.00;
-			mainConfig.filterConfig[ROLL].gyro.r  = 100.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 100.00;
-
-			mainConfig.filterConfig[YAW].gyro.q   = 0.010;
-			mainConfig.filterConfig[ROLL].gyro.q  = 0.010;
-			mainConfig.filterConfig[PITCH].gyro.q = 0.010;
-
-			mainConfig.filterConfig[YAW].gyro.p   = 0.150;
-			mainConfig.filterConfig[ROLL].gyro.p  = 0.150;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.150;
-
-			mainConfig.filterConfig[YAW].kd.r     = 85.0;
-			mainConfig.filterConfig[ROLL].kd.r    = 90.0;
-			mainConfig.filterConfig[PITCH].kd.r   = 90.0;
-
-			mainConfig.gyroConfig.filterTypeGyro  = 0;
-			mainConfig.gyroConfig.filterTypeKd    = 2;
-
-			resetBoard = 1;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "pidsxdcsaving\n", sizeof("pidsxdcsaving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("pidsrs2k", inString))
 		{
@@ -1387,232 +1324,13 @@ void ProcessCommand(char *inString)
 
 			mainConfig.gyroConfig.filterTypeGyro  = 0;
 			mainConfig.gyroConfig.filterTypeKd    = 2;
-			resetBoard = 1;
-
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "pidsrs2ksaving\n", sizeof("pidsrs2ksaving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-	else if (!strcmp("pidsnoise", inString))
-		{
-			mainConfig.pidConfig[YAW].kp   = 345.00;
-			mainConfig.pidConfig[ROLL].kp  = 140.00;
-			mainConfig.pidConfig[PITCH].kp = 175.00;
-
-			mainConfig.pidConfig[YAW].ki   = 475.00;
-			mainConfig.pidConfig[ROLL].ki  = 370.00;
-			mainConfig.pidConfig[PITCH].ki = 435.00;
-
-			mainConfig.pidConfig[YAW].kd   = 2100.00;
-			mainConfig.pidConfig[ROLL].kd  = 800.00;
-			mainConfig.pidConfig[PITCH].kd = 1000.00;
-
-			mainConfig.pidConfig[YAW].ga   = 3.00;
-			mainConfig.pidConfig[ROLL].ga  = 3.00;
-			mainConfig.pidConfig[PITCH].ga = 3.00;
-
-			mainConfig.pidConfig[YAW].wc   = 8;
-			mainConfig.pidConfig[ROLL].wc  = 8;
-			mainConfig.pidConfig[PITCH].wc = 8;
-
-			mainConfig.filterConfig[YAW].gyro.r   = 180.00;
-			mainConfig.filterConfig[ROLL].gyro.r  = 180.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 180.00;
-
-			mainConfig.filterConfig[YAW].gyro.q   = 0.100;
-			mainConfig.filterConfig[ROLL].gyro.q  = 0.100;
-			mainConfig.filterConfig[PITCH].gyro.q = 0.100;
-
-			mainConfig.filterConfig[YAW].gyro.p   = 0.150;
-			mainConfig.filterConfig[ROLL].gyro.p  = 0.150;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.150;
-
-			mainConfig.filterConfig[YAW].kd.r     = 80.0;
-			mainConfig.filterConfig[ROLL].kd.r    = 80.0;
-			mainConfig.filterConfig[PITCH].kd.r   = 80.0;
-
-			mainConfig.gyroConfig.filterTypeGyro   = 0;
-			mainConfig.gyroConfig.filterTypeKd     = 2;
 
 			resetBoard = 1;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "pidsrs2ksaving\n", sizeof("pidsrs2ksaving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-	else if (!strcmp("pidstaja", inString))
-		{
-			mainConfig.pidConfig[YAW].kp = 250.00;
-			mainConfig.pidConfig[ROLL].kp = 180.00;
-			mainConfig.pidConfig[PITCH].kp = 240.00;
 
-			mainConfig.pidConfig[YAW].ki = 1700.00;
-			mainConfig.pidConfig[ROLL].ki = 1000.00;
-			mainConfig.pidConfig[PITCH].ki = 1400.00;
-
-			mainConfig.pidConfig[YAW].kd = 1500.00;
-			mainConfig.pidConfig[ROLL].kd = 1800.00;
-			mainConfig.pidConfig[PITCH].kd = 2500.00;
-
-			mainConfig.pidConfig[YAW].ga = 2.00;
-			mainConfig.pidConfig[ROLL].ga = 2.00;
-			mainConfig.pidConfig[PITCH].ga = 2.00;
-
-			mainConfig.pidConfig[YAW].wc = 2.00;
-			mainConfig.pidConfig[ROLL].wc = 8.00;
-			mainConfig.pidConfig[PITCH].wc = 8.00;
-
-			mainConfig.filterConfig[YAW].gyro.r = 130.00;
-			mainConfig.filterConfig[ROLL].gyro.r = 130.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 130.00;
-
-			mainConfig.filterConfig[YAW].gyro.q = 0.010;
-			mainConfig.filterConfig[ROLL].gyro.q = 0.015;
-			mainConfig.filterConfig[PITCH].gyro.q = 0.015;
-
-			mainConfig.filterConfig[YAW].gyro.p = 0.100;
-			mainConfig.filterConfig[ROLL].gyro.p = 0.100;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.100;
-
-			mainConfig.filterConfig[YAW].kd.r = 25.0;
-			mainConfig.filterConfig[ROLL].kd.r = 40.0;
-			mainConfig.filterConfig[PITCH].kd.r = 40.0;
-
-			mainConfig.gyroConfig.filterTypeGyro = 0;
-			mainConfig.gyroConfig.filterTypeKd = 1;
-
-			resetBoard = 1;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "pidstajasaving\n", sizeof("pidstajasaving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RS2K PIDs");
 			RfCustomReply(rf_custom_out_buffer);
 
-		}
-	else if (!strcmp("pidspg", inString))
-		{
-			mainConfig.pidConfig[YAW].kp = 500.00;
-			mainConfig.pidConfig[ROLL].kp = 340.00;
-			mainConfig.pidConfig[PITCH].kp = 380.00;
-
-			mainConfig.pidConfig[YAW].ki = 410.00;
-			mainConfig.pidConfig[ROLL].ki = 330.00;
-			mainConfig.pidConfig[PITCH].ki = 365.00;
-
-			mainConfig.pidConfig[YAW].kd = 300.00;
-			mainConfig.pidConfig[ROLL].kd = 580.00;
-			mainConfig.pidConfig[PITCH].kd = 640.00;
-
-			mainConfig.pidConfig[YAW].ga = 3.00;
-			mainConfig.pidConfig[ROLL].ga = 3.00;
-			mainConfig.pidConfig[PITCH].ga = 3.00;
-
-			mainConfig.pidConfig[YAW].wc = 0;
-			mainConfig.pidConfig[ROLL].wc = 0;
-			mainConfig.pidConfig[PITCH].wc = 0;
-
-			mainConfig.filterConfig[YAW].gyro.r = 150.00;
-			mainConfig.filterConfig[ROLL].gyro.r = 150.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 150.00;
-
-			mainConfig.filterConfig[YAW].gyro.q = 0.015;
-			mainConfig.filterConfig[ROLL].gyro.q = 0.015;
-			mainConfig.filterConfig[PITCH].gyro.q = 0.015;
-
-			mainConfig.filterConfig[YAW].gyro.p = 0.005;
-			mainConfig.filterConfig[ROLL].gyro.p = 0.005;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.005;
-
-			mainConfig.filterConfig[YAW].kd.r = 100.0;
-			mainConfig.filterConfig[ROLL].kd.r = 100.0;
-			mainConfig.filterConfig[PITCH].kd.r = 100.0;
-
-			mainConfig.gyroConfig.filterTypeGyro = 0;
-			mainConfig.gyroConfig.filterTypeKd = 2;
-
-			resetBoard = 1;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "pidspgsaving\n", sizeof("pidspgsaving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-	else if (!strcmp("pidsabba", inString))
-		{
-			mainConfig.pidConfig[YAW].kp = 420.00;
-			mainConfig.pidConfig[ROLL].kp = 280.00;
-			mainConfig.pidConfig[PITCH].kp = 300.00;
-
-			mainConfig.pidConfig[YAW].ki = 410.00;
-			mainConfig.pidConfig[ROLL].ki = 330.00;
-			mainConfig.pidConfig[PITCH].ki = 365.00;
-
-			mainConfig.pidConfig[YAW].kd = 1200.00;
-			mainConfig.pidConfig[ROLL].kd = 3800.00;
-			mainConfig.pidConfig[PITCH].kd = 4000.00;
-
-			mainConfig.pidConfig[YAW].ga = 3.00;
-			mainConfig.pidConfig[ROLL].ga = 3.00;
-			mainConfig.pidConfig[PITCH].ga = 3.00;
-
-			mainConfig.pidConfig[YAW].wc = 4.00;
-			mainConfig.pidConfig[ROLL].wc = 4.00;
-			mainConfig.pidConfig[PITCH].wc = 4.00;
-
-			mainConfig.filterConfig[YAW].gyro.r = 180.00;
-			mainConfig.filterConfig[ROLL].gyro.r = 180.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 180.00;
-
-			mainConfig.filterConfig[YAW].gyro.q = 0.1000;
-			mainConfig.filterConfig[ROLL].gyro.q = 0.1000;
-			mainConfig.filterConfig[PITCH].gyro.q = 0.1000;
-
-			mainConfig.filterConfig[YAW].gyro.p = 0.1500;
-			mainConfig.filterConfig[ROLL].gyro.p = 0.1500;
-			mainConfig.filterConfig[PITCH].gyro.p = 0.1500;
-
-			mainConfig.filterConfig[YAW].kd.r = 75.0;
-			mainConfig.filterConfig[ROLL].kd.r = 90.0;
-			mainConfig.filterConfig[PITCH].kd.r = 90.0;
-
-			mainConfig.gyroConfig.filterTypeGyro = 0;
-			mainConfig.gyroConfig.filterTypeKd = 2;
-
-			resetBoard = 1;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "pidsabbasaving\n", sizeof("pidsabbasaving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
-
+			SaveAndSend();
 		}
 	else if (!strcmp("spek_t1", inString) || !strcmp("spek_t3", inString) || !strcmp("spek_t4", inString) || !strcmp("spek_r1", inString) || !strcmp("spek_r3", inString) || !strcmp("spek_r4", inString))
 		{
@@ -1688,18 +1406,13 @@ void ProcessCommand(char *inString)
 			}
 
 			SetMode(M_ARMED, 4, 50, 100);
+
 			resetBoard = 1;
 
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "settingdefaultstospektrumsupport\n", sizeof("settingdefaultstospektrumsupport\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SPEKTRUM Defaults");
 			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
+
+			SaveAndSend();
 		}
 	else if (!strcmp("dsm2_t1", inString) || !strcmp("dsm2_t3", inString) || !strcmp("dsm2_t4", inString) || !strcmp("dsm2_r1", inString) || !strcmp("dsm2_r3", inString) || !strcmp("dsm2_r4", inString))
 		{
@@ -1775,18 +1488,13 @@ void ProcessCommand(char *inString)
 			}
 
 			SetMode(M_ARMED, 4, 50, 100);
+
 			resetBoard = 1;
 
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "settingdefaultstodsm2support\n", sizeof("settingdefaultstodsm2support\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me DSM2 Defaults");
 			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
+
+			SaveAndSend();
 		}
 	else if (!strcmp("dump", inString))
 		{
@@ -1794,365 +1502,142 @@ void ProcessCommand(char *inString)
 
 			if ( (!strcmp("", args)) || (!strcmp("all", args)) )
 			{
+
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
+				RfCustomReply(rf_custom_out_buffer);
+
 				DlflStatusDump();
-				PrintModes(0);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "#dumpstarted\n", sizeof("#dumpstarted\n"));
-				RfCustomReply(rf_custom_out_buffer);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, FULL_VERSION_STRING "\0", sizeof(FULL_VERSION_STRING "\0"));
-				RfCustomReply(rf_custom_out_buffer);
-				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
-				{
-					OutputVar(x);
-					argsOutputted++;
-				}
-			}
-			else if ( (!strcmp("back", args)) )
-			{
-				DlflStatusDump();
-				PrintModes(1);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "#dumpstarted\n", sizeof("#dumpstarted\n"));
-				RfCustomReply(rf_custom_out_buffer);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, FULL_VERSION_STRING "\0", sizeof(FULL_VERSION_STRING "\0"));
-				RfCustomReply(rf_custom_out_buffer);
+				PrintModes();
+
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
 					OutputVarSet(x);
 					argsOutputted++;
 				}
+
 			}
 			else
 			{
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "#dumpstarted\n", sizeof("#dumpstarted\n"));
-				RfCustomReply(rf_custom_out_buffer);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, FULL_VERSION_STRING "\0", sizeof(FULL_VERSION_STRING "\0"));
+
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
 				RfCustomReply(rf_custom_out_buffer);
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
-					if (!strcmp(valueTable[x].group, args)) {
-						OutputVar(x);
+					if (!strcmp(valueTable[x].group, args))
+					{
+						OutputVarSet(x);
 						argsOutputted++;
 					}
 				}
+
 			}
 
 			if (argsOutputted == 0)
 			{
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#noargumentsfoundforargument:%s\n", args);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me No Arguments Found For:%s", args);
 				RfCustomReply(rf_custom_out_buffer);
 			}
-
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "#dumpcomplete\n", sizeof("#dumpcomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
 
 		}
 	else if (!strcmp("eraseallflash", inString))
 		{
 
-			if (flashInfo.enabled) {
+			if (flashInfo.enabled)
+			{
 
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "erasingflash\n", sizeof("erasingflash\n"));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Erasing Flash");
 				RfCustomReply(rf_custom_out_buffer);
 
-				if (MassEraseDataFlash(1)) {
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "flasherasecomplete\n", sizeof("flasherasecomplete\n"));
+				if (MassEraseDataFlash(1))
+				{
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete");
 					RfCustomReply(rf_custom_out_buffer);
-				} else {
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "flasherasefailed\n", sizeof("flasherasefailed\n"));
+				}
+				else
+				{
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Failed");
 					RfCustomReply(rf_custom_out_buffer);
 				}
 
-			} else {
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "flashchipnotdetected\n", sizeof("flashchipnotdetected\n"));
+			}
+			else
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected");
 				RfCustomReply(rf_custom_out_buffer);
-
 			}
 
 		}
 	else if (!strcmp("eraseflash", inString))
 		{
-			if (flashInfo.enabled) {
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "erasingflash", sizeof("erasingflash"));
+			if (flashInfo.enabled)
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Erasing Flash");
 				RfCustomReply(rf_custom_out_buffer);
 
-				if (((float)(flashInfo.currentWriteAddress * flashInfo.pageSize * flashInfo.pagesPerSector) / (float)flashInfo.totalSize) > 0.85) {
-					if (MassEraseDataFlash(1)) {
-						bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-						memcpy(rf_custom_out_buffer, "flasherasecomplete", sizeof("flasherasecomplete"));
+				if (((float)(flashInfo.currentWriteAddress) / (float)flashInfo.totalSize) > 0.85) {
+					if (MassEraseDataFlash(1))
+					{
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete");
 						RfCustomReply(rf_custom_out_buffer);
-					} else {
-						bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-						memcpy(rf_custom_out_buffer, "flasherasefailed", sizeof("flasherasefailed"));
+					}
+					else
+					{
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Failed");
 						RfCustomReply(rf_custom_out_buffer);
 					}
 				} else {
-					if (MassEraseDataFlashByPage(1)) {
-						bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-						memcpy(rf_custom_out_buffer, "flasherasecomplete", sizeof("flasherasecomplete"));
+					if (MassEraseDataFlashByPage(1))
+					{
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete");
 						RfCustomReply(rf_custom_out_buffer);
 					}
 				}
 
-			} else {
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
-				RfCustomReply(rf_custom_out_buffer);
 			}
-		}
-	else if (!strcmp("startlog", inString))
-		{
-			if (flashInfo.enabled) {
-				curvedRcCommandF[AUX2] = -0.6;
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "loggingstarted", sizeof("loggingstarted"));
+			else
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected");
 				RfCustomReply(rf_custom_out_buffer);
-
-			} else {
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
-				RfCustomReply(rf_custom_out_buffer);
-			}
-		}
-	else if (!strcmp("endlog", inString))
-		{
-			if (flashInfo.enabled) {
-				curvedRcCommandF[AUX2] = 0.6;
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "loggingended", sizeof("loggingended"));
-				RfCustomReply(rf_custom_out_buffer);
-
-			} else {
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
-				RfCustomReply(rf_custom_out_buffer);
-			}
-		}
-	else if (!strcmp("dlflsize", inString))
-		{
-			if (flashInfo.enabled) {
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)(flashInfo.currentWriteAddress));
-				RfCustomReply(rf_custom_out_buffer);
-
-			} else {
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)0);
-				RfCustomReply(rf_custom_out_buffer);
-
 			}
 		}
 	else if (!strcmp("dlflstatusdump", inString))
 		{
 			DlflStatusDump();
 		}
-	else if (!strcmp("dlfltotal", inString))
-		{
-
-
-			if (flashInfo.enabled) {
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)(flashInfo.totalSize));
-				RfCustomReply(rf_custom_out_buffer);
-
-			} else {
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)0);
-				RfCustomReply(rf_custom_out_buffer);
-
-			}
-		}
-	else if (!strcmp("dlflsectors", inString))
-		{
-
-
-			if (flashInfo.enabled) {
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)(flashInfo.flashSectors));
-				RfCustomReply(rf_custom_out_buffer);
-
-			} else {
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)0);
-				RfCustomReply(rf_custom_out_buffer);
-
-			}
-		}
-	else if ( (!strcmp("downloadflightlog", inString)) || (!strcmp("dlb", inString)) || (!strcmp("dlfl", inString)) || (!strcmp("dlflslow", inString)) )
-		{
-			int base64Encode = 0;
-
-			if (!strcmp("dlflslow", inString))
-				DelayMs(1000);
-
-			args = StripSpaces(args);
-			if (!strcmp("b64", args))
-				base64Encode = 1;
-
-			if (!strcmp("dlb", inString))
-				base64Encode = 1;
-
-			if (flashInfo.enabled) {
-
-				if(flashInfo.currentWriteAddress < 256) {
-
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "flightlogempty", sizeof("flightlogempty"));
-					RfCustomReply(rf_custom_out_buffer);
-
-				} else {
-
-					uint8_t dataArray[45];
-					uint32_t smallerPointer = 0;
-					uint32_t pagesToSend = ((flashInfo.currentWriteAddress) / flashInfo.pageSize);
-
-					for (uint32_t y = 0;y<pagesToSend;y++) {
-
-						if ( M25p16ReadPage( (y * flashInfo.pageSize), flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer) ) {
-
-							for (uint32_t x=0;x<256;x++) {
-
-								if (base64Encode) {
-									dataArray[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
-									if (smallerPointer > 44) {
-
-										//base64 encode
-										for (smallerPointer = 0; smallerPointer < 15; smallerPointer++) {
-											EncodeBlock( (unsigned char *)( dataArray + (smallerPointer*3) ), (unsigned char *)( rf_custom_out_buffer + (smallerPointer*4) ), 4);
-										}
-
-										RfCustomReply(rf_custom_out_buffer);
-										smallerPointer = 0;
-										bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-										bzero(dataArray,sizeof(dataArray));
-									}
-
-								} else {
-
-									rf_custom_out_buffer[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
-									if (smallerPointer > 62) {
-										RfCustomReply(rf_custom_out_buffer);
-										smallerPointer = 0;
-										bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-										if (!strcmp("dlflslow", inString))
-											DelayMs(6);
-									}
-
-								}
-
-							}
-
-						} else {
-
-							bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-							memcpy(rf_custom_out_buffer, "flashreadfailed", sizeof("flashreadfailed"));
-							RfCustomReply(rf_custom_out_buffer);
-
-						}
-
-					}
-
-				}
-			} else {
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "downloadflightlogstarted", sizeof("downloadflightlogstarted"));
-				RfCustomReply(rf_custom_out_buffer);
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%u", (unsigned int)378);
-				RfCustomReply(rf_custom_out_buffer);
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				for (uint32_t fft=0;fft<RF_BUFFER_SIZE;fft++)
-					rf_custom_out_buffer[fft]=45;
-				RfCustomReply(rf_custom_out_buffer);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				for (uint32_t fft=0;fft<RF_BUFFER_SIZE;fft++)
-					rf_custom_out_buffer[fft]=11;
-				RfCustomReply(rf_custom_out_buffer);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				for (uint32_t fft=0;fft<RF_BUFFER_SIZE;fft++)
-					rf_custom_out_buffer[fft]=22;
-				RfCustomReply(rf_custom_out_buffer);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				for (uint32_t fft=0;fft<RF_BUFFER_SIZE;fft++)
-					rf_custom_out_buffer[fft]=55;
-				RfCustomReply(rf_custom_out_buffer);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				for (uint32_t fft=0;fft<RF_BUFFER_SIZE;fft++)
-					rf_custom_out_buffer[fft]=33;
-				RfCustomReply(rf_custom_out_buffer);
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				for (uint32_t fft=0;fft<RF_BUFFER_SIZE;fft++)
-					rf_custom_out_buffer[fft]=21;
-				RfCustomReply(rf_custom_out_buffer);
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "downloadflightlogfinished", sizeof("downloadflightlogfinished"));
-				RfCustomReply(rf_custom_out_buffer);
-
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
-				RfCustomReply(rf_custom_out_buffer);
-
-			}
-
-		}
 	else if (!strcmp("readflash", inString))
 		{
 			uint32_t smallerPointer;
+
+			sendReturn = 0;
 			if (flashInfo.enabled) {
 
 				args = StripSpaces(args);
 
-				if ( M25p16ReadPage( atoi(args), flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer) ) {
+				if ( M25p16ReadPage( atoi(args), flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer) )
+				{
 
-					//for (uint32_t x=0;x<256;x++) {
-					for (uint32_t x=0;x<RF_BUFFER_SIZE;x++) {
-
+					for (uint32_t x=0;x<RF_BUFFER_SIZE;x++)
+					{
 						rf_custom_out_buffer[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
-						//rf_custom_out_buffer[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
-						//if (smallerPointer > 62) {
-						//	RfCustomReply(rf_custom_out_buffer);
-						//	smallerPointer = 0;
-						//	bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-						//}
-
 					}
 					RfCustomReply(rf_custom_out_buffer);
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					sendReturn = 1;
 
-				} else {
+				}
+				else
+				{
 
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					memcpy(rf_custom_out_buffer, "flashreadfailed", sizeof("flashreadfailed"));
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Read Failed");
 					RfCustomReply(rf_custom_out_buffer);
 
 				}
 
-			} else {
+			}
+			else
+			{
 
-				bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-				memcpy(rf_custom_out_buffer, "flashchipnotdetected", sizeof("flashchipnotdetected"));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected");
 				RfCustomReply(rf_custom_out_buffer);
 
 			}
@@ -2160,8 +1645,7 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("version", inString))
 		{
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, FULL_VERSION_STRING "\0", sizeof(FULL_VERSION_STRING "\0"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("wiz", inString))
@@ -2176,122 +1660,79 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("save", inString))
 		{
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
+			SaveAndSend();
 		}
 	else if (!strcmp("reboot", inString) || !strcmp("reset", inString))
 		{
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "rebooting\n", sizeof("rebooting\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Rebooting");
 			RfCustomReply(rf_custom_out_buffer);
 			SystemReset();
 		}
 	else if (!strcmp("resetdfu", inString)  || !strcmp("rebootdfu", inString))
 		{
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "rebootingdfu\n", sizeof("rebootingdfu\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Rebooting Into DFU");
 			RfCustomReply(rf_custom_out_buffer);
 			SystemResetToDfuBootloader();
 		}
 	else if (!strcmp("resetconfig", inString))
 		{
+
 			resetBoard = 1;
 
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "resettingconfig\n", sizeof("resettingconfig\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Resetting Config");
 			RfCustomReply(rf_custom_out_buffer);
 			GenerateConfig();
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "configreset\n", sizeof("configreset\n"));
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Config Reset");
 			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
+			SaveAndSend();
+
 		}
 	else if (!strcmp("binds", inString))
 		{
 			sendSpektrumBind();
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "sendingserialbind\n", sizeof("sendingserialbind\n"));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding Serial");
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if ( (!strcmp("bind9", inString)) || (!strcmp("bind", inString)) )
 		{
 			mainConfig.rcControlsConfig.bind = 9;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
 			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "binding9\n", sizeof("binding9\n"));
+			SaveAndSend();
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 9");
 			RfCustomReply(rf_custom_out_buffer);
 		}
 	else if (!strcmp("bind5", inString))
 		{
 			mainConfig.rcControlsConfig.bind = 5;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
+			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
+			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
+			SaveAndSend();
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 5");
 			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM5);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "binding5\n", sizeof("binding5\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			DelayMs(100);
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM5);
-			DelayMs(100);
 		}
 	else if (!strcmp("bind3", inString))
 		{
 			mainConfig.rcControlsConfig.bind = 3;
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "saving\n", sizeof("saving\n"));
+			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
+			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
+			SaveAndSend();
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 3");
 			RfCustomReply(rf_custom_out_buffer);
-			SaveConfig(ADDRESS_CONFIG_START);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "savecomplete\n", sizeof("savecomplete\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM5);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "binding3\n", sizeof("binding3\n"));
-			RfCustomReply(rf_custom_out_buffer);
-			DelayMs(100);
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM5);
-			DelayMs(100);
 		}
 	else if (!strcmp("rebootrfbl", inString) || !strcmp("resetrfbl", inString))
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "rebootrfbl\n", sizeof("rebootrfbl\n"));
+			memcpy(rf_custom_out_buffer, "#me Rebooting RFBL", sizeof("#me Rebooting RFBL"));
 			RfCustomReply(rf_custom_out_buffer);
-			DelayMs(100);
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
 			DelayMs(100);
 			SystemReset();
 		}
 	else if (!strcmp("rebootrecovery", inString) || !strcmp("resetrecovery", inString))
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			memcpy(rf_custom_out_buffer, "rebootrecovery\n", sizeof("rebootrecovery\n"));
+			memcpy(rf_custom_out_buffer, "#me Rebooting Recovery", sizeof("#me Rebooting Recovery"));
 			RfCustomReply(rf_custom_out_buffer);
 			DelayMs(100);
 			SystemReset();
@@ -2303,47 +1744,68 @@ void ProcessCommand(char *inString)
 		}
 	else
 		{
-			bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "unknowncommand:%s\n", args);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Unknown Command:%s", args);
 			RfCustomReply(rf_custom_out_buffer);
 		}
 
 }
 
+void SaveAndSend(void)
+{
+	if (disableSaving)
+		return;
+
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Saving");
+	RfCustomReply(rf_custom_out_buffer);
+	SaveConfig(ADDRESS_CONFIG_START);
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Save Complete");
+	RfCustomReply(rf_custom_out_buffer);
+}
 
 void DlflStatusDump(void)
 {
-	if (flashInfo.enabled)
-	{
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dlflstatusdumpstarted\n");
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "size=%u\n", (unsigned int)(flashInfo.currentWriteAddress));
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "total=%u\n", (unsigned int)(flashInfo.totalSize));
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dlflstatusdumpfinished\n");
-		RfCustomReply(rf_custom_out_buffer);
-
-	}
-	else
-	{
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dlflstatusdumpstarted\n");
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "size=0\n");
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "total=0\n");
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#dlflstatusdumpfinished\n");
-		RfCustomReply(rf_custom_out_buffer);
-	}
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#fl size=%u\n#fl total=%u", (unsigned int)(flashInfo.currentWriteAddress), (unsigned int)(flashInfo.totalSize));
+	RfCustomReply(rf_custom_out_buffer);
 }
 
 
+/*
+int RfCustomReplyBuffer(char *rfCustomSendBufferAdder)
+{
+
+	static uint32_t buffPointer = 0;
+
+	//add rfCustomSendBufferAdder to rfCustomSendBuffer
+	snprintf(rfCustomSendBuffer+buffPointer, RF_BUFFER_SIZE, "%s\n", rfCustomSendBufferAdder);
+
+	buffPointer += strlen(rfCustomSendBufferAdder) + 1; //adding a \n
+
+
+	unsigned char rfReplyBuffer[RF_BUFFER_SIZE];
+
+	bzero((rfReplyBuffer+1), (sizeof(rfReplyBuffer)-1));
+
+	rfReplyBuffer[0]=1;
+	memcpy((char *)(rfReplyBuffer+1), rf_custom_out_buffer, RF_BUFFER_SIZE);
+
+	for (forCounter = 0; forCounter < 100000; forCounter++) {
+		if (hidToPcReady) {
+			USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
+			hidToPcReady = 0;
+			return(1);
+		}
+		delayUs(10); //wait 1 second max
+	}
+	return(0);
+
+}
+
+int SendRfCustomReplyBuffer(void)
+{
+	for (uint32_t x = 0;x<RF_BUFFER_SIZE;x+RF_BUFFER_SIZE)
+	{
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", (unsigned int)(flashInfo.currentWriteAddress), (unsigned int)(flashInfo.totalSize));
+		RfCustomReply(rf_custom_out_buffer);
+	}
+}
+*/

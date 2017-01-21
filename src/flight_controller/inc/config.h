@@ -1,10 +1,10 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint32_t)(47U)
-#define CONFIG_VERSION_STR		"47"
-#define FIRMWARE_VERSION		"0.153.047 ALPHA"
+#define CONFIG_VERSION			(uint32_t)(48U)
+#define CONFIG_VERSION_STR		"48"
+#define FIRMWARE_VERSION		"0.160.048 ALPHA"
 #define FIRMWARE_NAME			"RaceFlight One"
-#define FULL_VERSION_STRING		"#NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
+#define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
 
 #define RF_BUFFER_SIZE HID_EPIN_SIZE-1
 #define FLIGHT_MODE_ARRAY_SIZE 96
@@ -44,6 +44,7 @@ typedef struct {
 } string_comp_rec;
 
 extern char rf_custom_out_buffer[];
+extern volatile uint32_t disableSaving;
 
 extern char *StripSpaces(char *inString);
 extern char *CleanupString(char *inString);
@@ -56,6 +57,8 @@ extern void    SaveConfig (uint32_t addresConfigStart);
 extern uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length);
 extern void    LoadConfig (uint32_t addresConfigStart);
 extern void    GenerateConfig(void);
+extern void    ValidateConfigSettings(void);
 extern void    ProcessCommand(char *inString);
 extern int     RfCustomReply(char *rf_custom_out_buffer);
 extern void    SendStatusReport(char *inString);
+extern void    SaveAndSend(void);

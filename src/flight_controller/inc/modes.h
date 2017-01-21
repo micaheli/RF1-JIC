@@ -1,6 +1,7 @@
 #pragma once
 
 extern uint32_t activeModes;
+extern uint32_t setModes;
 
 typedef struct {
     const char *modeString;
@@ -20,15 +21,17 @@ enum {
 	M_BUZZER   = (1 << 7),
 	M_LEDMODE  = (1 << 8),
 	M_LEDCOLOR = (1 << 9),
+	M_DIRECT   = (1 << 10),
 };
 
 extern string_modes_rec stringModes[];
 
-extern void PrintModes(uint32_t backupText);
+extern void PrintModes(void);
 extern void InitModes(void);
 extern void EnableMode(uint32_t modeMask);
 extern void DisableMode(uint32_t modeMask);
 extern uint32_t ModeActive(uint32_t modeMask);
+extern uint32_t ModeSet(uint32_t modeMask);
 extern void SetMode(uint32_t modeMask, uint16_t channel, int16_t minRc, int16_t maxRc);
 extern void SetupModes(char *modString);
 extern void CheckRxToModes(void);
