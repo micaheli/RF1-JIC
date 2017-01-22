@@ -409,7 +409,8 @@ Version 0.161.048:
 	Updated defaults.
 	Made RX wizard work.
 
-
+Version 0.162.048:
+	Fix buzzer bug.
 
 Features in current development:
 	Spektrum Telemtry
