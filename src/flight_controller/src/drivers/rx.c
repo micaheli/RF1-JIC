@@ -16,8 +16,8 @@ uint32_t rxData[MAXCHANNELS];
 uint32_t skipRxMap = 0;
 uint32_t progMode  = 0;
 uint32_t progTimer = 0;
+uint32_t ppmPin    = 99;
 volatile uint32_t armCheckLatch = 0;
-uint32_t ppmPin = 99;
 
 #define PPM_SYNC_MINIMUM_US 4000
 #define PPM_BUFFER_SIZE 25
@@ -163,11 +163,17 @@ inline void CheckFailsafe(void)
 
 	FeedTheDog(); //resets IWDG time to 0. This tells the timer the board is running.
 
-	if ((boardArmed) && (rx_timeout > 1000))
+	if ((boardArmed) && ( (rx_timeout > 1000) || (ModeActive(M_FAILSAFE)) ) )
 	{
 		buzzerStatus.status = STATE_BUZZER_FAILSAFE;
 		DisarmBoard();
 		ZeroActuators(32000); //immediately set actuators to disarmed position.
+	}
+
+	//make sure buzzer mode doesn't overwrite failsafe buzzer
+	if ( ModeActive(M_BUZZER) && (buzzerStatus.status != STATE_BUZZER_FAILSAFE) )
+	{
+		buzzerStatus.status = STATE_BUZZER_ON;
 	}
 
 }

@@ -333,7 +333,10 @@ void SetRestOfMap(void)
 uint32_t CheckRxDataLooksValid()
 {
 	uint32_t correct = 0;
-	ProcessCommand("rxrcdata");
+
+	//disableSaving=0;
+	//ProcessCommand("rxrcdata");
+	//disableSaving=1;
 
 	//if processed data is within 5% of center on 3 axis it's safe to assume it's valid data
 	if ( (trueRcCommandF[YAW] < 0.05) && (trueRcCommandF[YAW] > - 0.05) )
@@ -354,6 +357,12 @@ uint32_t CheckRxDataLooksValid()
 
 int CheckProtocol(char *inString)
 {
+
+	disableSaving=0;
+
+	//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me %s", inString );
+	//RfCustomReply(rf_custom_out_buffer);
+
 	disableSaving=1;
 	DisarmBoard();
 	DeInitBoardUsarts();
@@ -424,7 +433,7 @@ void AutoFindRx()
 //	if (CheckProtocol("ppm_t4")) { ProcessCommand("ppm_t4");goto endingRx; }
 //	if (CheckProtocol("ppm_r4")) { ProcessCommand("ppm_r4");goto endingRx; }
 
-	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me No RX found. Is your radio on?" );
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me No RX Found. Is your radio on?" );
 	RfCustomReply(rf_custom_out_buffer);
 
 	goto EofAutoFindRx;

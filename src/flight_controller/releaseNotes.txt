@@ -403,6 +403,11 @@ Version 0.159.048:
 Version 0.160.048:
 	Automatic RX detection: wiz rx
 
+Version 0.161.048:
+	Buzzer mode connected.
+	Failsafe mode connected.
+	Updated defaults.
+	Made RX wizard work.
 
 
 
