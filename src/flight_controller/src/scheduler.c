@@ -336,7 +336,7 @@ inline void TaskLed(void)
 	static uint32_t colorLatch = 0;
 	static uint32_t modeLatch  = 0;
 	static uint32_t updateInterval = 100;
-	//static uint32_t onceDone = 0;
+	static uint32_t onceDone = 0;
 	static uint32_t lastUpdate = 0;
 	uint32_t x;
 	uint32_t y;
@@ -363,7 +363,6 @@ inline void TaskLed(void)
 		colorLatch = 0;
 	}
 
-
 	if ( ModeActive(M_LEDMODE) && !modeLatch )
 	{
 		modeLatch = 1;
@@ -377,6 +376,12 @@ inline void TaskLed(void)
 	else if (!ModeActive(M_LEDMODE))
 	{
 		modeLatch = 0;
+	}
+
+	if ( ModeSet(M_BUZZER) && !onceDone)
+	{
+		onceDone = 1;
+		currentLedMode = 0;
 	}
 
 

@@ -366,14 +366,16 @@ int CheckProtocol(char *inString)
 	disableSaving=1;
 	DisarmBoard();
 	DeInitBoardUsarts();
+	DelayMs(10);
+	ProcessCommand(inString);
+	InitFlight();
 	bzero(rxData, sizeof(rxData));
 	trueRcCommandF[0] = -1;
 	trueRcCommandF[1] = -1;
 	trueRcCommandF[2] = -1;
 	trueRcCommandF[3] = -1;
-	ProcessCommand(inString);
-	InitBoardUsarts();
-	DelayMs(60);
+	DisarmBoard();
+	DelayMs(65);
 	DisarmBoard();
 	if (CheckRxDataLooksValid())
 	{

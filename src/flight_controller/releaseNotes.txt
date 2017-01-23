@@ -412,6 +412,22 @@ Version 0.161.048:
 Version 0.162.048:
 	Fix buzzer bug.
 
+Version 0.163.048:
+	Alter Auto RX detection routine
+	If LED MODE switch is enabled then LEDs will default to OFF at startup.
+	RFBL support in RFC 163.
+
+Version 0.164.048:
+	Change RX wizard routine.
+
+Version 0.165.048:
+	Default changes
+
+Version 0.166.048:
+
+
+
+
 Features in current development:
 	Spektrum Telemtry
 	MSP compatibility
