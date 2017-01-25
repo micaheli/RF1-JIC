@@ -100,8 +100,10 @@ void PrintModes(void)
 		else
 			channel += 1;
 
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "modes %s=%d=%d=%d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
-		RfCustomReply(rf_custom_out_buffer);
+		sprintf(rf_custom_out_buffer, "modes %s=%lu=%i=%i", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+		RfCustomReplyBuffer(rf_custom_out_buffer);
+		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "modes %s=%d=%d=%d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+		//RfCustomReply(rf_custom_out_buffer);
 	}
 
 }

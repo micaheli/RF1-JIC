@@ -62,3 +62,6 @@ extern void    ProcessCommand(char *inString);
 extern int     RfCustomReply(char *rf_custom_out_buffer);
 extern void    SendStatusReport(char *inString);
 extern void    SaveAndSend(void);
+
+extern int     RfCustomReplyBuffer(char *rfCustomSendBufferAdder);
+extern int     SendRfCustomReplyBuffer(void);

@@ -3,13 +3,16 @@
 
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
+uint32_t rfCustomReplyBufferPointer = 0;
+
+#define LARGE_RF_BUFFER_SIZE 4096
 main_config mainConfig;
 volatile uint32_t disableSaving=0;
 uint32_t sendReturn = 0;
 uint32_t resetBoard = 0;
 char rf_custom_out_buffer[RF_BUFFER_SIZE];
-//char rfCustomSendBufferAdder[RF_BUFFER_SIZE];
-//char rfCustomSendBuffer[2048];
+char rfCustomSendBufferAdder[RF_BUFFER_SIZE];
+char rfCustomSendBuffer[LARGE_RF_BUFFER_SIZE];
 
 static uint32_t ValidateConfig (uint32_t addresConfigStart);
 static void     SetValueOrString(uint32_t position, char *value);
@@ -626,23 +629,29 @@ void OutputVarSet(uint32_t position)
 	switch (valueTable[position].type) {
 
 	case typeUINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+		sprintf(rf_custom_out_buffer, "set %s=%d", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+		RfCustomReplyBuffer(rf_custom_out_buffer);
+		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+		sprintf(rf_custom_out_buffer, "set %s=%d", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+		RfCustomReplyBuffer(rf_custom_out_buffer);
+		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeFLOAT:
 		ftoa(*(float *)valueTable[position].ptr, fString);
 		StripSpaces(fString);
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%s", valueTable[position].name, fString);
+		sprintf(rf_custom_out_buffer, "set %s=%s", valueTable[position].name, fString);
+		RfCustomReplyBuffer(rf_custom_out_buffer);
+		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%s", valueTable[position].name, fString);
 		break;
 	}
 
-	RfCustomReply(rf_custom_out_buffer);
+	//RfCustomReply(rf_custom_out_buffer);
 }
 
 void OutputVar(uint32_t position)
@@ -1503,9 +1512,9 @@ void ProcessCommand(char *inString)
 			if ( (!strcmp("", args)) || (!strcmp("all", args)) )
 			{
 
-				RfCustomReply(rf_custom_out_buffer);
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
-				RfCustomReply(rf_custom_out_buffer);
+				RfCustomReplyBuffer(FULL_VERSION_STRING);
+				//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
+				//RfCustomReply(rf_custom_out_buffer);
 
 				DlflStatusDump();
 				PrintModes();
@@ -1520,7 +1529,6 @@ void ProcessCommand(char *inString)
 			else
 			{
 
-				RfCustomReply(rf_custom_out_buffer);
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
 				RfCustomReply(rf_custom_out_buffer);
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
@@ -1540,8 +1548,10 @@ void ProcessCommand(char *inString)
 				RfCustomReply(rf_custom_out_buffer);
 
 			}
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#RFEND");
-			RfCustomReply(rf_custom_out_buffer);
+			//RfCustomReplyBuffer("#RFEND");
+			//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#RFEND");
+			//RfCustomReply(rf_custom_out_buffer);
+			SendRfCustomReplyBuffer();
 		}
 	else if (!strcmp("eraseallflash", inString))
 		{
@@ -1768,48 +1778,47 @@ void SaveAndSend(void)
 
 void DlflStatusDump(void)
 {
-	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#fl size=%u\n#fl total=%u", (unsigned int)(flashInfo.currentWriteAddress), (unsigned int)(flashInfo.totalSize));
-	RfCustomReply(rf_custom_out_buffer);
+	sprintf(rf_custom_out_buffer, "#fl size=%u\n#fl total=%u", (unsigned int)(flashInfo.currentWriteAddress), (unsigned int)(flashInfo.totalSize));
+	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
 
 
-/*
+
 int RfCustomReplyBuffer(char *rfCustomSendBufferAdder)
 {
 
-	static uint32_t buffPointer = 0;
+	//add rfCustomSendBufferAdder to rfCustomSendBuffer and add a \n to the end
+	snprintf(rfCustomSendBuffer+rfCustomReplyBufferPointer, LARGE_RF_BUFFER_SIZE-rfCustomReplyBufferPointer, "%s\n", rfCustomSendBufferAdder);
 
-	//add rfCustomSendBufferAdder to rfCustomSendBuffer
-	snprintf(rfCustomSendBuffer+buffPointer, RF_BUFFER_SIZE, "%s\n", rfCustomSendBufferAdder);
-
-	buffPointer += strlen(rfCustomSendBufferAdder) + 1; //adding a \n
-
-
-	unsigned char rfReplyBuffer[RF_BUFFER_SIZE];
-
-	bzero((rfReplyBuffer+1), (sizeof(rfReplyBuffer)-1));
-
-	rfReplyBuffer[0]=1;
-	memcpy((char *)(rfReplyBuffer+1), rf_custom_out_buffer, RF_BUFFER_SIZE);
-
-	for (forCounter = 0; forCounter < 100000; forCounter++) {
-		if (hidToPcReady) {
-			USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
-			hidToPcReady = 0;
-			return(1);
-		}
-		delayUs(10); //wait 1 second max
-	}
-	return(0);
-
+	rfCustomReplyBufferPointer += strlen(rfCustomSendBufferAdder) + 1; //adding a \n
 }
 
 int SendRfCustomReplyBuffer(void)
 {
-	for (uint32_t x = 0;x<RF_BUFFER_SIZE;x+RF_BUFFER_SIZE)
+
+	int32_t x;
+	char *addToFront=NULL;
+	uint32_t strLenOfPreamble;
+
+	sprintf(addToFront, "#SD=%lu\n", rfCustomReplyBufferPointer);
+	strLenOfPreamble = strlen(addToFront);
+
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#SD=%lu\n%s", rfCustomReplyBufferPointer, rfCustomSendBuffer+x);
+	RfCustomReply(rf_custom_out_buffer);
+	for (x = 0-strLenOfPreamble;x<rfCustomReplyBufferPointer;x=x+RF_BUFFER_SIZE)
 	{
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", (unsigned int)(flashInfo.currentWriteAddress), (unsigned int)(flashInfo.totalSize));
-		RfCustomReply(rf_custom_out_buffer);
+		if (addToFront)
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s%s", addToFront, rfCustomSendBuffer+x);
+			addToFront=0;
+			RfCustomReply(rf_custom_out_buffer);
+		}
+		else
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", rfCustomSendBuffer+x);
+			RfCustomReply(rf_custom_out_buffer);
+		}
 	}
+	rfCustomReplyBufferPointer = 0;
 }
-*/
+
