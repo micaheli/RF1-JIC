@@ -424,7 +424,8 @@ Version 0.165.048:
 	Default changes
 
 Version 0.166.048:
-
+	Changed HID output.
+	Added FC changes.
 
 
 

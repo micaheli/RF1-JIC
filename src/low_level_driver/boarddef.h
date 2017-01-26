@@ -206,7 +206,9 @@ enum {
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
 
-#ifdef STM32F405xx
+#ifdef STM32F745xx
+	#include "REVOLTF7.h"
+#elif STM32F405xx
 	#include "REVOLT.h"
 #elif defined(STM32F446xx)
 	#include "SPMFC400.h"
