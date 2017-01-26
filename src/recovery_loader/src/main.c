@@ -1,7 +1,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include <stdbool.h>
 
-#include "../../recovery_loader/inc/includes.h"
+//#include "../../recovery_loader/inc/includes.h"
+#include "includes.h"
 
 
 /* Private typedef -----------------------------------------------------------*/
@@ -652,6 +653,7 @@ void ErrorHandler(uint32_t error)
 }
 
 void ZeroActuators(uint32_t delayUs) {
+	(void)(delayUs);
 	return;
 }
 /* RFBL description

@@ -82,6 +82,9 @@ int main(void)
 	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG);
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
 
+
+	(void)(rfblVersion);
+	(void)(cfg1Version);
 	if (bootDirection == BOOT_TO_APP_AFTER_RECV_COMMAND) {
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
 		boot_to_app();

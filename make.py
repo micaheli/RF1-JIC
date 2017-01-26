@@ -131,6 +131,7 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f405xx":
+        TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405.ld"
@@ -141,6 +142,7 @@ def configure_target(TARGET):
         #STM32F4_ARCH_FLAGS_ADD = "-s -fdata-sections -ffunction-sections -flto"
 
     elif TARGET == "stm32f405xx_rfbl":
+        TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
@@ -152,6 +154,7 @@ def configure_target(TARGET):
         #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f405xx_rfbll":
+        TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "recovery_loader"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
@@ -171,6 +174,7 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f745xx":
+        TARGET_DEVICE_LC = "stm32f745xx"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745.ld"
@@ -180,6 +184,7 @@ def configure_target(TARGET):
         STM32F7_ARCH_FLAGS_ADD = ""
 
     elif TARGET == "stm32f745xx_rfbl":
+        TARGET_DEVICE_LC = "stm32f745xx"
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_rfbl.ld"
@@ -191,6 +196,7 @@ def configure_target(TARGET):
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f745xx_rfbll":
+        TARGET_DEVICE_LC = "stm32f745xx"
         PROJECT = "recovery_loader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_recovery.ld"
@@ -240,25 +246,25 @@ def configure_target(TARGET):
     ################################################################################
     # Set per target compilation options
 
-    STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM0 -D" + TARGET
+    STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM0 -D" + TARGET + " -D" + TARGET_DEVICE_LC
     STM32F0_ARCH_FLAGS = "-mthumb -mcpu=cortex-m0"
 
-    STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM3 -D" + TARGET
+    STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM3 -D" + TARGET + " -D" + TARGET_DEVICE_LC
     STM32F1_ARCH_FLAGS = "-mthumb -mcpu=cortex-m3"
 
-    STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET
+    STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC
     STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
     if TARGET_DEVICE == "STM32F446xx":
-        STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=12000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4=1 -D" + TARGET
+        STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=12000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC
         STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
     else:
-        STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4=1 -D" + TARGET
+        STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC
         STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant" + " " + STM32F4_ARCH_FLAGS_ADD
 
-    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=25000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7=1 -D__FPU_PRESENT=1 -D" + TARGET
+    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7=1 -D__FPU_PRESENT=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC
+#    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC
     STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -fsingle-precision-constant"
-
 
     if TARGET_PROCESSOR_TYPE == "f0":
         DEF_FLAGS  = STM32F0_DEF_FLAGS
@@ -310,8 +316,8 @@ def configure_target(TARGET):
     ]
 
     SOURCE_DIRS = [
-        "src/low_level_driver/",
         "src/low_level_driver/" + MCU_FAMILY,
+        "src/low_level_driver/",
         MCU_DIR,
         "src/%s/src" % PROJECT,
         HAL_DIR + "/Src",

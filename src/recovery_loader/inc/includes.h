@@ -23,7 +23,28 @@ void BoardInit(void);
 void gpioClockInit(void);
 
 //revolt and revo hard code
+#ifdef STM32F745xx
+#undef RFBL_GPIO1
+#undef RFBL_PIN1
+#undef RFBL_GPIO2
+#undef RFBL_PIN2
+#undef LED1_GPIO_Port
+#undef LED1_GPIO_Pin
+#define RFBL_GPIO1				GPIOC
+#define RFBL_PIN1				GPIO_PIN_7
+#define RFBL_GPIO2				GPIOC
+#define RFBL_PIN2				GPIO_PIN_6
+#define LED1_GPIO_Port          GPIOB
+#define LED1_GPIO_Pin           GPIO_PIN_5
+#endif
+
 #ifdef STM32F405xx
+#undef RFBL_GPIO1
+#undef RFBL_PIN1
+#undef RFBL_GPIO2
+#undef RFBL_PIN2
+#undef LED1_GPIO_Port
+#undef LED1_GPIO_Pin
 #define RFBL_GPIO1				GPIOC
 #define RFBL_PIN1				GPIO_PIN_7
 #define RFBL_GPIO2				GPIOC
@@ -31,6 +52,12 @@ void gpioClockInit(void);
 #define LED1_GPIO_Port          GPIOB
 #define LED1_GPIO_Pin           GPIO_PIN_5
 #endif#ifdef STM32F446xx
+#undef RFBL_GPIO1
+#undef RFBL_PIN1
+#undef RFBL_GPIO2
+#undef RFBL_PIN2
+#undef LED1_GPIO_Port
+#undef LED1_GPIO_Pin
 #define RFBL_GPIO1				GPIOC
 #define RFBL_PIN1				GPIO_PIN_7
 #define RFBL_GPIO2				GPIOC

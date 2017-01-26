@@ -69,14 +69,13 @@
 #define _USART7 USART7
 #define _USART7s 1
 
-#if defined(stm32f745xx)
+#if defined(stm32f745xx) || defined(STM32F745xx)
 
 #include <stm32f745xx.h>
 //STM32F4 UID address
 #define DEVICE_ID1					0x1FF0F420
 #define DEVICE_ID2					0x1FF0F424
 #define DEVICE_ID3					0x1FF0F428
-
 
 #define USE_RFBL
 #define ADDRESS_FLASH_START		(uint32_t)(0x08000000)

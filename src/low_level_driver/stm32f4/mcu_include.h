@@ -93,7 +93,7 @@
 
 #endif
 
-#if defined(STM32F446xx)
+#if defined(stm32f446xx) || defined(STM32F446xx)
 
 #include <stm32f446xx.h>
 
