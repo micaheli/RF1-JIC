@@ -21,7 +21,6 @@ typedef struct {
     uint32_t escProtcol;
     uint32_t escUpdateFrequency;
     float    idlePercent;
-    uint32_t motorMixer;
     uint32_t motorOutput[8];
 } mixer_config;
 
@@ -53,7 +52,7 @@ extern actuator_mixer motorMixer[];
 
 
 void InitMixer(void);
-float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], volatile float motorOutput[]);
-float InlineApplyMotorMixer2(pid_output pids[], float throttleIn, volatile float motorOutput[]);
+//float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], volatile float motorOutput[]);
+float InlineApplyMotorMixer(pid_output pids[], float throttleIn, volatile float motorOutput[]);
 void InlineApplyMixer(pid_output pids[], float curvedRcCommandF[]);
 float ApplyAttenuationCurve (float input, float curve[], int curveSize);

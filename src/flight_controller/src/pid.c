@@ -52,12 +52,11 @@ void InitPid (void)
 }
 
 
-inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyroDataKd[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[])
+inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[])
 {
 
 	int32_t axis;
 	float pidError;
-	static float lastfilteredGyroDataKd[AXIS_NUMBER];
 	static float lastfilteredGyroData[AXIS_NUMBER];
 	static float usedFlightSetPoints[AXIS_NUMBER];
 	static uint32_t filterSetup[AXIS_NUMBER] = {0,0,0};
@@ -141,9 +140,6 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 			//flightPids[axis].kp = InlineConstrainf((pidError * pidsUsed[axis].kp), -MAX_KP, MAX_KP);
 			flightPids[axis].kp = (pidError * pidsUsed[axis].kp);
 
-			//if (axis == YAW)
-			//	flightPids[YAW].kp = LpfUpdate(flightPids[YAW].kp, &yawKpLpf);
-
 			// calculate Ki ////////////////////////// V
 			if ( fullKiLatched )
 			{
@@ -168,41 +164,20 @@ inline uint32_t InlinePidController (float filteredGyroData[], float filteredGyr
 
 
 			// calculate Kd ////////////////////////// V
-			if (mainConfig.gyroConfig.filterTypeKd == 2)
+			kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);
+			lastfilteredGyroData[axis] = filteredGyroData[axis];
+
+			InlineUpdateWitchcraft(pidsUsed);
+
+			if (filterSetup[axis])
 			{
-
-				kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);
-				lastfilteredGyroData[axis] = filteredGyroData[axis];
-
-				InlineUpdateWitchcraft(pidsUsed);
-
-				if (filterSetup[axis])
-				{
-					kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
-				}
-				else
-				{
-					filterSetup[axis] = 1;
-					InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 1.66f);
-				}
-
+				kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
 			}
 			else
 			{
-				kdDelta[axis] = -(filteredGyroDataKd[axis] - lastfilteredGyroDataKd[axis]);
-				lastfilteredGyroDataKd[axis] = filteredGyroDataKd[axis];
-
-				InlineUpdateWitchcraft(pidsUsed);
+				filterSetup[axis] = 1;
+				InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 1.66f);
 			}
-
-			//updated Kd filter(s)
-			//if (mainConfig.filterConfig[axis].kd.r > 40.0) {
-			//	kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
-			//}
-			//if (mainConfig.filterConfig[axis].kd.r > 0) {
-			//	PafUpdate(&kdFilterState[axis], kdDelta[axis]);
-			//	kdDelta[axis] = kdFilterState[axis].x;
-			//}
 
 			flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD, MAX_KD);
 			// calculate Kd ////////////////////////// ^

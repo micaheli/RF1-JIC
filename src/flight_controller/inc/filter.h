@@ -18,15 +18,10 @@ typedef struct {
 } paf_filter_config_record;
 
 typedef struct {
-    float lpfHz;
-} biquad_filter_config_record;
-
-typedef struct {
-	uint32_t dial;
+	uint32_t filterMod;
 	paf_filter_config_record kd;
 	paf_filter_config_record gyro;
 	paf_filter_config_record acc;
-	biquad_filter_config_record kdBq;
 } filter_device;
 
 typedef struct {

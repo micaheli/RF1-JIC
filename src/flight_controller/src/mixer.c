@@ -129,6 +129,7 @@ inline float ApplyAttenuationCurve (float inputAttn, float curve[], int curveSiz
 
 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
+/*
 inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], volatile float motorOutputHere[])
 {
 
@@ -218,9 +219,10 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 	return actuatorRange;
 
 }
+*/
 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
-inline float InlineApplyMotorMixer2(pid_output pids[], float throttleIn, volatile float motorOutputHere[])
+inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn, volatile float motorOutputHere[])
 {
 
 	float highestMotor  = -100.0f;

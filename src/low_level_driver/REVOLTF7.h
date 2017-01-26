@@ -2,63 +2,24 @@
 
 #include "mcu_include.h"
 
-
-
-//DMA1 St1  USART3 RX
-
-//DMA2 St0 SPI1 RX
-//DMA2 St3 SPI1 RX
-
-//DMA2 St7 USART1 TX
-//DMA2 St2 USART1 RX
-
-//DMA1 St0 M4/PA2
-//DMA1 St6 M3/PA3
-//DMA1 St M2/PA3
-
-
-
-
-
-//DMA1 Ch7, St4, USART3 TX
-//DMA1 Ch4, St1, USART3 RX
-
-//DMA2 Ch3, St0 GYRO SPI1 RX
-//DMA2 Ch3, St3 GYRO SPI1 TX
-
-//DMA1 Ch0, St3 ESC SPI2 RX
-//DMA1 Ch4, St5 ESC SPI2 TX
-
-//DMA1 Ch0, St0 FLASH SPI3 RX
-//DMA1 Ch0, St5 FLASH SPI3 TX
-
-//DMA1 Ch6, St4 LED
-
-//DMA1 Ch5, St7 M1
-//DMA1 Ch5, St2 M2
-//DMA1 Ch3, St6 M3
-//DMA1 Ch3, St1 M4
-
-
 //USB config
 #define RFFW_HID_PRODUCT_STRING "RaceFlight FC"
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
 //MCU config
-#define FC_PLLM	8
-#define FC_PLLN	384
-#define FC_PLLP	2
-#define FC_PLLQ	8
-
+#define FC_PLLM 8
+#define FC_PLLN 432
+#define FC_PLLP RCC_PLLP_DIV2
+#define FC_PLLQ 9
+#define FC_PLL_SAIN 384
+#define FC_PLL_SAIQ 7
+#define FC_PLL_SAIP RCC_PLLSAIP_DIV8
 
 //LED config
-
-#define LEDn                    2
-
 #define LED1_ENABLED			1
-#define LED1_GPIO_Port          _PORTB
-#define LED1_GPIO_Pin           GPIO_PIN_5
+#define LED1_GPIO_Port          _PORTD
+#define LED1_GPIO_Pin           GPIO_PIN_2
 #define LED1_INVERTED			0
 
 #define LED2_ENABLED			0
@@ -72,18 +33,20 @@
 #define LED3_INVERTED			0
 
 //buzzer setup
-#define BUZZER_GPIO_Port        _PORTB
-#define BUZZER_GPIO_Pin         GPIO_PIN_4
-#define BUZZER_TIM				ENUMTIM3
-#define BUZZER_ALTERNATE		GPIO_AF2_TIM3
-#define BUZZER_TIM_CH			TIM_CHANNEL_1
-#define BUZZER_TIM_CCR			TIM3CCR1
-#define BUZZER_POLARITY			TIM_OCPOLARITY_LOW
+#define BUZZER_GPIO_Port        _PORTD
+#define BUZZER_GPIO_Pin         GPIO_PIN_1
+#define BUZZER_TIM				0
+#define BUZZER_ALTERNATE		0
+#define BUZZER_TIM_CH			0
+#define BUZZER_TIM_CCR			0
+#define BUZZER_POLARITY			0
 
 //ws2812
-//PB6
 #define WS2812_LED_Port			_PORTB
-#define WS2812_LED_Pin			GPIO_PIN_6
+#define WS2812_LED_Pin			GPIO_PIN_8
+//tim8c3
+//DMA2 S2 C0 (takes up t8c1,t8c2,t8c3)
+
 
 //#define SPEKTRUM_TELEM
 
@@ -99,9 +62,10 @@
 #define GYRO_SPI_SLOW_BAUD      SPI_BAUDRATEPRESCALER_128
 
 #define GYRO_EXTI
-#define GYRO_EXTI_GPIO_Port     _PORTC
-#define GYRO_EXTI_GPIO_Pin      GPIO_PIN_4
-#define GYRO_EXTI_IRQn          EXTI4_IRQn
+#define GYRO_EXTI_GPIO_Port     _PORTE
+#define GYRO_EXTI_GPIO_Pin      GPIO_PIN_8
+#define GYRO_EXTI_IRQn          EXTI9_5_IRQn
+#define GYRO_EXTI_IRQn_FP       FP_EXTI9_5
 
 
 
@@ -473,4 +437,43 @@
 #define FLASH_DMA_TX_IRQn			SPI3_TX_DMA_IRQn
 #define FLASH_DMA_TX_IRQHandler		SPI3_TX_DMA_IRQHandler
 #define FLASH_DMA_RX_IRQn			SPI3_RX_DMA_IRQn
-#define FLASH_DMA_RX_IRQHandler		SPI3_RX_DMA_IRQHandler
+#define FLASH_DMA_RX_IRQHandler		SPI3_RX_DMA_IRQHandler
+
+
+
+//PWM1 PB0/T1_CH2N/T3C3/T8_CH2N/UART4_CTS
+//PWM2 PB1/T1_CH3N/T3C4/T8_CH3N
+//PWM3 PE10/T1CH2N/UART7_CTS
+//PWM4 PE11/T1C2/SPI4_NSS
+
+//PWM DMA choices
+//PWM1 DMA1 S7 C7 (no conflict)
+//PWM2 DMA1 S2 C5 (conflicts with USART4 RX)
+//PWM3 NO DMA/tim choice
+//PWM4 DMA2 S6 C0 (no conflict)
+
+
+//RSSI PE12/T1_CH3N/SPI4_SCK ??
+
+
+//CURR is PC0 ADC123_IN10
+//VBAT is PC1 ADC123_IN11
+
+//DMA1 S0 C0 SPI3 RX
+//DMA1 S1 C4 USART3 RX
+//DMA1 S2 C4 USART4 RX
+//DMA1 S3 C4 USART3 TX
+//DMA1 S4 C4 USART4 TX
+//DMA1 S5 C0 SPI3 TX
+//DMA1 S6
+//DMA1 S7
+
+//DMA2 S0 C3 SPI1 RX
+//DMA2 S1 C5 USART6 RX
+//DMA2 S2 C0 WS2812
+//DMA2 S3 C3 SPI1 TX
+//DMA2 S4 C0 ADC1 Vbat?
+//DMA2 S5 C4 USART1 RX
+//DMA2 S6 C5 USART6 TX
+//DMA2 S7 C5 USART1 TX
+

@@ -22,7 +22,6 @@ float averagedGyroData[AXIS_NUMBER][GYRO_AVERAGE_MAX_SUM];
 uint32_t averagedGyroDataPointer[AXIS_NUMBER];
 float averagedGyroDataPointerMultiplier[AXIS_NUMBER];
 float filteredGyroData[AXIS_NUMBER];
-float filteredGyroDataKd[AXIS_NUMBER];
 float filteredAccData[VECTOR_NUMBER];
 paf_state pafGyroStates[AXIS_NUMBER];
 paf_state pafKdStates[AXIS_NUMBER];
@@ -227,7 +226,6 @@ void InitFlightCode(void)
 	bzero(lpfFilterStateKd,sizeof(lpfFilterStateKd));
 	bzero(averagedGyroData,sizeof(averagedGyroData));
 	bzero(filteredGyroData,sizeof(filteredGyroData));
-	bzero(filteredGyroDataKd,sizeof(filteredGyroDataKd));
 	bzero(averagedGyroDataPointer,sizeof(averagedGyroDataPointer));
 	bzero(&flightPids,sizeof(flightPids));
 	bzero(gyroStdDeviationSamples, sizeof(gyroStdDeviationSamples));
@@ -357,12 +355,8 @@ inline void InlineInitGyroFilters(void)
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		if (mainConfig.gyroConfig.filterTypeGyro == 0) {
-			//pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
-			pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, 88.0f, 0.0f, filteredGyroData[axis]);
-		} else {
-			InitBiquad(mainConfig.filterConfig[axis].gyro.r, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.92f);
-		}
+		//pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
+		pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, 88.0f, 0.0f, filteredGyroData[axis]);
 
 		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].gyro.r;
 
@@ -377,11 +371,7 @@ inline void InlineInitKdFilters(void)
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		if (mainConfig.gyroConfig.filterTypeKd == 0) {
-			pafKdStates[axis]   = InitPaf( mainConfig.filterConfig[axis].kd.q, mainConfig.filterConfig[axis].kd.r, mainConfig.filterConfig[axis].kd.p, filteredGyroData[axis]);
-		} else {
-			InitBiquad(kdFiltUsed[axis], &lpfFilterStateKd[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterStateKd[axis], 1.99f);
-		}
+		InitBiquad(kdFiltUsed[axis], &lpfFilterStateKd[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterStateKd[axis], 1.99f);
 
 		currentKdFilterConfig[axis] = kdFiltUsed[axis];
 
@@ -510,8 +500,6 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 	static float yy[3] = {0,0,0};
 	static uint32_t gyroStdDeviationLatch = 0;
-	static float kdAverage[3];
-	static uint32_t kdAverageCounter = 0;
 	int32_t axis;
 	volatile float averagedGyro;
 
@@ -544,25 +532,9 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 		averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
 
-		if (mainConfig.gyroConfig.filterTypeKd == 0)
-		{
-			PafUpdate(&pafKdStates[axis], averagedGyro );
-			filteredGyroDataKd[axis] = pafKdStates[axis].output;
-		}
-		else
-		{
-			filteredGyroDataKd[axis] = BiquadUpdate(averagedGyro, &lpfFilterStateKd[axis]);
-		}
+		PafUpdate(&pafGyroStates[axis], averagedGyro );
+		filteredGyroData[axis] = pafGyroStates[axis].output;
 
-		if (mainConfig.gyroConfig.filterTypeGyro == 0)
-		{
-			PafUpdate(&pafGyroStates[axis], averagedGyro );
-			filteredGyroData[axis] = pafGyroStates[axis].output;
-		}
-		else
-		{
-			filteredGyroData[axis] = BiquadUpdate(averagedGyro, &lpfFilterState[axis]);
-		}
 
 	}
 
@@ -607,7 +579,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		}
 
 		//Run PIDC
-		InlinePidController(filteredGyroData, filteredGyroDataKd, flightSetPoints, flightPids, actuatorRange, mainConfig.pidConfig);
+		InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, mainConfig.pidConfig);
 
 		if ( boardArmed || PreArmFilterCheck )
 		{
@@ -689,7 +661,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				//set filters
 			}
 
-			actuatorRange = InlineApplyMotorMixer2(flightPids, smoothedRcCommandF[THROTTLE], motorOutput); //put in PIDs and Throttle or passthru
+			actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF[THROTTLE], motorOutput); //put in PIDs and Throttle or passthru
 
 		}
 		else
@@ -713,12 +685,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 		ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
-		if (mainConfig.gyroConfig.filterTypeKd == 1)
-		{
-			kdAverage[YAW]   += filteredGyroData[YAW];
-			kdAverage[ROLL]  += filteredGyroData[ROLL];
-			kdAverage[PITCH] += filteredGyroData[PITCH];
-		}
+
 		//MAX_KD
 		if (khzLoopCounter-- == 0)
 		{
@@ -726,80 +693,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 			CheckFailsafe();
 
-			if (mainConfig.gyroConfig.filterTypeKd == 1)
-			{
-				kdAverageCounter++;
-				if (kdAverageCounter == 8) {
-
-					kdAverageCounter = 0;
-					kdAverage[YAW]    = kdAverage[YAW]   / (loopSpeed.khzDivider * 8);
-					kdAverage[ROLL]   = kdAverage[ROLL]  / (loopSpeed.khzDivider * 8);
-					kdAverage[PITCH]  = kdAverage[PITCH] / (loopSpeed.khzDivider * 8);
-
-					kdAverage[YAW]    = InlineConstrainf(kdAverage[YAW],  0, 300);
-					kdAverage[ROLL]   = InlineConstrainf(kdAverage[ROLL], 0, 300);
-					kdAverage[PITCH]  = InlineConstrainf(kdAverage[PITCH],0, 300);
-
-					//experimental auto filter
-					kdFiltUsed[YAW]   = InlineChangeRangef(ABS(kdAverage[YAW]),   300, 0, mainConfig.filterConfig[YAW].kd.r+10,   mainConfig.filterConfig[YAW].kd.r);
-					kdFiltUsed[ROLL]  = InlineChangeRangef(ABS(kdAverage[ROLL]),  300, 0, mainConfig.filterConfig[ROLL].kd.r+15,  mainConfig.filterConfig[ROLL].kd.r);
-					kdFiltUsed[PITCH] = InlineChangeRangef(ABS(kdAverage[PITCH]), 300, 0, mainConfig.filterConfig[PITCH].kd.r+15, mainConfig.filterConfig[PITCH].kd.r);
-
-					kdAverage[YAW]    = 0;
-					kdAverage[ROLL]   = 0;
-					kdAverage[PITCH]  = 0;
-
-				}
-			}
-
-
-			static float lastNumber = 0;
-			float currentNumber = 0;
-			switch(mainConfig.filterConfig[YAW].dial){
-				case 1:
-					//adjust RAP
-					//range 100 to 300
-					currentNumber = InlineChangeRangef(trueRcCommandF[AUX3], 1, -1, 350, 50);
-					if (lastNumber != currentNumber)
-					{
-						lastNumber = currentNumber;
-						mainConfig.filterConfig[YAW].gyro.r = currentNumber;
-						mainConfig.filterConfig[ROLL].gyro.r = currentNumber;
-						mainConfig.filterConfig[PITCH].gyro.r = currentNumber;
-						InlineInitGyroFilters();
-					}
-					break;
-				case 2:
-					//adjust QUICK
-					//range .3000 to .0001
-					currentNumber = InlineChangeRangef(trueRcCommandF[AUX3], 1, -1, 0.2, 0.003);
-					if (lastNumber != currentNumber)
-					{
-						lastNumber = currentNumber;
-						mainConfig.filterConfig[YAW].gyro.q = currentNumber;
-						mainConfig.filterConfig[ROLL].gyro.q = currentNumber;
-						mainConfig.filterConfig[PITCH].gyro.q = currentNumber;
-						InlineInitGyroFilters();
-					}
-					break;
-				case 3:
-					//adjust PRESS
-					//range .3000 to .0001
-					currentNumber = InlineChangeRangef(trueRcCommandF[AUX3], 1, -1, 0.2, 0.003);
-					if (lastNumber != currentNumber)
-					{
-						lastNumber = currentNumber;
-						mainConfig.filterConfig[YAW].gyro.p = currentNumber;
-						mainConfig.filterConfig[ROLL].gyro.p = currentNumber;
-						mainConfig.filterConfig[PITCH].gyro.p = currentNumber;
-						InlineInitGyroFilters();
-					}
-					break;
-				case 0:
-				default:
-					break;
-			}
-
+			/*
 			//every 32 cycles we check if the filter needs an update.
 			if (
 					(currentGyroFilterConfig[YAW]   != mainConfig.filterConfig[YAW].gyro.r) ||
@@ -824,6 +718,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			) {
 				InlineInitAccFilters();
 			}
+			 */
 
 			//update blackbox here   //void UpdateBlackbox(pid_output *flightPids)
 			UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, filteredAccData);
@@ -834,8 +729,10 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			}
 
 
-			if (RfblDisasterPreventionCheck) {
-				if (InlineMillis() > 5000) {
+			if (RfblDisasterPreventionCheck)
+			{
+				if (InlineMillis() > 5000)
+				{
 					RfblDisasterPreventionCheck = 0;
 					HandleRfblDisasterPrevention();
 				}
@@ -843,11 +740,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 		}
 
-
-		//cycle time
-		//flightcodeTime = ( (float)Micros() - (float)flightcodeTimeStart );
-		//debugU32[0] = flightcodeTime;
 	}
+
 }
 
 inline float InlineGetSetPoint(float curvedRcCommandF, float rates, float acroPlus) {

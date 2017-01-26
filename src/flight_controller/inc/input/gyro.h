@@ -11,8 +11,6 @@ typedef struct {
     uint32_t gyroRotation;
     uint32_t boardCalibrated; //board calibration complete?
     uint32_t loopCtrl;
-    uint32_t filterTypeGyro;
-    uint32_t filterTypeKd;
 } gyro_config;
 
 enum {X=0,Y,Z};

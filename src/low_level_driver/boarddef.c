@@ -439,10 +439,10 @@ void getBoardHardwareDefs(void)
 	board.gyros[0].csPort      = GYRO_SPI_CS_GPIO_Port;
 	board.gyros[0].extiPin     = GYRO_EXTI_GPIO_Pin;
 	board.gyros[0].extiPort    = GYRO_EXTI_GPIO_Port;
-	board.gyros[0].extiIRQn    = EXTI4_IRQn;
+	board.gyros[0].extiIRQn    = GYRO_EXTI_IRQn;
 	board.gyros[0].spiFastBaud = GYRO_SPI_FAST_BAUD;
 	board.gyros[0].spiSlowBaud = GYRO_SPI_SLOW_BAUD;
-	callbackFunctionArray[FP_EXTI4]   = GyroExtiCallback;
+	callbackFunctionArray[GYRO_EXTI_IRQn_FP]   = GyroExtiCallback;
 
 	//Flash connection settings	------------------------------------------------------------------------------------------------------------------------------------------------------------
 	board.flash[0].enabled     = 1;

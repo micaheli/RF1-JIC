@@ -426,6 +426,8 @@ Version 0.165.048:
 Version 0.166.048:
 	Changed HID output.
 	Added FC changes.
+	Cleaned up config
+	Changed IO logic.
 
 
 

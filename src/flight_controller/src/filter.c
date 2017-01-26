@@ -4,33 +4,31 @@ paf_state InitPaf(float q, float r, float p, float intial_value)
 {
 	float modifier;
 
-	if (mainConfig.filterConfig[YAW].gyro.p < 0.5)
+	switch (mainConfig.filterConfig[YAW].filterMod)
 	{
-		modifier = 1;
-	}
-	else if (mainConfig.filterConfig[YAW].gyro.p < 1.5)
-	{
-		modifier = 16.4;
-	}
-	else if (mainConfig.filterConfig[YAW].gyro.p < 2.5)
-	{
-		modifier = 164.0;
-	}
-	else if (mainConfig.filterConfig[YAW].gyro.p < 3.5)
-	{
-		modifier = 328.0;
-	}
-	else if (mainConfig.filterConfig[YAW].gyro.p < 4.5)
-	{
-		modifier = 656.0;
-	}
-	else if (mainConfig.filterConfig[YAW].gyro.p < 5.5)
-	{
-		modifier = 1312.0;
-	}
-	else
-	{
-		modifier = 2624.0;
+		case 0:
+			modifier = 1;
+			break;
+		case 1:
+			modifier = 16.4;
+			break;
+		case 2:
+			modifier = 164.0;
+			break;
+		case 3:
+			modifier = 328.0;
+			break;
+		case 4:
+			modifier = 656.0;
+			break;
+		case 5:
+			modifier = 1312.0;
+			break;
+		case 6:
+		default:
+			modifier = 2624.0;
+			break;
+
 	}
 
 	paf_state result;
@@ -46,33 +44,31 @@ void PafUpdate(paf_state *state, float measurement)
 {
 	float modifier;
 
-	if (mainConfig.filterConfig[YAW].gyro.p < 0.5)
+	switch (mainConfig.filterConfig[YAW].filterMod)
 	{
-		modifier = 1;
-	}
-	else if (mainConfig.filterConfig[YAW].gyro.p < 1.5)
-	{
-		modifier = 16.4;
-	}
-	else if (mainConfig.filterConfig[YAW].gyro.p < 2.5)
-	{
-		modifier = 164.0;
-	}
-	else if (mainConfig.filterConfig[YAW].gyro.p < 3.5)
-	{
-		modifier = 328.0;
-	}
-	else if (mainConfig.filterConfig[YAW].gyro.p < 4.5)
-	{
-		modifier = 656.0;
-	}
-	else if (mainConfig.filterConfig[YAW].gyro.p < 5.5)
-	{
-		modifier = 1312.0;
-	}
-	else
-	{
-		modifier = 2624.0;
+		case 0:
+			modifier = 1;
+			break;
+		case 1:
+			modifier = 16.4;
+			break;
+		case 2:
+			modifier = 164.0;
+			break;
+		case 3:
+			modifier = 328.0;
+			break;
+		case 4:
+			modifier = 656.0;
+			break;
+		case 5:
+			modifier = 1312.0;
+			break;
+		case 6:
+		default:
+			modifier = 2624.0;
+			break;
+
 	}
 
 	//prediction update

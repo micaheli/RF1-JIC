@@ -23,6 +23,7 @@ void SystemClock_Config(void)
 {
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
   
   /* Enable HSE Oscillator and activate PLL with HSE as source */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
@@ -30,10 +31,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 25;
-  RCC_OscInitStruct.PLL.PLLN = 432;  
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 9;
+  RCC_OscInitStruct.PLL.PLLM = FC_PLLM;
+  RCC_OscInitStruct.PLL.PLLN = FC_PLLN;
+  RCC_OscInitStruct.PLL.PLLP = FC_PLLP;
+  RCC_OscInitStruct.PLL.PLLQ = FC_PLLQ;
   if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     while(1);
@@ -44,7 +45,21 @@ void SystemClock_Config(void)
   {
     while(1);
   }
-  
+
+
+  /* Select PLLSAI output as USB clock source */
+  PeriphClkInitStruct.PLLSAI.PLLSAIN = FC_PLL_SAIN;
+  PeriphClkInitStruct.PLLSAI.PLLSAIQ = FC_PLL_SAIQ;
+  PeriphClkInitStruct.PLLSAI.PLLSAIP = FC_PLL_SAIP;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CK48;
+  PeriphClkInitStruct.Clk48ClockSelection  = RCC_CLK48SOURCE_PLLSAIP;
+  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+  if(HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct)  != HAL_OK)
+  {
+    while(1);
+  }
+
+
   /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
      clocks dividers */
   RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
@@ -57,7 +72,45 @@ void SystemClock_Config(void)
     while(1);
   }
 
+
+	PeriphClkInitStruct.PeriphClockSelection  = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_USART6|RCC_PERIPHCLK_UART4|RCC_PERIPHCLK_UART5|RCC_PERIPHCLK_UART7|RCC_PERIPHCLK_UART8|RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_I2C2|RCC_PERIPHCLK_I2C4;
+	PeriphClkInitStruct.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
+	PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+	PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
+	PeriphClkInitStruct.Uart4ClockSelection  = RCC_UART4CLKSOURCE_PCLK1;
+	PeriphClkInitStruct.Uart5ClockSelection  = RCC_UART5CLKSOURCE_PCLK1;
+	PeriphClkInitStruct.Usart6ClockSelection = RCC_USART6CLKSOURCE_PCLK2;
+	PeriphClkInitStruct.Uart7ClockSelection  = RCC_UART7CLKSOURCE_PCLK1;
+	PeriphClkInitStruct.Uart8ClockSelection  = RCC_UART8CLKSOURCE_PCLK1;
+	PeriphClkInitStruct.I2c1ClockSelection   = RCC_I2C1CLKSOURCE_PCLK1;
+	PeriphClkInitStruct.I2c2ClockSelection   = RCC_I2C2CLKSOURCE_PCLK1;
+	PeriphClkInitStruct.I2c3ClockSelection   = RCC_I2C3CLKSOURCE_PCLK1;
+	PeriphClkInitStruct.I2c4ClockSelection   = RCC_I2C4CLKSOURCE_PCLK1;
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+	{
+	   while(1);
+	}
+
+ // Activating the timerprescalers while the APBx prescalers are 1/2/4 will connect the TIMxCLK to HCLK which has been configured to 216MHz
+ __HAL_RCC_TIMCLKPRESCALER(RCC_TIMPRES_ACTIVATED);
+
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+
   systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+  SysTick->CTRL = 0;
+  SysTick->VAL = 0; /* Load the SysTick Counter Value */
+  SysTick->CTRL = (SysTick_CTRL_TICKINT_Msk   |  /* Enable SysTick exception */
+                   SysTick_CTRL_ENABLE_Msk) |    /* Enable SysTick system timer */
+                   SysTick_CTRL_CLKSOURCE_Msk;   /* Use processor clock source */
+
+  /* SysTick_IRQn interrupt configuration */
+  //HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+  //HAL_NVIC_EnableIRQ(SysTick_IRQn);
+
 }
 
 void BoardInit(void)

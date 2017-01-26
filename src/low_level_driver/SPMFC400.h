@@ -2,8 +2,6 @@
 
 #include "mcu_include.h"
 
-
-
 //USB config
 #define RFFW_HID_PRODUCT_STRING "RaceFlight FC"
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
@@ -15,11 +13,7 @@
 #define FC_PLLP	2
 #define FC_PLLQ	8
 
-
 //LED config
-
-#define LEDn                    2
-
 #define LED1_ENABLED			1
 #define LED1_GPIO_Port          _PORTA
 #define LED1_GPIO_Pin           GPIO_PIN_15
@@ -56,7 +50,7 @@
 #define GYRO_EXTI_GPIO_Port     _PORTC
 #define GYRO_EXTI_GPIO_Pin      GPIO_PIN_4
 #define GYRO_EXTI_IRQn          EXTI15_10_IRQn
-#define GYRO_EXTI_IRQHandler    EXTI15_10_IRQHandler
+#define GYRO_EXTI_IRQn_FP       FP_EXTI15_10
 
 //#define GYRO_TX_DMA_IRQn        DMA1_Stream4_IRQn
 //#define GYRO_TX_DMA_IRQHandler  DMA1_Stream4_IRQHandler
