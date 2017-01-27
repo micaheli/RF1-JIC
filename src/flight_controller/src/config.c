@@ -1783,7 +1783,7 @@ int SendRfCustomReplyBuffer(void)
 
 	for (x = 0;x<rfCustomReplyBufferPointer;x=x+RF_BUFFER_SIZE)
 	{
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", rfCustomSendBuffer+x);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE+1, "%s", rfCustomSendBuffer+x);
 		RfCustomReply(rf_custom_out_buffer);
 	}
 	rfCustomReplyBufferPointer = 0;

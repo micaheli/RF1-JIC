@@ -33,8 +33,6 @@
 #define BUZZER_GPIO_Port        _PORTC
 #define BUZZER_GPIO_Pin         GPIO_PIN_2
 
-#define SPEKTRUM_TELEM
-
 //Gyro Config
 #define GYRO_SPI_NUMBER			ENUM_SPI2
 #define GYRO_SPI_TX_ENUM		ENUM_DMA1_STREAM_4
@@ -42,6 +40,7 @@
 #define GYRO_SPI_NUMBER			ENUM_SPI2
 #define GYRO_SPI_CS_GPIO_Port   _PORTB
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_12
+#define GYRO_RX_DMA_FP          FP_DMA1_S3
 
 #define GYRO_SPI_FAST_BAUD      SPI_BAUDRATEPRESCALER_2
 #define GYRO_SPI_SLOW_BAUD      SPI_BAUDRATEPRESCALER_128
@@ -52,29 +51,20 @@
 #define GYRO_EXTI_IRQn          EXTI15_10_IRQn
 #define GYRO_EXTI_IRQn_FP       FP_EXTI15_10
 
-//#define GYRO_TX_DMA_IRQn        DMA1_Stream4_IRQn
-//#define GYRO_TX_DMA_IRQHandler  DMA1_Stream4_IRQHandler
-//#define GYRO_RX_DMA_IRQn        DMA1_Stream3_IRQn
-//#define GYRO_RX_DMA_IRQHandler  DMA1_Stream3_IRQHandler
-
-
-#define RECEIVER_UART			4 //UART number starting from 0. 4 = UART5
 //Sbus inverter config
-//#define USE_SBUS_HARDWARE_INVERTER
-//#define SBUS_HARDWARE_GPIO			GPIOC
-//#define SBUS_HARDWARE_PIN			GPIO_PIN_0
-//#define SBUS_INVERTER_USART			USART1
-
+#undef  USE_SBUS_HARDWARE_INVERTER
+#define SBUS_HARDWARE_GPIO			0
+#define SBUS_HARDWARE_PIN			0
+#define SBUS_INVERTER_USART			0
 
 //Serial Config
-#define USE_VCP
+#undef  USE_VCP
+#define VBUS_SENSING_GPIO			0
+#define VBUS_SENSING_PIN			0
+
+//Serial Config
 #define VBUS_SENSING_GPIO			GPIOA
 #define VBUS_SENSING_PIN			GPIO_PIN_9
-
-
-
-
-
 
 //START SPI defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #define SPI1_ENABLE					1
@@ -99,6 +89,7 @@
 #define SPI1_RX_DMA_CHANNEL			DMA_CHANNEL_3
 #define SPI1_RX_DMA_IRQn			DMA2_Stream0_IRQn
 #define SPI1_RX_DMA_PRIORITY		4
+#define SPI1_SCK_PULL				GPIO_PULLDOWN
 
 #define SPI2_ENABLE					1
 #define SPI2_NSS_PIN				GPIO_PIN_12
@@ -122,6 +113,7 @@
 #define SPI2_RX_DMA_CHANNEL			DMA_CHANNEL_0
 #define SPI2_RX_DMA_IRQn			DMA1_Stream3_IRQn
 #define SPI2_RX_DMA_PRIORITY		1
+#define SPI2_SCK_PULL				GPIO_PULLDOWN
 
 #define SPI3_ENABLE					0
 #define SPI3_NSS_PIN				GPIO_PIN_0
@@ -145,7 +137,7 @@
 #define SPI3_RX_DMA_CHANNEL			DMA_CHANNEL_0
 #define SPI3_RX_DMA_IRQn			DMA1_Stream2_IRQn
 #define SPI3_RX_DMA_PRIORITY		8
-
+#define SPI3_SCK_PULL				GPIO_PULLDOWN
 //END SPI defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -331,10 +323,10 @@
 #define FLASH_SPI_MOSI_PIN			SPI1_MOSI_PIN
 #define FLASH_SPI_MOSI_GPIO_PORT	SPI1_MOSI_GPIO_PORT
 #define FLASH_SPI_MOSI_AF			SPI1_MOSI_AF
+#define FLASH_RX_DMA_FP				FP_DMA2_S0
 
 #define FLASH_SPI_FAST_BAUD			SPI_BAUDRATEPRESCALER_4
 #define FLASH_SPI_SLOW_BAUD			SPI_BAUDRATEPRESCALER_4
-
 
 #define FLASH_DMA_TX_IRQn			SPI1_TX_DMA_IRQn
 #define FLASH_DMA_TX_IRQHandler		SPI1_TX_DMA_IRQHandler

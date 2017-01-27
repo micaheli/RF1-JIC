@@ -150,46 +150,25 @@ void InitSoftSport(void)
 
 	//set RX callback to Send sbus data if
 	uint32_t actuatorNumOutput;
-	uint32_t actuatorNumCheck;
-	uint32_t okayToEnable = 1;
 	uint32_t outputNumber;
 
 	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++)
 	{
 		outputNumber = mainConfig.mixerConfig.motorOutput[actuatorNumOutput];
-		switch (board.motors[outputNumber].enabled)
+
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_SPORT)
 		{
-			case ENUM_ACTUATOR_TYPE_WS2812:
-			case ENUM_ACTUATOR_TYPE_SPORT:
-				for (actuatorNumCheck = 0; actuatorNumCheck < MAX_MOTOR_NUMBER; actuatorNumCheck++) { //make sure soft sport and soft ws2812 don't interfer with active motor configuration
 
-					if (DoesDmaConflictWithActiveDmas(board.motors[outputNumber]))
-					{
-						okayToEnable = 0;
-					}
+			if (!DoesDmaConflictWithActiveDmas(board.motors[outputNumber]))
+			{
+				sbusActuator = board.motors[outputNumber];
+				PutSportIntoReceiveState(sbusActuator, 1);
+			}
 
-				}
-				if (okayToEnable)
-				{ //this actuator is safe to enable
-
-					if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_SPORT)
-					{
-						//TODO: make telemetry and soft serial setup smarter
-
-						sbusActuator = board.motors[outputNumber];
-
-						PutSportIntoReceiveState(sbusActuator, 1);
-						//PutSportIntoSendState(sbusActuator, 1);
-
-
-					}
-
-				}
-				break;
-			default:
-				break;
 		}
+
 	}
+
 }
 
 static uint32_t IsSoftSerialLineIdle() {

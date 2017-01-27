@@ -35,8 +35,8 @@ uint32_t Micros(void) {
 
 inline void delayUs(uint32_t uSec)
 {
-	simpleDelay_ASM(uSec);
-	return;
+	//simpleDelay_ASM(uSec);
+	//return;
     volatile uint32_t DWT_START = DWT->CYCCNT;
 
     volatile uint32_t DWT_TOTAL = (systemUsTicks * uSec);

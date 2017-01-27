@@ -46,9 +46,7 @@
 #define WS2812_LED_Pin			GPIO_PIN_8
 //tim8c3
 //DMA2 S2 C0 (takes up t8c1,t8c2,t8c3)
-
-
-//#define SPEKTRUM_TELEM
+//DMA2 S2 C0 WS2812
 
 //Gyro Config
 #define GYRO_SPI_NUMBER			ENUM_SPI1
@@ -57,6 +55,7 @@
 #define GYRO_SPI_NUMBER			ENUM_SPI1
 #define GYRO_SPI_CS_GPIO_Port   _PORTA
 #define GYRO_SPI_CS_GPIO_Pin    GPIO_PIN_4
+#define GYRO_RX_DMA_FP          FP_DMA2_S0
 
 #define GYRO_SPI_FAST_BAUD      SPI_BAUDRATEPRESCALER_2
 #define GYRO_SPI_SLOW_BAUD      SPI_BAUDRATEPRESCALER_128
@@ -67,27 +66,15 @@
 #define GYRO_EXTI_IRQn          EXTI9_5_IRQn
 #define GYRO_EXTI_IRQn_FP       FP_EXTI9_5
 
-
-
-
-#define RECEIVER_UART			2 //UART number starting from 0. 4 = UART5
-
 //Sbus inverter config
-#define USE_SBUS_HARDWARE_INVERTER
-#define SBUS_HARDWARE_GPIO			GPIOC
-#define SBUS_HARDWARE_PIN			GPIO_PIN_0
-#define SBUS_INVERTER_USART			USART1
-
+#undef  USE_SBUS_HARDWARE_INVERTER
+#define SBUS_HARDWARE_GPIO			0
+#define SBUS_HARDWARE_PIN			0
+#define SBUS_INVERTER_USART			0
 
 //Serial Config
-#define USE_VCP
-#define VBUS_SENSING_GPIO			GPIOC
-#define VBUS_SENSING_PIN			GPIO_PIN_5
-
-
-
-
-
+#define VBUS_SENSING_GPIO			GPIOB
+#define VBUS_SENSING_PIN			GPIO_PIN_13
 
 //START SPI defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #define SPI1_ENABLE					1
@@ -112,7 +99,7 @@
 #define SPI1_RX_DMA_CHANNEL			DMA_CHANNEL_3
 #define SPI1_RX_DMA_IRQn			DMA2_Stream0_IRQn
 #define SPI1_RX_DMA_PRIORITY		1
-
+#define SPI1_SCK_PULL				GPIO_PULLDOWN
 
 #define SPI2_ENABLE					0
 #define SPI2_NSS_PIN				GPIO_PIN_12
@@ -136,7 +123,7 @@
 #define SPI2_RX_DMA_CHANNEL			DMA_CHANNEL_0
 #define SPI2_RX_DMA_IRQn			DMA1_Stream3_IRQn
 #define SPI2_RX_DMA_PRIORITY		8
-
+#define SPI2_SCK_PULL				GPIO_PULLDOWN
 
 #define SPI3_ENABLE					1
 #define SPI3_NSS_PIN				GPIO_PIN_3
@@ -160,7 +147,7 @@
 #define SPI3_RX_DMA_CHANNEL			DMA_CHANNEL_0
 #define SPI3_RX_DMA_IRQn			DMA1_Stream2_IRQn
 #define SPI3_RX_DMA_PRIORITY		4
-
+#define SPI3_SCK_PULL				GPIO_PULLUP
 //END SPI defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -429,6 +416,7 @@
 #define FLASH_SPI_MOSI_PIN			SPI3_MOSI_PIN
 #define FLASH_SPI_MOSI_GPIO_PORT	SPI3_MOSI_GPIO_PORT
 #define FLASH_SPI_MOSI_AF			SPI3_MOSI_AF
+#define FLASH_RX_DMA_FP				FP_DMA1_S2
 
 #define FLASH_SPI_FAST_BAUD			SPI_BAUDRATEPRESCALER_4
 #define FLASH_SPI_SLOW_BAUD			SPI_BAUDRATEPRESCALER_4
