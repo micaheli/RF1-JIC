@@ -357,20 +357,20 @@ typedef struct {
 	uint32_t				port;
 	uint32_t				AF;	
 	uint32_t				timChannel;
-	uint32_t				timChannelC;
 	uint32_t				activeTim;
 	uint32_t				timCCR;
 	uint32_t				polarity;
 	uint32_t				actuatorArrayNum;
 	uint32_t				Dma;
+	uint32_t				dmaEnabled;
+	uint32_t				dmaChannel;
+	uint32_t				dmaIRQn;
 	uint32_t				CcDmaHandle;
 	uint32_t				timerIRQn;
- 	uint32_t				motorOutputLength;
  	uint32_t				EXTIn;
  	uint32_t				EXTICallback;
  	uint32_t				DmaCallback;
 } motor_type;
-
 
 
 typedef struct {

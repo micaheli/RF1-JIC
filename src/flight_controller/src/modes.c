@@ -266,7 +266,7 @@ void SetupModes(char *modString)
 				mainConfig.flightModeArray[x*3+2] = maxRc;
 
 				//display corrected output using the channel variable
-				if (channel < 5)
+				if (channel < 4)
 					channel = 0;
 				else
 					channel += 1;

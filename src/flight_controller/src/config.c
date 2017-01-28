@@ -4,6 +4,7 @@
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
 uint32_t rfCustomReplyBufferPointer = 0;
+uint32_t rfCustomReplyBufferPointerSent = 0;
 
 #define LARGE_RF_BUFFER_SIZE 4096
 main_config mainConfig;
@@ -558,7 +559,7 @@ void SetValue(uint32_t position, char *value)
 void SendStatusReport(char *inString)
 {
 	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ss %s", inString);
-	RfCustomReply(rf_custom_out_buffer);
+	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
 
 int32_t SetVariable(char *inString)
@@ -594,7 +595,7 @@ int32_t SetVariable(char *inString)
 				resetBoard=1;
 			}
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me %s=%s", inString, args);
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 			return (1);
 		}
 	}
@@ -660,7 +661,7 @@ void OutputVar(uint32_t position)
 		break;
 	}
 
-	RfCustomReply(rf_custom_out_buffer);
+	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
 /**********************************************************************************************************************/
 
@@ -683,14 +684,7 @@ int RfCustomReply(char *rf_custom_out_buffer)
 	rfReplyBuffer[0]=1;
 	memcpy((char *)(rfReplyBuffer+1), rf_custom_out_buffer, RF_BUFFER_SIZE);
 
-	for (forCounter = 0; forCounter < 100000; forCounter++) {
-		if (hidToPcReady) {
-			USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
-			hidToPcReady = 0;
-			return(1);
-		}
-		delayUs(10); //wait 1 second max
-	}
+	USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
 	return(0);
 
 }
@@ -710,6 +704,12 @@ void ProcessCommand(char *inString)
 	char *args = NULL;
 	char *originalString = inString;
 	uint32_t x;
+
+	if (rfCustomReplyBufferPointerSent < rfCustomReplyBufferPointer)
+	{
+		SendRfCustomReplyBuffer();
+		return;
+	}
 
 	if (originalString[1] == 77)
 	{
@@ -761,9 +761,10 @@ void ProcessCommand(char *inString)
 		return;
 
 
-	if (!strcmp("ack", inString))
+	if (!strcmp("test", inString))
 		{
-			return;
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "return test" );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("idle", inString))
 		{
@@ -772,24 +773,23 @@ void ProcessCommand(char *inString)
 			SKIP_GYRO=1;
 
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Spinning Motor %lu", motorToSpin );
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			DelayMs(10);
 			IdleActuator( motorToSpin );
-			return;
 		}
 	else if (!strcmp("idlestop", inString))
 		{
 			DisarmBoard();
 			ZeroActuators( 1000 );
 			SKIP_GYRO=0;
-			return;
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "idlestop" );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("error", inString))
 		{
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu %lu", deviceWhoAmI, errorMask);
-			RfCustomReply(rf_custom_out_buffer);
-			return;
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("fakeflash", inString))
 		{
@@ -797,55 +797,39 @@ void ProcessCommand(char *inString)
 			flashInfo.currentWriteAddress = atoi(args);
 
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me It's a FAAAAKE" );
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
-			return;
-		}
-	else if (!strcmp("setack", inString))
-		{
-
-			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ACK SET" );
-			//RfCustomReply(rf_custom_out_buffer);
-			sendAckMode = 1;
-			return;
-		}
-	else if (!strcmp("unsetack", inString))
-		{
-			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ACK UNSET" );
-			//RfCustomReply(rf_custom_out_buffer);
-			sendAckMode = 0;
-			return;
 		}
 	else if (!strcmp("set", inString))
 		{
 			if (!SetVariable(args))
 			{
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Setting Not Found:%s", inString);
-				RfCustomReply(rf_custom_out_buffer);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
 	else if (!strcmp("rxdata", inString))
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx=xx+4)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rx %u=%u\n#rx %u=%u\n#rx %u=%u\n#rx %u=%u\n", (volatile unsigned int)xx, (volatile unsigned int)(rxData[xx]), (volatile unsigned int)xx+1, (volatile unsigned int)(rxData[xx+1]), (volatile unsigned int)xx+2, (volatile unsigned int)(rxData[xx+2]), (volatile unsigned int)xx+3, (volatile unsigned int)(rxData[xx+3]));
-				RfCustomReply(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rx %u=%u\n#rx %u=%u\n#rx %u=%u\n#rx %u=%u", (volatile unsigned int)xx, (volatile unsigned int)(rxData[xx]), (volatile unsigned int)xx+1, (volatile unsigned int)(rxData[xx+1]), (volatile unsigned int)xx+2, (volatile unsigned int)(rxData[xx+2]), (volatile unsigned int)xx+3, (volatile unsigned int)(rxData[xx+3]));
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
 	else if (!strcmp("rcdata", inString))
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx=xx+4)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rc %d=%d\n#rx %d=%d\n#rx %d=%d\n#rx %d=%d\n", (volatile int)xx, (volatile int)(trueRcCommandF[xx]), (volatile int)xx+1, (volatile int)(trueRcCommandF[xx+1]), (volatile int)xx+2, (volatile int)(trueRcCommandF[xx+2]), (volatile int)xx+3, (volatile int)(trueRcCommandF[xx+3]));
-				RfCustomReply(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rc %d=%d\n#rx %d=%d\n#rx %d=%d\n#rx %d=%d", (volatile int)xx, (volatile int)(trueRcCommandF[xx]), (volatile int)xx+1, (volatile int)(trueRcCommandF[xx+1]), (volatile int)xx+2, (volatile int)(trueRcCommandF[xx+2]), (volatile int)xx+3, (volatile int)(trueRcCommandF[xx+3]));
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
 	else if (!strcmp("rxrcdata", inString) || !strcmp("rcrxdata", inString))
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx=xx+2)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rb %u=%u:%d\n#rb %u=%u:%d\n", (volatile unsigned int)(xx), (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000), (volatile unsigned int)(xx+1), (volatile unsigned int)(rxData[xx+1]), (volatile int)(trueRcCommandF[xx+1]*1000));
-				RfCustomReply(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rb %u=%u:%d\n#rb %u=%u:%d", (volatile unsigned int)(xx), (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000), (volatile unsigned int)(xx+1), (volatile unsigned int)(rxData[xx+1]), (volatile int)(trueRcCommandF[xx+1]*1000));
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
 	else if (!strcmp("telem", inString))
@@ -884,12 +868,12 @@ void ProcessCommand(char *inString)
 			StripSpaces(gz);
 
 			//todo: make a way to combine strings
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm pitch=%s\n#tm roll=%s\n#tm heading=%s\n", pitchString,rollString,yawString);
-			RfCustomReply(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm ax=%s\n#tm ay=%s\n#tm az=%s\n", ax,ay,az);
-			RfCustomReply(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm gx=%s\n#tm gy=%s\n#tm gz=%s\n", gx,gy,gz);
-			RfCustomReply(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm pitch=%s\n#tm roll=%s\n#tm heading=%s", pitchString,rollString,yawString);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm ax=%s\n#tm ay=%s\n#tm az=%s", ax,ay,az);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm gx=%s\n#tm gy=%s\n#tm gz=%s", gx,gy,gz);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 		}
 	else if (!strcmp("sbus_r1", inString) || !strcmp("sbus_r3", inString) || !strcmp("sbus_r4", inString) || !strcmp("sbus_t1", inString) || !strcmp("sbus_t3", inString) || !strcmp("sbus_t4", inString))
@@ -976,7 +960,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SBUS Defaults");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
 		}
@@ -1057,7 +1041,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SUMD Defaults");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
 		}
@@ -1139,7 +1123,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me IBUS Defaults");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
 		}
@@ -1221,7 +1205,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me PPM Defaults");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
 		}
@@ -1267,7 +1251,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Default PIDs");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
 
@@ -1314,7 +1298,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RS2K PIDs");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
 		}
@@ -1396,7 +1380,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SPEKTRUM Defaults");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
 		}
@@ -1478,7 +1462,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me DSM2 Defaults");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
 		}
@@ -1522,13 +1506,12 @@ void ProcessCommand(char *inString)
 			if (argsOutputted == 0)
 			{
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me No Arguments Found For:%s", args);
-				RfCustomReply(rf_custom_out_buffer);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			}
 			//RfCustomReplyBuffer("#RFEND");
 			//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#RFEND");
 			//RfCustomReply(rf_custom_out_buffer);
-			SendRfCustomReplyBuffer();
 		}
 	else if (!strcmp("eraseallflash", inString))
 		{
@@ -1537,24 +1520,24 @@ void ProcessCommand(char *inString)
 			{
 
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Erasing Flash");
-				RfCustomReply(rf_custom_out_buffer);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 
 				if (MassEraseDataFlash(1))
 				{
 					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete");
-					RfCustomReply(rf_custom_out_buffer);
+					RfCustomReplyBuffer(rf_custom_out_buffer);
 				}
 				else
 				{
 					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Failed");
-					RfCustomReply(rf_custom_out_buffer);
+					RfCustomReplyBuffer(rf_custom_out_buffer);
 				}
 
 			}
 			else
 			{
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected");
-				RfCustomReply(rf_custom_out_buffer);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 
 		}
@@ -1563,24 +1546,24 @@ void ProcessCommand(char *inString)
 			if (flashInfo.enabled)
 			{
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Erasing Flash");
-				RfCustomReply(rf_custom_out_buffer);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 
 				if (((float)(flashInfo.currentWriteAddress) / (float)flashInfo.totalSize) > 0.85) {
 					if (MassEraseDataFlash(1))
 					{
 						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete");
-						RfCustomReply(rf_custom_out_buffer);
+						RfCustomReplyBuffer(rf_custom_out_buffer);
 					}
 					else
 					{
 						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Failed");
-						RfCustomReply(rf_custom_out_buffer);
+						RfCustomReplyBuffer(rf_custom_out_buffer);
 					}
 				} else {
 					if (MassEraseDataFlashByPage(1))
 					{
 						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete");
-						RfCustomReply(rf_custom_out_buffer);
+						RfCustomReplyBuffer(rf_custom_out_buffer);
 					}
 				}
 
@@ -1588,7 +1571,7 @@ void ProcessCommand(char *inString)
 			else
 			{
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected");
-				RfCustomReply(rf_custom_out_buffer);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
 	else if (!strcmp("dlflstatusdump", inString))
@@ -1611,7 +1594,7 @@ void ProcessCommand(char *inString)
 					{
 						rf_custom_out_buffer[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
 					}
-					RfCustomReply(rf_custom_out_buffer);
+					RfCustomReplyBuffer(rf_custom_out_buffer);
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
 					sendReturn = 1;
 
@@ -1620,7 +1603,7 @@ void ProcessCommand(char *inString)
 				{
 
 					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Read Failed");
-					RfCustomReply(rf_custom_out_buffer);
+					RfCustomReplyBuffer(rf_custom_out_buffer);
 
 				}
 
@@ -1629,7 +1612,7 @@ void ProcessCommand(char *inString)
 			{
 
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected");
-				RfCustomReply(rf_custom_out_buffer);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			}
 
@@ -1637,7 +1620,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("version", inString))
 		{
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("wiz", inString))
 		{
@@ -1656,13 +1639,13 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("reboot", inString) || !strcmp("reset", inString))
 		{
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Rebooting");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 			SystemReset();
 		}
 	else if (!strcmp("resetdfu", inString)  || !strcmp("rebootdfu", inString))
 		{
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Rebooting Into DFU");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 			SystemResetToDfuBootloader();
 		}
 	else if (!strcmp("resetconfig", inString))
@@ -1671,11 +1654,11 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Resetting Config");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 			GenerateConfig();
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Config Reset");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 			SaveAndSend();
 
 		}
@@ -1683,7 +1666,7 @@ void ProcessCommand(char *inString)
 		{
 			sendSpektrumBind();
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding Serial");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if ( (!strcmp("bind9", inString)) || (!strcmp("bind", inString)) )
 		{
@@ -1692,7 +1675,7 @@ void ProcessCommand(char *inString)
 			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 9");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("bind5", inString))
 		{
@@ -1701,7 +1684,7 @@ void ProcessCommand(char *inString)
 			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 5");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("bind3", inString))
 		{
@@ -1710,13 +1693,13 @@ void ProcessCommand(char *inString)
 			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 3");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("rebootrfbl", inString) || !strcmp("resetrfbl", inString))
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
 			memcpy(rf_custom_out_buffer, "#me Rebooting RFBL", sizeof("#me Rebooting RFBL"));
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 			DelayMs(100);
 			SystemReset();
 		}
@@ -1724,7 +1707,7 @@ void ProcessCommand(char *inString)
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
 			memcpy(rf_custom_out_buffer, "#me Rebooting Recovery", sizeof("#me Rebooting Recovery"));
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 			DelayMs(100);
 			SystemReset();
 		}
@@ -1736,8 +1719,10 @@ void ProcessCommand(char *inString)
 	else
 		{
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Unknown Command:%s", args);
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
+
+	SendRfCustomReplyBuffer();
 
 }
 
@@ -1747,10 +1732,10 @@ void SaveAndSend(void)
 		return;
 
 	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Saving");
-	RfCustomReply(rf_custom_out_buffer);
+	RfCustomReplyBuffer(rf_custom_out_buffer);
 	SaveConfig(ADDRESS_CONFIG_START);
 	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Save Complete");
-	RfCustomReply(rf_custom_out_buffer);
+	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
 
 void DlflStatusDump(void)
@@ -1778,15 +1763,16 @@ int SendRfCustomReplyBuffer(void)
 
 	uint32_t x;
 
-	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu", rfCustomReplyBufferPointer);
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE+1, "%s", rfCustomSendBuffer+rfCustomReplyBufferPointerSent);
 	RfCustomReply(rf_custom_out_buffer);
+	rfCustomReplyBufferPointerSent +=RF_BUFFER_SIZE;
 
-	for (x = 0;x<rfCustomReplyBufferPointer;x=x+RF_BUFFER_SIZE)
+	if (rfCustomReplyBufferPointerSent >= rfCustomReplyBufferPointer)
 	{
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE+1, "%s", rfCustomSendBuffer+x);
-		RfCustomReply(rf_custom_out_buffer);
+		rfCustomReplyBufferPointerSent=0;
+		rfCustomReplyBufferPointer=0;
 	}
-	rfCustomReplyBufferPointer = 0;
+
 
 	return(0);
 }

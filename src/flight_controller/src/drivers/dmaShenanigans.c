@@ -118,8 +118,8 @@ void InitWs2812(void)
 				ws2812LedRecord.ws2812Actuator = board.motors[outputNumber];
 				SetActiveDmaToActuatorDma(ws2812LedRecord.ws2812Actuator);
 				InitDmaOutputForSoftSerial(DMA_OUTPUT_WS2812_LEDS, ws2812LedRecord.ws2812Actuator);
-				uint8_t rgbArray[] = {0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF,0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF};
-				OutputSerialDmaByte(rgbArray, 96, ws2812LedRecord.ws2812Actuator, 0, 0, 1);
+				uint8_t rgbArray[] = {0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF};
+				OutputSerialDmaByte(rgbArray, 6, ws2812LedRecord.ws2812Actuator, 0, 0, 1);
 			}
 
 		}
@@ -171,12 +171,12 @@ void InitDmaInputOnMotors(motor_type actuator) {
 	//TIM_ICPOLARITY_FALLING
 	//TIM_ICPOLARITY_RISING
 	//TIM_ICPOLARITY_BOTHEDGE
-	sConfig.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-	if(HAL_TIM_IC_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfig, actuator.timChannelC) != HAL_OK)
-	{
-		/* Configuration Error */
-		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
-	}
+	//sConfig.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+	//if(HAL_TIM_IC_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfig, actuator.timChannelC) != HAL_OK)
+	//{
+	//	/* Configuration Error */
+	//	ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
+	//}
 
 	sConfig.ICPolarity = TIM_ICPOLARITY_RISING;
 	sConfig.ICSelection = TIM_ICSELECTION_DIRECTTI;
@@ -204,12 +204,12 @@ void InitDmaInputOnMotors(motor_type actuator) {
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
 
-	/*##-5- Start the Input Capture in interrupt mode ##########################*/
-	if(HAL_TIM_IC_Start_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannelC) != HAL_OK)
-	{
-		/* Starting Error */
-		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
-	}
+	///*##-5- Start the Input Capture in interrupt mode ##########################*/
+	//if(HAL_TIM_IC_Start_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannelC) != HAL_OK)
+	//{
+	//	/* Starting Error */
+	//	ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
+	//}
 
 
 	return;
@@ -295,6 +295,19 @@ uint32_t DoesDmaConflictWithDshot(motor_type dShotActuator, motor_type actuator)
 void SetActiveDmaToActuatorDma(motor_type actuator) {
 
 	memcpy( &board.dmasActive[actuator.Dma], &board.dmasMotor[actuator.actuatorArrayNum], sizeof(board_dma) );
+
+	//Set DMA settings for this use
+	board.dmasActive[actuator.Dma].dmaDirection       = DMA_MEMORY_TO_PERIPH;
+	board.dmasActive[actuator.Dma].dmaPeriphInc       = DMA_PINC_DISABLE;
+	board.dmasActive[actuator.Dma].dmaMemInc          = DMA_MINC_ENABLE;
+	board.dmasActive[actuator.Dma].dmaPeriphAlignment = DMA_PDATAALIGN_WORD;
+	board.dmasActive[actuator.Dma].dmaMemAlignment    = DMA_MDATAALIGN_WORD;
+	board.dmasActive[actuator.Dma].dmaMode            = DMA_NORMAL;
+	board.dmasActive[actuator.Dma].dmaPriority        = DMA_PRIORITY_HIGH;
+	board.dmasActive[actuator.Dma].fifoMode           = DMA_FIFOMODE_DISABLE;
+	board.dmasActive[actuator.Dma].fifoThreshold      = DMA_FIFO_THRESHOLD_FULL;
+	board.dmasActive[actuator.Dma].MemBurst           = DMA_MBURST_SINGLE;
+	board.dmasActive[actuator.Dma].PeriphBurst        = DMA_PBURST_SINGLE;
 
 }
 
