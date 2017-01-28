@@ -1,9 +1,5 @@
 #include "includes.h"
 
-UART_HandleTypeDef uartHandle[6];
-DMA_HandleTypeDef dmaUartRx[6];
-DMA_HandleTypeDef dmaUartTx[6];
-
 __IO ITStatus UartReady = RESET;
 
 uint8_t dmaRxBuffer = '\000';
@@ -11,16 +7,8 @@ uint32_t dmaIndex[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we
 
 uint32_t lastRXPacket;
 
-
-
-/* Buffer used for transmission */
-//unsigned char serialTxBuffer[TXBUFFERSIZE];
-
-/* Buffer used for reception */
-//unsigned char serialRxBuffer[RXBUFFERSIZE];
-
-
-void UsartInit(uint32_t serialNumber) {
+void UsartInit(uint32_t serialNumber)
+{
 
 	GPIO_InitTypeDef  GPIO_InitStruct;
 
@@ -29,7 +17,8 @@ void UsartInit(uint32_t serialNumber) {
 	GPIO_TypeDef *txPort;
 	GPIO_TypeDef *rxPort;
 
-	switch (board.serials[serialNumber].Protocol) {
+	switch (board.serials[serialNumber].Protocol)
+	{
 		case USING_SPEKTRUM_R:
 		case USING_DSM2_R:
 			board.serials[serialNumber].FrameSize  = 16;
@@ -283,21 +272,21 @@ void UsartDmaInit(uint32_t serialNumber)
 	/* Configure the DMA handler for Transmission process */
 	if (board.dmasSerial[board.serials[serialNumber].TXDma].enabled) { //only mess with the DMA is the current serial device needs it
 
-		dmaUartTx[serialNumber].Instance                 = dmaStream[board.dmasActive[board.serials[serialNumber].TXDma].dmaStream];
-		dmaUartTx[serialNumber].Init.Channel             = board.dmasActive[board.serials[serialNumber].TXDma].dmaChannel;
-		dmaUartTx[serialNumber].Init.Direction           = board.dmasActive[board.serials[serialNumber].TXDma].dmaDirection;
-		dmaUartTx[serialNumber].Init.PeriphInc           = board.dmasActive[board.serials[serialNumber].TXDma].dmaPeriphInc;
-		dmaUartTx[serialNumber].Init.MemInc              = board.dmasActive[board.serials[serialNumber].TXDma].dmaMemInc;
-		dmaUartTx[serialNumber].Init.PeriphDataAlignment = board.dmasActive[board.serials[serialNumber].TXDma].dmaPeriphAlignment;
-		dmaUartTx[serialNumber].Init.MemDataAlignment    = board.dmasActive[board.serials[serialNumber].TXDma].dmaMemAlignment;
-		dmaUartTx[serialNumber].Init.Mode                = board.dmasActive[board.serials[serialNumber].TXDma].dmaMode;
-		dmaUartTx[serialNumber].Init.Priority            = board.dmasActive[board.serials[serialNumber].TXDma].dmaPriority;
-		dmaUartTx[serialNumber].Init.FIFOMode            = board.dmasActive[board.serials[serialNumber].TXDma].fifoMode;
+		dmaHandles[serialNumber].Instance                 = dmaStream[board.dmasActive[board.serials[serialNumber].TXDma].dmaStream];
+		dmaHandles[serialNumber].Init.Channel             = board.dmasActive[board.serials[serialNumber].TXDma].dmaChannel;
+		dmaHandles[serialNumber].Init.Direction           = board.dmasActive[board.serials[serialNumber].TXDma].dmaDirection;
+		dmaHandles[serialNumber].Init.PeriphInc           = board.dmasActive[board.serials[serialNumber].TXDma].dmaPeriphInc;
+		dmaHandles[serialNumber].Init.MemInc              = board.dmasActive[board.serials[serialNumber].TXDma].dmaMemInc;
+		dmaHandles[serialNumber].Init.PeriphDataAlignment = board.dmasActive[board.serials[serialNumber].TXDma].dmaPeriphAlignment;
+		dmaHandles[serialNumber].Init.MemDataAlignment    = board.dmasActive[board.serials[serialNumber].TXDma].dmaMemAlignment;
+		dmaHandles[serialNumber].Init.Mode                = board.dmasActive[board.serials[serialNumber].TXDma].dmaMode;
+		dmaHandles[serialNumber].Init.Priority            = board.dmasActive[board.serials[serialNumber].TXDma].dmaPriority;
+		dmaHandles[serialNumber].Init.FIFOMode            = board.dmasActive[board.serials[serialNumber].TXDma].fifoMode;
 
-		HAL_DMA_Init(&dmaUartTx[serialNumber]);
+		HAL_DMA_Init(&dmaHandles[serialNumber]);
 
 		/* Associate the initialized DMA handle to the UART handle */
-		__HAL_LINKDMA(&uartHandles[board.serials[serialNumber].usartHandle], hdmatx, dmaUartTx[serialNumber]);
+		__HAL_LINKDMA(&uartHandles[board.serials[serialNumber].usartHandle], hdmatx, dmaHandles[serialNumber]);
 
 	    /* DMA interrupt init */
 		HAL_NVIC_SetPriority(board.dmasActive[board.serials[serialNumber].TXDma].dmaIRQn, 1, 1);
@@ -436,11 +425,35 @@ void InitBoardUsarts (void)
 		if (board.serials[serialNumber].enabled)
 		{
 
+
+
+
+
 			if (board.dmasSerial[board.serials[serialNumber].TXDma].enabled) //only move the DMA into the Active DMA if the serial needs it
-		    	memcpy( &board.dmasActive[board.serials[serialNumber].TXDma], &board.dmasSerial[board.serials[serialNumber].TXDma], sizeof(board_dma) ); //TODO: Add dmasUsart
+			{
+				board.dmasSerial[board.serials[serialNumber].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH;
+				board.dmasSerial[board.serials[serialNumber].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+				board.dmasSerial[board.serials[serialNumber].TXDma].dmaMemInc          = DMA_MINC_DISABLE;
+				board.dmasSerial[board.serials[serialNumber].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+				board.dmasSerial[board.serials[serialNumber].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+				board.dmasSerial[board.serials[serialNumber].TXDma].dmaMode            = DMA_CIRCULAR;
+				board.dmasSerial[board.serials[serialNumber].TXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
+				board.dmasSerial[board.serials[serialNumber].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+				memcpy( &board.dmasActive[board.serials[serialNumber].TXDma], &board.dmasSerial[board.serials[serialNumber].TXDma], sizeof(board_dma) ); //TODO: Add dmasUsart
+			}
 
 		    if (board.dmasSerial[board.serials[serialNumber].RXDma].enabled) //only move the DMA into the Active DMA if the serial needs it
+		    {
+		    	board.dmasSerial[board.serials[serialNumber].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
+				board.dmasSerial[board.serials[serialNumber].RXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+				board.dmasSerial[board.serials[serialNumber].RXDma].dmaMemInc          = DMA_MINC_DISABLE;
+				board.dmasSerial[board.serials[serialNumber].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+				board.dmasSerial[board.serials[serialNumber].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+				board.dmasSerial[board.serials[serialNumber].RXDma].dmaMode            = DMA_CIRCULAR;
+				board.dmasSerial[board.serials[serialNumber].RXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
+				board.dmasSerial[board.serials[serialNumber].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 		    	memcpy( &board.dmasActive[board.serials[serialNumber].RXDma], &board.dmasSerial[board.serials[serialNumber].RXDma], sizeof(board_dma) );
+		    }
 
 			UsartDeInit(serialNumber); //deinits serial and associated pins and DMAs
 			UsartInit(serialNumber); //inits serial and associated pins and DMAs

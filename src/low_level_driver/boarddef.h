@@ -289,6 +289,10 @@ typedef struct {
 
 	uint32_t				TXDma;
 	uint32_t				RXDma;
+	uint32_t				TXDmaIrqn;
+	uint32_t				RXDmaIrqn;
+	uint32_t				TXDmaChannel;
+	uint32_t				RXDmaChannel;
 
 	uint32_t				Protocol;
 	uint32_t				FrameSize;

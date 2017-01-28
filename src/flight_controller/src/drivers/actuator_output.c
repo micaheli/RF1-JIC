@@ -136,6 +136,7 @@ void InitActuators(void) {
 		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 			HAL_TIM_Base_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum]);
 			HAL_TIM_PWM_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum], board.motors[outputNumber].timChannel);
+			HAL_TIMEx_PWMN_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum], board.motors[outputNumber].timChannel);
 		}
 	}
 

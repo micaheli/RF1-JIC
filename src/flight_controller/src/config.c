@@ -669,8 +669,6 @@ void OutputVar(uint32_t position)
 int RfCustomReply(char *rf_custom_out_buffer)
 {
 
-	uint32_t forCounter;
-
 	if (disableSaving)
 		return(0);
 
@@ -1760,8 +1758,6 @@ int RfCustomReplyBuffer(char *rfCustomSendBufferAdder)
 
 int SendRfCustomReplyBuffer(void)
 {
-
-	uint32_t x;
 
 	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE+1, "%s", rfCustomSendBuffer+rfCustomReplyBufferPointerSent);
 	RfCustomReply(rf_custom_out_buffer);
