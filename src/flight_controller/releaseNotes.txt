@@ -429,6 +429,14 @@ Version 0.166.048:
 	Cleaned up config
 	Changed IO logic.
 
+Version 0.167.048:
+	Change flight code a bit.
+	Smooth out flight.
+
+Version 0.168.049:
+	Lots of IO and code cleanup.
+	Change how command I/O works.
+
 
 
 Features in current development:
