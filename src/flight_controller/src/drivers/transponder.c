@@ -35,11 +35,11 @@ void InitTransponderTimer(void)
 	TIM_ClockConfigTypeDef sClockSourceConfig;
 
 	switch (transponderTimer) {
-		case ENUMTIM1:
-		case ENUMTIM8:
-		case ENUMTIM9:
-		case ENUMTIM10:
-		case ENUMTIM11:
+		case ENUM_TIM1:
+		case ENUM_TIM8:
+		case ENUM_TIM9:
+		case ENUM_TIM10:
+		case ENUM_TIM11:
 			timerPrescaler = (uint16_t)(SystemCoreClock / timerHz) - 1;
 			break;
 		default:

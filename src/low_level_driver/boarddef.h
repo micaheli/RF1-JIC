@@ -3,18 +3,6 @@
 
 #include "mcu_include.h"
 
-
-#define ENUM_ACTUATOR_TYPE_DISABLED		0
-#define ENUM_ACTUATOR_TYPE_SERVO		1
-#define ENUM_ACTUATOR_TYPE_MOTOR		2
-#define ENUM_ACTUATOR_TYPE_SOFT_SERIAL	3
-#define ENUM_ACTUATOR_TYPE_WS2812		4
-#define ENUM_ACTUATOR_TYPE_SPORT		5
-
-
-#define ENUM_SS_BAUD_19200_STD	0
-#define ENUM_SS_BAUD_57600_INV	1
-
 #define MAX_MOTOR_NUMBER 8
 #define MAX_SERVO_NUMBER 8
 #define MAX_USARTS       6
@@ -35,12 +23,29 @@
 #define uid2_3 (*(uint8_t*)0x1fff7a1a)
 #define uid2_4 (*(uint8_t*)0x1fff7a1b)
 
-#define ENUM_SPI1 0
-#define ENUM_SPI2 1
-#define ENUM_SPI3 2
-#define ENUM_SPI4 3
-#define ENUM_SPI5 4
-#define ENUM_SPI6 5
+enum {
+	ENUM_ACTUATOR_TYPE_DISABLED		= 0,
+	ENUM_ACTUATOR_TYPE_SERVO		= 1,
+	ENUM_ACTUATOR_TYPE_MOTOR		= 2,
+	ENUM_ACTUATOR_TYPE_SOFT_SERIAL	= 3,
+	ENUM_ACTUATOR_TYPE_WS2812		= 4,
+	ENUM_ACTUATOR_TYPE_SPORT		= 5,
+};
+
+enum {
+	ENUM_SS_BAUD_19200_STD = 0,
+	ENUM_SS_BAUD_57600_INV = 1,
+};
+
+
+enum {
+	ENUM_SPI1 = 0,
+	ENUM_SPI2 = 1,
+	ENUM_SPI3 = 2,
+	ENUM_SPI4 = 3,
+	ENUM_SPI5 = 4,
+	ENUM_SPI6 = 5,
+};
 
 enum {
 	FP_EXTI0     = 0,
@@ -69,52 +74,43 @@ enum {
 	IRQH_FP_TOT  = 23,
 };
 
+enum {
+	ENUM_PORTA = 0,
+	ENUM_PORTB = 1,
+	ENUM_PORTC = 2,
+	ENUM_PORTD = 3,
+	ENUM_PORTE = 4,
+	ENUM_PORTF = 5,
+	ENUM_PORTG = 6,
+	ENUM_PORTH = 7,
+	ENUM_PORTI = 8,
+};
 
-#define _PORTA 0
-#define _PORTB 1
-#define _PORTC 2
-#define _PORTD 3
-#define _PORTE 4
-#define _PORTF 5
-#define _PORTG 6
-#define _PORTH 7
-#define _PORTI 8
+enum {
+	ENUM_USART1_IRQn = 0,
+	ENUM_USART2_IRQn = 1,
+	ENUM_USART3_IRQn = 2,
+	ENUM_USART4_IRQn = 3,
+	ENUM_USART5_IRQn = 4,
+	ENUM_USART6_IRQn = 5,
+};
 
-
-#define ENUM_PORTA _PORTA
-#define ENUM_PORTB _PORTB
-#define ENUM_PORTC _PORTC
-#define ENUM_PORTD _PORTD
-#define ENUM_PORTE _PORTE
-#define ENUM_PORTF _PORTF
-#define ENUM_PORTG _PORTG
-#define ENUM_PORTH _PORTH
-#define ENUM_PORTI _PORTI
-
-
-#define ENUM_USART1_IRQn 0
-#define ENUM_USART2_IRQn 1
-#define ENUM_USART3_IRQn 2
-#define ENUM_USART4_IRQn 3
-#define ENUM_USART5_IRQn 4
-#define ENUM_USART6_IRQn 5
-
-
-#define ENUMTIM1	0
-#define ENUMTIM2	1
-#define ENUMTIM3	2
-#define ENUMTIM4	3
-#define ENUMTIM5	4
-#define ENUMTIM6	5
-#define ENUMTIM7	6
-#define ENUMTIM8	7
-#define ENUMTIM9	8
-#define ENUMTIM10	9
-#define ENUMTIM11	10
-#define ENUMTIM12	11
-#define ENUMTIM13	12
-#define ENUMTIM14	13
-
+enum {
+	ENUM_TIM1  = 0,
+	ENUM_TIM2  = 1,
+	ENUM_TIM3  = 2,
+	ENUM_TIM4  = 3,
+	ENUM_TIM5  = 4,
+	ENUM_TIM6  = 5,
+	ENUM_TIM7  = 6,
+	ENUM_TIM8  = 7,
+	ENUM_TIM9  = 8,
+	ENUM_TIM10 = 9,
+	ENUM_TIM11 = 10,
+	ENUM_TIM12 = 11,
+	ENUM_TIM13 = 12,
+	ENUM_TIM14 = 13,
+};
 
 #define	TIM1CCR1 0
 #define	TIM1CCR2 1
@@ -173,32 +169,33 @@ enum {
 #define	TIM14CCR3 54
 #define	TIM14CCR4 55
 
+enum {
+	ENUM_USART1 = 0,
+	ENUM_USART2 = 1,
+	ENUM_USART3 = 2,
+	ENUM_USART4 = 3,
+	ENUM_USART5 = 4,
+	ENUM_USART6 = 5,
+};
 
-#define ENUM_USART1 0
-#define ENUM_USART2 1
-#define ENUM_USART3 2
-#define ENUM_USART4 3
-#define ENUM_USART5 4
-#define ENUM_USART6 5
-
-
-#define ENUM_DMA1_STREAM_0 0
-#define ENUM_DMA1_STREAM_1 1
-#define ENUM_DMA1_STREAM_2 2
-#define ENUM_DMA1_STREAM_3 3
-#define ENUM_DMA1_STREAM_4 4
-#define ENUM_DMA1_STREAM_5 5
-#define ENUM_DMA1_STREAM_6 6
-#define ENUM_DMA1_STREAM_7 7
-#define ENUM_DMA2_STREAM_0 8
-#define ENUM_DMA2_STREAM_1 9
-#define ENUM_DMA2_STREAM_2 10
-#define ENUM_DMA2_STREAM_3 11
-#define ENUM_DMA2_STREAM_4 12
-#define ENUM_DMA2_STREAM_5 13
-#define ENUM_DMA2_STREAM_6 14
-#define ENUM_DMA2_STREAM_7 15
-
+enum {
+	ENUM_DMA1_STREAM_0 = 0,
+	ENUM_DMA1_STREAM_1 = 1,
+	ENUM_DMA1_STREAM_2 = 2,
+	ENUM_DMA1_STREAM_3 = 3,
+	ENUM_DMA1_STREAM_4 = 4,
+	ENUM_DMA1_STREAM_5 = 5,
+	ENUM_DMA1_STREAM_6 = 6,
+	ENUM_DMA1_STREAM_7 = 7,
+	ENUM_DMA2_STREAM_0 = 8,
+	ENUM_DMA2_STREAM_1 = 9,
+	ENUM_DMA2_STREAM_2 = 10,
+	ENUM_DMA2_STREAM_3 = 11,
+	ENUM_DMA2_STREAM_4 = 12,
+	ENUM_DMA2_STREAM_5 = 13,
+	ENUM_DMA2_STREAM_6 = 14,
+	ENUM_DMA2_STREAM_7 = 15,
+};
 
 //USB config
 #define RFFW_HID_PRODUCT_STRING "RaceFlight FC"
