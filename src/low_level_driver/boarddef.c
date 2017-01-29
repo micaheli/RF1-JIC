@@ -598,6 +598,12 @@ void getBoardHardwareDefs(void)
 	board.serials[ENUM_USART1].RXAlternate    = USART1_RXALT;
 	board.serials[ENUM_USART1].RXPin          = USART1_RXPIN;
 	board.serials[ENUM_USART1].RXPort         = USART1_RXPORT;
+	board.serials[ENUM_USART1].TXDmaIrqn      = USART1_TXDMA_IRQN;
+	board.serials[ENUM_USART1].TXDma          = USART1_TXDMA;
+	board.serials[ENUM_USART1].TXDmaChannel   = USART1_TXDMA_CHANNEL;
+	board.serials[ENUM_USART1].RXDmaIrqn      = USART1_RXDMA_IRQN;
+	board.serials[ENUM_USART1].RXDma          = USART1_RXDMA;
+	board.serials[ENUM_USART1].RXDmaChannel   = USART1_RXDMA_CHANNEL;
 
 	board.serials[ENUM_USART1].serialTxBuffer = 1;
 	board.serials[ENUM_USART1].serialRxBuffer = 1;
@@ -632,6 +638,12 @@ void getBoardHardwareDefs(void)
 	board.serials[ENUM_USART3].RXAlternate    = USART3_RXALT;
 	board.serials[ENUM_USART3].RXPin          = USART3_RXPIN;
 	board.serials[ENUM_USART3].RXPort         = USART3_RXPORT;
+	board.serials[ENUM_USART3].TXDmaIrqn      = USART3_TXDMA_IRQN;
+	board.serials[ENUM_USART3].TXDma          = USART3_TXDMA;
+	board.serials[ENUM_USART3].TXDmaChannel   = USART3_TXDMA_CHANNEL;
+	board.serials[ENUM_USART3].RXDmaIrqn      = USART3_RXDMA_IRQN;
+	board.serials[ENUM_USART3].RXDma          = USART3_RXDMA;
+	board.serials[ENUM_USART3].RXDmaChannel   = USART3_RXDMA_CHANNEL;
 
 	board.serials[ENUM_USART3].serialTxBuffer = 2;
 	board.serials[ENUM_USART3].serialRxBuffer = 2;
@@ -666,6 +678,12 @@ void getBoardHardwareDefs(void)
 	board.serials[ENUM_USART4].RXAlternate    = USART4_RXALT;
 	board.serials[ENUM_USART4].RXPin          = USART4_RXPIN;
 	board.serials[ENUM_USART4].RXPort         = USART4_RXPORT;
+	board.serials[ENUM_USART4].TXDmaIrqn      = USART4_TXDMA_IRQN;
+	board.serials[ENUM_USART4].TXDma          = USART4_TXDMA;
+	board.serials[ENUM_USART4].TXDmaChannel   = USART4_TXDMA_CHANNEL;
+	board.serials[ENUM_USART4].RXDmaIrqn      = USART4_RXDMA_IRQN;
+	board.serials[ENUM_USART4].RXDma          = USART4_RXDMA;
+	board.serials[ENUM_USART4].RXDmaChannel   = USART4_RXDMA_CHANNEL;
 
 	board.serials[ENUM_USART4].serialTxBuffer = 3;
 	board.serials[ENUM_USART4].serialRxBuffer = 3;

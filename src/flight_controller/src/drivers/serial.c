@@ -493,7 +493,6 @@ void DeInitBoardUsarts (void) {
 
 }
 
-//extern char rf_custom_out_buffer[];
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
