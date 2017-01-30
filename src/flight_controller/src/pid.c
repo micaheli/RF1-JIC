@@ -61,6 +61,16 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 	static float usedFlightSetPoints[AXIS_NUMBER];
 	static uint32_t filterSetup[AXIS_NUMBER] = {0,0,0};
 
+	//test yaw reductor
+	static uint32_t yawCounter = 0;
+	static float yawKp = 0;
+	static float yawKd = 0;
+	static float yawKi = 0;
+	static float yawKpStore = 0;
+	static float yawKdStore = 0;
+	static float yawKiStore = 0;
+	//test yaw reductor
+
 	(void)(pidConfig);
 	(void)(actuatorRange);
 
@@ -103,6 +113,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 
 	}
 
+	//bypass limiter
 	usedFlightSetPoints[0] = flightSetPoints[0];
 	usedFlightSetPoints[1] = flightSetPoints[1];
 	usedFlightSetPoints[2] = flightSetPoints[2];
@@ -181,6 +192,32 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 
 			flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD, MAX_KD);
 			// calculate Kd ////////////////////////// ^
+
+			//yaw Kd 8 KHz
+			//yaw reductor
+			if ( (axis == YAW) && (mainConfig.filterConfig[0].filterMod == 1) )
+			{
+				yawCounter++;
+				yawKp += flightPids[YAW].kp;
+				yawKi += flightPids[YAW].ki;
+				yawKd += flightPids[YAW].kd;
+
+				if (yawCounter == 4)
+				{
+					yawKpStore = yawKp / yawCounter;
+					yawKiStore = yawKi / yawCounter;
+					yawKdStore = yawKd / yawCounter;
+					yawKp = 0;
+					yawKd = 0;
+					yawKi = 0;
+					yawCounter = 0;
+				}
+
+				flightPids[YAW].kp = yawKpStore;
+				flightPids[YAW].ki = yawKiStore;
+				flightPids[YAW].kd = yawKdStore;
+
+			}
 
 	    }
 

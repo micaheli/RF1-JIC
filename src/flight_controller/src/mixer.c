@@ -227,7 +227,8 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn, volatile
 
 	float highestMotor  = -100.0f;
 	float lowestMotor   =  100.0f;
-	float actuatorRange =    0.0f;
+	float throttleAdd   =  0.0f;
+	float actuatorRange =  0.0f;
 	volatile float rangedThrottle;
 	float throttle;
 	float throttleOffset;
@@ -255,6 +256,22 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn, volatile
 		);
 		if (motorOutputHere[i] > highestMotor) { highestMotor = motorOutputHere[i]; }
 		if (motorOutputHere[i] < lowestMotor)  { lowestMotor  = motorOutputHere[i]; }
+	}
+
+	if ( (mainConfig.filterConfig[1].filterMod == 1) && (ABS(pids[PITCH].kd) > 0.19 || ABS(pids[ROLL].kd) > 0.19 || ABS(pids[YAW].kp) > 0.310) )
+	{
+		if (lowestMotor < 0)
+		{
+			throttleAdd = 0.0f-lowestMotor;
+			lowestMotor  = 100.0;
+			highestMotor = -100.0;
+			for (i = activeMotorCounter; i >= 0; i--)
+			{
+				motorOutputHere[i] += throttleAdd;
+				if (motorOutputHere[i] > highestMotor) { highestMotor = motorOutputHere[i]; }
+				if (motorOutputHere[i] < lowestMotor)  { lowestMotor  = motorOutputHere[i]; }
+			}
+		}
 	}
 
 	actuatorRange = highestMotor - lowestMotor;

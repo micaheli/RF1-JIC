@@ -4,7 +4,7 @@ paf_state InitPaf(float q, float r, float p, float intial_value)
 {
 	float modifier;
 
-	switch (mainConfig.filterConfig[YAW].filterMod)
+	switch (mainConfig.filterConfig[2].filterMod)
 	{
 		case 0:
 			modifier = 1;
@@ -44,7 +44,7 @@ void PafUpdate(paf_state *state, float measurement)
 {
 	float modifier;
 
-	switch (mainConfig.filterConfig[YAW].filterMod)
+	switch (mainConfig.filterConfig[2].filterMod)
 	{
 		case 0:
 			modifier = 1;

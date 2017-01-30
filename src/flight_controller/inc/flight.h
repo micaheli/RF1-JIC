@@ -35,4 +35,4 @@ void InlineInitSpectrumNoiseFilter(void);
 void InlineInitAccFilters(void);
 void InlineFlightCode(float dpsGyroArray[]);
 void InlineUpdateAttitude(float geeForceAccArray[]);
-float InlineGetSetPoint(float curvedRcCommandF, float rates, float acroPlus);
+float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, float rates, float acroPlus);

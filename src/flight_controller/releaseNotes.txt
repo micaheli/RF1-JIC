@@ -436,6 +436,18 @@ Version 0.167.048:
 Version 0.168.049:
 	Lots of IO and code cleanup.
 	Change how command I/O works.
+	Add motor mixers.
+	Add expo curve 4.
+	Adjust defaults.
+
+Version 0.169.049
+	Change dump and set command output
+	set filter_mod_0 = 1 to turn on yaw smoothing
+	set filter_mod_1 = 1 to turn on flight sharpeness
+	set filter_mod_2 = 0 through 6 to turn on filter mod
+	Added commands: 
+		set pids139
+
 
 
 

@@ -355,8 +355,10 @@ inline void InlineInitGyroFilters(void)
 
 	for (axis = 2; axis >= 0; --axis) {
 
-		//pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, mainConfig.filterConfig[axis].gyro.p, filteredGyroData[axis]);
-		pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, 88.0f, 0.0f, filteredGyroData[axis]);
+		if (mainConfig.filterConfig[axis].gyro.r == 1)
+			pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, 88.0f, 0.0f, filteredGyroData[axis]);
+		else
+			pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, 0.1500, filteredGyroData[axis]);
 
 		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].gyro.r;
 
@@ -551,20 +553,20 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		{
 			if (ModeActive(M_DIRECT))
 			{
-				flightSetPoints[YAW]   = InlineGetSetPoint(curvedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01); //yaw is backwards for some reason
-				flightSetPoints[ROLL]  = InlineGetSetPoint(curvedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01);
-				flightSetPoints[PITCH] = -InlineGetSetPoint(curvedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01);
+				flightSetPoints[YAW]   = InlineGetSetPoint(curvedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01); //yaw is backwards for some reason
+				flightSetPoints[ROLL]  = InlineGetSetPoint(curvedRcCommandF[ROLL], mainConfig.rcControlsConfig.useCurve[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01);
+				flightSetPoints[PITCH] = -InlineGetSetPoint(curvedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01);
 			}
 			else
 			{
-				flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01); //yaw is backwards for some reason
-				flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01);
-				flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01);
+				flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01); //yaw is backwards for some reason
+				flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.useCurve[ROLL], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01);
+				flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01);
 			}
 		}
 		else //if angleMode
 		{
-			flightSetPoints[YAW]     = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01); //yaw is backwards for some reason
+			flightSetPoints[YAW]     = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[YAW], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01); //yaw is backwards for some reason
 			rollAttitudeError        = ( (trueRcCommandF[ROLL] * mainConfig.pidConfig[PITCH].sla) - rollAttitude );
 			pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla) - pitchAttitude );
 			rollAttitudeErrorKi      = (rollAttitudeErrorKi + rollAttitudeError * mainConfig.pidConfig[PITCH].sli * loopSpeed.dT);
@@ -744,6 +746,18 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 }
 
-inline float InlineGetSetPoint(float curvedRcCommandF, float rates, float acroPlus) {
-	return ( (curvedRcCommandF * ( rates + (rates * acroPlus) ) ) ); //setpoint in DPS
+inline float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse,float rates, float acroPlus)
+{
+	float returnValue;
+
+	if (curveToUse == ACRO_PLUS)
+	{
+		returnValue = (curvedRcCommandF * ( rates + ( ABS(curvedRcCommandF) * rates * acroPlus ) ) ) ;
+	}
+	else
+	{
+		returnValue = (curvedRcCommandF * (rates + (rates * acroPlus) ) ) ;
+	}
+
+	return (returnValue);
 }

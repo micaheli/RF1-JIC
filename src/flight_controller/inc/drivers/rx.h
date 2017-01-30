@@ -69,7 +69,7 @@ enum {
 	SKITZO_EXPO = 1,
 	TARANIS_EXPO = 2,
 	FAST_EXPO = 3,
-	ACRO_PLUS = 33,
+	ACRO_PLUS = 4,
 	EXPO_CURVE_END,
 };
 

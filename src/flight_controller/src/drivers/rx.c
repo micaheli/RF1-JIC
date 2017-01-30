@@ -688,14 +688,16 @@ inline void InlineCollectRcCommand (void)
 }
 
 
- float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo) {
+inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo)
+{
 
 	float maxOutput, maxOutputMod, returnValue;
 
 	maxOutput    = 1;
 	maxOutputMod = 0.01;
 
-	switch (curveToUse) {
+	switch (curveToUse)
+	{
 
 		case SKITZO_EXPO:
 			returnValue = ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0)) * rcCommand * rcCommand);
@@ -706,9 +708,7 @@ inline void InlineCollectRcCommand (void)
 			break;
 
 		case TARANIS_EXPO:
-			return ( expo * (rcCommand * rcCommand * rcCommand) + rcCommand * (1-expo) );
-			break;
-
+		case ACRO_PLUS:
 		case FAST_EXPO:
 				return ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0)) * rcCommand);
 				break;
@@ -722,7 +722,8 @@ inline void InlineCollectRcCommand (void)
 }
 
 
-inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]) {
+inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[])
+{
     static float lastCommand[4] = { 0, 0, 0, 0 };
     static float deltaRC[4] = { 0, 0, 0, 0 };
     static int32_t factor = 0;
