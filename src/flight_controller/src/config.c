@@ -1347,7 +1347,7 @@ void ProcessCommand(char *inString)
 
 			SaveAndSend();
 		}
-	else if (!strcmp("spek_t1", inString) || !strcmp("spek_t3", inString) || !strcmp("spek_t4", inString) || !strcmp("spek_r1", inString) || !strcmp("spek_r3", inString) || !strcmp("spek_r4", inString))
+	else if (!strcmp("spek_t1", inString) || !strcmp("spek_t3", inString) || !strcmp("spek_t4", inString) || !strcmp("spek_r1", inString) || !strcmp("spek_r3", inString) || !strcmp("spek_r4", inString) || !strcmp("spek_r5", inString))
 		{
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
 			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
@@ -1419,7 +1419,10 @@ void ProcessCommand(char *inString)
 				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
 				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_R; //this is used by serial.c
 			}
-
+			if (!strcmp("spek_r5", inString)) {
+				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART5;
+				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_R; //this is used by serial.c
+			}
 			SetMode(M_ARMED, 4, 50, 100);
 
 			resetBoard = 1;

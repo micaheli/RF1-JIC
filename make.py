@@ -208,6 +208,7 @@ def configure_target(TARGET):
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f446xx":
+        TARGET_DEVICE_LC = "stm32f446xx"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446.ld"
@@ -216,6 +217,7 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f446xx_rfbl":
+        TARGET_DEVICE_LC = "stm32f446xx"
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_rfbl.ld"
@@ -228,6 +230,7 @@ def configure_target(TARGET):
 
 
     elif TARGET == "stm32f446xx_rfbll":
+        TARGET_DEVICE_LC = "stm32f446xx"
         PROJECT = "recovery_loader"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_recovery.ld"

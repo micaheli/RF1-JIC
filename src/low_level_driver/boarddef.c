@@ -490,7 +490,7 @@ void getBoardHardwareDefs(void)
 	board.spis[ENUM_SPI2].TXDma 		                          = SPI2_TX_DMA_STREAM;
 	board.spis[ENUM_SPI2].RXDma 		                          = SPI2_RX_DMA_STREAM;
 
-	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].enabled            = 0;
+	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].enabled            = 1;
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaStream          = SPI2_TX_DMA_STREAM;   //diff between all SPIs
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaChannel         = SPI2_TX_DMA_CHANNEL;  //diff
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH; //same between all SPIs, diff between TX/RX
@@ -505,7 +505,7 @@ void getBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaHandle          = SPI2_TX_DMA_STREAM;   //diff
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].priority           = SPI2_RX_DMA_PRIORITY;
 
-	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].enabled            = 0;
+	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].enabled            = 1;
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].dmaStream          = SPI2_RX_DMA_STREAM;
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].dmaChannel         = SPI2_RX_DMA_CHANNEL;
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
@@ -626,6 +626,46 @@ void getBoardHardwareDefs(void)
 
 
 
+	board.serials[ENUM_USART2].enabled        = USART2_ENABLED;
+	board.serials[ENUM_USART2].SerialInstance = ENUM_USART2;
+	board.serials[ENUM_USART2].usartHandle    = ENUM_USART2;
+	board.serials[ENUM_USART2].PinMode        = USART2_PINMODE;
+	board.serials[ENUM_USART2].Pull           = USART2_PINPULL;
+	board.serials[ENUM_USART2].Speed          = GPIO_SPEED_HIGH;
+	board.serials[ENUM_USART2].TXAlternate    = USART2_TXALT;
+	board.serials[ENUM_USART2].TXPin          = USART2_TXPIN;
+	board.serials[ENUM_USART2].TXPort         = USART2_TXPORT;
+	board.serials[ENUM_USART2].RXAlternate    = USART2_RXALT;
+	board.serials[ENUM_USART2].RXPin          = USART2_RXPIN;
+	board.serials[ENUM_USART2].RXPort         = USART2_RXPORT;
+	board.serials[ENUM_USART2].TXDmaIrqn      = USART2_TXDMA_IRQN;
+	board.serials[ENUM_USART2].TXDma          = USART2_TXDMA;
+	board.serials[ENUM_USART2].TXDmaChannel   = USART2_TXDMA_CHANNEL;
+	board.serials[ENUM_USART2].RXDmaIrqn      = USART2_RXDMA_IRQN;
+	board.serials[ENUM_USART2].RXDma          = USART2_RXDMA;
+	board.serials[ENUM_USART2].RXDmaChannel   = USART2_RXDMA_CHANNEL;
+
+	board.serials[ENUM_USART2].serialTxBuffer = 1;
+	board.serials[ENUM_USART2].serialRxBuffer = 1;
+
+	board.serials[ENUM_USART2].TXDma 		  = USART2_TXDMA;
+	board.serials[ENUM_USART2].RXDma 		  = USART2_RXDMA;
+
+	board.dmasSerial[board.serials[ENUM_USART2].TXDma].enabled            = 1;
+	board.dmasSerial[board.serials[ENUM_USART2].TXDma].dmaStream          = board.serials[ENUM_USART2].TXDma;
+	board.dmasSerial[board.serials[ENUM_USART2].TXDma].dmaIRQn            = board.serials[ENUM_USART2].TXDmaIrqn;
+	board.dmasSerial[board.serials[ENUM_USART2].TXDma].dmaHandle          = board.serials[ENUM_USART2].TXDma;
+	board.dmasSerial[board.serials[ENUM_USART2].TXDma].dmaChannel         = board.serials[ENUM_USART2].TXDmaChannel;
+
+	board.dmasSerial[board.serials[ENUM_USART2].RXDma].enabled            = 1;
+	board.dmasSerial[board.serials[ENUM_USART2].RXDma].dmaStream          = board.serials[ENUM_USART2].RXDma;
+	board.dmasSerial[board.serials[ENUM_USART2].RXDma].dmaIRQn            = board.serials[ENUM_USART2].RXDmaIrqn;
+	board.dmasSerial[board.serials[ENUM_USART2].RXDma].dmaHandle          = board.serials[ENUM_USART2].RXDma;
+	board.dmasSerial[board.serials[ENUM_USART2].RXDma].dmaChannel         = board.serials[ENUM_USART2].RXDmaChannel;
+
+
+
+
 	board.serials[ENUM_USART3].enabled        = 1;
 	board.serials[ENUM_USART3].SerialInstance = ENUM_USART3;
 	board.serials[ENUM_USART3].usartHandle    = ENUM_USART3;
@@ -704,4 +744,82 @@ void getBoardHardwareDefs(void)
 	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaHandle          = board.serials[ENUM_USART4].RXDma;
 	board.dmasSerial[board.serials[ENUM_USART4].RXDma].dmaChannel         = board.serials[ENUM_USART4].RXDmaChannel;
 
+
+
+	board.serials[ENUM_USART5].enabled        = USART5_ENABLED;
+	board.serials[ENUM_USART5].SerialInstance = ENUM_USART5;
+	board.serials[ENUM_USART5].usartHandle    = ENUM_USART5;
+	board.serials[ENUM_USART5].PinMode        = USART5_PINMODE;
+	board.serials[ENUM_USART5].Pull           = USART5_PINPULL;
+	board.serials[ENUM_USART5].Speed          = GPIO_SPEED_HIGH;
+	board.serials[ENUM_USART5].TXAlternate    = USART5_TXALT;
+	board.serials[ENUM_USART5].TXPin          = USART5_TXPIN;
+	board.serials[ENUM_USART5].TXPort         = USART5_TXPORT;
+	board.serials[ENUM_USART5].RXAlternate    = USART5_RXALT;
+	board.serials[ENUM_USART5].RXPin          = USART5_RXPIN;
+	board.serials[ENUM_USART5].RXPort         = USART5_RXPORT;
+	board.serials[ENUM_USART5].TXDmaIrqn      = USART5_TXDMA_IRQN;
+	board.serials[ENUM_USART5].TXDma          = USART5_TXDMA;
+	board.serials[ENUM_USART5].TXDmaChannel   = USART5_TXDMA_CHANNEL;
+	board.serials[ENUM_USART5].RXDmaIrqn      = USART5_RXDMA_IRQN;
+	board.serials[ENUM_USART5].RXDma          = USART5_RXDMA;
+	board.serials[ENUM_USART5].RXDmaChannel   = USART5_RXDMA_CHANNEL;
+
+	board.serials[ENUM_USART5].serialTxBuffer = 1;
+	board.serials[ENUM_USART5].serialRxBuffer = 1;
+
+	board.serials[ENUM_USART5].TXDma 		  = USART5_TXDMA;
+	board.serials[ENUM_USART5].RXDma 		  = USART5_RXDMA;
+
+	board.dmasSerial[board.serials[ENUM_USART5].TXDma].enabled            = 1;
+	board.dmasSerial[board.serials[ENUM_USART5].TXDma].dmaStream          = board.serials[ENUM_USART5].TXDma;
+	board.dmasSerial[board.serials[ENUM_USART5].TXDma].dmaIRQn            = board.serials[ENUM_USART5].TXDmaIrqn;
+	board.dmasSerial[board.serials[ENUM_USART5].TXDma].dmaHandle          = board.serials[ENUM_USART5].TXDma;
+	board.dmasSerial[board.serials[ENUM_USART5].TXDma].dmaChannel         = board.serials[ENUM_USART5].TXDmaChannel;
+
+	board.dmasSerial[board.serials[ENUM_USART5].RXDma].enabled            = 1;
+	board.dmasSerial[board.serials[ENUM_USART5].RXDma].dmaStream          = board.serials[ENUM_USART5].RXDma;
+	board.dmasSerial[board.serials[ENUM_USART5].RXDma].dmaIRQn            = board.serials[ENUM_USART5].RXDmaIrqn;
+	board.dmasSerial[board.serials[ENUM_USART5].RXDma].dmaHandle          = board.serials[ENUM_USART5].RXDma;
+	board.dmasSerial[board.serials[ENUM_USART5].RXDma].dmaChannel         = board.serials[ENUM_USART5].RXDmaChannel;
+
+
+
+
+	board.serials[ENUM_USART6].enabled        = USART6_ENABLED;
+	board.serials[ENUM_USART6].SerialInstance = ENUM_USART6;
+	board.serials[ENUM_USART6].usartHandle    = ENUM_USART6;
+	board.serials[ENUM_USART6].PinMode        = USART6_PINMODE;
+	board.serials[ENUM_USART6].Pull           = USART6_PINPULL;
+	board.serials[ENUM_USART6].Speed          = GPIO_SPEED_HIGH;
+	board.serials[ENUM_USART6].TXAlternate    = USART6_TXALT;
+	board.serials[ENUM_USART6].TXPin          = USART6_TXPIN;
+	board.serials[ENUM_USART6].TXPort         = USART6_TXPORT;
+	board.serials[ENUM_USART6].RXAlternate    = USART6_RXALT;
+	board.serials[ENUM_USART6].RXPin          = USART6_RXPIN;
+	board.serials[ENUM_USART6].RXPort         = USART6_RXPORT;
+	board.serials[ENUM_USART6].TXDmaIrqn      = USART6_TXDMA_IRQN;
+	board.serials[ENUM_USART6].TXDma          = USART6_TXDMA;
+	board.serials[ENUM_USART6].TXDmaChannel   = USART6_TXDMA_CHANNEL;
+	board.serials[ENUM_USART6].RXDmaIrqn      = USART6_RXDMA_IRQN;
+	board.serials[ENUM_USART6].RXDma          = USART6_RXDMA;
+	board.serials[ENUM_USART6].RXDmaChannel   = USART6_RXDMA_CHANNEL;
+
+	board.serials[ENUM_USART6].serialTxBuffer = 1;
+	board.serials[ENUM_USART6].serialRxBuffer = 1;
+
+	board.serials[ENUM_USART6].TXDma 		  = USART6_TXDMA;
+	board.serials[ENUM_USART6].RXDma 		  = USART6_RXDMA;
+
+	board.dmasSerial[board.serials[ENUM_USART6].TXDma].enabled            = 1;
+	board.dmasSerial[board.serials[ENUM_USART6].TXDma].dmaStream          = board.serials[ENUM_USART6].TXDma;
+	board.dmasSerial[board.serials[ENUM_USART6].TXDma].dmaIRQn            = board.serials[ENUM_USART6].TXDmaIrqn;
+	board.dmasSerial[board.serials[ENUM_USART6].TXDma].dmaHandle          = board.serials[ENUM_USART6].TXDma;
+	board.dmasSerial[board.serials[ENUM_USART6].TXDma].dmaChannel         = board.serials[ENUM_USART6].TXDmaChannel;
+
+	board.dmasSerial[board.serials[ENUM_USART6].RXDma].enabled            = 1;
+	board.dmasSerial[board.serials[ENUM_USART6].RXDma].dmaStream          = board.serials[ENUM_USART6].RXDma;
+	board.dmasSerial[board.serials[ENUM_USART6].RXDma].dmaIRQn            = board.serials[ENUM_USART6].RXDmaIrqn;
+	board.dmasSerial[board.serials[ENUM_USART6].RXDma].dmaHandle          = board.serials[ENUM_USART6].RXDma;
+	board.dmasSerial[board.serials[ENUM_USART6].RXDma].dmaChannel         = board.serials[ENUM_USART6].RXDmaChannel;
 }
