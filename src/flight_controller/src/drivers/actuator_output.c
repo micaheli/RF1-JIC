@@ -104,6 +104,7 @@ void InitActuators(void) {
 			walledUs    = 22.50;
 			pwmHz       = 32000;
 			timerHz     = 48000000; // full resolution
+			timerHz     = 54000000; // full resolution
 			//timerHz   = 12000000; // 1/4 resolution
 			break;
 	}
@@ -136,7 +137,6 @@ void InitActuators(void) {
 		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 			HAL_TIM_Base_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum]);
 			HAL_TIM_PWM_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum], board.motors[outputNumber].timChannel);
-			HAL_TIMEx_PWMN_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum], board.motors[outputNumber].timChannel);
 		}
 	}
 
@@ -153,18 +153,7 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	TIM_MasterConfigTypeDef sMasterConfig;
 	TIM_ClockConfigTypeDef sClockSourceConfig;
 
-	switch (actuator.timer) {
-		case ENUM_TIM1:
-		case ENUM_TIM8:
-		case ENUM_TIM9:
-		case ENUM_TIM10:
-		case ENUM_TIM11:
-			timerPrescaler = (uint16_t)(SystemCoreClock / timerHz) - 1;
-			break;
-		default:
-			timerPrescaler = (uint16_t)(SystemCoreClock / 2 / timerHz) - 1;
-			break;
-	}
+	timerPrescaler = (uint16_t)(SystemCoreClock / TimerPrescalerDivisor(actuator.timer) / timerHz) - 1;
 
 	// Initialize GPIO
 	HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);

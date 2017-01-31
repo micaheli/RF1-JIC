@@ -162,3 +162,19 @@ void USBDeInit(void)
     /* Peripheral interrupt Deinit*/
     HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
 }
+
+uint32_t TimerPrescalerDivisor(uint32_t timer)
+{
+	switch (timer) {
+		case ENUM_TIM1:
+		case ENUM_TIM8:
+		case ENUM_TIM9:
+		case ENUM_TIM10:
+		case ENUM_TIM11:
+			return(1);
+			break;
+		default:
+			return(2);
+			break;
+	}
+}

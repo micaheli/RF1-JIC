@@ -52,6 +52,7 @@ uint32_t logItteration;
 int32_t  logItterationCounter;
 uint32_t logRateTime;
 uint32_t logStartMicros;
+uint32_t flashCountdownFake;
 
 pid_output lastFlightPids[AXIS_NUMBER];
 float      lastFlightSetPoints[AXIS_NUMBER];
@@ -64,6 +65,7 @@ float      lastMotorOutput[AXIS_NUMBER];
 int InitFlightLogger(void)
 {
 
+	flashCountdownFake = 0;
 	LoggingEnabled = 0;
 	firstLogging   = 1;
 	flashAlign     = 0;
@@ -199,6 +201,13 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	}
 	else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (!ModeSet(M_LOGGING)) && (flashInfo.enabled == FLASH_ENABLED) )
 	{
+		ledStatus.status = LEDS_FASTER_BLINK;
+		LoggingEnabled = 1;
+		loggingStartedLatch = 1;
+	}
+	else if ( flashCountdownFake > 1 )
+	{
+		flashCountdownFake--;
 		ledStatus.status = LEDS_FASTER_BLINK;
 		LoggingEnabled = 1;
 		loggingStartedLatch = 1;

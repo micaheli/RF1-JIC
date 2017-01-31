@@ -2,6 +2,7 @@
 
 extern uint32_t LoggingEnabled;
 extern uint32_t LogThisIteration;
+extern uint32_t flashCountdownFake;
 
 extern int InitFlightLogger(void);
 extern void EnableLogging(void);

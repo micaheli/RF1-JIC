@@ -77,3 +77,9 @@ void SystemClock_Config(void)
  	}
  	return true; //pin is reset, so it is not set, which means it is on, so the statement is true
  }
+
+ uint32_t TimerPrescalerDivisor(uint32_t timer)
+ {
+ 	(void)(timer);
+ 	return(1);
+ }

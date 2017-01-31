@@ -128,3 +128,9 @@ void USBDeInit(void)
     /* Peripheral interrupt Deinit*/
     HAL_NVIC_DisableIRQ(USB_LP_CAN_RX0_IRQn);
 }
+
+uint32_t TimerPrescalerDivisor(uint32_t timer)
+{
+	(void)(timer);
+	return(1);
+}

@@ -93,7 +93,7 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
     }
 
 	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], bufferIdx);
-	HAL_TIMEx_PWMN_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], bufferIdx);
+	//HAL_TIMEx_PWMN_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], bufferIdx);
 
 }
 
@@ -611,11 +611,7 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
     //Timer Init
     timer = timers[actuator.timer];
 
-	if(timer == TIM1 || timer == TIM8 || timer == TIM9|| timer == TIM10|| timer == TIM11) {
-		timerPrescaler = (SystemCoreClock / timerHz) - 1;
-	} else {
-		timerPrescaler = (SystemCoreClock / 2 / timerHz) - 1;
-	}
+	timerPrescaler = (uint16_t)(SystemCoreClock / TimerPrescalerDivisor(timer) / timerHz) - 1;
 
 	HAL_TIM_PWM_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
 	pwmTimers[actuator.actuatorArrayNum].Instance           	= timer;

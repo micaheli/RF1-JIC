@@ -162,6 +162,22 @@
 #define USART1_RXDMA_IRQN				DMA2_Stream5_IRQn
 #define USART1_RXDMA_CHANNEL			DMA_CHANNEL_4
 
+#define USART2_ENABLED					0
+#define USART2_PINMODE					0
+#define USART2_PINPULL					0
+#define USART2_TXALT					0
+#define USART2_TXPIN					0
+#define USART2_TXPORT					0
+#define USART2_TXDMA					0
+#define USART2_TXDMA_IRQN				0
+#define USART2_TXDMA_CHANNEL			0
+#define USART2_RXALT					0
+#define USART2_RXPIN					0
+#define USART2_RXPORT					0
+#define USART2_RXDMA					0
+#define USART2_RXDMA_IRQN				0
+#define USART2_RXDMA_CHANNEL			0
+
 #define USART3_ENABLED					1
 #define USART3_PINMODE					GPIO_MODE_AF_PP
 #define USART3_PINPULL					GPIO_PULLUP
@@ -193,6 +209,38 @@
 #define USART4_RXDMA					ENUM_DMA1_STREAM_2
 #define USART4_RXDMA_IRQN				DMA1_Stream2_IRQn
 #define USART4_RXDMA_CHANNEL			DMA_CHANNEL_4
+
+#define USART5_ENABLED					0
+#define USART5_PINMODE					0
+#define USART5_PINPULL					0
+#define USART5_TXALT					0
+#define USART5_TXPIN					0
+#define USART5_TXPORT					0
+#define USART5_TXDMA					0
+#define USART5_TXDMA_IRQN				0
+#define USART5_TXDMA_CHANNEL			0
+#define USART5_RXALT					0
+#define USART5_RXPIN					0
+#define USART5_RXPORT					0
+#define USART5_RXDMA					0
+#define USART5_RXDMA_IRQN				0
+#define USART5_RXDMA_CHANNEL			0
+
+#define USART6_ENABLED					0
+#define USART6_PINMODE					0
+#define USART6_PINPULL					0
+#define USART6_TXALT					0
+#define USART6_TXPIN					0
+#define USART6_TXPORT					0
+#define USART6_TXDMA					0
+#define USART6_TXDMA_IRQN				0
+#define USART6_TXDMA_CHANNEL			0
+#define USART6_RXALT					0
+#define USART6_RXPIN					0
+#define USART6_RXPORT					0
+#define USART6_RXDMA					0
+#define USART6_RXDMA_IRQN				0
+#define USART6_RXDMA_CHANNEL			0
 
 //END USART defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

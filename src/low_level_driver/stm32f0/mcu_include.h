@@ -14,3 +14,5 @@
 			"BNE 1b \n\t" : : [loops] "r" (16*us) : "memory"\
 		      );\
 } while(0)
+
+extern uint32_t TimerPrescalerDivisor(uint32_t timer);

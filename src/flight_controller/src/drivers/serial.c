@@ -493,6 +493,17 @@ void DeInitBoardUsarts (void) {
 
 }
 
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
+	{
+		if (huart == &uartHandles[board.serials[serialNumber].usartHandle])
+		{
+			//do stuff here for this USART.
+		}
+	}
+}
+
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {

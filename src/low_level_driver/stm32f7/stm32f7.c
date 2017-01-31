@@ -134,7 +134,23 @@ void BoardInit(void)
 	__HAL_RCC_GPIOH_CLK_ENABLE();
 	__HAL_RCC_GPIOI_CLK_ENABLE();
 
+	__HAL_RCC_DMA1_CLK_ENABLE();
 	__HAL_RCC_DMA2_CLK_ENABLE();
+
+
+	__HAL_RCC_TIM1_CLK_ENABLE();
+	__HAL_RCC_TIM2_CLK_ENABLE();
+	__HAL_RCC_TIM3_CLK_ENABLE();
+	__HAL_RCC_TIM4_CLK_ENABLE();
+	__HAL_RCC_TIM5_CLK_ENABLE();
+	__HAL_RCC_TIM6_CLK_ENABLE();
+	__HAL_RCC_TIM7_CLK_ENABLE();
+	__HAL_RCC_TIM8_CLK_ENABLE();
+
+	__USART1_CLK_ENABLE();
+	__USART3_CLK_ENABLE();
+	__UART4_CLK_ENABLE();
+	__USART6_CLK_ENABLE();
 }
 
 void USBInit(void)
@@ -178,4 +194,10 @@ void USBDeInit(void)
 
     /* Peripheral interrupt Deinit*/
     HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
+}
+
+uint32_t TimerPrescalerDivisor(uint32_t timer)
+{
+	(void)(timer);
+	return(1);
 }

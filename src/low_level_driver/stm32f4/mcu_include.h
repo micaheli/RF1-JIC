@@ -137,3 +137,6 @@
 #define ADDRESS_FLASH_END		(uint32_t)(0x0807FFF0)
 
 #endif
+
+
+extern uint32_t TimerPrescalerDivisor(uint32_t timer);

@@ -792,7 +792,8 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("fakeflash", inString))
 		{
 			flashInfo.enabled = FLASH_ENABLED;
-			flashInfo.currentWriteAddress = atoi(args);
+			//flashInfo.currentWriteAddress = atoi(args);
+			flashCountdownFake = 100;
 
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me It's a FAAAAKE" );
 			RfCustomReplyBuffer(rf_custom_out_buffer);

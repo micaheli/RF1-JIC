@@ -34,18 +34,7 @@ void InitTransponderTimer(void)
 	TIM_MasterConfigTypeDef sMasterConfig;
 	TIM_ClockConfigTypeDef sClockSourceConfig;
 
-	switch (transponderTimer) {
-		case ENUM_TIM1:
-		case ENUM_TIM8:
-		case ENUM_TIM9:
-		case ENUM_TIM10:
-		case ENUM_TIM11:
-			timerPrescaler = (uint16_t)(SystemCoreClock / timerHz) - 1;
-			break;
-		default:
-			timerPrescaler = (uint16_t)(SystemCoreClock / 2 / timerHz) - 1;
-			break;
-	}
+	timerPrescaler = (uint16_t)(SystemCoreClock / TimerPrescalerDivisor(transponderTimer) / timerHz) - 1;
 
 	// Initialize GPIO
 	HAL_GPIO_DeInit(ports[transponderPort], transponderPin);
