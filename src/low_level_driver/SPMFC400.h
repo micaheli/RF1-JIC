@@ -68,17 +68,17 @@
 #define VBUS_SENSING_PIN			GPIO_PIN_9
 
 //ADC Config
-#define ADC0_TYPE					ADC_DISABLED
-#define ADC0_PORT					0
-#define ADC0_PIN					0
-#define ADC0_INSTANCE				0
-#define ADC0_CHANNEL				0
+#define ADC0_TYPE					ADC_VOLTAGE
+#define ADC0_PORT					ENUM_PORTC
+#define ADC0_PIN					GPIO_PIN_0
+#define ADC0_INSTANCE				ENUM_ADC1
+#define ADC0_CHANNEL				ADC_CHANNEL_10
 
-#define ADC1_TYPE					ADC_DISABLED
-#define ADC1_PORT					0
-#define ADC1_PIN					0
-#define ADC1_INSTANCE				0
-#define ADC1_CHANNEL				0
+#define ADC1_TYPE					ADC_CURRENT
+#define ADC1_PORT					ENUM_PORTC
+#define ADC1_PIN					GPIO_PIN_3
+#define ADC1_INSTANCE				ENUM_ADC1
+#define ADC1_CHANNEL				ADC_CHANNEL_13
 
 #define ADC2_TYPE					ADC_DISABLED
 #define ADC2_PORT					0
