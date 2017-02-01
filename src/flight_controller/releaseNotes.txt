@@ -450,6 +450,12 @@ Version 0.169.049
 	Added test1 mode, smooths mixer at all times, will run if enabled
 	Added test2 mode, smooths mixer near center stick, will run if enabled and test1 not enabled
 	Added test3 mode, does nothing
+	Changed wiz cala
+	Changed wiz cala
+	Changed wiz rx
+	Removed wix rca
+	Added wix rc1
+	Added ADC support
 
 
 

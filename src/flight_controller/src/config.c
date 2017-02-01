@@ -802,6 +802,28 @@ void ProcessCommand(char *inString)
 			DelayMs(10);
 			IdleActuator( motorToSpin );
 		}
+	else if (!strcmp("fakerx", inString))
+		{
+			rxData[0] = 1100;
+			rxData[1] = 1200;
+			rxData[2] = 1300;
+			rxData[3] = 1400;
+			rxData[4] = 1500;
+			rxData[5] = 1600;
+			rxData[6] = 1700;
+			rxData[7] = 1800;
+			trueRcCommandF[0] = -1.00f;
+			trueRcCommandF[1] = -0.75f;
+			trueRcCommandF[2] = -0.25f;
+			trueRcCommandF[3] =  0.00f;
+			trueRcCommandF[4] =  0.25f;
+			trueRcCommandF[5] =  0.50f;
+			trueRcCommandF[6] =  0.75f;
+			trueRcCommandF[7] =  1.00f;
+
+			RfCustomReplyBuffer("#me RX Data has been faked");
+
+		}
 	else if (!strcmp("idlestop", inString))
 		{
 			DisarmBoard();
@@ -837,7 +859,7 @@ void ProcessCommand(char *inString)
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rx %u=%u", (volatile unsigned int)xx, (volatile unsigned int)(rxData[xx]));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rx %u=%u", (volatile unsigned int)xx+1, (volatile unsigned int)(rxData[xx]));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -845,7 +867,7 @@ void ProcessCommand(char *inString)
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rc %d=%d", (volatile int)xx, (volatile int)(trueRcCommandF[xx]*1000));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rc %d=%d", (volatile int)xx+1, (volatile int)(trueRcCommandF[xx]*1000));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -853,7 +875,7 @@ void ProcessCommand(char *inString)
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rb %u=%u:%d", (volatile unsigned int)(xx), (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rb %u=%u:%d", (volatile unsigned int)(xx+1), (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -948,6 +970,7 @@ void ProcessCommand(char *inString)
 			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
 			resetBoard = 1;
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SBUS Defaults");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -1002,6 +1025,7 @@ void ProcessCommand(char *inString)
 			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
 			resetBoard = 1;
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SUMD Defaults");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -1057,6 +1081,7 @@ void ProcessCommand(char *inString)
 			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
 			resetBoard = 1;
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me IBUS Defaults");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -1110,6 +1135,7 @@ void ProcessCommand(char *inString)
 			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
 			resetBoard = 1;
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me CPPM Defaults");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -1303,6 +1329,7 @@ void ProcessCommand(char *inString)
 			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
 			resetBoard = 1;
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SPEK Defaults");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -1356,6 +1383,7 @@ void ProcessCommand(char *inString)
 			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
 			resetBoard = 1;
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me DSM2 Defaults");
 			RfCustomReplyBuffer(rf_custom_out_buffer);

@@ -513,7 +513,9 @@ void WizRcCheckAndSendDirection(void)
 				WizRcSetRestOfMap();
 				RfCustomReplyBuffer("#wiz Roll Set");
 				RfCustomReplyBuffer("#wiz RC Setup Complete");
+				mainConfig.rcControlsConfig.rcCalibrated = 1;
 				bzero(&wizardStatus, sizeof(wizardStatus)); //all done
+				SaveAndSend();
 			}
 			else
 			{
