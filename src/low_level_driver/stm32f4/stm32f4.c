@@ -91,6 +91,10 @@ void BoardInit(void)
     //__HAL_RCC_GPIOH_CLK_ENABLE();
     //__HAL_RCC_GPIOI_CLK_ENABLE();
 
+    __HAL_RCC_ADC1_CLK_ENABLE();
+    __HAL_RCC_ADC2_CLK_ENABLE();
+    __HAL_RCC_ADC3_CLK_ENABLE();
+
     __HAL_RCC_DMA1_CLK_ENABLE();
     __HAL_RCC_DMA2_CLK_ENABLE();
 

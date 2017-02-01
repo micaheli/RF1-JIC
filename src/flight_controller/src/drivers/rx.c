@@ -762,3 +762,296 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     }
 
 }
+
+
+void SetRxDefaults(uint32_t rxProtocol, uint32_t usart)
+{
+
+	mainConfig.rcControlsConfig.rxUsart   = usart;
+	mainConfig.rcControlsConfig.rxProtcol = rxProtocol;
+
+	//set some sane RC defaults for the protocol chosen
+	switch(rxProtocol)
+	{
+		case USING_CPPM_R:
+		case USING_CPPM_T:
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1500;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1500;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1500;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1500;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 1000;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 1000;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 1000;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 1000;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2000;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2000;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 3;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 2;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 1;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 8;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 1000;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 1000;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 1000;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 1000;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 1000;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 1000;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 1000; //junk channel
+			break;
+		case USING_IBUS_R:
+		case USING_IBUS_T:
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1500;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1500;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1500;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1500;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1500;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 1000;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 1000;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 1000;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 1000;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 1000;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2000;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2000;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 3;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 2;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 1;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 8;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 9;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 10;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 11;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 12;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 13;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 14;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 15; //junk channel
+			break;
+		case USING_SUMD_R:
+		case USING_SUMD_T:
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 12000;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 12000;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 12000;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 12000;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 12000;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 12000;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 12000;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 12000;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 8000;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 16000;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 16000;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 16000;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 8000;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 8000;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 8000;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 8000;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 16000;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 8000;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 8000;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 8000;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 16000;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 16000;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 16000;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 16000;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 8;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 9;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 10;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 11;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 12;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 13;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 14;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 15; //junk channel
+			break;
+		case USING_DSM2_R:
+		case USING_DSM2_T:
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 512;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 512;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 512;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 512;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 512;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 512;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 512;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 512;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 12;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 12;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 12;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 12;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 12;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 12;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 12;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 12;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 1024;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 1024;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 1024;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 1024;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1024;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1024;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1024;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1024;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 8;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 9;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 10;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 11;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 12;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 13;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 14;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 15; //junk channel
+			break;
+		case USING_SPEK_R:
+		case USING_SPEK_T:
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 8;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 9;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 10;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 11;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 12;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 13;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 14;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 15; //junk channel
+			break;
+		case USING_SBUS_R:
+		case USING_SBUS_T:
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 8;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 9;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 10;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 11;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 12;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 13;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 14;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 15; //junk channel
+			break;
+		default:
+			return; //fail
+	}
+
+
+}

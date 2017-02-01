@@ -71,16 +71,16 @@ const string_comp_rec stringCompTable[] = {
 
 		//rx.h
 //		{"USING_MANUAL",           USING_MANUAL},
-		{"USING_SPEKTRUM_R",       USING_SPEKTRUM_R},
-		{"USING_SPEKTRUM_T",       USING_SPEKTRUM_T},
+		{"USING_SPEK_R",           USING_SPEK_R},
+		{"USING_SPEK_T",           USING_SPEK_T},
 		{"USING_SBUS_R",           USING_SBUS_R},
 		{"USING_SBUS_T",           USING_SBUS_T},
 		{"USING_SUMD_R",           USING_SUMD_R},
 		{"USING_SUMD_T",           USING_SUMD_T},
 		{"USING_IBUS_R",           USING_IBUS_R},
 		{"USING_IBUS_T",           USING_IBUS_T},
-		{"USING_PPM_R",            USING_PPM_R},
-		{"USING_PPM_T",            USING_PPM_T},
+		{"USING_CPPM_R",           USING_CPPM_R},
+		{"USING_CPPM_T",           USING_CPPM_T},
 
 };
 
@@ -168,7 +168,7 @@ const config_variables_rec valueTable[] = {
 		{ "z_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.q, 				0, 10, 2.0000, "" },
 		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 025.00, "" },
 
-		{ "rx_protocol", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxProtcol, 				0, USING_DSM2_T, USING_SPEKTRUM_T, "" },
+		{ "rx_protocol", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxProtcol, 				0, USING_RX_END-1, USING_SPEK_T, "" },
 		{ "rx_usart", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxUsart, 				0, MAX_USARTS-1, ENUM_USART1, "" },
 
 		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 		0, 0.1, 0.004, "" },
@@ -778,6 +778,18 @@ void ProcessCommand(char *inString)
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#nomore" );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
+	else if (!strcmp("polladc", inString))
+		{
+			if (HAL_ADC_PollForConversion(&adcHandle[board.boardADC[1].adcHandle], 10000) == HAL_OK)
+			{
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ADC: %lu", HAL_ADC_GetValue(&adcHandle[board.boardADC[1].adcHandle]) );
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			else
+			{
+				RfCustomReplyBuffer("#me ADC ERROR");
+			}
+		}
 	else if (!strcmp("idle", inString))
 		{
 			uint32_t motorToSpin = CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER);
@@ -889,87 +901,52 @@ void ProcessCommand(char *inString)
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 		}
-	else if (!strcmp("sbus_r1", inString) || !strcmp("sbus_r3", inString) || !strcmp("sbus_r4", inString) || !strcmp("sbus_t1", inString) || !strcmp("sbus_t3", inString) || !strcmp("sbus_t4", inString))
+	else if (!strncmp("sbus_", inString, 4))
 		{
-			mainConfig.rcControlsConfig.midRc[PITCH]         = 985;
-			mainConfig.rcControlsConfig.midRc[ROLL]          = 985;
-			mainConfig.rcControlsConfig.midRc[YAW]           = 985;
-			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 985;
-			mainConfig.rcControlsConfig.midRc[AUX1]          = 985;
-			mainConfig.rcControlsConfig.midRc[AUX2]          = 985;
-			mainConfig.rcControlsConfig.midRc[AUX3]          = 985;
-			mainConfig.rcControlsConfig.midRc[AUX4]          = 985;
+			uint32_t protocol;
+			uint32_t usart;
 
-			mainConfig.rcControlsConfig.minRc[PITCH]         = 172;
-			mainConfig.rcControlsConfig.minRc[ROLL]          = 172;
-			mainConfig.rcControlsConfig.minRc[YAW]           = 172;
-			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 172;
-			mainConfig.rcControlsConfig.minRc[AUX1]          = 1811;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 172;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 172;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 172;
-
-			mainConfig.rcControlsConfig.maxRc[PITCH]         = 1811;
-			mainConfig.rcControlsConfig.maxRc[ROLL]          = 1811;
-			mainConfig.rcControlsConfig.maxRc[YAW]           = 1811;
-			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 1811;
-			mainConfig.rcControlsConfig.maxRc[AUX1]          = 172;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1811;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1811;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1811;
-
-			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
-			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
-			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
-			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
-			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
-			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
-			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
-
-			mainConfig.rcControlsConfig.rcCalibrated         = 1;
-
-			if(!strcmp("sbus_r1", inString))
+			switch(inString[5])
 			{
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_R;       //this is used by serial.c
+				case 't':
+					protocol = USING_SBUS_T;
+					break;
+				case 'r':
+					protocol = USING_SBUS_R;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
 			}
-			if(!strcmp("sbus_r3", inString))
+			switch(inString[6])
 			{
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_R;       //this is used by serial.c
-			}
-			if(!strcmp("sbus_r4", inString))
-			{
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_R;       //this is used by serial.c
-			}
-			if(!strcmp("sbus_t1", inString))
-			{
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_T; //this is used by serial.c
-			}
-			if(!strcmp("sbus_t3", inString))
-			{
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_T; //this is used by serial.c
-			}
-			if(!strcmp("sbus_t4", inString))
-			{
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SBUS_T; //this is used by serial.c
+				case '1':
+					usart = ENUM_USART1;
+					break;
+				case '2':
+					usart = ENUM_USART2;
+					break;
+				case '3':
+					usart = ENUM_USART3;
+					break;
+				case '4':
+					usart = ENUM_USART4;
+					break;
+				case '5':
+					usart = ENUM_USART5;
+					break;
+				case '6':
+					usart = ENUM_USART6;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
 			}
 
+			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
-
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SBUS Defaults");
@@ -977,79 +954,52 @@ void ProcessCommand(char *inString)
 
 			SaveAndSend();
 		}
-	else if (!strcmp("sumd_t1", inString) || !strcmp("sumd_t3", inString) || !strcmp("sumd_t4", inString) || !strcmp("sumd_r1", inString) || !strcmp("sumd_r3", inString) || !strcmp("sumd_r3", inString))
+	else if (!strncmp("sumd_", inString, 4))
 		{
-			mainConfig.rcControlsConfig.midRc[PITCH]         = 12000;
-			mainConfig.rcControlsConfig.midRc[ROLL]          = 12000;
-			mainConfig.rcControlsConfig.midRc[YAW]           = 12000;
-			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 12000;
-			mainConfig.rcControlsConfig.midRc[AUX1]          = 12000;
-			mainConfig.rcControlsConfig.midRc[AUX2]          = 12000;
-			mainConfig.rcControlsConfig.midRc[AUX3]          = 12000;
-			mainConfig.rcControlsConfig.midRc[AUX4]          = 12000;
 
-			mainConfig.rcControlsConfig.minRc[PITCH]         = 8000;
-			mainConfig.rcControlsConfig.minRc[ROLL]          = 16000;
-			mainConfig.rcControlsConfig.minRc[YAW]           = 16000;
-			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 16000;
-			mainConfig.rcControlsConfig.minRc[AUX1]          = 8000;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 8000;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 8000;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 8000;
+			uint32_t protocol;
+			uint32_t usart;
 
-			mainConfig.rcControlsConfig.maxRc[PITCH]         = 16000;
-			mainConfig.rcControlsConfig.maxRc[ROLL]          = 8000;
-			mainConfig.rcControlsConfig.maxRc[YAW]           = 8000;
-			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 8000;
-			mainConfig.rcControlsConfig.maxRc[AUX1]          = 16000;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 16000;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 16000;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 16000;
-
-			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
-			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
-			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
-			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
-			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
-			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
-			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
-
-			mainConfig.rcControlsConfig.rcCalibrated         = 1;
-
-			if(!strcmp("sumd_t1", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_T; //this is used by serial.c
+			switch(inString[5])
+			{
+				case 't':
+					protocol = USING_SUMD_T;
+					break;
+				case 'r':
+					protocol = USING_SUMD_R;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
 			}
-			if(!strcmp("sumd_t3", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_T; //this is used by serial.c
-			}
-			if(!strcmp("sumd_t4", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_T; //this is used by serial.c
-			}
-			if(!strcmp("sumd_r1", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_R; //this is used by serial.c
-			}
-			if(!strcmp("sumd_r3", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_R; //this is used by serial.c
-			}
-			if(!strcmp("sumd_r4", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SUMD_R; //this is used by serial.c
+			switch(inString[6])
+			{
+				case '1':
+					usart = ENUM_USART1;
+					break;
+				case '2':
+					usart = ENUM_USART2;
+					break;
+				case '3':
+					usart = ENUM_USART3;
+					break;
+				case '4':
+					usart = ENUM_USART4;
+					break;
+				case '5':
+					usart = ENUM_USART5;
+					break;
+				case '6':
+					usart = ENUM_USART6;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
 			}
 
+			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
 			resetBoard = 1;
 
@@ -1057,82 +1007,55 @@ void ProcessCommand(char *inString)
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
+
 		}
-	else if (!strcmp("ibus_t1", inString) || !strcmp("ibus_t3", inString) || !strcmp("ibus_t4", inString) || !strcmp("ibus_r1", inString) || !strcmp("ibus_r3", inString) || !strcmp("ibus_r3", inString))
+	else if (!strncmp("ibus_", inString, 4))
 		{
-			mainConfig.rcControlsConfig.midRc[PITCH]         = 1500;
-			mainConfig.rcControlsConfig.midRc[ROLL]          = 1500;
-			mainConfig.rcControlsConfig.midRc[YAW]           = 1500;
-			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX1]          = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX2]          = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX3]          = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX4]          = 1500;
 
-			mainConfig.rcControlsConfig.minRc[PITCH]         = 1000;
-			mainConfig.rcControlsConfig.minRc[ROLL]          = 1000;
-			mainConfig.rcControlsConfig.minRc[YAW]           = 1000;
-			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX1]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 1000;
+			uint32_t protocol;
+			uint32_t usart;
 
-			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2000;
-			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[YAW]           = 2000;
-			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX1]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
-
-			mainConfig.rcControlsConfig.channelMap[PITCH]    = 3;
-			mainConfig.rcControlsConfig.channelMap[ROLL]     = 2;
-			mainConfig.rcControlsConfig.channelMap[YAW]      = 1;
-			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
-			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
-			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
-			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
-
-			mainConfig.rcControlsConfig.rcCalibrated         = 1;
-
-			if(!strcmp("ibus_t1", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_T; //this is used by serial.c
+			switch(inString[5])
+			{
+				case 't':
+					protocol = USING_IBUS_T;
+					break;
+				case 'r':
+					protocol = USING_IBUS_R;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
 			}
-			if(!strcmp("ibus_t3", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_T; //this is used by serial.c
-			}
-			if(!strcmp("ibus_t4", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_T; //this is used by serial.c
-			}
-			if(!strcmp("ibus_r1", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_R; //this is used by serial.c
-			}
-			if(!strcmp("ibus_r3", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_R; //this is used by serial.c
-			}
-			if(!strcmp("ibus_r4", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_IBUS_R; //this is used by serial.c
+			switch(inString[6])
+			{
+				case '1':
+					usart = ENUM_USART1;
+					break;
+				case '2':
+					usart = ENUM_USART2;
+					break;
+				case '3':
+					usart = ENUM_USART3;
+					break;
+				case '4':
+					usart = ENUM_USART4;
+					break;
+				case '5':
+					usart = ENUM_USART5;
+					break;
+				case '6':
+					usart = ENUM_USART6;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
 			}
 
+			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
-
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me IBUS Defaults");
@@ -1140,84 +1063,55 @@ void ProcessCommand(char *inString)
 
 			SaveAndSend();
 		}
-	else if (!strcmp("ppm_t1", inString) || !strcmp("ppm_t3", inString) || !strcmp("ppm_t4", inString) || !strcmp("ppm_r1", inString) || !strcmp("ppm_r3", inString) || !strcmp("ppm_r4", inString))
+	else if (!strncmp("cppm_", inString, 4))
 		{
-			mainConfig.rcControlsConfig.midRc[PITCH]         = 1500;
-			mainConfig.rcControlsConfig.midRc[ROLL]          = 1500;
-			mainConfig.rcControlsConfig.midRc[YAW]           = 1500;
-			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX1]          = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX2]          = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX3]          = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX4]          = 1500;
+			uint32_t protocol;
+			uint32_t usart;
 
-			mainConfig.rcControlsConfig.minRc[PITCH]         = 1000;
-			mainConfig.rcControlsConfig.minRc[ROLL]          = 1000;
-			mainConfig.rcControlsConfig.minRc[YAW]           = 1000;
-			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX1]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 1000;
-
-			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2000;
-			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[YAW]           = 2000;
-			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX1]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
-
-			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
-			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
-			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
-			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
-			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
-			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
-			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
-
-			mainConfig.rcControlsConfig.rcCalibrated         = 1;
-
-			if(!strcmp("ppm_t1", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_T; //this is used by serial.c
+			switch(inString[5])
+			{
+				case 't':
+					protocol = USING_CPPM_T;
+					break;
+				case 'r':
+					protocol = USING_CPPM_R;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
 			}
-			if(!strcmp("ppm_t3", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_T; //this is used by serial.c
-			}
-			if(!strcmp("ppm_t4", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_T; //this is used by serial.c
-			}
-			if(!strcmp("ppm_r1", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_R; //this is used by serial.c
-			}
-			if(!strcmp("ppm_r3", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_R; //this is used by serial.c
-			}
-			if(!strcmp("ppm_r4", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_PPM_R; //this is used by serial.c
+			switch(inString[6])
+			{
+				case '1':
+					usart = ENUM_USART1;
+					break;
+				case '2':
+					usart = ENUM_USART2;
+					break;
+				case '3':
+					usart = ENUM_USART3;
+					break;
+				case '4':
+					usart = ENUM_USART4;
+					break;
+				case '5':
+					usart = ENUM_USART5;
+					break;
+				case '6':
+					usart = ENUM_USART6;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
 			}
 
+			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
-
 			resetBoard = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me PPM Defaults");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me CPPM Defaults");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
@@ -1362,166 +1256,105 @@ void ProcessCommand(char *inString)
 
 			SaveAndSend();
 		}
-	else if (!strcmp("spek_t1", inString) || !strcmp("spek_t3", inString) || !strcmp("spek_t4", inString) || !strcmp("spek_r1", inString) || !strcmp("spek_r3", inString) || !strcmp("spek_r4", inString) || !strcmp("spek_r5", inString))
+	else if (!strncmp("spek_", inString, 4))
 		{
-			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
-			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
-			mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
-			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
+			uint32_t protocol;
+			uint32_t usart;
 
-			mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
-			mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
-			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
-			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
-			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
+			switch(inString[5])
+			{
+				case 't':
+					protocol = USING_SPEK_T;
+					break;
+				case 'r':
+					protocol = USING_SPEK_R;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
+			}
+			switch(inString[6])
+			{
+				case '1':
+					usart = ENUM_USART1;
+					break;
+				case '2':
+					usart = ENUM_USART2;
+					break;
+				case '3':
+					usart = ENUM_USART3;
+					break;
+				case '4':
+					usart = ENUM_USART4;
+					break;
+				case '5':
+					usart = ENUM_USART5;
+					break;
+				case '6':
+					usart = ENUM_USART6;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
+			}
 
-			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
-			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
-			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
-			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
-			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
-
-			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
-			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
-			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
-			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
-			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
-			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
-			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
-
-			mainConfig.rcControlsConfig.rcCalibrated         = 1;
-
-			if(!strcmp("spek_t1", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_T; //this is used by serial.c
-			}
-			if(!strcmp("spek_t3", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_T; //this is used by serial.c
-			}
-			if(!strcmp("spek_t4", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_T; //this is used by serial.c
-			}
-			if(!strcmp("spek_r1", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_R; //this is used by serial.c
-			}
-			if(!strcmp("spek_r3", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_R; //this is used by serial.c
-			}
-			if(!strcmp("spek_r4", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_R; //this is used by serial.c
-			}
-			if (!strcmp("spek_r5", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART5;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_SPEKTRUM_R; //this is used by serial.c
-			}
+			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
-
 			resetBoard = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SPEKTRUM Defaults");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SPEK Defaults");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
 		}
-	else if (!strcmp("dsm2_t1", inString) || !strcmp("dsm2_t3", inString) || !strcmp("dsm2_t4", inString) || !strcmp("dsm2_r1", inString) || !strcmp("dsm2_r3", inString) || !strcmp("dsm2_r4", inString))
+	else if (!strncmp("dsm2_", inString, 4))
 		{
-			mainConfig.rcControlsConfig.midRc[PITCH]         = 512;
-			mainConfig.rcControlsConfig.midRc[ROLL]          = 512;
-			mainConfig.rcControlsConfig.midRc[YAW]           = 512;
-			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 512;
-			mainConfig.rcControlsConfig.midRc[AUX1]          = 512;
-			mainConfig.rcControlsConfig.midRc[AUX2]          = 512;
-			mainConfig.rcControlsConfig.midRc[AUX3]          = 512;
-			mainConfig.rcControlsConfig.midRc[AUX4]          = 512;
+			uint32_t protocol;
+			uint32_t usart;
 
-			mainConfig.rcControlsConfig.minRc[PITCH]         = 12;
-			mainConfig.rcControlsConfig.minRc[ROLL]          = 12;
-			mainConfig.rcControlsConfig.minRc[YAW]           = 12;
-			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 12;
-			mainConfig.rcControlsConfig.minRc[AUX1]          = 12;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 12;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 12;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 12;
-
-			mainConfig.rcControlsConfig.maxRc[PITCH]         = 1024;
-			mainConfig.rcControlsConfig.maxRc[ROLL]          = 1024;
-			mainConfig.rcControlsConfig.maxRc[YAW]           = 1024;
-			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 1024;
-			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1024;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1024;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1024;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1024;
-
-			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
-			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
-			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
-			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
-			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
-			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
-			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100; //junk channel
-
-			mainConfig.rcControlsConfig.rcCalibrated         = 1;
-
-			if(!strcmp("dsm2_t1", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_T; //this is used by serial.c
+			switch(inString[5])
+			{
+				case 't':
+					protocol = USING_DSM2_T;
+					break;
+				case 'r':
+					protocol = USING_DSM2_R;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
 			}
-			if(!strcmp("dsm2_t3", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_T; //this is used by serial.c
-			}
-			if(!strcmp("dsm2_t4", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_T; //this is used by serial.c
-			}
-			if(!strcmp("dsm2_r1", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART1;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_R; //this is used by serial.c
-			}
-			if(!strcmp("dsm2_r3", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART3;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_R; //this is used by serial.c
-			}
-			if(!strcmp("dsm2_r4", inString)) {
-				mainConfig.rcControlsConfig.rxUsart          = ENUM_USART4;
-				mainConfig.rcControlsConfig.rxProtcol        = USING_DSM2_R; //this is used by serial.c
+			switch(inString[6])
+			{
+				case '1':
+					usart = ENUM_USART1;
+					break;
+				case '2':
+					usart = ENUM_USART2;
+					break;
+				case '3':
+					usart = ENUM_USART3;
+					break;
+				case '4':
+					usart = ENUM_USART4;
+					break;
+				case '5':
+					usart = ENUM_USART5;
+					break;
+				case '6':
+					usart = ENUM_USART6;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
 			}
 
+			SetRxDefaults(protocol, usart);
 			SetMode(M_ARMED, 4, 50, 100);
-
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me DSM2 Defaults");

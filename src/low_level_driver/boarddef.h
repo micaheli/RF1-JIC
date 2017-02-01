@@ -37,6 +37,11 @@ enum {
 	ENUM_SS_BAUD_57600_INV = 1,
 };
 
+enum {
+	ENUM_ADC1 = 0,
+	ENUM_ADC2 = 1,
+	ENUM_ADC3 = 2,
+};
 
 enum {
 	ENUM_SPI1 = 0,
@@ -303,6 +308,15 @@ typedef struct {
 
 typedef struct {
 	uint32_t				enabled;
+	uint32_t				pin;
+	uint32_t				port;
+	uint32_t				adcInstance;
+	uint32_t				adcChannel;
+	uint32_t				adcHandle;
+} board_adc;
+
+typedef struct {
+	uint32_t				enabled;
 	uint32_t				dmaStream;
 	uint32_t				dmaChannel;
 	uint32_t				dmaDirection;
@@ -409,6 +423,7 @@ typedef struct {
 
 	board_dma				dmasActive[16];
 
+	board_adc				boardADC[3];
 } board_type;
 
 
@@ -473,6 +488,8 @@ extern TIM_HandleTypeDef   pwmTimers[];
 extern TIM_OC_InitTypeDef  sConfigOCHandles[];
 extern SPI_HandleTypeDef   spiHandles[];
 extern SPI_TypeDef        *spiInstance[];
+extern ADC_TypeDef        *adcInstance[];
+extern ADC_HandleTypeDef   adcHandle[];
 
 extern unsigned char serialTxBuffer[][TXBUFFERSIZE];
 extern unsigned char serialRxBuffer[][RXBUFFERSIZE];

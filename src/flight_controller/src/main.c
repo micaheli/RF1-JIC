@@ -92,6 +92,7 @@ void InitFlight(void) {
     InitActuators();      //Actuator init should happen after soft serial init.
     ZeroActuators(32000); //output actuators to idle after timers are stable;
 
+	InitAdc();
     InitModes();          //set flight modes mask to zero.
     InitBoardUsarts();    //most important thing is activated last, the ability to control the craft.
 

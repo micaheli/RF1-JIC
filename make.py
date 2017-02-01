@@ -335,7 +335,7 @@ def configure_target(TARGET):
         INCLUDE_DIRS.append("src/flight_controller/inc/input")
         SOURCE_DIRS.append("src/flight_controller/src/telemetry")
         SOURCE_DIRS.append("src/flight_controller/src/input")
-        FEATURES.extend(["transponder", "softSerial", "esc_1wire", "leds", "dmaShenanigans", "actuator_output", "buzzer", "flash_chip", "mpu_icm_device/spi", "rx", "serial"])
+        FEATURES.extend(["adc", "transponder", "softSerial", "esc_1wire", "leds", "dmaShenanigans", "actuator_output", "buzzer", "flash_chip", "mpu_icm_device/spi", "rx", "serial"])
     elif PROJECT == "esc":
         FEATURES.extend(["leds"])
     elif PROJECT == "boot_loader":

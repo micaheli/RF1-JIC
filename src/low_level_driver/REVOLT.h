@@ -64,9 +64,27 @@
 
 //Serial Config
 #undef VBUS_SENSING
-#define VBUS_SENSING_GPIO			ENUM_GPIOC
+#define VBUS_SENSING_GPIO			ENUM_PORTC
 #define VBUS_SENSING_PIN			GPIO_PIN_5
 
+//ADC Config
+#define ADC0_TYPE					ADC_CURRENT
+#define ADC0_PORT					ENUM_PORTC
+#define ADC0_PIN					GPIO_PIN_1
+#define ADC0_INSTANCE				ENUM_ADC1
+#define ADC0_CHANNEL				ADC_CHANNEL_11
+
+#define ADC1_TYPE					ADC_VOLTAGE
+#define ADC1_PORT					ENUM_PORTC
+#define ADC1_PIN					GPIO_PIN_2
+#define ADC1_INSTANCE				ENUM_ADC1
+#define ADC1_CHANNEL				ADC_CHANNEL_12
+
+#define ADC2_TYPE					ADC_DISABLED
+#define ADC2_PORT					0
+#define ADC2_PIN					0
+#define ADC2_INSTANCE				0
+#define ADC2_CHANNEL				0
 
 //START SPI defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #define SPI1_ENABLE						1

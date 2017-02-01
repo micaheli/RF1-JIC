@@ -11,13 +11,16 @@ static void     ResetChannelCheck(void);
 static uint32_t CheckSafeMotors(uint32_t time, uint32_t deviationAllowed);
 //static int32_t  CheckAndSetChannel(uint32_t outChannel);
 
-static void    PrepareRcWizard(void);
-static void    WizRcCheckMinMax(void);
-static void    WizRcCheckCenter(void);
-static void    WizRcCheckAndSendDirection(void);
-static int32_t WizRcWhichInChannelChange(void);
-static int32_t WizRcSetChannelMapAndDirection(uint32_t inChannel, uint32_t outChannel);
-static void    WizRcSetRestOfMap(void);
+static void     PrepareRcWizard(void);
+static void     WizRcCheckMinMax(void);
+static void     WizRcCheckCenter(void);
+static void     WizRcCheckAndSendDirection(void);
+static int32_t  WizRcWhichInChannelChange(void);
+static int32_t  WizRcSetChannelMapAndDirection(uint32_t inChannel, uint32_t outChannel);
+static void     WizRcSetRestOfMap(void);
+
+static void     HandleWizRx(void);
+static uint32_t WizRxCheckRxDataLooksValid(void);
 /*
 
 static int32_t FindRxCenter(void) {
@@ -228,10 +231,6 @@ void WizRcSetRestOfMap(void)
 	uint32_t x;
 	uint32_t y;
 
-	uint32_t minRc[MAXCHANNELS];
-	uint32_t midRc[MAXCHANNELS];
-	uint32_t maxRc[MAXCHANNELS];
-
 	uint32_t alreadyMapped[MAXCHANNELS];
 
 	bzero(alreadyMapped, sizeof(alreadyMapped));
@@ -262,13 +261,9 @@ void WizRcSetRestOfMap(void)
 	}
 }
 
-uint32_t CheckRxDataLooksValid()
+uint32_t WizRxCheckRxDataLooksValid(void)
 {
 	uint32_t correct = 0;
-
-	//disableSaving=0;
-	//ProcessCommand("rxrcdata");
-	//disableSaving=1;
 
 	//if processed data is within 5% of center on 3 axis it's safe to assume it's valid data
 	if ( (trueRcCommandF[YAW] < 0.05) && (trueRcCommandF[YAW] > - 0.05) )
@@ -287,99 +282,6 @@ uint32_t CheckRxDataLooksValid()
 	return(0);
 }
 
-int CheckProtocol(char *inString)
-{
-
-	disableSaving=0;
-
-	//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me %s", inString );
-	//RfCustomReply(rf_custom_out_buffer);
-
-	disableSaving=1;
-	DisarmBoard();
-	DeInitBoardUsarts();
-	DelayMs(10);
-	ProcessCommand(inString);
-	InitFlight();
-	bzero(rxData, sizeof(rxData));
-	trueRcCommandF[0] = -1;
-	trueRcCommandF[1] = -1;
-	trueRcCommandF[2] = -1;
-	trueRcCommandF[3] = -1;
-	DisarmBoard();
-	DelayMs(65);
-	DisarmBoard();
-	if (CheckRxDataLooksValid())
-	{
-		disableSaving=0;
-		return(1);
-	}
-	DelayMs(2);
-	DisarmBoard();
-	disableSaving=0;
-	return(0);
-
-}
-
-void AutoFindRx()
-{
-
-	//first find which port data is on
-	if (CheckProtocol("spek_t1")) { ProcessCommand("spek_t1");goto endingRx; }
-	if (CheckProtocol("spek_r1")) { ProcessCommand("spek_r1");goto endingRx; }
-	if (CheckProtocol("spek_t3")) { ProcessCommand("spek_t3");goto endingRx; }
-	if (CheckProtocol("spek_r3")) { ProcessCommand("spek_r3");goto endingRx; }
-	if (CheckProtocol("spek_t4")) { ProcessCommand("spek_t4");goto endingRx; }
-	if (CheckProtocol("spek_r4")) { ProcessCommand("spek_r4");goto endingRx; }
-
-	if (CheckProtocol("sbus_t1")) { ProcessCommand("sbus_t1");goto endingRx; }
-	if (CheckProtocol("sbus_r1")) { ProcessCommand("sbus_r1");goto endingRx; }
-	if (CheckProtocol("sbus_t3")) { ProcessCommand("sbus_t3");goto endingRx; }
-	if (CheckProtocol("sbus_r3")) { ProcessCommand("sbus_r3");goto endingRx; }
-	if (CheckProtocol("sbus_t4")) { ProcessCommand("sbus_t4");goto endingRx; }
-	if (CheckProtocol("sbus_r4")) { ProcessCommand("sbus_r4");goto endingRx; }
-
-	if (CheckProtocol("ibus_t1")) { ProcessCommand("ibus_t1");goto endingRx; }
-	if (CheckProtocol("ibus_r1")) { ProcessCommand("ibus_r1");goto endingRx; }
-	if (CheckProtocol("ibus_t3")) { ProcessCommand("ibus_t3");goto endingRx; }
-	if (CheckProtocol("ibus_r3")) { ProcessCommand("ibus_r3");goto endingRx; }
-	if (CheckProtocol("ibus_t4")) { ProcessCommand("ibus_t4");goto endingRx; }
-	if (CheckProtocol("ibus_r4")) { ProcessCommand("ibus_r4");goto endingRx; }
-
-	if (CheckProtocol("sumd_t1")) { ProcessCommand("sumd_t1");goto endingRx; }
-	if (CheckProtocol("sumd_r1")) { ProcessCommand("sumd_r1");goto endingRx; }
-	if (CheckProtocol("sumd_t3")) { ProcessCommand("sumd_t3");goto endingRx; }
-	if (CheckProtocol("sumd_r3")) { ProcessCommand("sumd_r3");goto endingRx; }
-	if (CheckProtocol("sumd_t4")) { ProcessCommand("sumd_t4");goto endingRx; }
-	if (CheckProtocol("sumd_r4")) { ProcessCommand("sumd_r4");goto endingRx; }
-
-	if (CheckProtocol("dsm2_t1")) { ProcessCommand("dsm2_t1");goto endingRx; }
-	if (CheckProtocol("dsm2_r1")) { ProcessCommand("dsm2_r1");goto endingRx; }
-	if (CheckProtocol("dsm2_t3")) { ProcessCommand("dsm2_t3");goto endingRx; }
-	if (CheckProtocol("dsm2_r3")) { ProcessCommand("dsm2_r3");goto endingRx; }
-	if (CheckProtocol("dsm2_t4")) { ProcessCommand("dsm2_t4");goto endingRx; }
-	if (CheckProtocol("dsm2_r4")) { ProcessCommand("dsm2_r4");goto endingRx; }
-
-//	if (CheckProtocol("ppm_t1")) { ProcessCommand("ppm_t1");goto endingRx; }
-//	if (CheckProtocol("ppm_r1")) { ProcessCommand("ppm_r1");goto endingRx; }
-//	if (CheckProtocol("ppm_t3")) { ProcessCommand("ppm_t3");goto endingRx; }
-//	if (CheckProtocol("ppm_r3")) { ProcessCommand("ppm_r3");goto endingRx; }
-//	if (CheckProtocol("ppm_t4")) { ProcessCommand("ppm_t4");goto endingRx; }
-//	if (CheckProtocol("ppm_r4")) { ProcessCommand("ppm_r4");goto endingRx; }
-
-	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me No RX Found. Is your radio on?" );
-	RfCustomReply(rf_custom_out_buffer);
-
-	goto EofAutoFindRx;
-endingRx:
-
-	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX Found" );
-	RfCustomReply(rf_custom_out_buffer);
-
-EofAutoFindRx:
-	bzero(trueRcCommandF, sizeof(trueRcCommandF));
-
-}
 
 void PrepareRcWizard(void)
 {
@@ -625,6 +527,7 @@ void WizRcCheckAndSendDirection(void)
 void HandleWizRc(void)
 {
 
+	DisarmBoard();
 	switch(wizardStatus.currentStep)
 	{
 		case 0:
@@ -652,17 +555,118 @@ void HandleWizRc(void)
 			break;
 
 	}
+	DisarmBoard();
+}
 
+uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
+{
+	FeedTheDog();
+	DisarmBoard();
+	DeInitBoardUsarts();
+	DelayMs(2);
+	SetRxDefaults(rxProtocol,usart);
+	InitFlight();
+	bzero(rxData, sizeof(rxData));
+	trueRcCommandF[0] = -1.1;
+	trueRcCommandF[1] = -1.1;
+	trueRcCommandF[2] = -1.1;
+	trueRcCommandF[3] = -1.1;
+	DisarmBoard();
+	DelayMs(30);
+	DisarmBoard();
+	if (WizRxCheckRxDataLooksValid())
+	{
+		bzero(rxData, sizeof(rxData));
+		trueRcCommandF[0] = -1.1;
+		trueRcCommandF[1] = -1.1;
+		trueRcCommandF[2] = -1.1;
+		trueRcCommandF[3] = -1.1;
+		DelayMs(30);
+		//check twice after a reset of data checks
+		if (WizRxCheckRxDataLooksValid())
+		{
+			bzero(rxData, sizeof(rxData));
+			trueRcCommandF[0] = -1.1;
+			trueRcCommandF[1] = -1.1;
+			trueRcCommandF[2] = -1.1;
+			trueRcCommandF[3] = -1.1;
+			DelayMs(30);
+			//check thrice after a reset of data checks
+			if (WizRxCheckRxDataLooksValid())
+			{
+				//three times it looks good, most likely good data then
+				return(1);
+			}
+		}
+	}
+	DelayMs(2);
+	DisarmBoard();
+	return(0);
+}
+
+void HandleWizRx(void)
+{
+	/*
+	#define USING_MANUAL           0
+	#define USING_SPEK_R           1
+	#define USING_SPEK_T           2
+	#define USING_SBUS_R           3
+	#define USING_SBUS_T           4
+	#define USING_SUMD_R           5
+	#define USING_SUMD_T           6
+	#define USING_IBUS_R           7
+	#define USING_IBUS_T           8
+	#define USING_CPPM_R           9
+	#define USING_CPPM_T           10
+	#define USING_DSM2_R           11
+	#define USING_DSM2_T           12
+	#define USING_RX_END           13
+	 */
+	uint32_t x, y, z = 0;
+
+	for (x=1;x<USING_RX_END;x++)
+	{
+		for (y=0;y<MAX_USARTS;y++)
+		{
+			if (z == wizardStatus.currentStep)
+			{
+				wizardStatus.currentStep++;
+				if (WizRxCheckProtocol(x,y))
+				{
+					snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX Protocol %lu Found on Usart %lu",x, y+1 );
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					wizardStatus.currentWizard = 0;
+					wizardStatus.currentStep = 0;
+					return;
+				}
+				else
+				{
+					snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Scanning for RX... %lu",z+1 );
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					return;
+				}
+			}
+			z++;
+		}
+	}
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX Not Found" );
+	RfCustomReplyBuffer(rf_custom_out_buffer);
+	wizardStatus.currentWizard = 0;
+	wizardStatus.currentStep = 0;
 }
 
 void SetupWizard(char *inString)
 {
 
-	int32_t returnedValue = 0;
-
 	if (!strcmp("rx", inString))
 	{
-		AutoFindRx();
+		if (wizardStatus.currentWizard != WIZ_RX)
+		{
+			wizardStatus.currentWizard = WIZ_RX;
+			wizardStatus.currentStep = 0;
+		}
+		HandleWizRx();
+		return;
 	}
 	else if (!strcmp("mixera", inString))
 	{
@@ -721,139 +725,6 @@ void SetupWizard(char *inString)
 		HandleWizRc();
 		return;
 	}
-/*
-	else if (!strcmp("rca", inString))
-	{
-
-		//reset rcCalibration
-		mainConfig.rcControlsConfig.rcCalibrated = 0;
-		skipRxMap = 1;
-
-		//reset channelMap
-		for (uint32_t x = 0;x<MAXCHANNELS;x++) {
-			mainConfig.rcControlsConfig.channelMap[x] = x;
-		}
-
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-		memcpy(rf_custom_out_buffer, "movercfor15seconds", sizeof("movercfor15seconds"));
-		RfCustomReply(rf_custom_out_buffer);
-
-		returnedValue = FindRxMinMax();
-		DisarmBoard();
-		if (returnedValue == -1) {
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "calibratercfailedradionotdetected", sizeof("calibratercfailedradionotdetected"));
-			RfCustomReply(rf_custom_out_buffer);
-		} else if (returnedValue) {
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "endpointsset", sizeof("endpointsset"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "centersticksandswitches", sizeof("centersticksandswitches"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "runwizrcb", sizeof("runwizrcb"));
-			RfCustomReply(rf_custom_out_buffer);
-		} else {
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "calibratercfailed", sizeof("calibratercfailed"));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-	}
-	else if (!strcmp("rcb", inString))
-	{
-
-		bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-		memcpy(rf_custom_out_buffer, "", sizeof(""));
-		RfCustomReply(rf_custom_out_buffer);
-		bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-		memcpy(rf_custom_out_buffer, "calibratestickcenters", sizeof("calibratestickcenters"));
-		RfCustomReply(rf_custom_out_buffer);
-
-		returnedValue = FindRxCenter();
-		DisarmBoard();
-		if (returnedValue == -1) {
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "calibratercfailedradionotdetected", sizeof("calibratercfailedradionotdetected"));
-			RfCustomReply(rf_custom_out_buffer);
-		} else if (returnedValue) {
-			ResetChannelCheck(); //reset stick checker
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "centersset", sizeof("centersset"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "", sizeof(""));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "setTHROTTLEbottom", sizeof("setTHROTTLEbottom"));
-			RfCustomReply(rf_custom_out_buffer);
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "runwizrcc", sizeof("runwizrcc"));
-			RfCustomReply(rf_custom_out_buffer);
-		} else {
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "calibratercfailed", sizeof("calibratercfailed"));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-	}
-	else if (!strcmp("rcc", inString))
-	{
-
-		ResetChannelCheck();
-		bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-		memcpy(rf_custom_out_buffer, "setTHROTTLEtop", sizeof("setTHROTTLEtop"));
-		RfCustomReply(rf_custom_out_buffer);
-
-		if (CheckAndSetChannel(THROTTLE) > -1) {
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "setYAWright", sizeof("setYAWright"));
-			RfCustomReply(rf_custom_out_buffer);
-			if (CheckAndSetChannel(YAW) > -1) {
-				bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-				memcpy(rf_custom_out_buffer, "setPITCHtop", sizeof("setPITCHtop"));
-				RfCustomReply(rf_custom_out_buffer);
-				if (CheckAndSetChannel(PITCH) > -1) {
-					bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-					memcpy(rf_custom_out_buffer, "setROLLright", sizeof("setROLLright"));
-					RfCustomReply(rf_custom_out_buffer);
-					if (CheckAndSetChannel(ROLL) > -1) {
-						memcpy(rf_custom_out_buffer, "calibrationcomplete", sizeof("calibrationcomplete"));
-						RfCustomReply(rf_custom_out_buffer);
-						mainConfig.rcControlsConfig.rcCalibrated = 1;
-						SetRestOfMap();
-						skipRxMap = 0;
-						DelayMs(3000); //don't save for three seconds
-						SaveAndSend();
-						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-						memcpy(rf_custom_out_buffer, "Set an Arm mode using mode list", sizeof("Set an Arm mode using mode list"));
-						RfCustomReply(rf_custom_out_buffer);
-						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-						memcpy(rf_custom_out_buffer, "Aux1 high Example: modes ARMED=4=500=1000", sizeof("Aux1 high Example: modes ARMED=4=500=1000"));
-						RfCustomReply(rf_custom_out_buffer);
-					} else {
-						bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-						memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
-						RfCustomReply(rf_custom_out_buffer);
-					}
-				} else {
-					bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-					memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
-					RfCustomReply(rf_custom_out_buffer);
-				}
-			} else {
-				bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-				memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
-				RfCustomReply(rf_custom_out_buffer);
-			}
-		} else {
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "calibrationfailed", sizeof("calibrationfailed"));
-			RfCustomReply(rf_custom_out_buffer);
-		}
-
-	}
-*/
 	else if (!strcmp("mot", inString))
 	{
 

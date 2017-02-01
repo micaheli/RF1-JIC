@@ -4,6 +4,7 @@
 enum {
 		WIZ_NONE = 0,
 		WIZ_RC = 1,
+		WIZ_RX = 2,
 };
 
 enum {

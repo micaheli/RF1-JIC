@@ -63,13 +63,28 @@
 #define SBUS_INVERTER_USART			0
 
 //Serial Config
-#undef  USE_VCP
-
-
-//Serial Config
 #undef VBUS_SENSING
-#define VBUS_SENSING_GPIO			ENUM_GPIOA
+#define VBUS_SENSING_GPIO			ENUM_PORTA
 #define VBUS_SENSING_PIN			GPIO_PIN_9
+
+//ADC Config
+#define ADC0_TYPE					ADC_DISABLED
+#define ADC0_PORT					0
+#define ADC0_PIN					0
+#define ADC0_INSTANCE				0
+#define ADC0_CHANNEL				0
+
+#define ADC1_TYPE					ADC_DISABLED
+#define ADC1_PORT					0
+#define ADC1_PIN					0
+#define ADC1_INSTANCE				0
+#define ADC1_CHANNEL				0
+
+#define ADC2_TYPE					ADC_DISABLED
+#define ADC2_PORT					0
+#define ADC2_PIN					0
+#define ADC2_INSTANCE				0
+#define ADC2_CHANNEL				0
 
 //START SPI defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #define SPI1_ENABLE					1

@@ -20,7 +20,8 @@ TIM_HandleTypeDef   pwmTimers[16];
 TIM_OC_InitTypeDef  sConfigOCHandles[16];
 SPI_HandleTypeDef   spiHandles[6];
 SPI_TypeDef        *spiInstance[6];
-
+ADC_TypeDef        *adcInstance[3];
+ADC_HandleTypeDef   adcHandle[3];
 
 unsigned char serialRxBuffer[3][RXBUFFERSIZE];
 unsigned char serialTxBuffer[3][TXBUFFERSIZE];
@@ -37,10 +38,16 @@ int InitializeMCUSettings() {
 	//	callbackFunctionArray[x] = 0;
 	//}
 
+
 	bzero(spiInstance, sizeof(spiInstance));
 	spiInstance[0] = SPI1;
 	spiInstance[1] = SPI2;
 	spiInstance[2] = SPI3;//TODO: Add enum for other SPIs so all boards can use what they have avilable.
+
+	bzero(adcInstance, sizeof(adcInstance));
+	adcInstance[0] = ADC1;
+	adcInstance[1] = ADC2;
+	adcInstance[2] = ADC3;
 
 	bzero(dmaStream, sizeof(dmaStream));
 	dmaStream[0]  = DMA1_Stream0;
@@ -183,6 +190,26 @@ void getBoardHardwareDefs(void)
 	board.fc_pllp = FC_PLLP;
 	board.fc_pllq = FC_PLLQ;
 
+	board.boardADC[0].enabled      = ADC0_TYPE;
+	board.boardADC[0].port         = ADC0_PORT;
+	board.boardADC[0].pin          = ADC0_PIN;
+	board.boardADC[0].adcInstance  = ADC0_INSTANCE;
+	board.boardADC[0].adcChannel   = ADC0_CHANNEL;
+	board.boardADC[0].adcHandle    = 0;
+
+	board.boardADC[1].enabled      = ADC1_TYPE;
+	board.boardADC[1].port         = ADC1_PORT;
+	board.boardADC[1].pin          = ADC1_PIN;
+	board.boardADC[1].adcInstance  = ADC1_INSTANCE;
+	board.boardADC[1].adcChannel   = ADC1_CHANNEL;
+	board.boardADC[1].adcHandle    = 1;
+
+	board.boardADC[2].enabled      = ADC2_TYPE;
+	board.boardADC[2].port         = ADC2_PORT;
+	board.boardADC[2].pin          = ADC2_PIN;
+	board.boardADC[2].adcInstance  = ADC2_INSTANCE;
+	board.boardADC[2].adcChannel   = ADC2_CHANNEL;
+	board.boardADC[2].adcHandle    = 2;
 
 	//LED Settings
 	board.internalLeds[0].enabled  = LED1_ENABLED;

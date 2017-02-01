@@ -75,18 +75,19 @@ enum {
 
 //used in config.c string table
 #define USING_MANUAL           0
-#define USING_SPEKTRUM_R       1
-#define USING_SPEKTRUM_T       2
+#define USING_SPEK_R           1
+#define USING_SPEK_T           2
 #define USING_SBUS_R           3
 #define USING_SBUS_T           4
 #define USING_SUMD_R           5
 #define USING_SUMD_T           6
 #define USING_IBUS_R           7
 #define USING_IBUS_T           8
-#define USING_PPM_R            9
-#define USING_PPM_T            10
+#define USING_CPPM_R           9
+#define USING_CPPM_T           10
 #define USING_DSM2_R           11
 #define USING_DSM2_T           12
+#define USING_RX_END           13
 
 extern uint32_t ppmPin;
 
@@ -119,3 +120,4 @@ extern uint32_t SpektrumChannelMap(uint32_t inChannel);
 extern uint32_t ChannelMap(uint32_t inChannel);
 
 extern void PpmExtiCallback(void);
+extern void SetRxDefaults(uint32_t rxProtocol, uint32_t usart);
