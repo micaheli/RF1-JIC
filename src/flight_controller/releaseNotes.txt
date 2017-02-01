@@ -447,6 +447,9 @@ Version 0.169.049
 	set filter_mod_2 = 0 through 6 to turn on filter mod
 	Added commands: 
 		set pids139
+	Added test1 mode, smooths mixer at all times, will run if enabled
+	Added test2 mode, smooths mixer near center stick, will run if enabled and test1 not enabled
+	Added test3 mode, does nothing
 
 
 

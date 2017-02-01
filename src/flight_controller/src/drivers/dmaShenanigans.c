@@ -415,7 +415,11 @@ void InitAllowedSoftOutputs(void)
 void DeInitDmaOutputForSoftSerial(motor_type actuator)
 {
 
-	EXTI_Deinit(ports[actuator.port], actuator.pin, actuator.EXTIn); //disable EXTI
+	//TODO, check the EXTI doesn't conflict with gyro, output only serial doesn't need this
+
+	if (actuator.timer != ENUM_ACTUATOR_TYPE_WS2812)
+		EXTI_Deinit(ports[actuator.port], actuator.pin, actuator.EXTIn); //disable EXTI
+
 	//HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
 	//HAL_TIM_PWM_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
 	//HAL_TIM_Base_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
@@ -611,7 +615,7 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
     //Timer Init
     timer = timers[actuator.timer];
 
-	timerPrescaler = (uint16_t)(SystemCoreClock / TimerPrescalerDivisor(timer) / timerHz) - 1;
+	timerPrescaler = (uint16_t)(SystemCoreClock / TimerPrescalerDivisor(actuator.timer) / timerHz) - 1;
 
 	HAL_TIM_PWM_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
 	pwmTimers[actuator.actuatorArrayNum].Instance           	= timer;

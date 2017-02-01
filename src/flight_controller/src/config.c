@@ -134,7 +134,7 @@ const config_variables_rec valueTable[] = {
 		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 						0, 32, 0, "" },
 		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 					0, 32, 0, "" },
 
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 12, "" },
+		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 0, "" },
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
 
@@ -147,14 +147,14 @@ const config_variables_rec valueTable[] = {
 		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
 		{ "filter_mode2",		typeUINT,  "filt", &mainConfig.filterConfig[2].filterMod, 				0, 10, 2, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 02.000, "" },
-		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 200, 01.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 25.000, "" },
+		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 200, 88.000, "" },
 
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 30.000, "" },
-		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 200, 01.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 60.000, "" },
+		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 200, 88.000, "" },
 
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 30.000, "" },
-		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 200, 01.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 60.000, "" },
+		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 200, 88.000, "" },
 
 		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
 		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 90.000, "" },
@@ -253,7 +253,10 @@ const config_variables_rec valueTable[] = {
 
 		{ "pitch_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[PITCH],		0, 300, 140, "" },
 		{ "roll_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[ROLL],			0, 300, 140, "" },
-		{ "yaw_acrop", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[YAW],			0, 300, 140, "" }
+		{ "yaw_acrop", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[YAW],			0, 300, 140, "" },
+
+		{ "drunk", 				typeFLOAT, "filt", &mainConfig.filterConfig[0].gyro.p, 					0, 1, 0.01, "" },
+		{ "skunk", 				typeFLOAT, "filt", &mainConfig.filterConfig[1].gyro.p, 					0, 1, 50, "" },
 
 };
 
@@ -702,11 +705,22 @@ void ProcessCommand(char *inString)
 	char *args = NULL;
 	char *originalString = inString;
 	uint32_t x;
+	static uint32_t lastTimeMore = 0;
+
 
 	if (rfCustomReplyBufferPointerSent < rfCustomReplyBufferPointer)
 	{
-		SendRfCustomReplyBuffer();
-		return;
+		//one second more timeout
+		if (Micros() - lastTimeMore < 1000000)
+		{
+			SendRfCustomReplyBuffer();
+			return;
+		}
+		else
+		{
+			rfCustomReplyBufferPointerSent = 0;
+			rfCustomReplyBufferPointer = 0;
+		}
 	}
 
 	if (originalString[1] == 77)
@@ -759,9 +773,9 @@ void ProcessCommand(char *inString)
 		return;
 
 
-	if (!strcmp("test", inString))
+	if (!strcmp("more", inString))
 		{
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "return test" );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#nomore" );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("idle", inString))
@@ -809,25 +823,25 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("rxdata", inString))
 		{
-			for (uint32_t xx = 0; xx < MAXCHANNELS;xx=xx+4)
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rx %u=%u\n#rx %u=%u\n#rx %u=%u\n#rx %u=%u", (volatile unsigned int)xx, (volatile unsigned int)(rxData[xx]), (volatile unsigned int)xx+1, (volatile unsigned int)(rxData[xx+1]), (volatile unsigned int)xx+2, (volatile unsigned int)(rxData[xx+2]), (volatile unsigned int)xx+3, (volatile unsigned int)(rxData[xx+3]));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rx %u=%u", (volatile unsigned int)xx, (volatile unsigned int)(rxData[xx]));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
 	else if (!strcmp("rcdata", inString))
 		{
-			for (uint32_t xx = 0; xx < MAXCHANNELS;xx=xx+4)
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rc %d=%d\n#rx %d=%d\n#rx %d=%d\n#rx %d=%d", (volatile int)xx, (volatile int)(trueRcCommandF[xx]), (volatile int)xx+1, (volatile int)(trueRcCommandF[xx+1]), (volatile int)xx+2, (volatile int)(trueRcCommandF[xx+2]), (volatile int)xx+3, (volatile int)(trueRcCommandF[xx+3]));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rc %d=%d", (volatile int)xx, (volatile int)(trueRcCommandF[xx]*1000));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
 	else if (!strcmp("rxrcdata", inString) || !strcmp("rcrxdata", inString))
 		{
-			for (uint32_t xx = 0; xx < MAXCHANNELS;xx=xx+2)
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rb %u=%u:%d\n#rb %u=%u:%d", (volatile unsigned int)(xx), (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000), (volatile unsigned int)(xx+1), (volatile unsigned int)(rxData[xx+1]), (volatile int)(trueRcCommandF[xx+1]*1000));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rb %u=%u:%d", (volatile unsigned int)(xx), (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -1270,7 +1284,7 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].kd         = 800.000;
 			mainConfig.pidConfig[PITCH].kd        = 1000.00;
 
-			mainConfig.pidConfig[YAW].ga          = 12.00;
+			mainConfig.pidConfig[YAW].ga          = 0.000;
 			mainConfig.pidConfig[ROLL].ga         = 0.000;
 			mainConfig.pidConfig[PITCH].ga        = 0.000;
 
@@ -1278,13 +1292,13 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].wc         = 0;
 			mainConfig.pidConfig[PITCH].wc        = 0;
 
-			mainConfig.filterConfig[YAW].gyro.r   = 01.000;
-			mainConfig.filterConfig[ROLL].gyro.r  = 01.000;
-			mainConfig.filterConfig[PITCH].gyro.r = 01.000;
+			mainConfig.filterConfig[YAW].gyro.r   = 88.000;
+			mainConfig.filterConfig[ROLL].gyro.r  = 88.000;
+			mainConfig.filterConfig[PITCH].gyro.r = 88.000;
 
 			mainConfig.filterConfig[YAW].gyro.q   = 25.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 30.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 30.000;
+			mainConfig.filterConfig[ROLL].gyro.q  = 60.000;
+			mainConfig.filterConfig[PITCH].gyro.q = 60.000;
 
 			mainConfig.filterConfig[0].filterMod  = 1;
 			mainConfig.filterConfig[1].filterMod  = 0;
@@ -1317,7 +1331,7 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].kd         = 800.000;
 			mainConfig.pidConfig[PITCH].kd        = 1000.00;
 
-			mainConfig.pidConfig[YAW].ga          = 12.00;
+			mainConfig.pidConfig[YAW].ga          = 0.00;
 			mainConfig.pidConfig[ROLL].ga         = 0.000;
 			mainConfig.pidConfig[PITCH].ga        = 0.000;
 
@@ -1330,8 +1344,8 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[PITCH].gyro.r = 88.000;
 
 			mainConfig.filterConfig[YAW].gyro.q   = 25.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 35.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 35.000;
+			mainConfig.filterConfig[ROLL].gyro.q  = 60.000;
+			mainConfig.filterConfig[PITCH].gyro.q = 60.000;
 
 			mainConfig.filterConfig[0].filterMod  = 1;
 			mainConfig.filterConfig[1].filterMod  = 1;
@@ -1631,7 +1645,6 @@ void ProcessCommand(char *inString)
 		{
 			uint32_t smallerPointer;
 
-			sendReturn = 0;
 			if (flashInfo.enabled) {
 
 				args = StripSpaces(args);
@@ -1639,13 +1652,15 @@ void ProcessCommand(char *inString)
 				if ( M25p16ReadPage( atoi(args), flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer) )
 				{
 
+					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					sendReturn = 0;
 					for (uint32_t x=0;x<RF_BUFFER_SIZE;x++)
 					{
 						rf_custom_out_buffer[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
 					}
-					RfCustomReplyBuffer(rf_custom_out_buffer);
-					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
+					RfCustomReply(rf_custom_out_buffer);
 					sendReturn = 1;
+					return;
 
 				}
 				else
@@ -1687,15 +1702,15 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("reboot", inString) || !strcmp("reset", inString))
 		{
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Rebooting");
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			RfCustomReply("#me Rebooting");
 			SystemReset();
+			return;
 		}
 	else if (!strcmp("resetdfu", inString)  || !strcmp("rebootdfu", inString))
 		{
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Rebooting Into DFU");
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			RfCustomReply("#me Rebooting Into DFU");
 			SystemResetToDfuBootloader();
+			return;
 		}
 	else if (!strcmp("resetconfig", inString))
 		{
@@ -1747,18 +1762,18 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("rebootrfbl", inString) || !strcmp("resetrfbl", inString))
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
-			memcpy(rf_custom_out_buffer, "#me Rebooting RFBL", sizeof("#me Rebooting RFBL"));
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			RfCustomReply("#me Rebooting Into RFBL");
 			DelayMs(100);
 			SystemReset();
+			return;
 		}
 	else if (!strcmp("rebootrecovery", inString) || !strcmp("resetrecovery", inString))
 		{
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
-			memcpy(rf_custom_out_buffer, "#me Rebooting Recovery", sizeof("#me Rebooting Recovery"));
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			RfCustomReply("#me Rebooting Into Recovery");
 			DelayMs(100);
 			SystemReset();
+			return;
 		}
 	else if (!strcmp("1wire", inString))
 		{
@@ -1772,6 +1787,7 @@ void ProcessCommand(char *inString)
 		}
 
 	SendRfCustomReplyBuffer();
+	lastTimeMore=Micros();
 
 }
 

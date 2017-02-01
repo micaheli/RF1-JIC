@@ -746,7 +746,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 }
 
-inline float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse,float rates, float acroPlus)
+inline float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, float rates, float acroPlus)
 {
 	float returnValue;
 

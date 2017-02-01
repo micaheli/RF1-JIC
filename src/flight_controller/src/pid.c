@@ -60,6 +60,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 	static float lastfilteredGyroData[AXIS_NUMBER];
 	static float usedFlightSetPoints[AXIS_NUMBER];
 	static uint32_t filterSetup[AXIS_NUMBER] = {0,0,0};
+	static float lastSetPoint[AXIS_NUMBER] = {0,0,0};
 
 	//test yaw reductor
 	static uint32_t yawCounter = 0;
@@ -118,8 +119,44 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 	usedFlightSetPoints[1] = flightSetPoints[1];
 	usedFlightSetPoints[2] = flightSetPoints[2];
 
+
 	for (axis = 2; axis >= 0; --axis)
 	{
+
+		if (ModeActive(M_TEST1))
+		{
+			//limit setpoint change to 0.05 degrees per iteration
+			if (flightSetPoints[axis] > lastSetPoint[axis])
+			{
+				lastSetPoint[axis] +=mainConfig.filterConfig[0].gyro.p;
+				InlineConstrainf(lastSetPoint[axis], lastSetPoint[axis], flightSetPoints[axis]);
+			}
+			else if (flightSetPoints[axis] < lastSetPoint[axis])
+			{
+				lastSetPoint[axis] -= mainConfig.filterConfig[0].gyro.p;
+				InlineConstrainf(lastSetPoint[axis], flightSetPoints[axis], lastSetPoint[axis]);
+			}
+			usedFlightSetPoints[axis] = lastSetPoint[axis];
+		}
+		else if (ModeActive(M_TEST2))
+		{
+			//limit setpoint change to 0.05 degrees per iteration only when setpoint is being reduced and under 200 DPS (near center stick and reducing)
+			if ( (flightSetPoints[axis] > lastSetPoint[axis]) && ( ABS(flightSetPoints[axis]) < mainConfig.filterConfig[1].gyro.p) && ( ABS(lastSetPoint[axis]) < mainConfig.filterConfig[1].gyro.p) )
+			{
+				lastSetPoint[axis] += mainConfig.filterConfig[0].gyro.p;
+				InlineConstrainf(lastSetPoint[axis], lastSetPoint[axis], flightSetPoints[axis]);
+			}
+			else if ( (flightSetPoints[axis] < lastSetPoint[axis]) && ( ABS(flightSetPoints[axis]) < mainConfig.filterConfig[1].gyro.p) && ( ABS(lastSetPoint[axis]) < mainConfig.filterConfig[1].gyro.p) )
+			{
+				lastSetPoint[axis] -= mainConfig.filterConfig[0].gyro.p;
+				InlineConstrainf(lastSetPoint[axis], flightSetPoints[axis], lastSetPoint[axis]);
+			}
+			else
+			{
+				lastSetPoint[axis] = flightSetPoints[axis];
+			}
+			usedFlightSetPoints[axis] = lastSetPoint[axis];
+		}
 
 		pidError = usedFlightSetPoints[axis] - filteredGyroData[axis];
 
@@ -155,16 +192,34 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 			if ( fullKiLatched )
 			{
 
-				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
-
-				if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+				if (ModeActive(M_TEST3)) //let Ki only act on erros above 100
 				{
-					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
+
+					if ( ( actuatorRange > .9999 ) || (pidError > 110) ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+					{
+						flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
+					}
+					else
+					{
+						kiErrorLimit[axis] = ABS(flightPids[axis].ki);
+					}
 				}
 				else
 				{
-					kiErrorLimit[axis] = ABS(flightPids[axis].ki);
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
+
+					if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+					{
+						flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
+					}
+					else
+					{
+						kiErrorLimit[axis] = ABS(flightPids[axis].ki);
+					}
 				}
+
+
 
 			}
 			else

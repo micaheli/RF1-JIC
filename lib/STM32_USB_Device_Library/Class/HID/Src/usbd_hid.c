@@ -517,8 +517,7 @@ static uint8_t  USBD_HID_DataIn (USBD_HandleTypeDef *pdev,
   * @param  epnum: endpoint index
   * @retval status
   */
-static uint8_t  USBD_HID_DataOut (USBD_HandleTypeDef *pdev,
-                              uint8_t epnum)
+static uint8_t  USBD_HID_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
 {
     if (epnum != (HID_EPOUT_ADDR & 0x0F))
         return USBD_FAIL;
@@ -534,6 +533,13 @@ static uint8_t  USBD_HID_DataOut (USBD_HandleTypeDef *pdev,
     		HID_EPOUT_ADDR,
 			(uint8_t*)USB_Rx_Buffer,
 			HID_EPOUT_SIZE);
+
+
+   // if (tOutBuffer[0]==2)
+    //{ //we have a usb report
+	//	ProcessCommand((char *)tOutBuffer);
+	//	bzero(tOutBuffer, HID_EPIN_SIZE);
+	//}
 
     return USBD_OK;
 /*

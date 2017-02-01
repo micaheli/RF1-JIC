@@ -104,7 +104,7 @@ void InitActuators(void) {
 			walledUs    = 22.50;
 			pwmHz       = 32000;
 			timerHz     = 48000000; // full resolution
-			timerHz     = 54000000; // full resolution
+			//timerHz     = 54000000; // full resolution
 			//timerHz   = 12000000; // 1/4 resolution
 			break;
 	}

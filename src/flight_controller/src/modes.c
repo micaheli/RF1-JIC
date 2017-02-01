@@ -20,6 +20,9 @@ string_modes_rec stringModes[] = {
 		{"LEDMODE",  8,  M_LEDMODE },
 		{"LEDCOLOR", 9,  M_LEDCOLOR },
 		{"DIRECT",   10, M_DIRECT },
+		{"TEST1",    11, M_TEST1 },
+		{"TEST2",    12, M_TEST2 },
+		{"TEST3",    13, M_TEST3 },
 };
 
 
@@ -90,6 +93,9 @@ void PrintModes(void)
 	uint32_t x;
 	uint32_t channel;
 
+
+	sprintf(rf_custom_out_buffer, "#me modes active: %lu", activeModes );
+	RfCustomReplyBuffer(rf_custom_out_buffer);
 	for (x=0;x<(sizeof(stringModes)/sizeof(string_modes_rec));x++)
 	{
 		//display corrected output using the channel variable

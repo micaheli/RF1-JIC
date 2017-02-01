@@ -24,6 +24,7 @@ uint32_t   lastBitFound = 0;
 
 static void TaskProcessSoftSerial(void);
 static void TaskTelemtry(void);
+static void TaskWizard(void);
 static void TaskAutoSaveConfig(void);
 static void TaskHandlePcComm(void);
 static void TaskLed(void);
@@ -53,6 +54,7 @@ void scheduler(int32_t count)
 			TaskTelemtry();
 			break;
 		case 6:
+			TaskWizard();
 			break;
 		case 7:
 			break;
@@ -211,6 +213,21 @@ void scheduler(int32_t count)
 
 }
 
+
+void TaskWizard(void) {
+
+	switch(wizardStatus.currentWizard)
+	{
+
+		case WIZ_RC:
+			if (wizardStatus.currentStep != 3) //step three needs to be polled by user/gui
+				HandleWizRc();
+			break;
+		case 0:
+		default:
+			return;
+	}
+}
 
 void TaskTelemtry(void) {
 
