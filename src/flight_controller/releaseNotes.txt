@@ -456,6 +456,8 @@ Version 0.169.049
 	Removed wix rca
 	Added wix rc1
 	Added ADC support
+	Added 3d Mixer support.
+	Added 3d mixer 1wire support.
 
 
 

@@ -24,7 +24,17 @@ typedef struct {
     uint32_t motorOutput[8];
 } mixer_config;
 
-enum {MIXER_X1234=0,MIXER_X1234RY,MIXER_X1234I,MIXER_CUSTOM,MIXER_END};
+enum {
+	MIXER_X1234     =0,
+	MIXER_X1234RY   =1,
+	MIXER_X4213     =2,
+	MIXER_X4213RY   =3,
+	MIXER_X1234_3D  =4,
+	MIXER_X1234RY_3D=5,
+	MIXER_X4213_3D  =6,
+	MIXER_X4213RY_3D=7,
+	MIXER_CUSTOM,
+	MIXER_END};
 
 enum {
 	ESC_MULTISHOT=0,
@@ -43,6 +53,7 @@ enum {
 #define ATTENUATION_CURVE_SIZE 9
 
 
+extern uint32_t threeDeeMode;
 extern int motorNumber;
 extern int servoNumber;
 extern volatile float motorOutput[];
@@ -51,8 +62,10 @@ extern actuator_mixer servoMixer[];
 extern actuator_mixer motorMixer[];
 
 
-void InitMixer(void);
-//float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], volatile float motorOutput[]);
-float InlineApplyMotorMixer(pid_output pids[], float throttleIn, volatile float motorOutput[]);
-void InlineApplyMixer(pid_output pids[], float curvedRcCommandF[]);
-float ApplyAttenuationCurve (float input, float curve[], int curveSize);
+extern void  InitMixer(void);
+extern void  InlineApplyMixer(pid_output pids[], float curvedRcCommandF[]);
+
+extern float InlineApplyMotorMixer(pid_output pids[], float throttleIn);
+extern float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn);
+extern float InlineApplyMotorMixer3dInverted(pid_output pids[], float throttleIn);
+extern float InlineApplyMotorMixer3dNeutral(pid_output pids[], float throttleIn);

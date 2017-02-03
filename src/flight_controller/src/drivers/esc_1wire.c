@@ -104,6 +104,7 @@ const oneWireParameter_t* oneWireParameters[] = {
     &motorFrequencyParameter,
     &motorMaxThrottleParameter,
     &motorMinThrottleParameter,
+    &motorMidThrottleParameter,
     &motorStartupPowerParameter,
     &motorTimingParameter,
     &motorTempProtectionParameter,
@@ -539,16 +540,18 @@ uint32_t OneWireSaveConfig(motor_type actuator) {
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PWM_FREQ))]        = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.frequency;
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_MAX_THROTLE))] = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.maxthrottle;
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_MIN_THROTLE))] = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.minthrottle;
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_CENTER))]      = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.midthrottle;
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_STARTUP_PWR))]     = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.startuppower;
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION))] = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.tempprotection;
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_COMM_TIMING))]     = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.timing;
 
 				//ninja update
-				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BRAKE_ON_STOP))]   = 0x01; //enabled
+				//inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BRAKE_ON_STOP))]   = 0x01; //enabled
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_DEMAG_COMP))]      = 0x03; //high
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PWM_FREQ))]        = 0x03; //damped light
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_STARTUP_PWR))]     = 0x05; //0.125
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION))] = 0x00; //enabled
+				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_CENTER))]      = (escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.maxthrottle - escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.minthrottle) / 2 + 1; //enabled
 
 				//erase eeprom
 				if (escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->EepromErase(actuator, 1000) &&
@@ -698,6 +701,7 @@ static uint32_t ProcessEEprom(motor_type actuator, uint8_t eepromBuffer[], uint3
 			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.frequency      = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PWM_FREQ))];
 			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.maxthrottle    = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_MAX_THROTLE))];
 			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.minthrottle    = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_MIN_THROTLE))];
+			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.midthrottle    = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_CENTER))];
 			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.startuppower   = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_STARTUP_PWR))];
 			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.tempprotection = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION))];
 			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.timing         = eepromBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_COMM_TIMING))];
@@ -1137,7 +1141,7 @@ const oneWireParameterValue_t motorDirectionParameterList[] = {
     {0x01, "normal"},
     {0x02, "reversed"},
     {0x03, "bidirectional"},
-    {0x04, "bidirectional reversed"},
+    {0x04, "bidirectional_reversed"},
     {0, NULL},
 };
 const oneWireParameter_t motorDirectionParameter = {
@@ -1173,6 +1177,12 @@ const oneWireParameter_t motorMinThrottleParameter = {
     .parameterNamed = NULL,
     .parameterNumerical = &motorThrottleValues,
     .offset = offsetof(BLHeli_EEprom_t, BL_PPM_MIN_THROTLE)
+};
+const oneWireParameter_t motorMidThrottleParameter = {
+    .name = "midthrottle",
+    .parameterNamed = NULL,
+    .parameterNumerical = &motorThrottleValues,
+    .offset = offsetof(BLHeli_EEprom_t, BL_PPM_CENTER)
 };
 const oneWireParameterValue_t motorStartupPowerParameterList[] = {
     {0x01, "0.031"},

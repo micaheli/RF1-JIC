@@ -121,6 +121,7 @@ typedef struct {
     uint8_t frequency;
     uint8_t maxthrottle;
     uint8_t minthrottle;
+    uint8_t midthrottle;
     uint8_t startuppower;
     uint8_t tempprotection;
     uint8_t timing;
@@ -169,6 +170,7 @@ extern const oneWireParameter_t motorEnableTxParameter;
 extern const oneWireParameter_t motorFrequencyParameter;
 extern const oneWireParameter_t motorMaxThrottleParameter;
 extern const oneWireParameter_t motorMinThrottleParameter;
+extern const oneWireParameter_t motorMidThrottleParameter;
 extern const oneWireParameter_t motorStartupPowerParameter;
 extern const oneWireParameter_t motorTempProtectionParameter;
 extern const oneWireParameter_t motorTimingParameter;
@@ -177,14 +179,14 @@ extern const oneWireParameter_t motorTimingParameter;
 extern const oneWireParameter_t* oneWireParameters[];
 extern uint32_t ListAllEscHexesInFlash(void);
 
-extern int16_t Esc1WireSetParameter(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[], int16_t value);
-extern int16_t Esc1WireParameterFromDump(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[]);
+extern int16_t     Esc1WireSetParameter(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[], int16_t value);
+extern int16_t     Esc1WireParameterFromDump(motor_type actuator, const oneWireParameter_t *parameter, uint8_t buf[]);
 extern const char* OneWireParameterValueToName(const oneWireParameterValue_t *valuesList, uint8_t value);
-extern int16_t OneWireParameterNameToValue(const oneWireParameterValue_t *valuesList, const char *name);
-extern int16_t OneWireParameterValueToNumber(const oneWireParameterNumerical_t *numerical, uint8_t value);
-extern uint8_t OneWireParameterNumberToValue(const oneWireParameterNumerical_t *numerical, int16_t value);
-extern uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator, esc_hex_location escHexLocation);
-extern void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize);
+extern int16_t     OneWireParameterNameToValue(const oneWireParameterValue_t *valuesList, const char *name);
+extern int16_t     OneWireParameterValueToNumber(const oneWireParameterNumerical_t *numerical, uint8_t value);
+extern uint8_t     OneWireParameterNumberToValue(const oneWireParameterNumerical_t *numerical, int16_t value);
+extern uint32_t    BuiltInUpgradeSiLabsBLHeli(motor_type actuator, esc_hex_location escHexLocation);
+extern void        FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize);
 
 //int16_t esc1WireGetParameter(uint8_t escIndex, const oneWireParameter_t *layout);
 //uint8_t esc1WireSetParameter(uint8_t escIndex, const oneWireParameter_t *layout, uint8_t value);

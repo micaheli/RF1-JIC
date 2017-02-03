@@ -185,11 +185,19 @@ inline void CheckFailsafe(void)
  void RxUpdate(void) // hook for when rx updates
 {
 
+	uint32_t throttleIsSafe = 0;
+
 	 //get current flight modes
 	CheckRxToModes();
 
+
+	if ( (!threeDeeMode) && (trueRcCommandF[THROTTLE] < -0.85) )
+		throttleIsSafe = 1;
+	else if ( (threeDeeMode) && (trueRcCommandF[THROTTLE] > -0.10) && (trueRcCommandF[THROTTLE] < 0.10) )
+		throttleIsSafe = 1;
+
 	//throttle must be low and board must be set to not armed before we allow an arming
-	if ( (!ModeActive(M_ARMED)) && (trueRcCommandF[THROTTLE] < -0.85) )
+	if (!ModeActive(M_ARMED) &&  throttleIsSafe)
 		armCheckLatch = 1;
 
 	if (!latchFirstArm)
@@ -204,7 +212,7 @@ inline void CheckFailsafe(void)
 			buzzerStatus.status = STATE_BUZZER_ARMING;
 			ResetGyroCalibration();
 		}
-		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (ModeActive(M_ARMED)) && (mainConfig.gyroConfig.boardCalibrated) && (trueRcCommandF[THROTTLE] < -0.85) && !progMode)
+		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (ModeActive(M_ARMED)) && (mainConfig.gyroConfig.boardCalibrated) && throttleIsSafe && !progMode)
 		{ //TODO: make uncalibrated board buzz
 
 			latchFirstArm = 1; //1 is double single single single, 0 is double double double double

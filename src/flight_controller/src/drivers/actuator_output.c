@@ -1,5 +1,6 @@
 #include "includes.h"
 
+volatile uint32_t disarmPulseValue3d;
 volatile uint32_t disarmPulseValue;
 volatile uint32_t calibratePulseValue;
 volatile uint32_t idlePulseValue;
@@ -14,7 +15,8 @@ static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle
 void DeInitActuators(void)  {
 	uint32_t motorNum;
 	uint32_t outputNumber;
-	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+	{
 		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
 
 		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
@@ -31,6 +33,7 @@ void DeInitActuators(void)  {
 void InitActuators(void) {
 
 	float disarmUs;    // shortest pulse width (disarmed)
+	float disarmUs3d;    // shortest pulse width (disarmed)
 	float calibrateUs; // shortest pulse width (calibrate)
 	float walledUs;    // longest pulse width (full throttle)
 	float idleUs;      // idle pulse width (armed, zero throttle)
@@ -45,6 +48,7 @@ void InitActuators(void) {
 
 	switch (mainConfig.mixerConfig.escProtcol) {
 		case ESC_PWM:
+			disarmUs3d  = 1500;
 			disarmUs    = 990;
 			calibrateUs = 1000;
 			walledUs    = 2000;
@@ -52,6 +56,7 @@ void InitActuators(void) {
 			timerHz     = 1000000;
 			break;
 		case ESC_ONESHOT:
+			disarmUs3d  = 187.5;
 			disarmUs    = 120;
 			calibrateUs = 125;
 			walledUs    = 250;
@@ -82,6 +87,7 @@ void InitActuators(void) {
 			return;
 			break;
 		case ESC_MULTISHOT25:
+			disarmUs3d  = 6.25;
 			disarmUs    = 2.400;
 			calibrateUs = 2.500;
 			walledUs    = 10.00;
@@ -90,6 +96,7 @@ void InitActuators(void) {
 			//timerHz   = 12000000; // 1/4 resolution
 			break;
 		case ESC_MULTISHOT125:
+			disarmUs3d  = 3.125;
 			disarmUs    = 1.220;
 			calibrateUs = 1.250;
 			walledUs    = 5.000;
@@ -99,6 +106,7 @@ void InitActuators(void) {
 			break;
 		case ESC_MULTISHOT:
 		default:
+			disarmUs3d  = 13.75;
 			disarmUs    = 4.900;
 			calibrateUs = 5.000;
 			walledUs    = 22.50;
@@ -115,6 +123,7 @@ void InitActuators(void) {
 	// compute idle PWM width from idlePercent
 	idleUs = ((walledUs - disarmUs) * (mainConfig.mixerConfig.idlePercent * 0.01) ) + disarmUs;
 
+	disarmPulseValue3d  = ((uint32_t)(disarmUs3d * timerHz))  / 1000000;
 	disarmPulseValue    = ((uint32_t)(disarmUs * timerHz))    / 1000000;
 	calibratePulseValue = ((uint32_t)(calibrateUs * timerHz)) / 1000000;
 	idlePulseValue      = ((uint32_t)(idleUs * timerHz))      / 1000000;
@@ -277,7 +286,10 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 					ThrottleToDshot(serialOutBuffer, 0, 0);
 					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
 				} else {
-					*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue;
+					if (threeDeeMode)
+						*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue3d;
+					else
+						*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue;
 				}
 			}
 		}
@@ -301,7 +313,10 @@ void ZeroActuators(uint32_t delayUs)
 				ThrottleToDshot(serialOutBuffer, 0, 0);
 				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
 			} else {
-				*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue;
+				if (threeDeeMode)
+					*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue3d;
+				else
+					*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue;
 			}
 		}
 	}
@@ -328,7 +343,10 @@ void IdleActuator(uint32_t motorNum)
 			ThrottleToDshot(serialOutBuffer, motorOutput[outputNumber], mainConfig.mixerConfig.idlePercent);
 			OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
 		} else {
-			*ccr[board.motors[outputNumber].timCCR] = (uint16_t)idlePulseValue;
+			if (threeDeeMode)
+				*ccr[board.motors[outputNumber].timCCR] = (uint16_t)disarmPulseValue3d; //idle is handled by mixer in 3D mode
+			else
+				*ccr[board.motors[outputNumber].timCCR] = (uint16_t)idlePulseValue;
 		}
 	}
 

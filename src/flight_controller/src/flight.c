@@ -663,7 +663,36 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				//set filters
 			}
 
-			actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF[THROTTLE], motorOutput); //put in PIDs and Throttle or passthru
+			if (threeDeeMode)
+			{
+				static uint32_t actuatorToUse = 0;
+				if (smoothedRcCommandF[THROTTLE] >= 0.1) //throttle above neutral latch
+				{
+					actuatorToUse = 1;
+
+				}
+				else if (smoothedRcCommandF[THROTTLE] <= -0.1) //throttle below neutral latch
+				{
+					actuatorToUse = 2;
+
+				}
+
+				if (actuatorToUse == 2)
+				{
+					smoothedRcCommandF[THROTTLE] = CONSTRAIN(smoothedRcCommandF[THROTTLE], -1.0f, -0.1f);
+					actuatorRange = InlineApplyMotorMixer3dInverted(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
+				}
+				else
+				{
+					smoothedRcCommandF[THROTTLE] = CONSTRAIN(smoothedRcCommandF[THROTTLE], 0.1f, 1.0f);
+					actuatorRange = InlineApplyMotorMixer3dUpright(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
+				}
+
+			}
+			else
+			{
+				actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
+			}
 
 		}
 		else

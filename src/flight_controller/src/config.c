@@ -37,10 +37,13 @@ const string_comp_rec stringCompTable[] = {
 //		{"ESC_MEGAVOLT",  ESC_MEGAVOLT },
 
 		//mixer.h
-		{"MIXER_X1234I",  MIXER_X1234I },
-		{"MIXER_X1234RY", MIXER_X1234RY },
-		{"MIXER_X1234",   MIXER_X1234 },
-		{"MIXER_CUSTOM",  MIXER_CUSTOM },
+		{"MIXER_X1234",     MIXER_X1234 },
+		{"MIXER_X1234RY",   MIXER_X1234RY },
+		{"MIXER_X1234_3D",  MIXER_X1234_3D },
+		{"MIXER_X4213",     MIXER_X4213 },
+		{"MIXER_X4213RY",   MIXER_X4213RY },
+		{"MIXER_X4213_3D",  MIXER_X4213_3D },
+		{"MIXER_CUSTOM",    MIXER_CUSTOM },
 
 		//gyro.h
 		{"LOOP_L1",   LOOP_L1   },

@@ -15,24 +15,36 @@ const actuator_mixer CONST_MIXER_X1234[MAX_MOTOR_NUMBER] =  {
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
 };
 
-const actuator_mixer CONST_MIXER_X1234I[MAX_MOTOR_NUMBER] =  {
-	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
-	{ 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
-	{-1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2
-	{ 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3
-	{-1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4
-	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
-	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
-	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 7
-	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
-};
-
 const actuator_mixer CONST_MIXER_X1234RY[MAX_MOTOR_NUMBER] =  {
 	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
 	{ 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
 	{-1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2
 	{ 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3
 	{-1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 7
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
+};
+
+const actuator_mixer CONST_MIXER_X4213[MAX_MOTOR_NUMBER] =  {
+	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
+	{ 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4
+	{ 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2
+	{-1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
+	{-1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 7
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
+};
+
+const actuator_mixer CONST_MIXER_X4213RY[MAX_MOTOR_NUMBER] =  {
+	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
+	{-1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4
+	{-1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2
+	{ 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
+	{ 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 7
@@ -63,6 +75,7 @@ actuator_mixer servoMixer[MAX_SERVO_NUMBER] =  {
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //servo 8
 };
 
+uint32_t threeDeeMode;
 static float stabilizerAttenuation;
 volatile float motorOutput[MAX_MOTOR_NUMBER];
 volatile float servoOutput[MAX_SERVO_NUMBER];
@@ -71,9 +84,12 @@ float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.30, 1.25, 1.20, 1.15
 float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
 float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
 
+static float ApplyAttenuationCurve (float input, float curve[], int curveSize);
+
 void InitMixer(void) {
 	int32_t i;
 
+	threeDeeMode = 0;
 	stabilizerAttenuation = 0;
 
 	for (i=0;i<MAX_MOTOR_NUMBER;i++)
@@ -83,14 +99,25 @@ void InitMixer(void) {
 		servoOutput[i]=0.0f;
 
 	switch (mainConfig.mixerConfig.mixerType) {
-		case MIXER_X1234RY:
-			memcpy(motorMixer, CONST_MIXER_X1234RY, sizeof(motorMixer));
+		case MIXER_X4213_3D:
+			threeDeeMode = 1;
+		case MIXER_X4213:
+			memcpy(motorMixer, CONST_MIXER_X4213, sizeof(motorMixer));
 			break;
-		case MIXER_X1234I:
-			memcpy(motorMixer, CONST_MIXER_X1234I, sizeof(motorMixer));
+		case MIXER_X4213RY_3D:
+			threeDeeMode = 1;
+		case MIXER_X4213RY:
+			memcpy(motorMixer, CONST_MIXER_X4213RY, sizeof(motorMixer));
 			break;
 		case MIXER_CUSTOM:
 			//fill mixer customer here, for now it defaults to MIXER_X1234
+		case MIXER_X1234RY_3D:
+			threeDeeMode = 1;
+		case MIXER_X1234RY:
+			memcpy(motorMixer, CONST_MIXER_X1234RY, sizeof(motorMixer));
+			break;
+		case MIXER_X1234_3D:
+			threeDeeMode = 1;
 		case MIXER_X1234:
 		default:
 			memcpy(motorMixer, CONST_MIXER_X1234, sizeof(motorMixer));
@@ -111,8 +138,9 @@ void InitMixer(void) {
 	activeMotorCounter=3;
 }
 
-inline float ApplyAttenuationCurve (float inputAttn, float curve[], int curveSize) {
+static float ApplyAttenuationCurve (float inputAttn, float curve[], int curveSize) {
 
+	return(1.0f);
     uint32_t indexAttn;
     float remainderAttn;
 
@@ -222,56 +250,44 @@ inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], 
 */
 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
-inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn, volatile float motorOutputHere[])
+float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn)
 {
-
+	float idleNum1;
+	float idleNum2;
 	float highestMotor  = -100.0f;
 	float lowestMotor   =  100.0f;
-	float throttleAdd   =  0.0f;
 	float actuatorRange =  0.0f;
 	volatile float rangedThrottle;
-	float throttle;
+	volatile float throttle;
 	float throttleOffset;
 	int32_t i           = 0;
 
+	//static int32_t threeDeeThrottleLatch = 1;
+
 	for (i = activeMotorCounter; i >= 0; i--)
 	{
+
 		//-1 to 1
-		motorOutputHere[i] = (
+		motorOutput[i] = (
 			(
-				(pids[YAW].kp * ApplyAttenuationCurve(motorOutputHere[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[YAW].kd * ApplyAttenuationCurve(motorOutputHere[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[YAW].ki * ApplyAttenuationCurve(motorOutputHere[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
-			) * motorMixer[i].yaw +
+				(pids[YAW].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[YAW].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[YAW].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+			) * motorMixer[i].yaw * -1.0f +
 			(
-				(pids[ROLL].kp * ApplyAttenuationCurve(motorOutputHere[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[ROLL].kd * ApplyAttenuationCurve(motorOutputHere[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[ROLL].ki * ApplyAttenuationCurve(motorOutputHere[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[ROLL].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[ROLL].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[ROLL].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
 			) * motorMixer[i].roll +
 			(
-				(pids[PITCH].kp * ApplyAttenuationCurve(motorOutputHere[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[PITCH].kd * ApplyAttenuationCurve(motorOutputHere[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[PITCH].ki * ApplyAttenuationCurve(motorOutputHere[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[PITCH].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[PITCH].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[PITCH].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
 			) * motorMixer[i].pitch
 		);
-		if (motorOutputHere[i] > highestMotor) { highestMotor = motorOutputHere[i]; }
-		if (motorOutputHere[i] < lowestMotor)  { lowestMotor  = motorOutputHere[i]; }
-	}
-
-	if ( (mainConfig.filterConfig[1].filterMod == 1) && (ABS(pids[PITCH].kd) > 0.19 || ABS(pids[ROLL].kd) > 0.19 || ABS(pids[YAW].kp) > 0.310) )
-	{
-		if (lowestMotor < 0)
-		{
-			throttleAdd = 0.0f-lowestMotor;
-			lowestMotor  = 100.0;
-			highestMotor = -100.0;
-			for (i = activeMotorCounter; i >= 0; i--)
-			{
-				motorOutputHere[i] += throttleAdd;
-				if (motorOutputHere[i] > highestMotor) { highestMotor = motorOutputHere[i]; }
-				if (motorOutputHere[i] < lowestMotor)  { lowestMotor  = motorOutputHere[i]; }
-			}
-		}
+		motorOutput[i] = InlineChangeRangef(motorOutput[i], 1.0, -1.0, 1.0, 0.0);
+		if (motorOutput[i] > highestMotor) { highestMotor = motorOutput[i]; }
+		if (motorOutput[i] < lowestMotor)  { lowestMotor  = motorOutput[i]; }
 	}
 
 	actuatorRange = highestMotor - lowestMotor;
@@ -280,7 +296,158 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn, volatile
 	{
 		for (i = activeMotorCounter; i >= 0; i--)
 		{
-			motorOutputHere[i] /= actuatorRange;
+			motorOutput[i] /= actuatorRange;
+		}
+		throttle = 0.0f;
+	}
+	else
+	{
+		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
+		rangedThrottle = InlineChangeRangef(throttleIn, 1.00f, 0.1f, 1.0f, 0.0f);
+		throttleOffset = actuatorRange / 2.0f;
+		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset) - 0.5;
+
+	}
+
+	idleNum1 = (0.5f - (mainConfig.mixerConfig.idlePercent * 0.01f));
+	idleNum2 = (1 - (0.5f - (mainConfig.mixerConfig.idlePercent * 0.01f)));
+	for(i=7; i>=0; i--)
+	{
+		//motorOutput[i] = InlineChangeRangef(motorOutput[i]+throttle, 1.0f, 0.0f, 1.0f, 0.55f);
+		//motorOutput[i] = InlineConstrainf(motorOutput[i], 1.0f, 0.55f);
+		motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f) * idleNum1 + idleNum2;
+	}
+
+	return(actuatorRange);
+
+}
+
+float InlineApplyMotorMixer3dInverted(pid_output pids[], float throttleIn)
+{
+	float idleNum;
+	float highestMotor  = -100.0f;
+	float lowestMotor   =  100.0f;
+	float actuatorRange =  0.0f;
+	volatile float rangedThrottle;
+	volatile float throttle;
+	float throttleOffset;
+	int32_t i           = 0;
+
+	//static int32_t threeDeeThrottleLatch = 1;
+
+	for (i = activeMotorCounter; i >= 0; i--)
+	{
+
+		//-1 to 1
+		motorOutput[i] = (
+			(
+				(pids[YAW].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[YAW].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[YAW].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+			) * motorMixer[i].yaw * -1.0f +
+			(
+				(pids[ROLL].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[ROLL].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[ROLL].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+			) * motorMixer[i].roll +
+			(
+				(pids[PITCH].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[PITCH].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[PITCH].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+			) * motorMixer[i].pitch
+		);
+		motorOutput[i] = InlineChangeRangef(motorOutput[i], 1.0, -1.0, 1.0, 0.0);
+		if (motorOutput[i] > highestMotor) { highestMotor = motorOutput[i]; }
+		if (motorOutput[i] < lowestMotor)  { lowestMotor  = motorOutput[i]; }
+	}
+
+	actuatorRange = highestMotor - lowestMotor;
+
+	if (actuatorRange > 1.0f)
+	{
+		for (i = activeMotorCounter; i >= 0; i--)
+		{
+			motorOutput[i] /= actuatorRange;
+		}
+		throttle = 0.0f;
+	}
+	else
+	{
+		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
+		rangedThrottle = InlineChangeRangef(throttleIn, -0.1, -1.0, 1.0, 0.0);
+		throttleOffset = actuatorRange / 2.0f;
+		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset) - 0.5;
+
+	}
+
+	idleNum = (0.5f - (mainConfig.mixerConfig.idlePercent * 0.01f));
+
+	for(i=7; i>=0; i--)
+	{
+		motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f) * idleNum;
+	}
+
+	return(actuatorRange);
+}
+
+float InlineApplyMotorMixer3dNeutral(pid_output pids[], float throttleIn)
+{
+	(void)(pids);
+	(void)(throttleIn);
+	int32_t i;
+	for(i=7; i>=0; i--)
+	{
+		motorOutput[i] = 0.50f;
+	}
+	return(0.0f);
+}
+
+ float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
+{
+
+	float highestMotor  = -100.0f;
+	float lowestMotor   =  100.0f;
+	float actuatorRange =  0.0f;
+	volatile float rangedThrottle;
+	volatile float throttle;
+	float throttleOffset;
+	int32_t i           = 0;
+
+	//static int32_t threeDeeThrottleLatch = 1;
+
+	for (i = activeMotorCounter; i >= 0; i--)
+	{
+
+		//-1 to 1
+		motorOutput[i] = (
+			(
+				(pids[YAW].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[YAW].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[YAW].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+			) * motorMixer[i].yaw +
+			(
+				(pids[ROLL].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[ROLL].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[ROLL].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+			) * motorMixer[i].roll +
+			(
+				(pids[PITCH].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[PITCH].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
+				(pids[PITCH].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+			) * motorMixer[i].pitch
+		);
+		motorOutput[i] = InlineChangeRangef(motorOutput[i], 1.0, -1.0, 1.0, 0.0);
+		if (motorOutput[i] > highestMotor) { highestMotor = motorOutput[i]; }
+		if (motorOutput[i] < lowestMotor)  { lowestMotor  = motorOutput[i]; }
+	}
+
+	actuatorRange = highestMotor - lowestMotor;
+
+	if (actuatorRange > 1.0f)
+	{
+		for (i = activeMotorCounter; i >= 0; i--)
+		{
+			motorOutput[i] /= actuatorRange;
 		}
 		throttle = 0.0f;
 	}
@@ -289,16 +456,13 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn, volatile
 		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
 		rangedThrottle = InlineChangeRangef(throttleIn, 1.0, -1.0, 1.0, 0.0);
 		throttleOffset = actuatorRange / 2.0f;
-		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset);
-		//if (throttle > lowestMotor)
-		//{
-		//	throttle = lowestMotor;
-		//}
+		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset) - 0.5;
+
 	}
 
 	for(i=7; i>=0; i--)
 	{
-		motorOutputHere[i] = InlineConstrainf(motorOutputHere[i]+throttle,0.0f,1.0f);
+		motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f);
 	}
 
 	return(actuatorRange);

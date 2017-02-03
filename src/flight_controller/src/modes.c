@@ -158,7 +158,7 @@ void SetMode(uint32_t modeMask, uint16_t channel, int16_t minRc, int16_t maxRc)
 				channel += 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	}
 }
@@ -279,7 +279,7 @@ void SetupModes(char *modString)
 
 				bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
-				RfCustomReply(rf_custom_out_buffer);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
 	}
