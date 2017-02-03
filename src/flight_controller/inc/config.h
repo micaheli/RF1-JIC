@@ -1,8 +1,8 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint32_t)(49U)
-#define CONFIG_VERSION_STR		"49"
-#define FIRMWARE_VERSION		"0.168.049 ALPHA"
+#define CONFIG_VERSION			(uint32_t)(50U)
+#define CONFIG_VERSION_STR		"50"
+#define FIRMWARE_VERSION		"0.169.050 ALPHA"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
 
@@ -49,12 +49,12 @@ extern volatile uint32_t disableSaving;
 extern char *StripSpaces(char *inString);
 extern char *CleanupString(char *inString);
 
+extern uint32_t resetBoard;
 extern main_config mainConfig;
 extern const config_variables_rec valueTable[];
 
 extern char   *CleanupNumberString(char *inString);
 extern void    SaveConfig (uint32_t addresConfigStart);
-extern uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length);
 extern void    LoadConfig (uint32_t addresConfigStart);
 extern void    GenerateConfig(void);
 extern void    ValidateConfigSettings(void);

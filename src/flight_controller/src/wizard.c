@@ -374,6 +374,7 @@ void WizRcCheckAndSendDirection(void)
 			if (WizRcCheckAndSetChannel(ROLL) > -1)
 			{
 				WizRcSetRestOfMap();
+				skipRxMap = 0;
 				RfCustomReplyBuffer("#wiz Roll Set");
 				RfCustomReplyBuffer("#wiz RC Setup Complete");
 				mainConfig.rcControlsConfig.rcCalibrated = 1;
@@ -430,6 +431,7 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 	DeInitBoardUsarts();
 	DelayMs(2);
 	SetRxDefaults(rxProtocol,usart);
+	DelayMs(2);
 	InitFlight();
 	bzero(rxData, sizeof(rxData));
 	trueRcCommandF[0] = -1.1;
@@ -437,7 +439,7 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 	trueRcCommandF[2] = -1.1;
 	trueRcCommandF[3] = -1.1;
 	DisarmBoard();
-	DelayMs(30);
+	DelayMs(20);
 	DisarmBoard();
 	if (WizRxCheckRxDataLooksValid())
 	{
@@ -446,7 +448,7 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 		trueRcCommandF[1] = -1.1;
 		trueRcCommandF[2] = -1.1;
 		trueRcCommandF[3] = -1.1;
-		DelayMs(30);
+		DelayMs(40);
 		//check twice after a reset of data checks
 		if (WizRxCheckRxDataLooksValid())
 		{
@@ -455,7 +457,7 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 			trueRcCommandF[1] = -1.1;
 			trueRcCommandF[2] = -1.1;
 			trueRcCommandF[3] = -1.1;
-			DelayMs(30);
+			DelayMs(60);
 			//check thrice after a reset of data checks
 			if (WizRxCheckRxDataLooksValid())
 			{
@@ -502,6 +504,10 @@ void HandleWizRx(void)
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					wizardStatus.currentWizard = 0;
 					wizardStatus.currentStep = 0;
+					SetMode(M_ARMED, 4, 50, 100);
+					resetBoard = 1;
+					mainConfig.rcControlsConfig.rcCalibrated = 1;
+					SaveAndSend();
 					return;
 				}
 				else

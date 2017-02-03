@@ -380,7 +380,7 @@ float InlineApplyMotorMixer3dInverted(pid_output pids[], float throttleIn)
 
 	}
 
-	idleNum = (0.5f - (mainConfig.mixerConfig.idlePercent * 0.01f));
+	idleNum = (0.5f - (mainConfig.mixerConfig.idlePercentInverted * 0.01f));
 
 	for(i=7; i>=0; i--)
 	{

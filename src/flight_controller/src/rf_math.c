@@ -98,3 +98,19 @@ inline float CalculateSDSize(float data[], uint32_t size)
 
     return(result);
 }
+
+uint8_t GetChecksum8(const uint8_t *config, uint32_t len)
+{
+
+	uint8_t checksum = 0;
+	const uint8_t *byteOffset;
+
+    //ignore checksum on end
+    for (byteOffset = config; byteOffset < (config + len); byteOffset++)
+    {
+    	checksum ^= *byteOffset;
+    }
+
+    return(checksum);
+
+}

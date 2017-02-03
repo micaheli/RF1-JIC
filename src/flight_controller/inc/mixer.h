@@ -21,6 +21,7 @@ typedef struct {
     uint32_t escProtcol;
     uint32_t escUpdateFrequency;
     float    idlePercent;
+    float    idlePercentInverted;
     uint32_t motorOutput[8];
 } mixer_config;
 

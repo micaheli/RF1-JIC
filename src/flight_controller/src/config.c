@@ -93,6 +93,7 @@ const config_variables_rec valueTable[] = {
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtcol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 5, "" },
+		{ "idle_percent_inv",	typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercentInverted,			0, 15.0, 6, "" },
 
 		{ "mout1", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[0],				0, 7, 0, "" },
 		{ "mout2", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[1],				0, 7, 1, "" },
@@ -391,7 +392,7 @@ void SaveConfig (uint32_t addresConfigStart)
 
 	mainConfig.version  = CONFIG_VERSION;
 	mainConfig.size     = sizeof(main_config);
-	mainConfig.czechsum = CalculateCzechsum((const uint8_t *) &mainConfig, sizeof(main_config));
+	mainConfig.czechsum = GetChecksum8((const uint8_t *) &mainConfig, sizeof(main_config));
 
 	EraseFlash(addresConfigStart, addresConfigStart+sizeof(main_config));
 	PrepareFlash();
@@ -400,19 +401,6 @@ void SaveConfig (uint32_t addresConfigStart)
 	}
 	FinishFlash();
 	SKIP_GYRO=0;
-}
-
-uint8_t CalculateCzechsum(const uint8_t *data, uint32_t length)
-{
-
-	uint8_t czechsum = 0;
-    const uint8_t *byteOffset;
-
-    for (byteOffset = data; byteOffset < (data + length); byteOffset++)
-    	czechsum ^= *byteOffset;
-
-    return(czechsum);
-
 }
 
 static uint32_t ValidateConfig (uint32_t addresConfigStart)
@@ -427,10 +415,9 @@ static uint32_t ValidateConfig (uint32_t addresConfigStart)
 	if (CONFIG_VERSION != temp->version)
 		return (0);
 
-	czechsum = CalculateCzechsum((const uint8_t *) temp, sizeof(main_config));
+	czechsum = GetChecksum8((const uint8_t *) temp, sizeof(main_config));
 	if (czechsum != 0)
 		return (1);
-	    //todo: fix stupid checksum return (0);
 
 	return (1);
 

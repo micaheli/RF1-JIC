@@ -1013,32 +1013,32 @@ void SetRxDefaults(uint32_t rxProtocol, uint32_t usart)
 			break;
 		case USING_SBUS_R:
 		case USING_SBUS_T:
-			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
-			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
-			mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
-			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 990;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 990;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 990;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 990;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 990;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 990;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 990;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 990;
 
-			mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
-			mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
-			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
-			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
-			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 170;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 170;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 170;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 170;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 170;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 170;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 170;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 170;
 
-			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
-			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
-			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
-			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
-			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 1810;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 1810;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1810;
 
 			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
 			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
