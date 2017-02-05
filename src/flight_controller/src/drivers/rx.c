@@ -221,6 +221,7 @@ inline void CheckFailsafe(void)
 			if ( !(rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) ) {
 				//fc crashed during flight
 				rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
+				buzzerStatus.status = STATE_BUZZER_ARMING;
 			}
 
 			ArmBoard();

@@ -459,6 +459,9 @@ Version 0.169.050
 	Added 3d Mixer support.
 	Added 3d mixer 1wire support.
 	Added idle_percent_inv for separate inverted idle in 3D mode.
+	Removed wiz mot
+	Added wiz mot1
+	Added wiz mot2
 
 
 

@@ -46,6 +46,7 @@ static uint32_t CheckSafeMotors(uint32_t time, uint32_t deviationAllowed)
 		for (simpleCouter=0;simpleCouter < 10;simpleCouter++)
 		{
 			stdDeviation[simpleCouter]   = ABS(geeForceAccArray[ACCZ]);
+			DelayMs(1);
 		}
 		FeedTheDog();
 		simpleCouter = 0;
@@ -56,11 +57,11 @@ static uint32_t CheckSafeMotors(uint32_t time, uint32_t deviationAllowed)
 			calibrateMotors = 0;
 			DisarmBoard();
 			ZeroActuators(32000);
-			return 0;
+			return(0);
 		}
 
 	}
-	return 1;
+	return(1);
 }
 
 void MixerWizard(char *inString)
@@ -608,10 +609,7 @@ void SetupWizard(char *inString)
 			RfCustomReplyBuffer("#me Plug in battery, run wiz mot2 when tones finish");
 			return;
 		} else {
-			bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-			memcpy(rf_custom_out_buffer, "motorcalibrationfailed", sizeof("motorcalibrationfailed"));
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-			InitWatchdog(WATCHDOG_TIMEOUT_2S);
+			RfCustomReplyBuffer("#me Motor calibration failed.");
 			motorOutput[0] = 0;
 			motorOutput[1] = 0;
 			motorOutput[2] = 0;
@@ -622,9 +620,9 @@ void SetupWizard(char *inString)
 			motorOutput[7] = 0;
 			motorOutput[8] = 0;
 			OutputActuators(motorOutput, servoOutput);
-			InitWatchdog(WATCHDOG_TIMEOUT_2S);
 			SKIP_GYRO=0;
 			calibrateMotors = 0;
+			return;
 		}
 
 	}
@@ -641,11 +639,11 @@ void SetupWizard(char *inString)
 		motorOutput[7] = 0;
 		motorOutput[8] = 0;
 		OutputActuators(motorOutput, servoOutput);
-		InitWatchdog(WATCHDOG_TIMEOUT_2S);
 		SKIP_GYRO=0;
 		calibrateMotors = 0;
 
 		RfCustomReplyBuffer("#me Motor Calibration Success");
+		return;
 
 	}
 	else

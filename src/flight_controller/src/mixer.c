@@ -140,7 +140,7 @@ void InitMixer(void) {
 
 static float ApplyAttenuationCurve (float inputAttn, float curve[], int curveSize) {
 
-	return(1.0f);
+	//return(1.0f);
     uint32_t indexAttn;
     float remainderAttn;
 
@@ -270,19 +270,19 @@ float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn)
 		//-1 to 1
 		motorOutput[i] = (
 			(
-				(pids[YAW].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[YAW].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[YAW].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[YAW].kp * 1 ) +
+				(pids[YAW].kd * 1 ) +
+				(pids[YAW].ki * 1 )
 			) * motorMixer[i].yaw * -1.0f +
 			(
-				(pids[ROLL].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[ROLL].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[ROLL].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[ROLL].kp * 1 ) +
+				(pids[ROLL].kd * 1 ) +
+				(pids[ROLL].ki * 1 )
 			) * motorMixer[i].roll +
 			(
-				(pids[PITCH].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[PITCH].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[PITCH].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[PITCH].kp * 1 ) +
+				(pids[PITCH].kd * 1 ) +
+				(pids[PITCH].ki * 1 )
 			) * motorMixer[i].pitch
 		);
 		motorOutput[i] = InlineChangeRangef(motorOutput[i], 1.0, -1.0, 1.0, 0.0);
@@ -341,19 +341,19 @@ float InlineApplyMotorMixer3dInverted(pid_output pids[], float throttleIn)
 		//-1 to 1
 		motorOutput[i] = (
 			(
-				(pids[YAW].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[YAW].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[YAW].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[YAW].kp * 1 ) +
+				(pids[YAW].kd * 1 ) +
+				(pids[YAW].ki * 1 )
 			) * motorMixer[i].yaw * -1.0f +
 			(
-				(pids[ROLL].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[ROLL].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[ROLL].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[ROLL].kp * 1 ) +
+				(pids[ROLL].kd * 1 ) +
+				(pids[ROLL].ki * 1 )
 			) * motorMixer[i].roll +
 			(
-				(pids[PITCH].kp * ApplyAttenuationCurve(motorOutput[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[PITCH].kd * ApplyAttenuationCurve(motorOutput[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[PITCH].ki * ApplyAttenuationCurve(motorOutput[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[PITCH].kp * 1 ) +
+				(pids[PITCH].kd * 1 ) +
+				(pids[PITCH].ki * 1 )
 			) * motorMixer[i].pitch
 		);
 		motorOutput[i] = InlineChangeRangef(motorOutput[i], 1.0, -1.0, 1.0, 0.0);
