@@ -210,9 +210,9 @@ enum {
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
 
-#ifdef STM32F745xx
+#if defined(STM32F745xx)
 	#include "REVOLTF7.h"
-#elif STM32F405xx
+#elif defined(STM32F405xx)
 	#include "REVOLT.h"
 #elif defined(STM32F446xx)
 	#include "SPMFC400.h"
@@ -476,12 +476,17 @@ typedef void (*function_pointer)(void);
 
 extern volatile function_pointer callbackFunctionArray[];
 
+#if defined(f3) || defined(f1)
+
+#elif defined(f4) || defined(f7)
+extern DMA_Stream_TypeDef *dmaStream[];
+#endif
+
 extern board_type          board;
 extern GPIO_TypeDef       *ports[];
 extern volatile uint32_t  *ccr[];
 extern TIM_TypeDef        *timers[];
 extern serial_type         usarts[];
-extern DMA_Stream_TypeDef *dmaStream[];
 extern UART_HandleTypeDef  uartHandles[];
 extern DMA_HandleTypeDef   dmaHandles[];
 extern TIM_HandleTypeDef   pwmTimers[];
