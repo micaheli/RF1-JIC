@@ -439,6 +439,10 @@ Version 0.168.049:
 	Add motor mixers.
 	Add expo curve 4.
 	Adjust defaults.
+	//other 168
+	added nytfluffy, braindrain, rs2k default setups
+	made curve 4 default
+	changed defaults
 
 Version 0.169.050
 	Change dump and set command output
@@ -446,7 +450,7 @@ Version 0.169.050
 	set filter_mod_1 = 1 to turn on flight sharpeness
 	set filter_mod_2 = 0 through 6 to turn on filter mod
 	Added commands: 
-		set pids139
+		pids139
 	Added test1 mode, smooths mixer at all times, will run if enabled
 	Added test2 mode, smooths mixer near center stick, will run if enabled and test1 not enabled
 	Added test3 mode, does nothing
@@ -463,7 +467,14 @@ Version 0.169.050
 	Added wiz mot1
 	Added wiz mot2
 
-
+Version 0.170.051
+	Removed commands: 
+		pids139
+	Added commands: 
+		rs2k
+		set mixer_style (default is 0, range is 0-1)
+	Added new mixer
+	changed defaults
 
 
 Features in current development:
@@ -477,8 +488,6 @@ Features in current development:
 
 Features for future development:
 	transponder output
-	single motor throttle test.
-	3D mixer
 	Sonar input
 	GPS input
 	Unobtanium detector

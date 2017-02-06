@@ -90,6 +90,7 @@ const string_comp_rec stringCompTable[] = {
 const config_variables_rec valueTable[] = {
 
 		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,					0, MIXER_END, MIXER_X1234, "" },
+		{ "mixer_style", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerStyle,					0, 1, 0, "" },
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtcol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 5, "" },
@@ -122,15 +123,15 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		0, 10, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_H32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 220.00, "" }, //1000 18
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 130.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 140.00, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 160.00, "" }, //1000 18
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 140.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 150.00, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 475.00, "" }, //1000 14
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 370.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 400.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 500.00, "" }, //1000 14
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 400.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 450.00, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 2100.00, "" }, //1000000 114
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1200.00, "" }, //1000000 114
 		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 800.00, "" },
 		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1000.00, "" },
 
@@ -138,7 +139,7 @@ const config_variables_rec valueTable[] = {
 		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 						0, 32, 0, "" },
 		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 					0, 32, 0, "" },
 
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 0, "" },
+		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 12, "" },
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
 
@@ -149,15 +150,15 @@ const config_variables_rec valueTable[] = {
 
 		{ "filter_mode0",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterMod, 				0, 10, 0, "" },
 		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
-		{ "filter_mode2",		typeUINT,  "filt", &mainConfig.filterConfig[2].filterMod, 				0, 10, 1, "" },
+		{ "filter_mode2",		typeUINT,  "filt", &mainConfig.filterConfig[2].filterMod, 				0, 10, 2, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 30.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 20.000, "" },
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 200, 88.000, "" },
 
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 60.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 30.000, "" },
 		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 200, 88.000, "" },
 
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 60.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 30.000, "" },
 		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 200, 88.000, "" },
 
 		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
@@ -231,9 +232,9 @@ const config_variables_rec valueTable[] = {
 
 		{ "rc_calibrated", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rcCalibrated,			0, 1, 0, "" },
 
-		{ "pitch_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[PITCH], 		0, EXPO_CURVE_END, FAST_EXPO, "" },
-		{ "roll_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[ROLL], 		0, EXPO_CURVE_END, FAST_EXPO, "" },
-		{ "yaw_curve", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[YAW], 			0, EXPO_CURVE_END, FAST_EXPO, "" },
+		{ "pitch_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[PITCH], 		0, EXPO_CURVE_END, ACRO_PLUS, "" },
+		{ "roll_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[ROLL], 		0, EXPO_CURVE_END, ACRO_PLUS, "" },
+		{ "yaw_curve", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[YAW], 			0, EXPO_CURVE_END, ACRO_PLUS, "" },
 		{ "throttle_curve", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[THROTTLE], 	0, EXPO_CURVE_END, NO_EXPO, "" },
 		{ "aux1_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX1], 		0, EXPO_CURVE_END, NO_EXPO, "" },
 		{ "aux2_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX2], 		0, EXPO_CURVE_END, NO_EXPO, "" },
@@ -1132,50 +1133,210 @@ void ProcessCommand(char *inString)
 
 			SaveAndSend();
 		}
-	else if (!strcmp("pidsd139", inString))
+		else if (!strcmp("nytfluffy", inString))
 		{
 
-			mainConfig.gyroConfig.loopCtrl = LOOP_H32;
-			mainConfig.pidConfig[YAW].kp   = 220.00;
-			mainConfig.pidConfig[ROLL].kp  = 130.00;
-			mainConfig.pidConfig[PITCH].kp = 140.00;
+			mainConfig.rcControlsConfig.useCurve[PITCH]    = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[ROLL]     = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[YAW]      = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[THROTTLE] = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX1]     = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX2]     = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX3]     = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX4]     = NO_EXPO;
 
-			mainConfig.pidConfig[YAW].ki   = 475.00;
-			mainConfig.pidConfig[ROLL].ki  = 370.00;
-			mainConfig.pidConfig[PITCH].ki = 435.00;
+			mainConfig.rcControlsConfig.rates[PITCH]       = 300;
+			mainConfig.rcControlsConfig.rates[ROLL]        = 300;
+			mainConfig.rcControlsConfig.rates[YAW]         = 150;
 
-			mainConfig.pidConfig[YAW].kd   = 2100.00;
-			mainConfig.pidConfig[ROLL].kd  = 800.00;
-			mainConfig.pidConfig[PITCH].kd = 1000.00;
+			mainConfig.rcControlsConfig.curveExpo[PITCH]   = 50;
+			mainConfig.rcControlsConfig.curveExpo[ROLL]    = 50;
+			mainConfig.rcControlsConfig.curveExpo[YAW]     = 20;
 
-			mainConfig.pidConfig[YAW].ga   = 0;
-			mainConfig.pidConfig[ROLL].ga  = 0;
-			mainConfig.pidConfig[PITCH].ga = 0;
-
-			mainConfig.pidConfig[YAW].wc   = 0;
-			mainConfig.pidConfig[ROLL].wc  = 0;
-			mainConfig.pidConfig[PITCH].wc = 0;
-
-			mainConfig.filterConfig[YAW].gyro.r   = 88.00;
-			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 88.00;
-
-			mainConfig.filterConfig[YAW].gyro.q   = 30.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 60.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 60.000;
-
-			mainConfig.filterConfig[0].filterMod  = 0;
-			mainConfig.filterConfig[1].filterMod  = 0;
-			mainConfig.filterConfig[2].filterMod  = 1;
-
-			mainConfig.filterConfig[YAW].kd.r     = 90.0;
-			mainConfig.filterConfig[ROLL].kd.r    = 90.0;
-			mainConfig.filterConfig[PITCH].kd.r   = 90.0;
+			mainConfig.rcControlsConfig.acroPlus[PITCH]    = 58;
+			mainConfig.rcControlsConfig.acroPlus[ROLL]     = 58;
+			mainConfig.rcControlsConfig.acroPlus[YAW]      = 40;
 
 			resetBoard = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Default PIDs");
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Nyfluffy mode engaged");
+			RfCustomReply(rf_custom_out_buffer);
+
+			SaveAndSend();
+
+		}
+		else if (!strcmp("rs2k", inString))
+		{
+
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100;
+
+			mainConfig.rcControlsConfig.rcCalibrated         = 1;
+
+			mainConfig.rcControlsConfig.rxUsart              = ENUM_USART3;
+			mainConfig.rcControlsConfig.rxProtcol            = USING_SPEK_T; //this is used by serial.c
+
+			SetMode(M_ARMED, 4, 50, 100);
+
+
+			mainConfig.mixerConfig.mixerType                 = 1;
+
+			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[YAW]        = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX3]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX4]       = NO_EXPO;
+
+			mainConfig.rcControlsConfig.rates[PITCH]         = 400;
+			mainConfig.rcControlsConfig.rates[ROLL]          = 400;
+			mainConfig.rcControlsConfig.rates[YAW]           = 400;
+
+			mainConfig.rcControlsConfig.curveExpo[PITCH]     = 50;
+			mainConfig.rcControlsConfig.curveExpo[ROLL]      = 50;
+			mainConfig.rcControlsConfig.curveExpo[YAW]       = 50;
+
+			mainConfig.rcControlsConfig.acroPlus[PITCH]      = 140;
+			mainConfig.rcControlsConfig.acroPlus[ROLL]       = 140;
+			mainConfig.rcControlsConfig.acroPlus[YAW]        = 140;
+
+			mainConfig.gyroConfig.gyroRotation               = CW0;
+			mainConfig.gyroConfig.boardCalibrated            = 1;
+
+			resetBoard = 1;
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me rs2k mode engaged");
+			RfCustomReply(rf_custom_out_buffer);
+
+			SaveAndSend();
+
+		}
+		else if (!strcmp("braindrain", inString))
+		{
+
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100;
+
+			mainConfig.rcControlsConfig.rcCalibrated         = 1;
+
+			mainConfig.rcControlsConfig.rxUsart              = ENUM_USART3;
+			mainConfig.rcControlsConfig.rxProtcol            = USING_SPEK_T; //this is used by serial.c
+
+			SetMode(M_ARMED, 4, 50, 100);
+
+
+			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[YAW]        = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX3]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX4]       = NO_EXPO;
+
+			mainConfig.rcControlsConfig.rates[PITCH]         = 320;
+			mainConfig.rcControlsConfig.rates[ROLL]          = 300;
+			mainConfig.rcControlsConfig.rates[YAW]           = 280;
+
+			mainConfig.rcControlsConfig.curveExpo[PITCH]     = 60;
+			mainConfig.rcControlsConfig.curveExpo[ROLL]      = 60;
+			mainConfig.rcControlsConfig.curveExpo[YAW]       = 25;
+
+			mainConfig.rcControlsConfig.acroPlus[PITCH]      = 0;
+			mainConfig.rcControlsConfig.acroPlus[ROLL]       = 0;
+			mainConfig.rcControlsConfig.acroPlus[YAW]        = 0;
+
+			mainConfig.gyroConfig.gyroRotation               = CW0;
+			mainConfig.gyroConfig.boardCalibrated            = 1;
+
+			resetBoard = 1;
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Braindrain mode engaged");
+			RfCustomReply(rf_custom_out_buffer);
 
 			SaveAndSend();
 
@@ -1183,26 +1344,26 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("pidsdefault", inString))
 		{
 
-			mainConfig.gyroConfig.loopCtrl = LOOP_H32;
-			mainConfig.pidConfig[YAW].kp   = 220.00;
-			mainConfig.pidConfig[ROLL].kp  = 130.00;
-			mainConfig.pidConfig[PITCH].kp = 140.00;
+			mainConfig.gyroConfig.loopCtrl   = LOOP_H32;
+			mainConfig.pidConfig[YAW].kp     = 220.00;
+			mainConfig.pidConfig[ROLL].kp    = 130.00;
+			mainConfig.pidConfig[PITCH].kp   = 140.00;
 
-			mainConfig.pidConfig[YAW].ki   = 475.00;
-			mainConfig.pidConfig[ROLL].ki  = 370.00;
-			mainConfig.pidConfig[PITCH].ki = 435.00;
+			mainConfig.pidConfig[YAW].ki     = 475.00;
+			mainConfig.pidConfig[ROLL].ki    = 370.00;
+			mainConfig.pidConfig[PITCH].ki   = 435.00;
 
-			mainConfig.pidConfig[YAW].kd   = 2100.00;
-			mainConfig.pidConfig[ROLL].kd  = 800.00;
-			mainConfig.pidConfig[PITCH].kd = 1000.00;
+			mainConfig.pidConfig[YAW].kd     = 2100.00;
+			mainConfig.pidConfig[ROLL].kd    = 800.00;
+			mainConfig.pidConfig[PITCH].kd   = 1000.00;
 
-			mainConfig.pidConfig[YAW].ga   = 0;
-			mainConfig.pidConfig[ROLL].ga  = 0;
-			mainConfig.pidConfig[PITCH].ga = 0;
+			mainConfig.pidConfig[YAW].ga     = 0;
+			mainConfig.pidConfig[ROLL].ga    = 0;
+			mainConfig.pidConfig[PITCH].ga   = 0;
 
-			mainConfig.pidConfig[YAW].wc   = 0;
-			mainConfig.pidConfig[ROLL].wc  = 0;
-			mainConfig.pidConfig[PITCH].wc = 0;
+			mainConfig.pidConfig[YAW].wc     = 0;
+			mainConfig.pidConfig[ROLL].wc    = 0;
+			mainConfig.pidConfig[PITCH].wc   = 0;
 
 			mainConfig.filterConfig[YAW].gyro.r   = 88.00;
 			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
@@ -1214,7 +1375,7 @@ void ProcessCommand(char *inString)
 
 			mainConfig.filterConfig[0].filterMod  = 0;
 			mainConfig.filterConfig[1].filterMod  = 0;
-			mainConfig.filterConfig[2].filterMod  = 1;
+			mainConfig.filterConfig[2].filterMod  = 2;
 
 			mainConfig.filterConfig[YAW].kd.r     = 90.0;
 			mainConfig.filterConfig[ROLL].kd.r    = 90.0;

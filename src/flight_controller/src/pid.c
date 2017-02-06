@@ -32,20 +32,40 @@ void InitPid (void)
 
 	uhOhRecover = 0; //unset recover mode
 
-	pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 50000;
-	pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 25000) * loopSpeed.dT;
-	pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 100000000)  / loopSpeed.dT;
-	pidsUsed[0].wc = mainConfig.pidConfig[0].wc;
+	if (mainConfig.mixerConfig.mixerStyle == 1)
+	{
+		pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 100000;
+		pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 50000) * loopSpeed.dT;
+		pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 200000000)  / loopSpeed.dT;
+		pidsUsed[0].wc = mainConfig.pidConfig[0].wc;
 
-	pidsUsed[1].kp = mainConfig.pidConfig[1].kp  / 50000;
-	pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 25000) * loopSpeed.dT;
-	pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 100000000)  / loopSpeed.dT;
-	pidsUsed[1].wc = mainConfig.pidConfig[1].wc;
+		pidsUsed[1].kp = mainConfig.pidConfig[1].kp  / 100000;
+		pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 50000) * loopSpeed.dT;
+		pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 200000000)  / loopSpeed.dT;
+		pidsUsed[1].wc = mainConfig.pidConfig[1].wc;
 
-	pidsUsed[2].kp = mainConfig.pidConfig[2].kp  / 50000;
-	pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 25000) * loopSpeed.dT;
-	pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 100000000)  / loopSpeed.dT;
-	pidsUsed[2].wc = mainConfig.pidConfig[2].wc;
+		pidsUsed[2].kp = mainConfig.pidConfig[2].kp  / 100000;
+		pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 50000) * loopSpeed.dT;
+		pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 200000000)  / loopSpeed.dT;
+		pidsUsed[2].wc = mainConfig.pidConfig[2].wc;
+	}
+	else
+	{
+		pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 50000;
+		pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 25000) * loopSpeed.dT;
+		pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 100000000)  / loopSpeed.dT;
+		pidsUsed[0].wc = mainConfig.pidConfig[0].wc;
+
+		pidsUsed[1].kp = mainConfig.pidConfig[1].kp  / 50000;
+		pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 25000) * loopSpeed.dT;
+		pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 100000000)  / loopSpeed.dT;
+		pidsUsed[1].wc = mainConfig.pidConfig[1].wc;
+
+		pidsUsed[2].kp = mainConfig.pidConfig[2].kp  / 50000;
+		pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 25000) * loopSpeed.dT;
+		pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 100000000)  / loopSpeed.dT;
+		pidsUsed[2].wc = mainConfig.pidConfig[2].wc;
+	}
 
 	LpfInit(&yawKpLpf, 30.0f, loopSpeed.dT);
 

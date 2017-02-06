@@ -691,7 +691,11 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			}
 			else
 			{
-				actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
+				if (mainConfig.mixerConfig.mixerStyle == 1) //race mixer
+					actuatorRange = InlineApplyMotorMixer1(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
+				else //freestyle mixer
+					actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
+
 			}
 
 		}
