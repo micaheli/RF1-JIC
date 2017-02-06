@@ -89,7 +89,11 @@ const string_comp_rec stringCompTable[] = {
 
 const config_variables_rec valueTable[] = {
 
+#ifdef STM32F446xx	//TODO remove target specific ifdefs
+		{ "mixer_type", typeUINT, "mixr", &mainConfig.mixerConfig.mixerType, 0, MIXER_END, MIXER_X4213, "" },
+#else
 		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,					0, MIXER_END, MIXER_X1234, "" },
+#endif
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtcol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 5, "" },
@@ -152,13 +156,25 @@ const config_variables_rec valueTable[] = {
 		{ "filter_mode2",		typeUINT,  "filt", &mainConfig.filterConfig[2].filterMod, 				0, 10, 1, "" },
 
 		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 30.000, "" },
+#ifdef STM32F446xx	//TODO remove target specific ifdefs
+		{ "yaw_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r,				0, 200, 1, "" },
+#else
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 200, 88.000, "" },
+#endif
 
 		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 60.000, "" },
+#ifdef STM32F446xx	//TODO remove target specific ifdefs
+		{ "roll_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r,				0, 200, 1, "" },		
+#else
 		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 200, 88.000, "" },
+#endif
 
 		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 60.000, "" },
+#ifdef STM32F446xx	//TODO remove target specific ifdefs
+		{ "pitch_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r,				0, 200, 1, "" },
+#else
 		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 200, 88.000, "" },
+#endif
 
 		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
 		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 90.000, "" },
@@ -172,8 +188,13 @@ const config_variables_rec valueTable[] = {
 		{ "z_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.q, 				0, 10, 2.0000, "" },
 		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 025.00, "" },
 
+#ifdef STM32F446xx	//TODO remove target specific ifdefs
+		{ "rx_protocol",		typeUINT, "rccf", &mainConfig.rcControlsConfig.rxProtcol,				0, USING_RX_END - 1, USING_SPEK_R, "" },
+		{ "rx_usart",			typeUINT, "rccf", &mainConfig.rcControlsConfig.rxUsart,					0, MAX_USARTS - 1, ENUM_USART5, "" },
+#else
 		{ "rx_protocol", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxProtcol, 				0, USING_RX_END-1, USING_SPEK_T, "" },
 		{ "rx_usart", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxUsart, 				0, MAX_USARTS-1, ENUM_USART1, "" },
+#endif
 
 		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 		0, 0.1, 0.004, "" },
 		{ "roll_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[ROLL], 		0, 0.1, 0.004, "" },
