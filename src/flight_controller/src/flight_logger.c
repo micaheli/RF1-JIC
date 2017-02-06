@@ -258,6 +258,12 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 		}
 		else
 		{
+
+			
+			if(logItterationCounter < 1)
+			{
+				logItterationCounter = 1;	//TODO make this configurable value. Capture rate = 1khz/value
+
 				//average all values
 				for (finishX = 0; finishX < AXIS_NUMBER; finishX++)
 				{
@@ -344,6 +350,10 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[1] + 1) * 1000) ); //54
 				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[2] + 1) * 1000) ); //56
 				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[3] + 1) * 1000) ); //58
+			}
+
+			logItterationCounter--;
+
 /*
 			//pages are aligned with data at all times if we keep this at 256
 			InlineWrite16To8(  (int16_t)(flightPids[YAW].kp           * 10000) ); //2
