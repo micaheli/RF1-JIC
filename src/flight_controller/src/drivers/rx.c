@@ -417,17 +417,18 @@ void ProcessSbusPacket(uint32_t serialNumber)
 	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SBUS_FRAME_SIZE);
 
 	// do we need to hook these into rxData[ChannelMap(i)] ?
-	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) ) {
-		rxData[ChannelMap(0)] = frame->chan0;
-		rxData[ChannelMap(1)] = frame->chan1;
-		rxData[ChannelMap(2)] = frame->chan2;
-		rxData[ChannelMap(3)] = frame->chan3;
-		rxData[ChannelMap(4)] = frame->chan4;
-		rxData[ChannelMap(5)] = frame->chan5;
-		rxData[ChannelMap(6)] = frame->chan6;
-		rxData[ChannelMap(7)] = frame->chan7;
-		rxData[ChannelMap(8)] = frame->chan8;
-		rxData[ChannelMap(9)] = frame->chan9;
+	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) )
+	{
+		rxData[ChannelMap(0)]  = frame->chan0;
+		rxData[ChannelMap(1)]  = frame->chan1;
+		rxData[ChannelMap(2)]  = frame->chan2;
+		rxData[ChannelMap(3)]  = frame->chan3;
+		rxData[ChannelMap(4)]  = frame->chan4;
+		rxData[ChannelMap(5)]  = frame->chan5;
+		rxData[ChannelMap(6)]  = frame->chan6;
+		rxData[ChannelMap(7)]  = frame->chan7;
+		rxData[ChannelMap(8)]  = frame->chan8;
+		rxData[ChannelMap(9)]  = frame->chan9;
 		rxData[ChannelMap(10)] = frame->chan10;
 		rxData[ChannelMap(11)] = frame->chan11;
 		rxData[ChannelMap(12)] = frame->chan12;
@@ -449,7 +450,9 @@ void ProcessSbusPacket(uint32_t serialNumber)
 		packetTime = 9;
 		InlineCollectRcCommand();
 		RxUpdate();
-	} else {
+	}
+	else
+	{
 		outOfSync++;
 	}
 

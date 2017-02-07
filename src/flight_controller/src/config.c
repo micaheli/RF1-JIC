@@ -70,6 +70,7 @@ const string_comp_rec stringCompTable[] = {
 		{"TARANIS_EXPO", TARANIS_EXPO },
 		{"FAST_EXPO",    FAST_EXPO    },
 		{"ACRO_PLUS",    ACRO_PLUS    },
+		{"KISS_EXPO",    KISS_EXPO    },
 		{"NO_EXPO",      NO_EXPO      },
 
 		//rx.h
@@ -1149,13 +1150,16 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me CPPM Defaults");
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			RfCustomReplyBuffer("#me CPPM Defaults");
 
 			SaveAndSend();
 		}
 		else if (!strcmp("nytfluffy", inString))
 		{
+
+			SetRxDefaults(USING_SBUS_T, ENUM_USART1);
+			SetMode(M_ARMED, 4, 50, 100);
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]    = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[ROLL]     = ACRO_PLUS;
@@ -1180,8 +1184,52 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Nyfluffy mode engaged");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer("#me Nyfluffy mode engaged");
+
+			SaveAndSend();
+
+		}
+		else if (!strcmp("willard", inString))
+		{
+
+			SetRxDefaults(USING_SBUS_T, ENUM_USART1);
+			SetMode(M_ARMED, 4, 50, 100);
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 1;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 0;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 2;
+
+			mainConfig.rcControlsConfig.useCurve[PITCH]      = KISS_EXPO;
+			mainConfig.rcControlsConfig.useCurve[ROLL]       = KISS_EXPO;
+			mainConfig.rcControlsConfig.useCurve[YAW]        = KISS_EXPO;
+			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX3]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX4]       = NO_EXPO;
+
+			mainConfig.rcControlsConfig.rates[PITCH]         = 0.75;
+			mainConfig.rcControlsConfig.rates[ROLL]          = 0.75;
+			mainConfig.rcControlsConfig.rates[YAW]           = 0.75;
+
+			mainConfig.rcControlsConfig.curveExpo[PITCH]     = 0.2;
+			mainConfig.rcControlsConfig.curveExpo[ROLL]      = 0.2;
+			mainConfig.rcControlsConfig.curveExpo[YAW]       = 0.13;
+
+			mainConfig.rcControlsConfig.acroPlus[PITCH]      = 1.28;
+			mainConfig.rcControlsConfig.acroPlus[ROLL]       = 1.28;
+			mainConfig.rcControlsConfig.acroPlus[YAW]        = 1.15;
+
+			mainConfig.mixerConfig.mixerType                 = 0;
+
+			mainConfig.gyroConfig.gyroRotation               = CW0;
+			mainConfig.gyroConfig.boardCalibrated            = 1;
+
+			resetBoard = 1;
+
+			RfCustomReplyBuffer("#me Willard mode engaged");
 
 			SaveAndSend();
 
@@ -1189,57 +1237,9 @@ void ProcessCommand(char *inString)
 		else if (!strcmp("rs2k", inString))
 		{
 
-			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
-			mainConfig.rcControlsConfig.midRc[ROLL]          = 1024;
-			mainConfig.rcControlsConfig.midRc[YAW]           = 1024;
-			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX1]          = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX2]          = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX3]          = 1024;
-			mainConfig.rcControlsConfig.midRc[AUX4]          = 1024;
-
-			mainConfig.rcControlsConfig.minRc[PITCH]         = 22;
-			mainConfig.rcControlsConfig.minRc[ROLL]          = 22;
-			mainConfig.rcControlsConfig.minRc[YAW]           = 22;
-			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 22;
-			mainConfig.rcControlsConfig.minRc[AUX1]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 342;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 342;
-
-			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2025;
-			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2025;
-			mainConfig.rcControlsConfig.maxRc[YAW]           = 2025;
-			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2025;
-			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1706;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1706;
-
-			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
-			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
-			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
-			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
-			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
-			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
-			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
-			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
-			mainConfig.rcControlsConfig.channelMap[AUX5]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX6]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX7]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX8]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX9]     = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX10]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX11]    = 100;
-			mainConfig.rcControlsConfig.channelMap[AUX12]    = 100;
-
-			mainConfig.rcControlsConfig.rcCalibrated         = 1;
-
-			mainConfig.rcControlsConfig.rxUsart              = ENUM_USART3;
-			mainConfig.rcControlsConfig.rxProtcol            = USING_SPEK_T; //this is used by serial.c
-
+			SetRxDefaults(USING_SPEK_T, ENUM_USART3);
 			SetMode(M_ARMED, 4, 50, 100);
-
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			mainConfig.mixerConfig.mixerType                 = 1;
 
@@ -1269,8 +1269,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me rs2k mode engaged");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer("#me RS2K mode engaged");
 
 			SaveAndSend();
 
@@ -1356,8 +1355,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Braindrain mode engaged");
-			RfCustomReply(rf_custom_out_buffer);
+			RfCustomReplyBuffer("#me Braindrain mode engaged");
 
 			SaveAndSend();
 
@@ -1404,8 +1402,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Default PIDs");
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			RfCustomReplyBuffer("#me Default PIDs");
 
 			SaveAndSend();
 
@@ -1590,7 +1587,7 @@ void ProcessCommand(char *inString)
 			{
 
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
-				RfCustomReply(rf_custom_out_buffer);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
 					if (!strcmp(valueTable[x].group, args))
@@ -1610,7 +1607,7 @@ void ProcessCommand(char *inString)
 			}
 			//RfCustomReplyBuffer("#RFEND");
 			//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#RFEND");
-			//RfCustomReply(rf_custom_out_buffer);
+			//RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("eraseallflash", inString))
 		{
@@ -1783,8 +1780,7 @@ void ProcessCommand(char *inString)
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
 			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 5");
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			RfCustomReplyBuffer("#me Binding 5");
 		}
 	else if (!strcmp("bind3", inString))
 		{
@@ -1792,8 +1788,7 @@ void ProcessCommand(char *inString)
 			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
 			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 3");
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			RfCustomReplyBuffer("#me Binding 3");
 		}
 	else if (!strcmp("rebootrfbl", inString) || !strcmp("resetrfbl", inString))
 		{

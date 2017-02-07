@@ -1,6 +1,6 @@
 #include "includes.h"
 
-
+uint32_t doingAutoA = 0;
 esc_one_wire_status escOneWireStatus[16];
 esc_hex_location escHexByPosition[50];
 uint32_t oneWireActive = 0;
@@ -545,6 +545,11 @@ uint32_t OneWireSaveConfig(motor_type actuator) {
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_TEMP_PROTECTION))] = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.tempprotection;
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_COMM_TIMING))]     = escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.timing;
 
+				if (doingAutoA)
+				{
+					inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_MAX_THROTLE))] = 219;
+					inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_PPM_MIN_THROTLE))] = 5;
+				}
 				//ninja update
 				//inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_BRAKE_ON_STOP))]   = 0x01; //enabled
 				inOutBuffer[BLHELI_EEPROM_HEAD + *((uint8_t*)layout + offsetof(BLHeli_EEprom_t, BL_DEMAG_COMP))]      = 0x03; //high

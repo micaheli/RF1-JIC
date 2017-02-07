@@ -160,6 +160,8 @@ typedef struct {
 } esc_one_wire_status;
 
 
+extern uint32_t doingAutoA;
+
 extern const oneWireParameter_t motorBeaconDelayParameter;
 extern const oneWireParameter_t motorBeaconStrengthParameter;
 extern const oneWireParameter_t motorBeepStrengthParameter;
