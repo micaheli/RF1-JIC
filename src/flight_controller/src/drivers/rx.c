@@ -684,7 +684,7 @@ inline void InlineCollectRcCommand (void)
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
 		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis]) {
 			trueRcCommandF[axis]   = InlineConstrainf ( rangedRx, -1, 1);
-			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis]);
+			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis], axis);
 		} else {
 			// no need to calculate if movement is below deadband
 			trueRcCommandF[axis]   = 0;
@@ -697,10 +697,12 @@ inline void InlineCollectRcCommand (void)
 }
 
 
-inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo)
+
+inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo, uint32_t axis)
 {
 
 	float maxOutput, maxOutputMod, returnValue;
+	float kissSetpoint, kissRpyUseRates, kissRxRaw, kissCurve;
 
 	maxOutput    = 1;
 	maxOutputMod = 0.01;
@@ -720,6 +722,15 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 		case ACRO_PLUS:
 		case FAST_EXPO:
 				return ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0)) * rcCommand);
+				break;
+
+		case KISS_EXPO:
+				kissSetpoint    = rcCommand;
+				kissRpyUseRates = 1-ABS(kissSetpoint)*mainConfig.rcControlsConfig.rates[axis];
+				kissRxRaw       = rcCommand*1000;
+				kissCurve       = kissRxRaw*kissRxRaw/1000000;
+				kissSetpoint = ((kissSetpoint*kissCurve)*mainConfig.rcControlsConfig.curveExpo[axis]+kissSetpoint*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10);
+				return ((2000*(1/kissRpyUseRates))*kissSetpoint);
 				break;
 
 		case NO_EXPO:

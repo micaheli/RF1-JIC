@@ -476,6 +476,12 @@ Version 0.170.051
 	Added new mixer
 	changed defaults
 
+Version 0.171.051
+	Added kiss curve. "set pitch_curve=5" "set roll_curve=5" "set yaw_curve=5"
+	when set:
+		pitch_rate, roll_rate and yaw_rate will act like "Rate" does for kiss
+		pitch_expo, roll_expo, yaw_expo will act like "RC Curve" does for kiss
+		pitch_acrop, roll_acrop, yaw_acrop will act like "RC Rate" does for kiss
 
 Features in current development:
 	Spektrum Telemtry
