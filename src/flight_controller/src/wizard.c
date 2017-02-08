@@ -2,6 +2,7 @@
 
 
 uint32_t checkRxData[MAXCHANNELS];
+uint32_t inputChannelMapped[MAXCHANNELS];
 rc_control_config tempRc;
 wizard_record wizardStatus;
 
@@ -189,7 +190,7 @@ static int32_t WizRcWhichInChannelChange(void)
 
 		if ( changeValue > 200 )
 		{
-			if (mainConfig.rcControlsConfig.channelMap[x] == 1000)
+			if (inputChannelMapped[x] == 1000)
 			{
 				currentChannelRange = ABS((float)mainConfig.rcControlsConfig.maxRc[x] - (float)mainConfig.rcControlsConfig.minRc[x]); //1000    //0  //1
 				diffFloat      = (float)rxData[x] -  (float)mainConfig.rcControlsConfig.maxRc[x];
@@ -214,6 +215,7 @@ static int32_t WizRcWhichInChannelChange(void)
 				}
 				if (closestToEndPoint < 0.05)
 				{ //at least within 5% of endpoint
+					inputChannelMapped[x] = 1;
 					inChannelChanged = x;
 				}
 
@@ -248,6 +250,7 @@ void WizRcCheckMinMax(void)
 		//we just brute force set these for later use.
 		tempRc.midRc[x] = (volatile unsigned int)rxData[x];
 		tempRc.channelMap[x] = 1000;
+		inputChannelMapped[x] = 1000;
 	}
 }
 
@@ -284,10 +287,10 @@ static int32_t WizRcSetChannelMapAndDirection(uint32_t inChannel, uint32_t outCh
 
 	int32_t channelCheck = ( rxData[inChannel] < (mainConfig.rcControlsConfig.maxRc[inChannel] - 300) ); //channel is reversed
 
-	if (mainConfig.rcControlsConfig.channelMap[inChannel] == 1000)
+	if (mainConfig.rcControlsConfig.channelMap[outChannel] == 1000)
 	{ //if channelMap for the inChannel is 50 than it's waiting to be assigned.
 
-		mainConfig.rcControlsConfig.channelMap[inChannel] = outChannel; //set channel map
+		mainConfig.rcControlsConfig.channelMap[outChannel] = inChannel; //set channel map
 
 		if ( channelCheck )
 		{ //min is higher so channel is reversed, reverse if needed
@@ -587,14 +590,30 @@ void SetupWizard(char *inString)
 	}
 	else if (!strcmp("rc2", inString))
 	{
-		wizardStatus.currentStep = 2;
-		HandleWizRc();
+		if (!mainConfig.rcControlsConfig.rcCalibrated)
+		{
+			DelayMs(30);
+			wizardStatus.currentStep = 2;
+			HandleWizRc();
+			DelayMs(30);
+		}
+		else
+		{
+			RfCustomReplyBuffer("#wiz please run wiz rc1 first.");
+		}
 		return;
 	}
 	else if (!strcmp("rc3", inString))
 	{
-		wizardStatus.currentStep = 3;
-		HandleWizRc();
+		if (!mainConfig.rcControlsConfig.rcCalibrated)
+		{
+			wizardStatus.currentStep = 3;
+			HandleWizRc();
+		}
+		else
+		{
+			RfCustomReplyBuffer("#wiz please run wiz rc1 first.");
+		}
 		return;
 	}
 	else if (!strcmp("mot1", inString))
@@ -684,9 +703,7 @@ void OneWire(char *inString) {
 	uint32_t doingAuto = 0;
 	uint32_t doingSettings = 0;
 
-	doingAutoA = 0;
-
-	if (!strcmp("start", inString) || !strcmp("read", inString) || !strcmp("check", inString) || !strcmp("settings", inString) || !strcmp("auto", inString) || !strcmp("autoa", inString))
+	if (!strcmp("start", inString) || !strcmp("read", inString) || !strcmp("check", inString) || !strcmp("settings", inString) || !strcmp("auto", inString))
 	{
 
 		if (!strcmp("check", inString))
@@ -694,17 +711,10 @@ void OneWire(char *inString) {
 			verbose = 0;
 		}
 
-		if (!strcmp("autoa", inString))
-		{
-			doingAuto = 1;
-			doingAutoA = 1;
-		}
-
 		if (!strcmp("auto", inString))
 		{
 			doingAuto = 1;
 		}
-
 		if (!strcmp("settings", inString))
 		{
 			doingSettings = 1;

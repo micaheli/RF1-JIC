@@ -220,7 +220,7 @@ void TaskWizard(void) {
 	{
 
 		case WIZ_RC:
-			if (wizardStatus.currentStep != 3) //step three needs to be polled by user/gui
+			if (wizardStatus.currentStep == 1) //step three needs to be polled by user/gui
 				HandleWizRc();
 			break;
 		case 0:

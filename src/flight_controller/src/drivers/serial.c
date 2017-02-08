@@ -134,6 +134,8 @@ void UsartInit(uint32_t serialNumber)
 			break;
 	}
 
+	if ( (serialNumber == 0) && (mainConfig.rcControlsConfig.rxInvertDirection) )
+		PowerInveter(ENUM_PORTC, GPIO_PIN_0, mainConfig.rcControlsConfig.rxInvertDirection);
 
 	/*##-2- Configure peripheral GPIO ##########################################*/
 	if (board.serials[serialNumber].Mode != UART_MODE_RX)

@@ -487,6 +487,16 @@ Version 0.171.051
 
 Version 0.172.051
 	Added 1wire autoa which will set basic ESC calibration as well
+	Changed how rc mapping works and updated RC wizards.
+	
+Version 0.172.051:
+	Updated wizards
+	Added pin inversion in config
+	Added motors 5 and 6 to revolt pinout. Not yet enabled.
+
+Version 0.173.051:
+	Altered wizards.
+
 
 
 Features in current development:

@@ -11,6 +11,7 @@ static uint32_t packetTime = 11;
 uint32_t PreArmFilterCheck = 0;
 uint32_t activeFailsafe = 0;
 
+uint32_t rxDataRaw[MAXCHANNELS];
 uint32_t rxData[MAXCHANNELS];
 
 uint32_t skipRxMap = 0;
@@ -342,6 +343,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 {
 	volatile uint32_t spektrumChannel;
 	uint32_t x;
+	int32_t y;
 	uint32_t value;
 	uint16_t channelIdMask;
 	uint16_t servoPosMask;
@@ -367,11 +369,16 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		spektrumChannel = (value & channelIdMask) >> bitShift;
 		if (spektrumChannel < MAXCHANNELS)
 		{
-			rxData[ChannelMap(spektrumChannel)] = value & servoPosMask;
+			rxDataRaw[spektrumChannel] = value & servoPosMask;
 			rx_timeout = 0;
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
 				buzzerStatus.status = STATE_BUZZER_OFF;
 		}
+	}
+
+	for (y=MAXCHANNELS-1;y>-1;y--)
+	{
+		rxData[y] = rxDataRaw[ChannelMap(y)];
 	}
 
 	if ( !(board.serials[serialNumber].Protocol == USING_DSM2_T) && !(board.serials[serialNumber].Protocol == USING_DSM2_R) )
@@ -408,33 +415,45 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	RxUpdate();
 }
 
+void PowerInveter(uint32_t port, uint32_t pin, uint32_t direction)
+{
+	if (direction)
+		InitializeGpio(ports[port], pin, direction-1);
+}
+
 void ProcessSbusPacket(uint32_t serialNumber)
 {
 	static uint32_t outOfSync = 0, inSync = 0;
+	int32_t y;
 
 	sbusFrame_t *frame = (sbusFrame_t*)copiedBufferData;
 
 	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SBUS_FRAME_SIZE);
 
 	// do we need to hook these into rxData[ChannelMap(i)] ?
-	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) )
-	{
-		rxData[ChannelMap(0)]  = frame->chan0;
-		rxData[ChannelMap(1)]  = frame->chan1;
-		rxData[ChannelMap(2)]  = frame->chan2;
-		rxData[ChannelMap(3)]  = frame->chan3;
-		rxData[ChannelMap(4)]  = frame->chan4;
-		rxData[ChannelMap(5)]  = frame->chan5;
-		rxData[ChannelMap(6)]  = frame->chan6;
-		rxData[ChannelMap(7)]  = frame->chan7;
-		rxData[ChannelMap(8)]  = frame->chan8;
-		rxData[ChannelMap(9)]  = frame->chan9;
-		rxData[ChannelMap(10)] = frame->chan10;
-		rxData[ChannelMap(11)] = frame->chan11;
-		rxData[ChannelMap(12)] = frame->chan12;
-		rxData[ChannelMap(13)] = frame->chan13;
-		rxData[ChannelMap(14)] = frame->chan14;
-		rxData[ChannelMap(15)] = frame->chan15;
+	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) ) {
+		rxDataRaw[0] = frame->chan0;
+		rxDataRaw[1] = frame->chan1;
+		rxDataRaw[2] = frame->chan2;
+		rxDataRaw[3] = frame->chan3;
+		rxDataRaw[4] = frame->chan4;
+		rxDataRaw[5] = frame->chan5;
+		rxDataRaw[6] = frame->chan6;
+		rxDataRaw[7] = frame->chan7;
+		rxDataRaw[8] = frame->chan8;
+		rxDataRaw[9] = frame->chan9;
+		rxDataRaw[10] = frame->chan10;
+		rxDataRaw[11] = frame->chan11;
+		rxDataRaw[12] = frame->chan12;
+		rxDataRaw[13] = frame->chan13;
+		rxDataRaw[14] = frame->chan14;
+		rxDataRaw[15] = frame->chan15;
+
+		for (y=MAXCHANNELS-1;y>-1;y--)
+		{
+			rxData[y] = rxDataRaw[ChannelMap(y)];
+		}
+
 		inSync++;
 		// TODO: is this best way to deal with failsafe stuff?
 		//if (!(frame->flags & (SBUS_FRAME_LOSS_FLAG | SBUS_FAILSAFE_FLAG))) {
@@ -450,9 +469,7 @@ void ProcessSbusPacket(uint32_t serialNumber)
 		packetTime = 9;
 		InlineCollectRcCommand();
 		RxUpdate();
-	}
-	else
-	{
+	} else {
 		outOfSync++;
 	}
 
@@ -462,6 +479,7 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 {
 
 	uint32_t x;
+	int32_t y;
 	uint16_t value;
 	uint16_t numOfChannels;
 	//uint16_t receivedCrc;
@@ -503,7 +521,7 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 				{
 
 					value = (uint32_t)( (uint16_t)((copiedBufferData[3 + x * 2 + 0] << 8) & 0x0000FF00) | (uint8_t)(copiedBufferData[3 + x * 2 + 1] & 0x000000FF) );
-					rxData[ChannelMap(x)] = value; //high byte
+					rxDataRaw[x] = value; //high byte
 
 				}
 
@@ -516,6 +534,10 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 			}
 
+			for (y=MAXCHANNELS-1;y>-1;y--)
+			{
+				rxData[y] = rxDataRaw[ChannelMap(y)];
+			}
 		}
 
 	}
@@ -526,6 +548,7 @@ void ProcessIbusPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 {
 
 	uint32_t i;
+	int32_t y;
 	uint16_t chkSum, rxSum;
 
 															// Make sure this is very first thing done in function, and its called first on interrupt
@@ -539,16 +562,21 @@ void ProcessIbusPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 	 if (chkSum == rxSum)
 	 {
-		rxData[ChannelMap(0)] = (copiedBufferData[ 3] << 8) + copiedBufferData[ 2];
-		rxData[ChannelMap(1)] = (copiedBufferData[ 5] << 8) + copiedBufferData[ 4];
-		rxData[ChannelMap(2)] = (copiedBufferData[ 7] << 8) + copiedBufferData[ 6];
-		rxData[ChannelMap(3)] = (copiedBufferData[ 9] << 8) + copiedBufferData[ 8];
-		rxData[ChannelMap(4)] = (copiedBufferData[11] << 8) + copiedBufferData[10];
-		rxData[ChannelMap(5)] = (copiedBufferData[13] << 8) + copiedBufferData[12];
-		rxData[ChannelMap(6)] = (copiedBufferData[15] << 8) + copiedBufferData[14];
-		rxData[ChannelMap(7)] = (copiedBufferData[17] << 8) + copiedBufferData[16];
-		rxData[ChannelMap(8)] = (copiedBufferData[19] << 8) + copiedBufferData[18];
-		rxData[ChannelMap(9)] = (copiedBufferData[21] << 8) + copiedBufferData[20];
+		rxDataRaw[0] = (copiedBufferData[ 3] << 8) + copiedBufferData[ 2];
+		rxDataRaw[1] = (copiedBufferData[ 5] << 8) + copiedBufferData[ 4];
+		rxDataRaw[2] = (copiedBufferData[ 7] << 8) + copiedBufferData[ 6];
+		rxDataRaw[3] = (copiedBufferData[ 9] << 8) + copiedBufferData[ 8];
+		rxDataRaw[4] = (copiedBufferData[11] << 8) + copiedBufferData[10];
+		rxDataRaw[5] = (copiedBufferData[13] << 8) + copiedBufferData[12];
+		rxDataRaw[6] = (copiedBufferData[15] << 8) + copiedBufferData[14];
+		rxDataRaw[7] = (copiedBufferData[17] << 8) + copiedBufferData[16];
+		rxDataRaw[8] = (copiedBufferData[19] << 8) + copiedBufferData[18];
+		rxDataRaw[9] = (copiedBufferData[21] << 8) + copiedBufferData[20];
+
+		for (y=MAXCHANNELS-1;y>-1;y--)
+		{
+			rxData[y] = rxDataRaw[ChannelMap(y)];
+		}
 
 		packetTime = 10;
 		rx_timeout = 0;
@@ -583,11 +611,13 @@ void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx)
 		ppmData[6] = (ppmBuffer[15] - ppmBuffer[14]);
 		ppmData[7] = (ppmBuffer[17] - ppmBuffer[16]);
 
+		memcpy(rxDataRaw, ppmData, 8);
+
 		for (x=0;x<8;x++)
 		{
-			if ( (ppmData[x] < 2200) && (ppmData[x] > 500) )
+			if ( (rxDataRaw[x] < 2200) && (rxDataRaw[x] > 500) )
 			{
-				rxData[ChannelMap(x)] = ppmData[x];
+				rxData[x] = rxDataRaw[ChannelMap(x)];
 			}
 		}
 
@@ -687,7 +717,7 @@ inline void InlineCollectRcCommand (void)
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
 		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis]) {
 			trueRcCommandF[axis]   = InlineConstrainf ( rangedRx, -1, 1);
-			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis], axis);
+			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis]);
 		} else {
 			// no need to calculate if movement is below deadband
 			trueRcCommandF[axis]   = 0;
@@ -700,12 +730,10 @@ inline void InlineCollectRcCommand (void)
 }
 
 
-
-inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo, uint32_t axis)
+inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo)
 {
 
 	float maxOutput, maxOutputMod, returnValue;
-	float kissSetpoint, kissRpyUseRates, kissRxRaw, kissCurve;
 
 	maxOutput    = 1;
 	maxOutputMod = 0.01;
@@ -725,15 +753,6 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 		case ACRO_PLUS:
 		case FAST_EXPO:
 				return ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0)) * rcCommand);
-				break;
-
-		case KISS_EXPO:
-				kissSetpoint    = rcCommand;
-				kissRpyUseRates = 1-ABS(kissSetpoint)*mainConfig.rcControlsConfig.rates[axis];
-				kissRxRaw       = rcCommand*1000;
-				kissCurve       = kissRxRaw*kissRxRaw/1000000;
-				kissSetpoint = ((kissSetpoint*kissCurve)*mainConfig.rcControlsConfig.curveExpo[axis]+kissSetpoint*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10);
-				return ((2000*(1/kissRpyUseRates))*kissSetpoint);
 				break;
 
 		case NO_EXPO:
@@ -825,9 +844,9 @@ void SetRxDefaults(uint32_t rxProtocol, uint32_t usart)
 			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
 			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
 
-			mainConfig.rcControlsConfig.channelMap[PITCH]    = 3;
-			mainConfig.rcControlsConfig.channelMap[ROLL]     = 2;
-			mainConfig.rcControlsConfig.channelMap[YAW]      = 1;
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
 			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
@@ -871,9 +890,9 @@ void SetRxDefaults(uint32_t rxProtocol, uint32_t usart)
 			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
 			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
 
-			mainConfig.rcControlsConfig.channelMap[PITCH]    = 3;
-			mainConfig.rcControlsConfig.channelMap[ROLL]     = 2;
-			mainConfig.rcControlsConfig.channelMap[YAW]      = 1;
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
 			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;

@@ -19,6 +19,9 @@ typedef struct {
     uint32_t rcCalibrated;
     uint32_t rxProtcol;
     uint32_t rxUsart;
+    uint32_t rxInvertPin;
+    uint32_t rxInvertPort;
+    uint32_t rxInvertDirection;
     uint32_t bind;
 } rc_control_config;
 
@@ -65,12 +68,11 @@ enum {
 //We can use different styles of curves
 //used in config.c string table
 enum {
-	NO_EXPO      = 0,
-	SKITZO_EXPO  = 1,
+	NO_EXPO = 0,
+	SKITZO_EXPO = 1,
 	TARANIS_EXPO = 2,
-	FAST_EXPO    = 3,
-	ACRO_PLUS    = 4,
-	KISS_EXPO    = 5,
+	FAST_EXPO = 3,
+	ACRO_PLUS = 4,
 	EXPO_CURVE_END,
 };
 
@@ -97,6 +99,7 @@ extern volatile uint32_t rx_timeout;
 extern float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position
 extern float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the rcCommand after the curve is applied
 extern float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
+extern uint32_t rxDataRaw[MAXCHANNELS];
 extern uint32_t rxData[MAXCHANNELS];
 extern volatile unsigned char isRxDataNew;
 extern uint32_t skipRxMap;
@@ -107,10 +110,11 @@ extern void SpektrumBind (uint32_t bindNumber);
 
 extern void InitRcData(void);
 extern void InlineCollectRcCommand (void);
-extern float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo, uint32_t axis);
+extern float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo);
 extern void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]);
 
 extern void ProcessSpektrumPacket(uint32_t serialNumber);
+extern void PowerInveter(uint32_t port, uint32_t pin, uint32_t direction);
 extern void ProcessSbusPacket(uint32_t serialNumber);
 extern void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize);
 extern void ProcessIbusPacket(uint8_t serialRxBuffer[], uint32_t frameSize);
