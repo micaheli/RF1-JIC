@@ -703,19 +703,23 @@ void OneWire(char *inString) {
 	uint32_t doingAuto = 0;
 	uint32_t doingSettings = 0;
 
-	if (!strcmp("start", inString) || !strcmp("read", inString) || !strcmp("check", inString) || !strcmp("settings", inString) || !strcmp("auto", inString))
+	if (!strcmp("start", inString) || !strcmp("read", inString) || !strcmp("check", inString) || !strcmp("settings", inString) || !strcmp("auto", inString) || !strcmp("autoa", inString))
 	{
 
 		if (!strcmp("check", inString))
 		{
 			verbose = 0;
 		}
-
-		if (!strcmp("auto", inString))
+		else if (!strcmp("autoa", inString))
+		{
+			doingAuto = 1;
+			doingAutoA = 1;
+		}
+		else if (!strcmp("auto", inString))
 		{
 			doingAuto = 1;
 		}
-		if (!strcmp("settings", inString))
+		else if (!strcmp("settings", inString))
 		{
 			doingSettings = 1;
 		}

@@ -497,6 +497,14 @@ Version 0.172.051:
 Version 0.173.051:
 	Altered wizards.
 
+Version 0.174.054:
+	Wizard update.
+
+Version 0.175.054:
+	Wizard update.
+
+Version 0.176.054:
+	Wizard update.
 
 
 Features in current development:
