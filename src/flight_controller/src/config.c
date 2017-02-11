@@ -795,15 +795,8 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("polladc", inString))
 		{
-			if (HAL_ADC_PollForConversion(&adcHandle[board.boardADC[1].adcHandle], 10000) == HAL_OK)
-			{
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ADC: %lu", HAL_ADC_GetValue(&adcHandle[board.boardADC[1].adcHandle]) );
-				RfCustomReplyBuffer(rf_custom_out_buffer);
-			}
-			else
-			{
-				RfCustomReplyBuffer("#me ADC ERROR");
-			}
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ADC: %lu", adcVoltage );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("idle", inString))
 		{

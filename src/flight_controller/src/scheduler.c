@@ -29,6 +29,7 @@ static void TaskAutoSaveConfig(void);
 static void TaskHandlePcComm(void);
 static void TaskLed(void);
 static void TaskBuzzer(void);
+static void TaskAdc(void);
 
 void scheduler(int32_t count)
 {
@@ -57,6 +58,7 @@ void scheduler(int32_t count)
 			TaskWizard();
 			break;
 		case 7:
+			TaskAdc();
 			break;
 		case 8:
 			break;
@@ -74,6 +76,18 @@ void scheduler(int32_t count)
 
 	}
 
+}
+
+void TaskAdc(void)
+{
+	if (HAL_ADC_PollForConversion(&adcHandle[board.boardADC[1].adcHandle], 2) == HAL_OK)
+	{
+		adcVoltage = HAL_ADC_GetValue(&adcHandle[board.boardADC[1].adcHandle]);
+	}
+	else
+	{
+		adcVoltage = 0;
+	}
 }
 
  void TaskProcessSoftSerial(void) {
@@ -212,7 +226,6 @@ void scheduler(int32_t count)
 */
 
 }
-
 
 void TaskWizard(void) {
 
