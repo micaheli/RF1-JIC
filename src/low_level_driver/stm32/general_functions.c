@@ -188,3 +188,46 @@ uint32_t GetExtiCallbackFromPin(uint16_t GPIO_Pin)
 	return (0);
 
 }
+
+uint32_t GetDmaCallbackFromDmaStream(uint32_t dmaEnum)
+{
+
+	switch (dmaEnum)
+	{
+		case ENUM_DMA1_STREAM_0:
+			return (FP_DMA1_S0);
+		case ENUM_DMA1_STREAM_1:
+			return (FP_DMA1_S1);
+		case ENUM_DMA1_STREAM_2:
+			return (FP_DMA1_S2);
+		case ENUM_DMA1_STREAM_3:
+			return (FP_DMA1_S3);
+		case ENUM_DMA1_STREAM_4:
+			return (FP_DMA1_S4);
+		case ENUM_DMA1_STREAM_5:
+			return (FP_DMA1_S5);
+		case ENUM_DMA1_STREAM_6:
+			return (FP_DMA1_S6);
+		case ENUM_DMA1_STREAM_7:
+			return (FP_DMA1_S7);
+		case ENUM_DMA2_STREAM_0:
+			return (FP_DMA2_S0);
+		case ENUM_DMA2_STREAM_1:
+			return (FP_DMA2_S1);
+		case ENUM_DMA2_STREAM_2:
+			return (FP_DMA2_S2);
+		case ENUM_DMA2_STREAM_3:
+			return (FP_DMA2_S3);
+		case ENUM_DMA2_STREAM_4:
+			return (FP_DMA2_S4);
+		case ENUM_DMA2_STREAM_5:
+			return (FP_DMA2_S5);
+		case ENUM_DMA2_STREAM_6:
+			return (FP_DMA2_S6);
+		case ENUM_DMA2_STREAM_7:
+			return (FP_DMA2_S7);
+	}
+
+	return (0);
+
+}

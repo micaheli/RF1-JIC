@@ -60,7 +60,7 @@ void sendSpektrumTelem(void)
 	case TELEM_INTERNAL:
 		{
 			telemetry.packet.data.internalSensors.id = INTERNAL_ID;      
-			//telemetry.packet.data.internalSensors.packVoltage = UINT16_ENDIAN(vbat * 10);
+			telemetry.packet.data.internalSensors.packVoltage = UINT16_ENDIAN(200 * 10);
 
 			//Currently we have no values to provide here. Send 0xFFFF so receiver will use its own values
 			//RPM data is multipurposed with Lap Time data, so changing the value here will mean the receiver wont use its own measured RPM/Lap Time
@@ -208,15 +208,12 @@ void sendSpektrumBind()
 
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 {
-	(void)(packetSize);
-	(void)(baseAddress);
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
 	{
 		if ( (board.serials[serialNumber].enabled) && (mainConfig.telemConfig.telemSpek) )
 		{
-			//callbackFunctionArray[FP_DMA1_S3] = SerialTxCallback;
-			//HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)baseAddress, packetSize);
-			//HAL_UART_Transmit(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)baseAddress, packetSize, 10);
+			if (board.serials[serialNumber].Protocol == USING_SPEK_T)
+				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)baseAddress, packetSize);
 		}
 	}
 }

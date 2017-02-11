@@ -51,8 +51,9 @@ static   float    FindSoftSerialLineIdleTime(float byteWidth);
 static   uint32_t HandleSoftSerial(void) __attribute__ ((unused));
 
 
-void SoftSerialExtiCallback(void)
+void SoftSerialExtiCallback(uint32_t callbackNumber)
 {
+	(void)(callbackNumber);
 	// EXTI line interrupt detected
 	if(__HAL_GPIO_EXTI_GET_IT(softSerialStatus.currentActuator.pin) != RESET)
 	{
@@ -66,8 +67,9 @@ void SoftSerialExtiCallback(void)
 	}
 }
 
-void SoftSerialDmaCallback(void)
+void SoftSerialDmaCallback(uint32_t callbackNumber)
 {
+	(void)(callbackNumber);
 	 if (dmaHandles[softSerialStatus.currentActuator.Dma].State == HAL_DMA_STATE_READY) {
 			//DMA is done sending, let's switch GPIO to EXTI mode
 			PutSoftSerialActuatorInReceiveState(softSerialStatus.currentActuator);

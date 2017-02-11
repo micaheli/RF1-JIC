@@ -23,8 +23,8 @@ SPI_TypeDef        *spiInstance[6];
 ADC_TypeDef        *adcInstance[3];
 ADC_HandleTypeDef   adcHandle[3];
 
-unsigned char serialRxBuffer[3][RXBUFFERSIZE];
-unsigned char serialTxBuffer[3][TXBUFFERSIZE];
+unsigned char serialRxBuffer[6][RXBUFFERSIZE];
+unsigned char serialTxBuffer[6][TXBUFFERSIZE];
 uint32_t motorOutputBuffer[8][1500];
 
 
@@ -672,8 +672,8 @@ void getBoardHardwareDefs(void)
 	board.serials[ENUM_USART2].RXDma          = USART2_RXDMA;
 	board.serials[ENUM_USART2].RXDmaChannel   = USART2_RXDMA_CHANNEL;
 
-	board.serials[ENUM_USART2].serialTxBuffer = 1;
-	board.serials[ENUM_USART2].serialRxBuffer = 1;
+	board.serials[ENUM_USART2].serialTxBuffer = 2;
+	board.serials[ENUM_USART2].serialRxBuffer = 2;
 
 	board.serials[ENUM_USART2].TXDma 		  = USART2_TXDMA;
 	board.serials[ENUM_USART2].RXDma 		  = USART2_RXDMA;
@@ -712,8 +712,8 @@ void getBoardHardwareDefs(void)
 	board.serials[ENUM_USART3].RXDma          = USART3_RXDMA;
 	board.serials[ENUM_USART3].RXDmaChannel   = USART3_RXDMA_CHANNEL;
 
-	board.serials[ENUM_USART3].serialTxBuffer = 2;
-	board.serials[ENUM_USART3].serialRxBuffer = 2;
+	board.serials[ENUM_USART3].serialTxBuffer = 3;
+	board.serials[ENUM_USART3].serialRxBuffer = 3;
 
 	board.serials[ENUM_USART3].TXDma 		  = USART3_TXDMA;
 	board.serials[ENUM_USART3].RXDma 		  = USART3_RXDMA;
@@ -752,8 +752,8 @@ void getBoardHardwareDefs(void)
 	board.serials[ENUM_USART4].RXDma          = USART4_RXDMA;
 	board.serials[ENUM_USART4].RXDmaChannel   = USART4_RXDMA_CHANNEL;
 
-	board.serials[ENUM_USART4].serialTxBuffer = 3;
-	board.serials[ENUM_USART4].serialRxBuffer = 3;
+	board.serials[ENUM_USART4].serialTxBuffer = 4;
+	board.serials[ENUM_USART4].serialRxBuffer = 4;
 
 	board.serials[ENUM_USART4].TXDma 		  = USART4_TXDMA;
 	board.serials[ENUM_USART4].RXDma 		  = USART4_RXDMA;
@@ -792,8 +792,8 @@ void getBoardHardwareDefs(void)
 	board.serials[ENUM_USART5].RXDma          = USART5_RXDMA;
 	board.serials[ENUM_USART5].RXDmaChannel   = USART5_RXDMA_CHANNEL;
 
-	board.serials[ENUM_USART5].serialTxBuffer = 1;
-	board.serials[ENUM_USART5].serialRxBuffer = 1;
+	board.serials[ENUM_USART5].serialTxBuffer = 5;
+	board.serials[ENUM_USART5].serialRxBuffer = 5;
 
 	board.serials[ENUM_USART5].TXDma 		  = USART5_TXDMA;
 	board.serials[ENUM_USART5].RXDma 		  = USART5_RXDMA;
@@ -832,8 +832,8 @@ void getBoardHardwareDefs(void)
 	board.serials[ENUM_USART6].RXDma          = USART6_RXDMA;
 	board.serials[ENUM_USART6].RXDmaChannel   = USART6_RXDMA_CHANNEL;
 
-	board.serials[ENUM_USART6].serialTxBuffer = 1;
-	board.serials[ENUM_USART6].serialRxBuffer = 1;
+	board.serials[ENUM_USART6].serialTxBuffer = 6;
+	board.serials[ENUM_USART6].serialRxBuffer = 6;
 
 	board.serials[ENUM_USART6].TXDma 		  = USART6_TXDMA;
 	board.serials[ENUM_USART6].RXDma 		  = USART6_RXDMA;

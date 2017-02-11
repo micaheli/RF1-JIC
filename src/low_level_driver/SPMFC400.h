@@ -162,6 +162,8 @@
 
 
 //START USART defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#undef USART_USED_ADVANCED
+
 #define USART1_ENABLED					0
 #define USART1_PINMODE					0
 #define USART1_PINPULL					0

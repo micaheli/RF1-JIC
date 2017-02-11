@@ -89,10 +89,12 @@ uint32_t AccGyroInit(loopCtrl_e loopCtrl)
     return 1;
 }
 
-void GyroExtiCallback(void)
+void GyroExtiCallback(uint32_t callbackNumber)
 {
 	static uint32_t gyroLoopCounter = 0;
 	HAL_GPIO_EXTI_IRQHandler(board.gyros[0].extiPin);
+
+	(void)(callbackNumber);
 
     if (!skipGyro)
     {
@@ -107,9 +109,9 @@ void GyroExtiCallback(void)
 }
 
 
-void GyroRxDmaCallback(void)
+void GyroRxDmaCallback(uint32_t callbackNumber)
 {
-
+	(void)(callbackNumber);
     if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY) {
         // reset chip select line
 	    inlineDigitalHi(ports[board.gyros[0].csPort], board.gyros[0].csPin);

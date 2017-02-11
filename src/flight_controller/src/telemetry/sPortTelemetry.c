@@ -85,7 +85,7 @@ static void SmartPortCreatePacket(uint32_t id, int32_t val, uint8_t sPortPacket[
 
 void CheckIfSportReadyToSend(void)
 {
-	if (IsSoftSerialLineIdle())
+	if (IsSoftSerialLineIdle()) //soft serial?
 	{
 		telemtryRxTimerBuffer[telemtryRxTimerBufferIdx] = telemtryRxTimerBuffer[telemtryRxTimerBufferIdx - 1] + lrintf(17.36*2); //put in last time so we can get the last byte. We need the last byte to calculate the frame.
 		telemtryRxTimerBufferIdx++;
@@ -101,15 +101,22 @@ void CheckIfSportReadyToSend(void)
 		telemtryRxTimerBufferIdx = 0; //set time buffer index to zero
 		telemtryRxBufferIdx = 0; //set time buffer index to zero
 	}
+	else if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x1B) ) //normal serial?
+	{
+		telemtryRxBuffer[1] = 0;
+		sendSmartPortAt = Micros() + 1500;
+	}
 }
 
 
 void SendSmartPort(void)
 {
+	uint32_t sentSerial = 0;
 	uint8_t sPortPacket[SPORT_PACKET_SIZE];
 
 	//create the s.port packet using the sensor id, sensor data ranged to what it needs to be and a buffer to store the packet.
-	switch(sPortTelemCount++) {
+	switch(sPortTelemCount++)
+	{
 		case 0:
 			SmartPortCreatePacket(0x0700, (int32_t)(filteredAccData[ACCX] * 100), sPortPacket );
 			break;
@@ -134,12 +141,76 @@ void SendSmartPort(void)
 			sPortTelemCount = 0;
 			return;
 			break;
-
 	}
 
 
-	//if soft serial: //TODO:allow hard s.port
-	OutputSerialDmaByte(sPortPacket, SPORT_PACKET_SIZE, sbusActuator, 0, 1, 0);
+	//send via hard serial if it's configured
+	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
+	{
+		if ( (board.serials[serialNumber].enabled) && (mainConfig.telemConfig.telemSport) )
+		{
+			if (board.serials[serialNumber].Protocol == USING_SPORT)
+			{
+				sentSerial = 1;
+				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)sPortPacket, SPORT_PACKET_SIZE);
+			}
+		}
+	}
+
+	//otherwise send via soft serial
+	if(!sentSerial)
+	{
+		OutputSerialDmaByte(sPortPacket, SPORT_PACKET_SIZE, sbusActuator, 0, 1, 0);
+	}
+
+}
+
+
+void InitSport(uint32_t usartNumber)
+{
+	//use manual protocol to setup s.port.
+	board.serials[usartNumber].enabled   = 1;
+	board.serials[usartNumber].Protocol  = USING_SPORT;
+
+	board.serials[usartNumber].BaudRate   = 57600;
+	board.serials[usartNumber].WordLength = UART_WORDLENGTH_8B;
+	board.serials[usartNumber].StopBits   = UART_STOPBITS_1;
+	board.serials[usartNumber].Parity     = UART_PARITY_NONE;
+	board.serials[usartNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
+	board.serials[usartNumber].Mode       = UART_MODE_TX_RX;
+
+	board.serials[usartNumber].RXPin  = board.serials[usartNumber].TXPin;
+	board.serials[usartNumber].RXPort = board.serials[usartNumber].TXPort;
+
+	board.serials[usartNumber].serialTxInverted = 1;
+	board.serials[usartNumber].serialRxInverted = 1;
+
+
+	board.dmasSerial[board.serials[usartNumber].TXDma].enabled  = 1;
+	board.dmasSerial[board.serials[usartNumber].RXDma].enabled  = 1;
+
+	board.dmasSerial[board.serials[usartNumber].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH;
+	board.dmasSerial[board.serials[usartNumber].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+	board.dmasSerial[board.serials[usartNumber].TXDma].dmaMemInc          = DMA_MINC_ENABLE;
+	board.dmasSerial[board.serials[usartNumber].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+	board.dmasSerial[board.serials[usartNumber].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+	board.dmasSerial[board.serials[usartNumber].TXDma].dmaMode            = DMA_NORMAL;
+	board.dmasSerial[board.serials[usartNumber].TXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
+	board.dmasSerial[board.serials[usartNumber].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+	memcpy( &board.dmasActive[board.serials[usartNumber].TXDma], &board.dmasSerial[board.serials[usartNumber].TXDma], sizeof(board_dma) ); //TODO: Add dmasUsart
+
+	board.dmasSerial[board.serials[usartNumber].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
+	board.dmasSerial[board.serials[usartNumber].RXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+	board.dmasSerial[board.serials[usartNumber].RXDma].dmaMemInc          = DMA_MINC_DISABLE;
+	board.dmasSerial[board.serials[usartNumber].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+	board.dmasSerial[board.serials[usartNumber].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+	board.dmasSerial[board.serials[usartNumber].RXDma].dmaMode            = DMA_CIRCULAR;
+	board.dmasSerial[board.serials[usartNumber].RXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
+	board.dmasSerial[board.serials[usartNumber].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+	memcpy( &board.dmasActive[board.serials[usartNumber].RXDma], &board.dmasSerial[board.serials[usartNumber].RXDma], sizeof(board_dma) );
+
+	UsartDeInit(usartNumber); //deinits serial and associated pins and DMAs
+	UsartInit(usartNumber); //inits serial and associated pins and DMAs
 }
 
 
@@ -181,8 +252,9 @@ static uint32_t IsSoftSerialLineIdle() {
 	return(0);
 }
 
-void SportSoftSerialExtiCallback(void)
+void SportSoftSerialExtiCallback(uint32_t callbackNumber)
 {
+	(void)(callbackNumber);
 	// EXTI line interrupt detected
 	if(__HAL_GPIO_EXTI_GET_IT(sbusActuator.pin) != RESET)
 	{
@@ -195,8 +267,9 @@ void SportSoftSerialExtiCallback(void)
 	}
 }
 
-void SportSoftSerialDmaCallback(void)
+void SportSoftSerialDmaCallback(uint32_t callbackNumber)
 {
+	(void)(callbackNumber);
 	//after done sending we put soft serial back into rx state
 	 if (dmaHandles[sbusActuator.Dma].State == HAL_DMA_STATE_READY)
 	 {
