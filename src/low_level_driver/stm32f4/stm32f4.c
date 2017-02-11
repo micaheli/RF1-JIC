@@ -34,34 +34,24 @@ void SystemClock_Config(void)
 
     /* Configure RCC Oscillators: All parameters can be changed according to user’s needs */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLM = FC_PLLM;
-	RCC_OscInitStruct.PLL.PLLN = FC_PLLN;
-	RCC_OscInitStruct.PLL.PLLP = FC_PLLP;
-	RCC_OscInitStruct.PLL.PLLQ = FC_PLLQ;
+    RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
+	RCC_OscInitStruct.PLL.PLLM       = FC_PLLM;
+	RCC_OscInitStruct.PLL.PLLN       = FC_PLLN;
+	RCC_OscInitStruct.PLL.PLLP       = FC_PLLP;
+	RCC_OscInitStruct.PLL.PLLQ       = FC_PLLQ;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         while(1);
     }
 
     /* RCC Clocks: All parameters can be changed according to user’s needs */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK |RCC_CLOCKTYPE_HCLK |RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.ClockType      = RCC_CLOCKTYPE_SYSCLK |RCC_CLOCKTYPE_HCLK |RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
     HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
-        while(1);
-    }
-
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                                |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
         while(1);
     }
@@ -101,6 +91,10 @@ void BoardInit(void)
     //__HAL_RCC_GPIOH_CLK_ENABLE();
     //__HAL_RCC_GPIOI_CLK_ENABLE();
 
+    __HAL_RCC_ADC1_CLK_ENABLE();
+    __HAL_RCC_ADC2_CLK_ENABLE();
+    __HAL_RCC_ADC3_CLK_ENABLE();
+
     __HAL_RCC_DMA1_CLK_ENABLE();
     __HAL_RCC_DMA2_CLK_ENABLE();
 
@@ -123,10 +117,6 @@ void BoardInit(void)
     __HAL_RCC_TIM10_CLK_ENABLE();
     __HAL_RCC_TIM11_CLK_ENABLE();
     __HAL_RCC_TIM12_CLK_ENABLE();
-
-    __HAL_RCC_SPI1_CLK_ENABLE();
-    __HAL_RCC_SPI2_CLK_ENABLE();
-	__HAL_RCC_SPI3_CLK_ENABLE();
 }
 
 void USBInit(void)
@@ -175,4 +165,20 @@ void USBDeInit(void)
 
     /* Peripheral interrupt Deinit*/
     HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
+}
+
+uint32_t TimerPrescalerDivisor(uint32_t timer)
+{
+	switch (timer) {
+		case ENUM_TIM1:
+		case ENUM_TIM8:
+		case ENUM_TIM9:
+		case ENUM_TIM10:
+		case ENUM_TIM11:
+			return(1);
+			break;
+		default:
+			return(2);
+			break;
+	}
 }

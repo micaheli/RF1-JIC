@@ -9,9 +9,9 @@ uint32_t bootDirection;
 
 void HandleRfbl (void) {
     ReadRfblBkRegs();
-	//if (rfblVersion < RFBL_VERSION) {
-	//	upgradeRfbl();
-	//}
+#ifdef DEBUG
+    HandleRfblDisasterPrevention();
+#endif
 }
 
 void HandleRfblDisasterPrevention (void) {
@@ -26,11 +26,17 @@ void HandleFcStartupReg(void) {
     if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight.
     	//crashed FC startup
     } else if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM9) {
-    	SpektrumBind ((uint32_t)9U);
+    	//SpektrumBind (mainConfig.rcControlsConfig.bind);
     	rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_STARTUP);
     } else if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM5) {
-    	SpektrumBind ((uint32_t)5U);
+    	//SpektrumBind (mainConfig.rcControlsConfig.bind);
     	rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_STARTUP);
+    } else if (rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG) == BOOT_TO_SPEKTRUM9) {
+		//SpektrumBind (mainConfig.rcControlsConfig.bind);
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_APP_COMMAND);
+	} else if (rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG) == BOOT_TO_SPEKTRUM5) {
+		//SpektrumBind (mainConfig.rcControlsConfig.bind);
+		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_APP_COMMAND);
     } else {
     	rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_STARTUP);
     }

@@ -1,9 +1,14 @@
 #pragma once
 
+
 #include "mcu_include.h"
 
 #define MAX_MOTOR_NUMBER 8
 #define MAX_SERVO_NUMBER 8
+#define MAX_USARTS       6
+#define RXBUFFERSIZE     64
+#define TXBUFFERSIZE     64
+
 
 #define uid0_1 (*(uint8_t*)0x1fff7a10)
 #define uid0_2 (*(uint8_t*)0x1fff7a11)
@@ -18,94 +23,186 @@
 #define uid2_3 (*(uint8_t*)0x1fff7a1a)
 #define uid2_4 (*(uint8_t*)0x1fff7a1b)
 
+enum {
+	ENUM_ACTUATOR_TYPE_DISABLED		= 0,
+	ENUM_ACTUATOR_TYPE_SERVO		= 1,
+	ENUM_ACTUATOR_TYPE_MOTOR		= 2,
+	ENUM_ACTUATOR_TYPE_SOFT_SERIAL	= 3,
+	ENUM_ACTUATOR_TYPE_WS2812		= 4,
+	ENUM_ACTUATOR_TYPE_SPORT		= 5,
+};
 
-#define _PORTA 0
-#define _PORTB 1
-#define _PORTC 2
-#define _PORTD 3
-#define _PORTE 4
-#define _PORTF 5
-#define _PORTG 6
-#define _PORTH 7
-#define _PORTI 8
+enum {
+	ENUM_SS_BAUD_19200_STD = 0,
+	ENUM_SS_BAUD_57600_INV = 1,
+};
 
+enum {
+	ENUM_ADC1 = 0,
+	ENUM_ADC2 = 1,
+	ENUM_ADC3 = 2,
+};
 
-#define ENUMTIM1	0
-#define ENUMTIM2	1
-#define ENUMTIM3	2
-#define ENUMTIM4	3
-#define ENUMTIM5	4
-#define ENUMTIM6	5
-#define ENUMTIM7	6
-#define ENUMTIM8	7
-#define ENUMTIM9	8
-#define ENUMTIM10	9
-#define ENUMTIM11	10
-#define ENUMTIM12	11
-#define ENUMTIM13	12
-#define ENUMTIM14	13
+enum {
+	ENUM_SPI1 = 0,
+	ENUM_SPI2 = 1,
+	ENUM_SPI3 = 2,
+	ENUM_SPI4 = 3,
+	ENUM_SPI5 = 4,
+	ENUM_SPI6 = 5,
+};
 
+enum {
+	FP_EXTI0     = 0,
+	FP_EXTI1     = 1,
+	FP_EXTI2     = 2,
+	FP_EXTI3     = 3,
+	FP_EXTI4     = 4,
+	FP_EXTI9_5   = 5,
+	FP_EXTI15_10 = 6,
+	FP_DMA1_S0   = 7,
+	FP_DMA1_S1   = 8,
+	FP_DMA1_S2   = 9,
+	FP_DMA1_S3   = 10,
+	FP_DMA1_S4   = 11,
+	FP_DMA1_S5   = 12,
+	FP_DMA1_S6   = 13,
+	FP_DMA1_S7   = 14,
+	FP_DMA2_S0   = 15,
+	FP_DMA2_S1   = 16,
+	FP_DMA2_S2   = 17,
+	FP_DMA2_S3   = 18,
+	FP_DMA2_S4   = 19,
+	FP_DMA2_S5   = 20,
+	FP_DMA2_S6   = 21,
+	FP_DMA2_S7   = 22,
+	IRQH_FP_TOT  = 23,
+};
 
-#define	TIM1CCR1 0
-#define	TIM1CCR2 1
-#define	TIM1CCR3 2
-#define	TIM1CCR4 3
-#define	TIM2CCR1 4
-#define	TIM2CCR2 5
-#define	TIM2CCR3 6
-#define	TIM2CCR4 7
-#define	TIM3CCR1 8
-#define	TIM3CCR2 9
-#define	TIM3CCR3 10
-#define	TIM3CCR4 11
-#define	TIM4CCR1 12
-#define	TIM4CCR2 13
-#define	TIM4CCR3 14
-#define	TIM4CCR4 15
-#define	TIM5CCR1 16
-#define	TIM5CCR2 17
-#define	TIM5CCR3 18
-#define	TIM5CCR4 19
-#define	TIM6CCR1 20
-#define	TIM6CCR2 21
-#define	TIM6CCR3 22
-#define	TIM6CCR4 23
-#define	TIM7CCR1 24
-#define	TIM7CCR2 25
-#define	TIM7CCR3 26
-#define	TIM7CCR4 27
-#define	TIM8CCR1 28
-#define	TIM8CCR2 29
-#define	TIM8CCR3 30
-#define	TIM8CCR4 31
-#define	TIM9CCR1 32
-#define	TIM9CCR2 33
-#define	TIM9CCR3 34
-#define	TIM9CCR4 35
-#define	TIM10CCR1 36
-#define	TIM10CCR2 37
-#define	TIM10CCR3 38
-#define	TIM10CCR4 39
-#define	TIM11CCR1 40
-#define	TIM11CCR2 41
-#define	TIM11CCR3 42
-#define	TIM11CCR4 43
-#define	TIM12CCR1 44
-#define	TIM12CCR2 45
-#define	TIM12CCR3 46
-#define	TIM12CCR4 47
-#define	TIM13CCR1 48
-#define	TIM13CCR2 49
-#define	TIM13CCR3 50
-#define	TIM13CCR4 51
-#define	TIM14CCR1 52
-#define	TIM14CCR2 53
-#define	TIM14CCR3 54
-#define	TIM14CCR4 55
+enum {
+	ENUM_PORTA = 0,
+	ENUM_PORTB = 1,
+	ENUM_PORTC = 2,
+	ENUM_PORTD = 3,
+	ENUM_PORTE = 4,
+	ENUM_PORTF = 5,
+	ENUM_PORTG = 6,
+	ENUM_PORTH = 7,
+	ENUM_PORTI = 8,
+};
 
+enum {
+	ENUM_USART1_IRQn = 0,
+	ENUM_USART2_IRQn = 1,
+	ENUM_USART3_IRQn = 2,
+	ENUM_USART4_IRQn = 3,
+	ENUM_USART5_IRQn = 4,
+	ENUM_USART6_IRQn = 5,
+};
 
-#define	REVO
+enum {
+	ENUM_TIM1  = 0,
+	ENUM_TIM2  = 1,
+	ENUM_TIM3  = 2,
+	ENUM_TIM4  = 3,
+	ENUM_TIM5  = 4,
+	ENUM_TIM6  = 5,
+	ENUM_TIM7  = 6,
+	ENUM_TIM8  = 7,
+	ENUM_TIM9  = 8,
+	ENUM_TIM10 = 9,
+	ENUM_TIM11 = 10,
+	ENUM_TIM12 = 11,
+	ENUM_TIM13 = 12,
+	ENUM_TIM14 = 13,
+};
 
+enum {
+	ENUM_TIM1CCR1  = 0,
+	ENUM_TIM1CCR2  = 1,
+	ENUM_TIM1CCR3  = 2,
+	ENUM_TIM1CCR4  = 3,
+	ENUM_TIM2CCR1  = 4,
+	ENUM_TIM2CCR2  = 5,
+	ENUM_TIM2CCR3  = 6,
+	ENUM_TIM2CCR4  = 7,
+	ENUM_TIM3CCR1  = 8,
+	ENUM_TIM3CCR2  = 9,
+	ENUM_TIM3CCR3  = 10,
+	ENUM_TIM3CCR4  = 11,
+	ENUM_TIM4CCR1  = 12,
+	ENUM_TIM4CCR2  = 13,
+	ENUM_TIM4CCR3  = 14,
+	ENUM_TIM4CCR4  = 15,
+	ENUM_TIM5CCR1  = 16,
+	ENUM_TIM5CCR2  = 17,
+	ENUM_TIM5CCR3  = 18,
+	ENUM_TIM5CCR4  = 19,
+	ENUM_TIM6CCR1  = 20,
+	ENUM_TIM6CCR2  = 21,
+	ENUM_TIM6CCR3  = 22,
+	ENUM_TIM6CCR4  = 23,
+	ENUM_TIM7CCR1  = 24,
+	ENUM_TIM7CCR2  = 25,
+	ENUM_TIM7CCR3  = 26,
+	ENUM_TIM7CCR4  = 27,
+	ENUM_TIM8CCR1  = 28,
+	ENUM_TIM8CCR2  = 29,
+	ENUM_TIM8CCR3  = 30,
+	ENUM_TIM8CCR4  = 31,
+	ENUM_TIM9CCR1  = 32,
+	ENUM_TIM9CCR2  = 33,
+	ENUM_TIM9CCR3  = 34,
+	ENUM_TIM9CCR4  = 35,
+	ENUM_TIM10CCR1 = 36,
+	ENUM_TIM10CCR2 = 37,
+	ENUM_TIM10CCR3 = 38,
+	ENUM_TIM10CCR4 = 39,
+	ENUM_TIM11CCR1 = 40,
+	ENUM_TIM11CCR2 = 41,
+	ENUM_TIM11CCR3 = 42,
+	ENUM_TIM11CCR4 = 43,
+	ENUM_TIM12CCR1 = 44,
+	ENUM_TIM12CCR2 = 45,
+	ENUM_TIM12CCR3 = 46,
+	ENUM_TIM12CCR4 = 47,
+	ENUM_TIM13CCR1 = 48,
+	ENUM_TIM13CCR2 = 49,
+	ENUM_TIM13CCR3 = 50,
+	ENUM_TIM13CCR4 = 51,
+	ENUM_TIM14CCR1 = 52,
+	ENUM_TIM14CCR2 = 53,
+	ENUM_TIM14CCR3 = 54,
+	ENUM_TIM14CCR4 = 55,
+};
+
+enum {
+	ENUM_USART1 = 0,
+	ENUM_USART2 = 1,
+	ENUM_USART3 = 2,
+	ENUM_USART4 = 3,
+	ENUM_USART5 = 4,
+	ENUM_USART6 = 5,
+};
+
+enum {
+	ENUM_DMA1_STREAM_0 = 0,
+	ENUM_DMA1_STREAM_1 = 1,
+	ENUM_DMA1_STREAM_2 = 2,
+	ENUM_DMA1_STREAM_3 = 3,
+	ENUM_DMA1_STREAM_4 = 4,
+	ENUM_DMA1_STREAM_5 = 5,
+	ENUM_DMA1_STREAM_6 = 6,
+	ENUM_DMA1_STREAM_7 = 7,
+	ENUM_DMA2_STREAM_0 = 8,
+	ENUM_DMA2_STREAM_1 = 9,
+	ENUM_DMA2_STREAM_2 = 10,
+	ENUM_DMA2_STREAM_3 = 11,
+	ENUM_DMA2_STREAM_4 = 12,
+	ENUM_DMA2_STREAM_5 = 13,
+	ENUM_DMA2_STREAM_6 = 14,
+	ENUM_DMA2_STREAM_7 = 15,
+};
 
 //USB config
 #define RFFW_HID_PRODUCT_STRING "RaceFlight FC"
@@ -113,7 +210,9 @@
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
 
-#ifdef STM32F405xx
+#if defined(STM32F745xx)
+	#include "REVOLTF7.h"
+#elif defined(STM32F405xx)
 	#include "REVOLT.h"
 #elif defined(STM32F446xx)
 	#include "SPMFC400.h"
@@ -130,18 +229,21 @@ typedef struct {
 	SPI_TypeDef				*port;
 } spi_type;
 
+
 typedef struct {
 	uint32_t				enabled;
+	uint32_t				instance;
 
 	uint32_t				NSSPin;
 	uint32_t				SCKPin;
+	uint32_t				SCKPull;
 	uint32_t				MISOPin;
 	uint32_t				MOSIPin;
 
-	GPIO_TypeDef *			NSSPort;
-	GPIO_TypeDef *			SCKPort;
-	GPIO_TypeDef *			MISOPort;
-	GPIO_TypeDef *			MOSIPort;
+	uint32_t				NSSPort;
+	uint32_t				SCKPort;
+	uint32_t				MISOPort;
+	uint32_t				MOSIPort;
 	
 	//uint32_t				NSSAlternate;
 	uint32_t				SCKAlternate;
@@ -151,31 +253,11 @@ typedef struct {
 	//uint32_t				GPIOSpeed;
 	
 	uint32_t				SPI_IRQn;
+	uint32_t 				spiHandle;
+	uint32_t 				priority;
 
-	DMA_Stream_TypeDef *	TXDMAStream; // looked up from array
-	uint32_t				TXDMAChannel;
-	uint32_t				TXDMADirection;
-	uint32_t				TXDMAPeriphInc;
-	uint32_t				TXDMAMemInc;
-	uint32_t				TXDMAPeriphDataAlignment;
-	uint32_t				TXDMAMemDataAlignment;
-	uint32_t				TXDMAMode;
-	uint32_t				TXDMAPriority;
-	uint32_t				TXDMAFIFOMode;
-
-	DMA_Stream_TypeDef *	RXDMAStream; // looked up from array
-	uint32_t				RXDMAChannel;
-	uint32_t				RXDMADirection;
-	uint32_t				RXDMAPeriphInc;
-	uint32_t				RXDMAMemInc;
-	uint32_t				RXDMAPeriphDataAlignment;
-	uint32_t				RXDMAMemDataAlignment;
-	uint32_t				RXDMAMode;
-	uint32_t				RXDMAPriority;
-	uint32_t				RXDMAFIFOMode;
-
-
-
+	uint32_t				TXDma;
+	uint32_t				RXDma;
 
 	uint32_t				TXDMA_IRQn;
 	uint32_t				RXDMA_IRQn;
@@ -185,6 +267,7 @@ typedef struct {
 } board_spi;
 
 typedef struct {
+	uint32_t				enabled;
 	uint32_t				PinMode;
 	uint32_t				Pull;
 	uint32_t				Speed;
@@ -193,10 +276,10 @@ typedef struct {
 	uint32_t				RXAlternate;
 	uint32_t				RXPin;
 
-	GPIO_TypeDef *			RXPort;
-	GPIO_TypeDef *			TXPort;
+	uint32_t				RXPort; // loaded from port array
+	uint32_t				TXPort; // loaded from port array
 
-	USART_TypeDef *			SerialInstance; // loaded from port array
+	uint32_t				SerialInstance; // loaded from usart array
 
 	uint32_t				BaudRate;
 	uint32_t				WordLength;
@@ -206,34 +289,51 @@ typedef struct {
 	uint32_t				Mode;
 
 	uint32_t				USART_IRQn;
+	uint32_t				usartHandle;
 
-	DMA_Stream_TypeDef *	TXDMAStream; // looked up from array
-	uint32_t				TXDMAChannel;
-	uint32_t				TXDMADirection;
-	uint32_t				TXDMAPeriphInc;
-	uint32_t				TXDMAMemInc;
-	uint32_t				TXDMAPeriphDataAlignment;
-	uint32_t				TXDMAMemDataAlignment;
-	uint32_t				TXDMAMode;
-	uint32_t				TXDMAPriority;
-	uint32_t				TXDMAFIFOMode;
+	uint32_t				TXDma;
+	uint32_t				RXDma;
+	uint32_t				TXDmaIrqn;
+	uint32_t				RXDmaIrqn;
+	uint32_t				TXDmaChannel;
+	uint32_t				RXDmaChannel;
 
-	DMA_Stream_TypeDef *	RXDMAStream; // looked up from array
-	uint32_t				RXDMAChannel;
-	uint32_t				RXDMADirection;
-	uint32_t				RXDMAPeriphInc;
-	uint32_t				RXDMAMemInc;
-	uint32_t				RXDMAPeriphDataAlignment;
-	uint32_t				RXDMAMemDataAlignment;
-	uint32_t				RXDMAMode;
-	uint32_t				RXDMAPriority;
-	uint32_t				RXDMAFIFOMode;
+	uint32_t				Protocol;
+	uint32_t				FrameSize;
 
-	uint32_t				TXDMA_IRQn;
-	uint32_t				RXDMA_IRQn;
+	int32_t					serialTxBuffer;
+	int32_t					serialRxBuffer;
 
 } board_serial;
 
+typedef struct {
+	uint32_t				enabled;
+	uint32_t				pin;
+	uint32_t				port;
+	uint32_t				adcInstance;
+	uint32_t				adcChannel;
+	uint32_t				adcHandle;
+} board_adc;
+
+typedef struct {
+	uint32_t				enabled;
+	uint32_t				dmaStream;
+	uint32_t				dmaChannel;
+	uint32_t				dmaDirection;
+	uint32_t				dmaPeriphInc;
+	uint32_t				dmaMemInc;
+	uint32_t				dmaPeriphAlignment;
+	uint32_t				dmaMemAlignment;
+	uint32_t				dmaMode;
+	uint32_t				dmaPriority;
+	uint32_t				fifoMode;
+	uint32_t				fifoThreshold;
+	uint32_t				MemBurst;
+	uint32_t				PeriphBurst;
+	uint32_t				dmaIRQn;
+	uint32_t				dmaHandle;
+	uint32_t				priority;
+} board_dma;
 
 typedef struct {
 	uint32_t				port;
@@ -243,9 +343,15 @@ typedef struct {
 } internal_led_type;
 
 typedef struct {
-	uint32_t				port;
-	uint32_t				pin;
 	uint32_t				enabled;
+	uint32_t				spiNumber;
+	uint32_t				csPin;
+	uint32_t				csPort;
+	uint32_t				extiPin;
+	uint32_t				extiPort;
+	uint32_t				extiIRQn;
+	uint32_t				spiFastBaud;
+	uint32_t				spiSlowBaud;
 } gyro_type;
 
 typedef struct {
@@ -268,10 +374,20 @@ typedef struct {
 	uint32_t				port;
 	uint32_t				AF;	
 	uint32_t				timChannel;
+	uint32_t				activeTim;
 	uint32_t				timCCR;
 	uint32_t				polarity;
+	uint32_t				actuatorArrayNum;
+	uint32_t				Dma;
+	uint32_t				dmaEnabled;
+	uint32_t				dmaChannel;
+	uint32_t				dmaIRQn;
+	uint32_t				CcDmaHandle;
+	uint32_t				timerIRQn;
+ 	uint32_t				EXTIn;
+ 	uint32_t				EXTICallback;
+ 	uint32_t				DmaCallback;
 } motor_type;
-
 
 
 typedef struct {
@@ -288,17 +404,26 @@ typedef struct {
 	
 
 	gyro_type				gyros[3];
+	gyro_type				flash[3];
 	
 	motor_type				motors[MAX_MOTOR_NUMBER];
 	motor_type				servos[MAX_SERVO_NUMBER];
 
 	board_gyro				gyro_pins;
 
-	board_spi				spis[3];
+	board_spi				spis[6];
 
 	board_serial			serials[6];
 
-	
+	board_dma				dmasSerial[16]; //TODO: Make work based on serial enum number
+
+	board_dma				dmasSpi[16]; //TODO: Make work based on Spi enum number
+
+	board_dma				dmasMotor[16]; //TODO: Rename dmasActuators
+
+	board_dma				dmasActive[16];
+
+	board_adc				boardADC[3];
 } board_type;
 
 
@@ -347,10 +472,33 @@ typedef struct
 
 */
 
-extern board_type         board;
-extern GPIO_TypeDef      *ports[];
-extern volatile uint32_t *ccr[];
-extern TIM_TypeDef       *timers[];
+typedef void (*function_pointer)(void);
+
+extern volatile function_pointer callbackFunctionArray[];
+
+#if defined(f3) || defined(f1)
+
+#elif defined(f4) || defined(f7)
+extern DMA_Stream_TypeDef *dmaStream[];
+#endif
+
+extern board_type          board;
+extern GPIO_TypeDef       *ports[];
+extern volatile uint32_t  *ccr[];
+extern TIM_TypeDef        *timers[];
+extern serial_type         usarts[];
+extern UART_HandleTypeDef  uartHandles[];
+extern DMA_HandleTypeDef   dmaHandles[];
+extern TIM_HandleTypeDef   pwmTimers[];
+extern TIM_OC_InitTypeDef  sConfigOCHandles[];
+extern SPI_HandleTypeDef   spiHandles[];
+extern SPI_TypeDef        *spiInstance[];
+extern ADC_TypeDef        *adcInstance[];
+extern ADC_HandleTypeDef   adcHandle[];
+
+extern unsigned char serialTxBuffer[][TXBUFFERSIZE];
+extern unsigned char serialRxBuffer[][RXBUFFERSIZE];
+extern uint32_t motorOutputBuffer[][1500];
 
 extern int InitializeMCUSettings();
 void getBoardHardwareDefs();

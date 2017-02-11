@@ -52,8 +52,6 @@
 #include "usbd_ctlreq.h"
 
 
-volatile uint32_t hidToPcReady = 1;
-
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
   */
@@ -235,6 +233,8 @@ __ALIGN_BEGIN static uint8_t USBD_HID_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_
 
 __ALIGN_BEGIN static uint8_t HID_MOUSE_ReportDesc[HID_MOUSE_REPORT_DESC_SIZE]  __ALIGN_END =
 {
+  //0xAA, 0xFF,                    // USAGE_PAGE (Generic Desktop)
+  //0x09, 0x01,                    // USAGE (Undefined)
   0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
   0x09, 0x00,                    // USAGE (Undefined)
   0xa1, 0x01,                    // COLLECTION (Application)
@@ -246,7 +246,7 @@ __ALIGN_BEGIN static uint8_t HID_MOUSE_ReportDesc[HID_MOUSE_REPORT_DESC_SIZE]  _
 
   0x85, 0x01,                    //   REPORT_ID (1)
   0x75, 0x08,                    //   REPORT_SIZE (8)
-  0x95, HID_EPIN_SIZE-1,        //   REPORT_COUNT (this is the byte length)
+  0x95, HID_EPIN_SIZE-1,         //   REPORT_COUNT (this is the byte length)
   0x09, 0x00,                    //   USAGE (Undefined)
   0x81, 0x82,                    //   INPUT (Data,Var,Abs,Vol)
 
@@ -254,7 +254,7 @@ __ALIGN_BEGIN static uint8_t HID_MOUSE_ReportDesc[HID_MOUSE_REPORT_DESC_SIZE]  _
 
   0x85, 0x02,                    //   REPORT_ID (2)
   0x75, 0x08,                    //   REPORT_SIZE (8)
-  0x95, HID_EPOUT_SIZE-1,       //   REPORT_COUNT (this is the byte length)
+  0x95, HID_EPOUT_SIZE-1,        //   REPORT_COUNT (this is the byte length)
   0x09, 0x00,                    //   USAGE (Undefined)
   0x91, 0x82,                    //   OUTPUT (Data,Var,Abs,Vol)
 
@@ -504,7 +504,9 @@ static uint8_t  USBD_HID_DataIn (USBD_HandleTypeDef *pdev,
   /* Ensure that the FIFO is empty before a new transfer, this condition could 
   be caused by  a new transfer before the end of the previous transfer */
   ((USBD_HID_HandleTypeDef *)pdev->pClassData)->state = HID_IDLE;
-  hidToPcReady = 1;
+  //if (!sendAckMode)
+	//  hidToPcReady = 1;
+
   return USBD_OK;
 }
 
@@ -515,8 +517,7 @@ static uint8_t  USBD_HID_DataIn (USBD_HandleTypeDef *pdev,
   * @param  epnum: endpoint index
   * @retval status
   */
-static uint8_t  USBD_HID_DataOut (USBD_HandleTypeDef *pdev,
-                              uint8_t epnum)
+static uint8_t  USBD_HID_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
 {
     if (epnum != (HID_EPOUT_ADDR & 0x0F))
         return USBD_FAIL;
@@ -532,6 +533,13 @@ static uint8_t  USBD_HID_DataOut (USBD_HandleTypeDef *pdev,
     		HID_EPOUT_ADDR,
 			(uint8_t*)USB_Rx_Buffer,
 			HID_EPOUT_SIZE);
+
+
+   // if (tOutBuffer[0]==2)
+    //{ //we have a usb report
+	//	ProcessCommand((char *)tOutBuffer);
+	//	bzero(tOutBuffer, HID_EPIN_SIZE);
+	//}
 
     return USBD_OK;
 /*

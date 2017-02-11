@@ -3,6 +3,7 @@
 #define GYRO_CALIBRATION_CYCLES 1000
 
 extern volatile uint32_t gyroCalibrationCycles;
+extern float geeForceAccArray[3];
 
 //config structure which is loaded by config
 typedef struct {
@@ -14,7 +15,24 @@ typedef struct {
 
 enum {X=0,Y,Z};
 
-enum {CW0=0,CW90,CW180,CW270,CW0_INV,CW90_INV,CW180_INV,CW270_INV};
+enum {
+	CW0=0,
+	CW90=1,
+	CW180=2,
+	CW270=3,
+	CW0_INV=4,
+	CW90_INV=5,
+	CW180_INV=6,
+	CW270_INV=7,
+	CW45=8,
+	CW135=9,
+	CW225=10,
+	CW315=11,
+	CW45_INV=12,
+	CW135_INV=13,
+	CW225_INV=14,
+	CW315_INV=15,
+};
 
 typedef enum {
     LOOP_L1,

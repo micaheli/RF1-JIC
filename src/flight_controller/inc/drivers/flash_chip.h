@@ -67,10 +67,10 @@ typedef struct {
 	volatile uint32_t currentWriteAddress;
 } flash_info_record;
 
-extern DMA_HandleTypeDef *dma_flash_rx;
-extern DMA_HandleTypeDef *dma_flash_tx;
 extern flash_info_record flashInfo;
 
+extern void FlashDeinit(void);
+extern void FlashDmaRxCallback(void);
 extern int  InitFlashChip(void);
 extern void DataFlashBeginProgram(uint32_t address);
 extern int  FlashChipWriteData(uint8_t *data, uint8_t length);

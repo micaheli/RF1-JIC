@@ -1,11 +1,20 @@
 #include "includes.h"
+
+
 buzzerStatus_t buzzerStatus;
 
 
+uint32_t startBuzzArray[]    = {225,225,200,200,175,175,150,150,125,125,100,100,75,75,50,50,25,25,0};
+uint32_t lostBuzzArray[]     = {500,100,500,150,500,1};
+uint32_t failsafeBuzzArray[] = {500,100,500,150,500,1};
+uint32_t errorBuzzArray[]    = {100,200,300,400,500,600,700,1};
+uint32_t armingBuzzArray[]   = {100,100,100,100,100,0};
 
-void InitBuzzer(void) {
+void InitBuzzer(void)
+{
 	InitializeBuzzerPin(ports[board.buzzerPort], board.buzzerPin);
 }
+
 
 void InitializeBuzzerPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
@@ -39,20 +48,24 @@ void DoBuzz(int on)
 	}
 }
 
+
 void UpdateBuzzer(void)
 {
 	uint32_t timeNow = InlineMillis();
 	//checking if time needs to be updated
-	if (buzzerStatus.status != buzzerStatus.lastStatus)
-	{
-		buzzerStatus.timeStart = timeNow;
-	}
-	buzzerStatus.lastStatus = buzzerStatus.status;
+	//if (buzzerStatus.status != buzzerStatus.lastStatus)
+	//{
+	//	buzzerStatus.timeStart = timeNow;
+	//}
+	//buzzerStatus.lastStatus = buzzerStatus.status;
 
 	//different states for buzzer
     switch(buzzerStatus.status)
     {
 		default:
+		case STATE_BUZZER_DEBUG:
+			//do nothing
+			break;
 		case STATE_BUZZER_OFF:
 			DoBuzz(0);
 			break;
@@ -60,29 +73,94 @@ void UpdateBuzzer(void)
 			DoBuzz(1);
 			break;
 		case STATE_BUZZER_LOST:
-			Buzz(timeNow,100, 150);
+			ComplexBuzz(timeNow, lostBuzzArray);
+			break;
+		case STATE_BUZZER_ARMING:
+			ComplexBuzz(timeNow, armingBuzzArray);
+			break;
+		case STATE_BUZZER_FAILSAFE:
+			ComplexBuzz(timeNow, failsafeBuzzArray);
 			break;
 		case STATE_BUZZER_STARTUP:
-			Buzz(timeNow,40,80);
+			ComplexBuzz(timeNow, startBuzzArray);
 			break;
 		case STATE_BUZZER_ERROR:
-			Buzz(timeNow,20,40);
+			ComplexBuzz(timeNow, errorBuzzArray);
      }
 
 }
-//function to make the buzzer buzz
-void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2) {
+
+
+void ComplexBuzz(uint32_t timeNow, uint32_t buzzArray[])
+{
+
+	uint32_t buzzLength;
+
+	if (buzzerStatus.arrayIndex == 0)
+	{
+		buzzerStatus.timeStart = timeNow;
+		buzzerStatus.timeStop  = timeNow + buzzArray[buzzerStatus.arrayIndex++];
+		buzzerStatus.on = 1;
+		DoBuzz(buzzerStatus.on);
+		return;
+	}
+
+	buzzLength = buzzArray[buzzerStatus.arrayIndex];
+
+	switch(buzzLength)
+	{
+		case 0:
+			//end of array has been reached, 0 means we turn off buzzer
+			buzzerStatus.status = STATE_BUZZER_OFF;
+			buzzerStatus.arrayIndex = 0;
+			buzzerStatus.on = 0;
+			DoBuzz(buzzerStatus.on);
+			break;
+		case 1:
+			buzzerStatus.arrayIndex = 0;
+			buzzerStatus.on = 0;
+			DoBuzz(buzzerStatus.on);
+			break;
+		default:
+			//wait until time has expired to do anything.
+			if (timeNow > buzzerStatus.timeStop)
+			{
+				//buzz on or off time has expired, increment the index and do the next buzz
+				buzzerStatus.arrayIndex += 1;
+				buzzerStatus.timeStart = timeNow;
+				buzzerStatus.timeStop  = timeNow + buzzArray[buzzerStatus.arrayIndex];
+				if (buzzerStatus.on)
+				{
+					buzzerStatus.on = 0;
+					DoBuzz(buzzerStatus.on);
+				}
+				else
+				{
+					buzzerStatus.on = 1;
+					DoBuzz(buzzerStatus.on);
+					DoBuzz(1);
+				}
+			}
+			break;
+	}
+
+
+}
+
+
+void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2) //function to make the buzzer buzz
+{
 	//does this for the amount of time for time1
 	if (((timeNow - buzzerStatus.timeStart) < time1) && (!buzzerStatus.on) )
 	{
 		DoBuzz(1);
-		buzzerStatus.on = true;
+		buzzerStatus.on = 1;
 	}
 	//does this for the amount of time2
 	else if (((timeNow - buzzerStatus.timeStart) > time1) && ((timeNow - buzzerStatus.timeStart) < time2) && (buzzerStatus.on) )
 	{
 		DoBuzz(0);
-		buzzerStatus.on = false;
+		buzzerStatus.on = 0;
 	}
 	//if greater than time time2 reset timestart
 	else if ((timeNow - buzzerStatus.timeStart) > time2 )
@@ -90,10 +168,10 @@ void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2) {
 		buzzerStatus.timeStart = timeNow;
 	}
 }
+
+
 void BuzzTest()
 {
 	UpdateBuzzer();
 	buzzerStatus.status = STATE_BUZZER_ERROR;
 }
-
-

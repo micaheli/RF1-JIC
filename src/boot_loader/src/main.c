@@ -16,7 +16,6 @@ uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 uint32_t StartSector = 0, EndSector = 0, Address = 0, i = 0 ;
 __IO uint32_t data32 = 0 , MemoryProgramStatus = 0 ;
 uint32_t toggle_led = 0;
-bool bootToRfbl = false;
 int usbStarted = 0;
 uint32_t ApplicationAddress = 0x08020000;
 uint8_t bindSpektrum = 0;
@@ -27,14 +26,32 @@ FwInfo_t FwInfo;
 cfg1_t cfg1;
 
 
+//GPIO_TypeDef       *ports[11];
+//serial_type         usarts[6];
+//spi_type            spis[6];
+//TIM_TypeDef        *timers[14];
+//volatile uint32_t  *ccr[56];
+//board_type          board;
+//DMA_Stream_TypeDef *dmaStream[16];
+//UART_HandleTypeDef  uartHandles[6];
+DMA_HandleTypeDef   dmaHandles[16];
+//TIM_HandleTypeDef   pwmTimers[16];
+//TIM_OC_InitTypeDef  sConfigOCHandles[16];
+//SPI_HandleTypeDef   spiHandles[6];
+//SPI_TypeDef        *spiInstance[6];
+
+volatile function_pointer callbackFunctionArray[IRQH_FP_TOT];
+
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private functions ---------------------------------------------------------*/
 
+
+
 int main(void)
 {
 
-	uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress, toggleLedOn, ledTime=0;
+	volatile uint32_t rfblVersion, cfg1Version, bootDirection, bootCycles, rebootAddress, toggleLedOn, ledTime=0;
 
 	VectorIrqInit(0x08008000);
 	__enable_irq();
@@ -47,7 +64,6 @@ int main(void)
     	skipDelay = 1;
     	boot_to_app();
     }
-
 
     bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
     if (!(bootDirection))
@@ -63,15 +79,18 @@ int main(void)
 	rfblVersion   = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
 	cfg1Version   = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
 	bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
-	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
+	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG);
 	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
 
+
+	(void)(rfblVersion);
+	(void)(cfg1Version);
 	if (bootDirection == BOOT_TO_APP_AFTER_RECV_COMMAND) {
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
 		boot_to_app();
 	}
 
-	bootDirection = checkOldConfigDirection (bootDirection, bootCycles);
+	//bootDirection = checkOldConfigDirection (bootDirection, bootCycles);
 
 
 	if (bootDirection == BOOT_TO_RECOVERY_COMMAND) {
@@ -88,35 +107,43 @@ int main(void)
 	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
 
-	if (!bootToRfbl) {
-		//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
-		//the inside of these brackets means the RFBL pins are not shorted
-		switch (bootDirection) {
-			case BOOT_TO_SPEKTRUM5:
-			case BOOT_TO_SPEKTRUM9:
-				skipDelay = 1;
-			case BOOT_TO_APP_COMMAND:
-				//simpleDelay_ASM(100000);
-				boot_to_app();  //jump to application
-				break;
-			case BOOT_TO_ADDRESS:
-				//simpleDelay_ASM(100000);
-				ApplicationAddress = rebootAddress;
-				boot_to_app();  //jump to application
-				break;
-			case BOOT_TO_DFU_COMMAND:
-				SystemResetToDfuBootloader(); //reset to DFU
-				break;
-			case BOOT_TO_RFBL_COMMAND:
-			default:
-			    usbStarted=1;
-			    USB_DEVICE_Init(); //start USB
-			    InitLeds();
-				startupBlink(20, 20);
-				//simpleDelay_ASM(100000);
-				//default is to do nothing, continue to RFBL
-				break;
-		}
+    if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM5) { //FC crashed while inflight. Imediately jump into program
+		skipDelay = 1;
+		boot_to_app();
+	}
+
+    if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM9) { //FC crashed while inflight. Imediately jump into program
+		skipDelay = 1;
+		boot_to_app();
+	}
+
+	//RFBL: pins set bootToRfbl true or false or puts board into DFU mode
+	//the inside of these brackets means the RFBL pins are not shorted
+	switch (bootDirection) {
+		case BOOT_TO_SPEKTRUM5:
+		case BOOT_TO_SPEKTRUM9:
+			skipDelay = 1;
+		case BOOT_TO_APP_COMMAND:
+			//simpleDelay_ASM(100000);
+			boot_to_app();  //jump to application
+			break;
+		case BOOT_TO_ADDRESS:
+			//simpleDelay_ASM(100000);
+			ApplicationAddress = rebootAddress;
+			boot_to_app();  //jump to application
+			break;
+		case BOOT_TO_DFU_COMMAND:
+			SystemResetToDfuBootloader(); //reset to DFU
+			break;
+		case BOOT_TO_RFBL_COMMAND:
+		default:
+			usbStarted=1;
+			USB_DEVICE_Init(); //start USB
+			InitLeds();
+			startupBlink(20, 20);
+			//simpleDelay_ASM(100000);
+			//default is to do nothing, continue to RFBL
+			break;
 	}
 
 
@@ -194,11 +221,11 @@ int main(void)
 			case RFBLS_DONE_UPGRADING:
 				//Last packet received and written to
 				FinishFlash();
-				RfblState = RFBLS_IDLE;
-				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
-				for (int8_t iii = 100; iii >= 0; iii -= 2) {
+				for (int8_t iii = 50; iii >= 0; iii -= 2) {
 					startupBlink(2, iii);
 				}
+				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
+				RfblState = RFBLS_IDLE;
 				break;
 
 			case RFBLS_AWAITING_FW_DATA:
@@ -317,7 +344,7 @@ void startupBlink (uint16_t blinks, uint32_t delay) {
 void boot_to_app (void) {
 
 	if (!(skipDelay))
-		DelayMs(1000); //600 ms delay before booting into app to allow PDB power to stabilize
+		DelayMs(155); //600 ms delay before booting into app to allow PDB power to stabilize
 
 	if (usbStarted) {
 		USB_DEVICE_DeInit();
@@ -598,8 +625,9 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 
 }
 
-void ErrorHandler(void)
+void ErrorHandler(uint32_t error)
 {
+	(void)(error);
     while (1) {
         DoLed(1, 1);
         DoLed(2, 0);
@@ -610,7 +638,8 @@ void ErrorHandler(void)
     }
 }
 
-void ZeroActuators(void) {
+void ZeroActuators(uint32_t delayUs) {
+	(void)(delayUs);
 	return;
 }
 

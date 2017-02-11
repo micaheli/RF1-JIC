@@ -93,11 +93,16 @@ TargetConfig = namedtuple('TargetConfig', [
     'cflags', 'asmflags', 'ldflags', 'useColor'
 ])
 
+excluded_files = [
+    ".*_template.c",
+]
+
 def configure_target(TARGET):
+    STM32F4_ARCH_FLAGS_ADD = ""
     # required features
     FEATURES = []
 
-    # stm32f051x8 stm32f103xb stm32f303xc stm32f405xx stm32f411xe stm32f745xx stm32f746xx
+    # stm32f051x8 stm32f103xb stm32f303xc stm32f405xx stm32f411xe stm32f745xx
 
     ################################################################################
     # Determine target variables and features
@@ -118,36 +123,66 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f303xc":
+        TARGET_DEVICE_LC = "stm32f303xc"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F303xC"
-        TARGET_SCRIPT = "stm32_flash_f303_256k_bl.ld"
+        TARGET_SCRIPT = "stm32_flash_f303_256k.ld"
         TARGET_PROCESSOR_TYPE  = "f3"
         FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
+    elif TARGET == "stm32f303xc_rfbl":
+        TARGET_DEVICE_LC = "stm32f303xc"
+        PROJECT = "boot_loader"
+        TARGET_DEVICE = "STM32F303xC"
+        TARGET_SCRIPT = "stm32_flash_f303_256k_rfbl.ld"
+        TARGET_PROCESSOR_TYPE  = "f3"
+        FEATURES.extend(["usb_fs"])
+        OPTIMIZE_FLAGS = "-Og"
+
+    elif TARGET == "stm32f303xc_rfbll":
+        TARGET_DEVICE_LC = "stm32f303xc"
+        PROJECT = "recovery_loader"
+        TARGET_DEVICE = "STM32F303xC"
+        TARGET_SCRIPT = "stm32_flash_f303_256k_recovery.ld"
+        TARGET_PROCESSOR_TYPE  = "f3"
+        FEATURES.extend(["usb_fs"])
+        OPTIMIZE_FLAGS = "-Og"
+
     elif TARGET == "stm32f405xx":
+        TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
+        STM32F4_ARCH_FLAGS_ADD = ""
+        #STM32F4_ARCH_FLAGS_ADD = "-s -fdata-sections -ffunction-sections -flto"
 
     elif TARGET == "stm32f405xx_rfbl":
+        TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD  = ""
+        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
+        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f405xx_rfbll":
+        TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "recovery_loader"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD  = ""
+        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
+        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f411xe":
         PROJECT = "flight_controller"
@@ -157,15 +192,42 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
-    elif TARGET == "stm32f746xx":
+    elif TARGET == "stm32f745xx":
+        TARGET_DEVICE_LC = "stm32f745xx"
         PROJECT = "flight_controller"
-        TARGET_DEVICE = "STM32F746xx"
-        TARGET_SCRIPT = "STM32F746NGHx_FLASH_bl.ld"
+        TARGET_DEVICE = "STM32F745xx"
+        TARGET_SCRIPT = "stm32_flash_f745.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
+        STM32F7_ARCH_FLAGS_ADD = ""
+
+    elif TARGET == "stm32f745xx_rfbl":
+        TARGET_DEVICE_LC = "stm32f745xx"
+        PROJECT = "boot_loader"
+        TARGET_DEVICE = "STM32F745xx"
+        TARGET_SCRIPT = "stm32_flash_f745_rfbl.ld"
+        TARGET_PROCESSOR_TYPE  = "f7"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Og"
+        STM32F7_ARCH_FLAGS_ADD  = ""
+        #STM32F7_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
+        #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
+
+    elif TARGET == "stm32f745xx_rfbll":
+        TARGET_DEVICE_LC = "stm32f745xx"
+        PROJECT = "recovery_loader"
+        TARGET_DEVICE = "STM32F745xx"
+        TARGET_SCRIPT = "stm32_flash_f745_recovery.ld"
+        TARGET_PROCESSOR_TYPE  = "f7"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Og"
+        STM32F7_ARCH_FLAGS_ADD  = ""
+        #STM32F7_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
+        #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f446xx":
+        TARGET_DEVICE_LC = "stm32f446xx"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446.ld"
@@ -174,276 +236,57 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f446xx_rfbl":
+        TARGET_DEVICE_LC = "stm32f446xx"
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
+        OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD  = ""
+        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
+        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
+
 
     elif TARGET == "stm32f446xx_rfbll":
+        TARGET_DEVICE_LC = "stm32f446xx"
         PROJECT = "recovery_loader"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD  = ""
+        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
+        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
+
     
     else:
         print("ERROR: NOT VALID TARGET: ", TARGET, file=sys.stderr)
         sys.exit(1)
 
-
-        """
-    if TARGET == "cc3d":
-        PROJECT = "rffw"
-        TARGET_BOARD = "cc3d"
-        TARGET_DEVICE = "STM32F103xB"
-        TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
-        TARGET_PROCESSOR_TYPE  = "f1"
-        FEATURES.extend(["usb_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "cc3d_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "cc3d"
-        TARGET_DEVICE = "STM32F103xB"
-        TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
-        TARGET_PROCESSOR_TYPE  = "f1"
-        FEATURES.extend(["usb_fs"])
-        OPTIMIZE_FLAGS = "-Os"
-
-    elif TARGET == "sp3evo":
-        PROJECT = "rffw"
-        TARGET_BOARD = "sp3evo"
-        TARGET_DEVICE = "STM32F303xC"
-        TARGET_SCRIPT = "stm32_flash_f303_256k_bl.ld"
-        TARGET_PROCESSOR_TYPE  = "f3"
-        FEATURES.extend(["flight_logger", "mpu6500/spi", "usb_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "sp3evo_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "sp3evo"
-        TARGET_DEVICE = "STM32F303xC"
-        TARGET_SCRIPT = "stm32_flash_f303_256k.ld"
-        TARGET_PROCESSOR_TYPE  = "f3"
-        FEATURES.extend(["usb_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "lux":
-        PROJECT = "rffw"
-        TARGET_BOARD = "lux"
-        TARGET_DEVICE = "STM32F303xC"
-        TARGET_SCRIPT = "stm32_flash_f303_256k_bl.ld"
-        TARGET_PROCESSOR_TYPE  = "f3"
-        FEATURES.extend(["mpu6500/spi", "usb_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "lux_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "lux"
-        TARGET_DEVICE = "STM32F303xC"
-        TARGET_SCRIPT = "stm32_flash_f303_256k.ld"
-        TARGET_PROCESSOR_TYPE  = "f3"
-        FEATURES.extend(["usb_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "colibri":
-        PROJECT = "rffw"
-        TARGET_BOARD = "colibri"
-        TARGET_DEVICE = "STM32F303xC"
-        TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
-        TARGET_PROCESSOR_TYPE  = "f3"
-        FEATURES.extend(["mpu6500/spi", "usb_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "colibri_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "colibri"
-        TARGET_DEVICE = "STM32F303xC"
-        TARGET_SCRIPT = "stm32_flash_f303_128k.ld"
-        TARGET_PROCESSOR_TYPE  = "f3"
-        FEATURES.extend(["usb_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-        
-    elif TARGET == "revolt":
-        PROJECT = "rffw"
-        TARGET_BOARD = "revolt"
-        TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "revolt_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "revolt"
-        TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
-
-    elif TARGET == "revo":
-        PROJECT = "rffw"
-        TARGET_BOARD = "revo"
-        TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["flight_logger", "mpu6000/spi", "usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "revo_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "revo"
-        TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
-        
-    elif TARGET == "kkng":
-        PROJECT = "rffw"
-        TARGET_BOARD = "kkng"
-        TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405_bl.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "kkng_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "kkng"
-        TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
-        
-    elif TARGET == "revonano":
-        PROJECT = "rffw"
-        TARGET_BOARD = "revonano"
-        TARGET_DEVICE = "STM32F411xE"
-        TARGET_SCRIPT = "stm32_flash_f411.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["mpu6000/spi", "usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "revonano_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "revonano"
-        TARGET_DEVICE = "STM32F411xE"
-        TARGET_SCRIPT = "stm32_flash_f411.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
-
-    elif TARGET == "spmfc384":
-        PROJECT = "rffw"
-        TARGET_BOARD = "spmfc384"
-        TARGET_DEVICE = "STM32F446xx"
-        TARGET_SCRIPT = "stm32_flash_f446_bl.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "spmfc384_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "spmfc384"
-        TARGET_DEVICE = "STM32F446xx"
-        TARGET_SCRIPT = "stm32_flash_f446.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
-
-    elif TARGET == "spmfc400":
-        PROJECT = "rffw"
-        TARGET_BOARD = "spmfc400"
-        TARGET_DEVICE = "STM32F446xx"
-        TARGET_SCRIPT = "stm32_flash_f446_bl.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["mpugyro/spi", "usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "spmfc400_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "spmfc400"
-        TARGET_DEVICE = "STM32F446xx"
-        TARGET_SCRIPT = "stm32_flash_f446.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
-
-    elif TARGET == "f7disco":
-        PROJECT = "rffw"
-        TARGET_BOARD = "f7disco"
-        TARGET_DEVICE = "STM32F746xx"
-        TARGET_SCRIPT = "STM32F746NGHx_FLASH_bl.ld"
-        TARGET_PROCESSOR_TYPE  = "f7"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "f7disco_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "f7disco"
-        TARGET_DEVICE = "STM32F746xx"
-        TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
-        TARGET_PROCESSOR_TYPE  = "f7"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "vrracef7":
-        PROJECT = "rffw"
-        TARGET_BOARD = "vrracef7"
-        TARGET_DEVICE = "STM32F746xx"
-        TARGET_SCRIPT = "STM32F746NGHx_FLASH_bl.ld"
-        TARGET_PROCESSOR_TYPE  = "f7"
-        FEATURES.extend(["mpu6500/spi", "usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
-
-    elif TARGET == "vrracef7_rfbl":
-        PROJECT = "rfbl"
-        TARGET_BOARD = "revolt"
-        TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "STM32F746NGHx_FLASH.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Os"
-
-    elif TARGET == "kissesc":
-        PROJECT = "rfesc"
-        TARGET_BOARD = "kissesc"
-        TARGET_DEVICE = "STM32F051x8"
-        TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
-        TARGET_PROCESSOR_TYPE  = "f0"
-        OPTIMIZE_FLAGS = "-O2"
-    """
-
-
-
     ################################################################################
     # Set per target compilation options
 
-    STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -D" + TARGET
+    STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM0 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F0_ARCH_FLAGS = "-mthumb -mcpu=cortex-m0"
 
-    STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -D" + TARGET
+    STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM3 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F1_ARCH_FLAGS = "-mthumb -mcpu=cortex-m3"
 
-    STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -D" + TARGET
+    STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
     if TARGET_DEVICE == "STM32F446xx":
-        STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=12000000 -D" + TARGET_DEVICE + " -D" + TARGET
+        STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=12000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
         STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
     else:
-        STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -D" + TARGET
-        STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
+        STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+        STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant" + " " + STM32F4_ARCH_FLAGS_ADD
 
-    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=25000000 -D" + TARGET_DEVICE + " -D" + TARGET
-    STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
-
+    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7=1 -D__FPU_PRESENT=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+#    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -fsingle-precision-constant"
 
     if TARGET_PROCESSOR_TYPE == "f0":
         DEF_FLAGS  = STM32F0_DEF_FLAGS
@@ -485,20 +328,21 @@ def configure_target(TARGET):
     # common directories
 
     INCLUDE_DIRS = [
-        "lib/CMSIS/Include",
+        "src/low_level_driver/" + MCU_FAMILY,
+        MCU_DIR,
         "src/%s/inc" % PROJECT,
+        "lib/CMSIS/Include",
+        "lib/CMSIS/DSP_Lib/Include",
         CMSIS_DIR,
         HAL_DIR + "/Inc",
-        MCU_DIR,
-        "src/low_level_driver/" + MCU_FAMILY,
     ]
 
     SOURCE_DIRS = [
-        HAL_DIR + "/Src",
-        "src/%s/src" % PROJECT,
-        MCU_DIR,
-        "src/low_level_driver/",
         "src/low_level_driver/" + MCU_FAMILY,
+        "src/low_level_driver/",
+        MCU_DIR,
+        "src/%s/src" % PROJECT,
+        HAL_DIR + "/Src",
     ]
 
     SOURCE_FILES = ["src/low_level_driver/stm32_startup/startup_%s.s" % TARGET_DEVICE.lower()]
@@ -506,15 +350,25 @@ def configure_target(TARGET):
     # per project includes
 
     if PROJECT == "flight_controller":
+        INCLUDE_DIRS.append("src/flight_controller/inc/telemetry")
         INCLUDE_DIRS.append("src/flight_controller/inc/input")
+        SOURCE_DIRS.append("src/flight_controller/src/telemetry")
         SOURCE_DIRS.append("src/flight_controller/src/input")
-        FEATURES.extend(["leds", "actuator_output", "buzzer", "flash_chip", "mpu_icm_device/spi", "rx", "serial", "spektrumTelemetry"])
+        FEATURES.extend(["adc", "transponder", "softSerial", "esc_1wire", "leds", "dmaShenanigans", "actuator_output", "buzzer", "flash_chip", "mpu_icm_device/spi", "rx", "serial"])
     elif PROJECT == "esc":
         FEATURES.extend(["leds"])
     elif PROJECT == "boot_loader":
         FEATURES.extend(["leds"])
+        excluded_files.append("stm32f3xx_spi_msp.c")
+        excluded_files.append("stm32f4xx_spi_msp.c")
+        excluded_files.append("stm32f7xx_spi_msp.c")
+        excluded_files.append("boarddef.c")
     elif PROJECT == "recovery_loader":
         FEATURES.extend(["leds"])
+        excluded_files.append("stm32f3xx_spi_msp.c")
+        excluded_files.append("stm32f4xx_spi_msp.c")
+        excluded_files.append("stm32f7xx_spi_msp.c")
+        excluded_files.append("boarddef.c")
     else:
         print("ERROR: NOT VALID PROJECT TYPE, CHECK MAKE FILE CODE", file=sys.stderr)
         sys.exit(1)
@@ -554,7 +408,8 @@ def configure_target(TARGET):
             SOURCE_FILES.append("src/%s/src/drivers/" % (PROJECT) + feature + ".c")
             INCLUDE_DIRS.append("src/%s/inc/drivers/" % (PROJECT))
 
-
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FilteringFunctions/arm_fir_init_f32.c")
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FilteringFunctions/arm_fir_f32.c")
     ################################################################################
     # compiler options
 
@@ -629,10 +484,9 @@ size_command = "arm-none-eabi-size output/{OUTPUT_NAME}.elf"
 copy_obj_command = "arm-none-eabi-objcopy -O binary output/{OUTPUT_NAME}.elf output/{OUTPUT_NAME}.bin"
 
 
-excluded_files = [
-    ".*_template.c",
-]
-
+#excluded_files = [
+#    ".*_template.c",
+#]
 
 THREAD_LIMIT = args.threads
 threadLimiter = threading.BoundedSemaphore(THREAD_LIMIT)
@@ -928,6 +782,7 @@ def main():
     for thread in threads:
         thread.join()
 
+    exit(0);
 
 if __name__ == "__main__":
     main()

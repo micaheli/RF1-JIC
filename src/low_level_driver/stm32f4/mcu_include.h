@@ -83,16 +83,17 @@
 
 
 #define USE_RFBL
+#define ADDRESS_FLASH_START		(uint32_t)(0x08000000)
 #define ADDRESS_RECOVERY_START	(uint32_t)(0x08000000)
 #define ADDRESS_RFBL_START		(uint32_t)(0x08008000)
+#define ADDRESS_CONFIG_START	(uint32_t)(0x08010000)
 #define ADDRESS_RFFW_START		(uint32_t)(0x08020000)
-#define ADDRESS_CONFIG_START	(uint32_t)(0x08010000) //0x0800C000
-#define ADDRESS_FLASH_START		(uint32_t)(0x08000000)
+#define ADDRESS_ESC_START		(uint32_t)(0x08060000)
 #define ADDRESS_FLASH_END		(uint32_t)(0x080FFFF0)
 
 #endif
 
-#if defined(STM32F446xx)
+#if defined(stm32f446xx) || defined(STM32F446xx)
 
 #include <stm32f446xx.h>
 
@@ -127,12 +128,15 @@
 
 
 #define USE_RFBL
+#define ADDRESS_FLASH_START		(uint32_t)(0x08000000)
 #define ADDRESS_RECOVERY_START	(uint32_t)(0x08000000)
 #define ADDRESS_RFBL_START		(uint32_t)(0x08008000)
-//#define ADDRESS_RFFW_START		(uint32_t)(0x08020000)
-#define ADDRESS_RFFW_START		(uint32_t)(0x08000000)
-#define ADDRESS_CONFIG_START	(uint32_t)(0x08060000) //0x0800C000
-#define ADDRESS_FLASH_START		(uint32_t)(0x08000000)
+#define ADDRESS_CONFIG_START	(uint32_t)(0x08010000)
+#define ADDRESS_RFFW_START		(uint32_t)(0x08020000)
+#define ADDRESS_ESC_START		(uint32_t)(0x08060000)
 #define ADDRESS_FLASH_END		(uint32_t)(0x0807FFF0)
 
 #endif
+
+
+extern uint32_t TimerPrescalerDivisor(uint32_t timer);

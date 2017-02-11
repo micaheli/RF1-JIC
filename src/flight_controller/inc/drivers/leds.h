@@ -12,6 +12,12 @@ enum
     LEDS_ERROR,
 };
 
+
+#define MAX_LED_MODES 13
+#define COLOR_CHART_SIZE 7
+
+
+
 typedef struct ledStatus_t
 {
     uint8_t status;
@@ -21,6 +27,8 @@ typedef struct ledStatus_t
     uint32_t timeStop;
 } ledStatus_t;
 
+
+extern uint8_t colorChart[COLOR_CHART_SIZE][3];
 extern ledStatus_t ledStatus;
 
 extern void DoLed(uint32_t number, uint32_t on);

@@ -1,7 +1,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include <stdbool.h>
 
-#include "../../recovery_loader/inc/includes.h"
+//#include "../../recovery_loader/inc/includes.h"
+#include "includes.h"
 
 
 /* Private typedef -----------------------------------------------------------*/
@@ -21,11 +22,27 @@ char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
 FwInfo_t FwInfo;
 cfg1_t cfg1;
 
+//GPIO_TypeDef       *ports[11];
+//serial_type         usarts[6];
+//spi_type            spis[6];
+//TIM_TypeDef        *timers[14];
+//volatile uint32_t  *ccr[56];
+//board_type          board;
+//DMA_Stream_TypeDef *dmaStream[16];
+//UART_HandleTypeDef  uartHandles[6];
+DMA_HandleTypeDef   dmaHandles[16];
+//TIM_HandleTypeDef   pwmTimers[16];
+//TIM_OC_InitTypeDef  sConfigOCHandles[16];
+//SPI_HandleTypeDef   spiHandles[6];
+//SPI_TypeDef        *spiInstance[6];
+
+volatile function_pointer callbackFunctionArray[IRQH_FP_TOT];
 
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private functions ---------------------------------------------------------*/
 
+/*
 int CheckRfblPinsAttatched(void) {
 
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -87,11 +104,12 @@ int CheckRfblPinsAttatched(void) {
 
 	return(0);
 }
+*/
 
 int main(void)
 {
 
-	uint32_t rebootAddress, bootDirection, bootCycles, rebootPending, ledTime = 0;
+	volatile uint32_t rebootAddress, bootDirection, bootCycles, rebootPending, ledTime = 0;
 
 	__enable_irq();
 	HAL_RCC_DeInit();
@@ -125,8 +143,8 @@ int main(void)
 		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND); //default is always boot to app
 	}
 
-	if (CheckRfblPinsAttatched())
-		bootDirection = BOOT_TO_RECOVERY_COMMAND;
+	//if (CheckRfblPinsAttatched())
+	//	bootDirection = BOOT_TO_RECOVERY_COMMAND;
 
 	//serial number check here:
 	//if (SERIALNUMBER != readSerialNumber) {
@@ -139,6 +157,9 @@ int main(void)
 		case BOOT_TO_DFU_COMMAND:
 			SystemResetToDfuBootloader(); //reset to DFU
 			break;
+		case BOOT_TO_RECOVERY_COMMAND: //go into recovery mode
+			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_RECV_COMMAND); //force boot to app for crappy firmware now that we've entered recovery command
+			break;
 		case BOOT_TO_ADDRESS:
 		case BOOT_TO_SPEKTRUM5:
 		case BOOT_TO_SPEKTRUM9:
@@ -146,9 +167,6 @@ int main(void)
 		case BOOT_TO_RFBL_COMMAND:
 		default: //default is to boot to rfbl quietly
 			boot_to_app();  //jump to application
-			break;
-		case BOOT_TO_RECOVERY_COMMAND: //go into recovery mode
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_RECV_COMMAND); //force boot to app for crappy firmware now that we've entered recovery command
 			break;
 	}
 
@@ -214,11 +232,11 @@ int main(void)
 			case RFBLS_DONE_UPGRADING:
 				//Last packet received and written to
 				FinishFlash();
-				RfblState = RFBLS_IDLE;
-				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
-				for (int8_t iii = 100; iii >= 0; iii -= 2) {
+				for (int8_t iii = 50; iii >= 0; iii -= 2) {
 					startupBlink(2, iii);
 				}
+				rfbl_report_state(&RfblState); //reply back to PC that we are now ready for data //TODO: Quick mode, slow mode
+				RfblState = RFBLS_IDLE;
 				break;
 
 			case RFBLS_AWAITING_FW_DATA:
@@ -518,7 +536,7 @@ void rfbl_write_packet(void) {
 			if (HAL_FLASH_Program(TYPEPROGRAM_WORD, FwInfo.address + FwInfo.wordOffset, data32) == HAL_OK) {
 			} else {
 				//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
-				ErrorHandler();
+				ErrorHandler(0);
 			}
 
 		}
@@ -601,8 +619,8 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 	tInBuffer[6]=*RfblState;
 
 	if (*RfblState == RFBLS_VERSION) {
-		tInBuffer[7]=RFBL_VERSION;
-		tInBuffer[8]=CFG1_VERSION;
+		tInBuffer[7]=RECOVERY_VERSION;
+		tInBuffer[8]=RECOVERY_VERSION;
 		tInBuffer[9]=uid0_1;
 		tInBuffer[10]=uid0_2;
 		tInBuffer[11]=uid0_3;
@@ -621,8 +639,9 @@ void rfbl_report_state (RfblState_e *RfblState)  {
 
 }
 
-void ErrorHandler(void)
+void ErrorHandler(uint32_t error)
 {
+	(void)(error);
     while (1) {
         DoLed(1, 1);;
         DoLed(2, 0);;
@@ -633,7 +652,8 @@ void ErrorHandler(void)
     }
 }
 
-void ZeroActuators(void) {
+void ZeroActuators(uint32_t delayUs) {
+	(void)(delayUs);
 	return;
 }
 /* RFBL description

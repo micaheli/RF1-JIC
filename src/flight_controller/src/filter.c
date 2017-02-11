@@ -2,48 +2,146 @@
 
 paf_state InitPaf(float q, float r, float p, float intial_value)
 {
+	float modifier;
+
+	switch (mainConfig.filterConfig[2].filterMod)
+	{
+		case 0:
+			modifier = 1;
+			break;
+		case 1:
+			modifier = 16.4;
+			break;
+		case 2:
+			modifier = 164.0;
+			break;
+		case 3:
+			modifier = 328.0;
+			break;
+		case 4:
+			modifier = 656.0;
+			break;
+		case 5:
+			modifier = 1312.0;
+			break;
+		case 6:
+		default:
+			modifier = 2624.0;
+			break;
+
+	}
+
 	paf_state result;
-	result.q = q;
-	result.r = r;
-	result.p = p;
-	result.x = intial_value;
+	result.q = q * 0.000001;
+	result.r = r * 0.001;
+	result.p = p * 0.001;
+	result.x = intial_value * modifier;
 
 	return result;
 }
 
 void PafUpdate(paf_state *state, float measurement)
 {
+	float modifier;
+
+	switch (mainConfig.filterConfig[2].filterMod)
+	{
+		case 0:
+			modifier = 1;
+			break;
+		case 1:
+			modifier = 16.4;
+			break;
+		case 2:
+			modifier = 164.0;
+			break;
+		case 3:
+			modifier = 328.0;
+			break;
+		case 4:
+			modifier = 656.0;
+			break;
+		case 5:
+			modifier = 1312.0;
+			break;
+		case 6:
+		default:
+			modifier = 2624.0;
+			break;
+
+	}
+
 	//prediction update
-	//omit x = x
 	state->p = state->p + state->q;
 
 	//measurement update
 	state->k = state->p / (state->p + state->r);
-	float x = state->x + state->k * (measurement - state->x);
-	if (x > -1000)
-		state->x = x;
-
+	state->x = state->x + state->k * (measurement * modifier - state->x);
+//	state->x = state->x + state->k * (measurement - state->x);
 	state->p = (1 - state->k) * state->p;
+
+	state->output = (state->x / modifier);
+//	state->output = state->x;
 }
 
 
 
-void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateUs)
+void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSeconds, uint32_t filterType, biquad_state *oldState, float bandwidth)
 {
 
-    float omega, sn, cs, alpha;
+	float samplingRate;
+    float bigA, omega, sn, cs, alpha, beta;
     float a0, a1, a2, b0, b1, b2;
 
-	omega = 2 * (float)M_PI_FLOAT * (float) filterCutFreq / refreshRateUs;
-	sn = (float)sinf((float)omega);
-	cs = (float)cosf((float)omega);
-	alpha = sn * (float)sinf( (float)((float)M_LN2_FLOAT / 2 * (float)BIQUAD_BANDWIDTH * (omega / sn)) );
-	b0 = (1.0 - cs) / 2;
-	b1 = 1.0 - cs;
-	b2 = (1.0 - cs) / 2;
-	a0 = 1.0 + alpha;
-	a1 = -2.0 * cs;
-	a2 = 1.0 - alpha;
+    float dbGain = 4.0;
+
+    samplingRate = (1 / refreshRateSeconds);
+
+	omega = 2 * (float)M_PI_FLOAT * (float) filterCutFreq / samplingRate;
+	sn    = (float)sinf((float)omega);
+	cs    = (float)cosf((float)omega);
+	alpha = sn * (float)sinf( (float)((float)M_LN2_FLOAT / 2 * (float)bandwidth * (omega / sn)) );
+
+	(void)(beta);
+    //bigA  = powf(10, dbGain /40);
+	//beta  = arm_sqrt_f32(bigA + bigA);
+
+	switch (filterType)
+	{
+		case FILTER_TYPE_LOWPASS:
+			b0 = (1 - cs) /2;
+			b1 = 1 - cs;
+			b2 = (1 - cs) /2;
+			a0 = 1 + alpha;
+			a1 = -2 * cs;
+			a2 = 1 - alpha;
+			break;
+		case FILTER_TYPE_NOTCH:
+			b0 = 1;
+			b1 = -2 * cs;
+			b2 = 1;
+			a0 = 1 + alpha;
+			a1 = -2 * cs;
+			a2 = 1 - alpha;
+			break;
+		case FILTER_TYPE_PEEK:
+		    bigA = powf(10, dbGain /40);
+			b0   = 1 + (alpha * bigA);
+			b1   = -2 * cs;
+			b2   = 1 - (alpha * bigA);
+			a0   = 1 + (alpha / bigA);
+			a1   = -2 * cs;
+			a2   = 1 - (alpha / bigA);
+			break;
+		 case FILTER_TYPE_HIGHPASS:
+			b0 = (1 + cs) /2;
+			b1 = -(1 + cs);
+			b2 = (1 + cs) /2;
+			a0 = 1 + alpha;
+			a1 = -2 * cs;
+			a2 = 1 - alpha;
+			break;
+	}
 
     // precompute the coefficients
     newState->a0 = b0 / a0;
@@ -54,19 +152,31 @@ void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateUs
 
     // zero initial samples
     //todo: make updateable on the fly
-    newState->x1 = 0;
-    newState->x2 = 0;
-    newState->y1 = 0;
-    newState->y2 = 0;
+    newState->x1 =  oldState->x1;
+    newState->x2 =  oldState->x2;
+    newState->y1 =  oldState->y1;
+    newState->y2 =  oldState->y1;
 
+}
+
+void LpfInit(lpf_state *filter, float frequencyCut, float refreshRateSeconds)
+{
+	filter->dT = refreshRateSeconds;
+	filter->rC = 1.0f / ( 2.0f * M_PI * frequencyCut );
+	filter->state = 0.0;
+}
+
+float LpfUpdate(float input, lpf_state *filter)
+{
+
+	filter->state = filter->state + filter->dT / (filter->rC + filter->dT) * (input - filter->state);
+
+	return (filter->state);
 }
 
 float BiquadUpdate(float sample, biquad_state *state)
 {
     float result;
-
-    if (isnan(sample) || isfinite(sample))
-    	return 0;
 
     /* compute result */
     result = state->a0 * (float)sample + state->a1 * state->x1 + state->a2 * state->x2 -
@@ -78,9 +188,7 @@ float BiquadUpdate(float sample, biquad_state *state)
     /* shift y1 to y2, result to y1 */
     state->y2 = state->y1;
     state->y1 = result;
-    if (isnan(result) || isfinite(result))
-    	return (float)result;
-    else
-    	return (float)result;
+
+    return (float)result;
 
 }

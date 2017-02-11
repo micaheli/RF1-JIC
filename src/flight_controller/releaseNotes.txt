@@ -1,0 +1,531 @@
+Version 0.090.030:
+
+	Made a copy of my Taranis model that will work with a new command called taranisdefaultsrf1 if anyone's interested
+	Added spekdefaults1 and spekdefaults3 based on whichever usart you use
+	spekdefaults 3 will not work with dshot
+	I changed the version as well. Next version is 0.090.030.  MAJOR.MINOR.CONFIG
+	If config gets incremented you'll know you have to run setup again. The plan is to change that in the future
+	Commands Added:
+		taranisdefaultsrf1
+		spekdefaults1
+		spekdefaults3
+	Commands Removed:	
+		spekdefaults
+
+Version 0.091.030:
+
+	Added new expo mode called FAST_EXPO. Set it like so:
+		set pitch_curve=3
+		set yaw_curve=3
+		set roll_curve=3
+	Default expo is 1, Fast Expo is 3, Taranis style expo is 2
+	Better Dshot support. Try it out at loop_ctrl=8 or rf_loop_ctrl=15 or rf_loop_ctrl=14 only for now
+	All rf_loop_ctrl is now supported
+	Added value string table:
+		ESC_MULTISHOT
+		ESC_ONESHOT
+		ESC_PWM
+		ESC_ONESHOT42
+		ESC_DSHOT600
+		ESC_DSHOT300
+		ESC_DSHOT150
+		MIXER_X1234RY
+		MIXER_X1234
+		MIXER_CUSTOM
+		LOOP_L1
+		LOOP_M1
+		LOOP_M2
+		LOOP_M4
+		LOOP_M8
+		LOOP_H1
+		LOOP_H2
+		LOOP_H4
+		LOOP_H8
+		LOOP_H16
+		LOOP_H32
+		LOOP_UH1
+		LOOP_UH2
+		LOOP_UH4
+		LOOP_UH8
+		LOOP_UH16
+		LOOP_UH32
+		NO_EXPO
+		SKITZO_EXPO
+		TARANIS_EXPO
+		FAST_EXPO
+		ACRO_PLUS
+		NO_EXPO
+
+Version 0.100.030:
+	Spektrum Telemetry support
+	S.Port support
+	Lots and lots of code cleanup
+
+Version 0.101.031:
+	More code cleanup
+	Adding new telemetry logic
+	Fixed inverted wiz calb
+	Gyro filter changes
+
+Version 0.102.032:
+	Fixed bug in Sbus failsafe
+	Changed how Deadband and Expo work
+	Add abilitiy to switch between gyro filter types
+		set gyro_filter_type=0
+		set kd_filter_type=0
+		Kd scale has changed when filter_type=0 is selected
+		0 - 100 is a normal range
+		filter_type=1 creates a range around 400 to 4000
+		I do not recomend using filter_type=1
+
+Version 0.103.033:
+	Upped config version and changed defaults
+	More Code Cleanup
+
+Version 0.104.033:
+	More Code Cleanup
+	Preparing for 1wire support
+	Fixed flash logger. Made slightly more intelligent
+
+Version 0.105.034:
+	Add 1wire support Stage 1
+	Add "dump back" command
+	Fix some config set issues
+	FrSky and Spektrum Telemtry temporarily disabled
+	Better bootloader/recovery loader support. This bootloader works with BB420+ and 0.015.034+
+	Add version to the top of a dump
+
+Version 0.106.034:
+	Proper disconnect from BLHeli
+	Rearranged startup sequence
+	Reticulated Splines
+	Removed Herobrine
+	Added SUMD protocol. Needs testing
+
+Version 0.107.035:
+	Change filtering levels
+	Fixed bug causing AXIS_ga to not set sometimes
+
+Version 0.108.036:
+	Added new motor mixer and command to change it (set motor_mixer=0). Old one is 0, new one is 1
+	All "resetXYZ" commands now have "rebootXYZ" aliases. (i.e. resetdfu and rebootdfu do the same thing)
+
+Version 0.109.036:
+	Changed some dump output text
+	Updated failsafe methods
+	updated motor mixer
+	changed default pids and filter settings. Please try defaults before changing anything
+
+Version 0.110.036:
+	Finished making SUMD work
+
+Version 0.111.036
+	Added "pidsdefaults" command. Will return pids and filters to default settings
+	Added "pidsrs2k" command. Will return pids and filters to RS2K's settings
+	Added "pidsabba" command. Will return pids and filters to Abbadessa's settings
+	Added "pidstaja" command. Will return pids and filters to Ehitaja's Settings
+	Added "pidspg" command. Will return pids and filters to Preston's Settings
+
+Version 0.112.036
+	Fixed an asynchronous rate issue
+	Fix for SUMD calibration issue. Needs to be tested
+	added ESC 1wire flash and config capabilities
+	ESC config and flashing now works
+
+Version 0.113.036
+	Add syn-ack log download command
+
+Version 0.114.036
+	Changes to loggin
+
+Version 0.115.036
+	Fixed Sumd again! Woohoo!
+	Change rx defaults:
+		Removed all rx "defaults" commands, such as "spekdefaults1"
+		Added "spek_t_1" command:    Sets up spektrum on USART 1. Conect to TX pin. Works with telemtry out
+		Added "spek_1" command:      Sets up spektrum on USART 1. Conect to TX pin
+		Added "spek_t_3" command:    Sets up spektrum on USART 3. Conect to TX pin. Works with telemtry out
+		Added "spek_3" command:      Sets up spektrum on USART 3. Conect to RX pin
+		Added "taranis_t_1" command: Sets up sbus on USART 1 - Inverted input (standard sbus). Conect to Sbus pin. Works with s.port telemtry out on usart 1 RX pin
+		Added "taranis_1" command:   Sets up sbus on USART 1 - Inverted input (standard sbus). Conect to Sbus pin
+		Added "taranis_t_3" command: Sets up sbus on USART 3 - Normal input (non standard sbus). Conect to TX pin. Works with s.port telemtry out on usart 3 RX pin
+		Added "taranis_3" command:   Sets up sbus on USART 3 - Normal input (non standard sbus). Conect to TX pin
+		Added "sumd_1" command:      Sets up SumD on Usart 1. Conect to TX pin
+		Added "sumd_3" command:      Sets up SumD on Usart 3. Conect to RX pin
+
+Version 0.116.036
+	Add ESC 1wire force flash option.
+	Fixed SumD again. :)
+
+Version 0.117.036
+	Added 45 degree mount capability to wiz cala and wiz calb
+
+Version 0.118.036
+	Fixed mixer issue in 117.036
+	fixed 1wire issue in 117.036
+
+Version 0.119.036
+	Filled in 1wire logic
+
+Version 0.120.036
+	Code cleanup
+	Change PID logging scale
+
+Version 0.121.037
+	Implement abillity to adjust motor outputs
+	Start work on Mixer Wizard
+	Resolved 1wire config issue
+
+Version 0.122.037:
+	Change 1wire startup power variable
+
+Version 0.123.037:
+	Fixed issue with witchcraft
+	Fixed issue with dlflsize reporting incorrect size
+
+Version 0.124.037:
+	Changed pidsrs2k. Mix of default PIDs and Ehitaja's filtering settings
+
+Version 0.125.037:
+	Changed pidspg. Mix of PG PIDs and Ehitaja's filtering settings
+
+Version 0.126.037:
+	Code cleanup
+	Added LEDs back in
+	Added Buzzers back in
+
+Version 0.127.002:
+	Custom version for XDC Racers
+	Added LED set command selections. RGB colors and number of LEDs
+		set led_red=0-255
+		set led_green=0-255
+		set led_blue=0-255
+		set led_count=0-32
+
+Version 0.128.039:
+	Code cleanup
+	Changed MS signal output and calibration routine
+	Must recalibrate your ESCs on this build
+	Changed filtering up
+
+Version 0.129.039:
+	Major flight code fix. Highly recommended ended upgrade
+	Updated pidsrs2k
+
+Version 0.130.039:
+	Quick fix to remove debug variable
+
+Version 0.131.039:
+	Updated pidsrs2k
+	Updated pidstaja
+	Updated pidsabba
+	Added confirmation and autosave to pid commands
+	Fixed full fflash causing flash not to recognise
+	
+Version 0.132.039:
+	Updated pidsrs2k
+	updated pidsdefault
+	Added arming buzzer mode
+	Added failsafe buzzer mode
+
+Version 0.133.039:
+	Decrease failsafe sensitivity
+
+Version 0.134.039:
+	Decrease failsafe sensitivity
+	Change Kp limits
+	Updated pidsrs2k
+	Updated pidstaja
+	Updated pidsdefaults
+	Updated pidsxdc
+	Added pidsnoise for noisier setups
+	
+Version 0.135.039:
+	Fix flash detection function
+
+Version 0.136.039:
+	Arming changed to Double Single
+	Gyro only calibrates on first switch
+	Updated pidsrs2k
+
+Version 0.137.040:
+	Change stick calibration method (Not yet active)
+	Flight and switch mode support Stage 1 (Not yet active)
+	Self leveling flight mode support (Not yet active)
+	Logging and arm switch changes (Not yet active)
+	changed default tune
+
+Version 0.138.040:
+	Change mixer slightly. Less floaty?
+
+Version 0.139.040:
+	Fix mixer change
+	More robust calibration method
+	Updated flight mode switch support. Now configurable, but not yet active
+
+Version 0.140.040:
+	Enable S.port telemtry
+	Fix Spektrum Telemtry RX binding
+
+Version 0.141.041:
+	Change filter defaults.
+	Adjusted filter range.
+	Added 1wire auto command
+	Added 1wire settings command
+	Added 1wire check command
+
+Version 0.142.041:
+	fix issue in pidc
+	IP. Begining adding MSP Telemtry
+
+Version 0.142.041:
+	change defaults
+	change actuator curve
+
+Version 0.143.041:
+	change internal filter settings
+	change actuator curve
+
+Version 0.144.041:
+	change actuator curve.
+	Added MS1.25 and MS2.5 protocols (1.25 to 5 us) (2.5us to 10us)... MS is (5us to 20us)
+		set esc_protocol=7 for MS2.5 and set esc_protocol=8 for MS1.25
+	Made changes to how rap opperates
+
+Version 0.145.042
+	Fixed LED code.
+	Added partial IBus support. (Not yet active)
+	Added partial PPM support. (Not yet active)
+	Added partial DSM2 support. (Not yet active)
+
+Version 0.146.043:
+	PPM support active and tested.
+	Ibus support active and tested.
+	Changed RX command setup:
+		Avalable commands:
+			spek_t1, spek_t3, spek_t4, spek_r1, spek_r3, spek_r4
+			sbus_t1, sbus_t3, sbus_t4, sbus_r1, sbus_r3, sbus_r4
+			sumd_t1, sumd_t3, sumd_t4, sumd_r1, sumd_r3, sumd_r4
+			ibus_t1, ibus_t3, ibus_t4, ibus_r1, ibus_r3, ibus_r4
+			ppm_t1, ppm_t3, ppm_t4, ppm_r1, ppm_r3, ppm_r4
+		"protocol" underscore "tx or rx pin" "usart number"
+	Telemtry option command:
+		set telem_sport=1
+		set telem_spek=1
+		set telem_msp=1
+		set telem_mavlink=1
+			"1 to enable and 0 to disaable right now. This will change in the future and will be used to select where the telemtry outputs"
+			"only sport is enabled at the moment"
+
+Version 0.147.044:
+	Enable Mode Support
+		Activated Horizon Mode
+		Activated Attitude Mode
+	Added "set slp": Kp for outter loop of self leveling modes
+	Added "set sli": Ki for outter loop of self leveling modes
+	Added "set sla": Max angle in degrees allowed for self leveling modes
+	Change filtering.
+	Active Horizon or Attiude flight mode like so:
+		modes HORIZON=6=500=1000
+		modes ATTITUDE=6=500=1000
+		-where the first number is the channel you want to activate the mode starting from channel 0, the second number is the
+		-minimum channel value that will activate the flight mode and the third number is the maximum channel value that will
+		-activate the flight mode. Channel values are calculated from -1000 to 1000 where -1000 is the minimum and 1000 represents the maximum channel value
+
+Version 0.148.044:
+	Changed logging method. Added it to Modes
+	If there is no channel assigned to the logging mode the flight log will log any time the FC is armed, otherwise the flight log will log when the board is armed and the flight logging mode is enabled
+	To enable a mode (example adding flight log mode):
+		in console:
+			-Mode channels start from 0, so the first channel on your radio is channel 0 on the FC
+			"modes list" will display all modes and what channels they are assigned to
+			"modes LOGGING=5=500=1000" will enable the LOGGING mode on channel 5 which is the 6th radio channel usually known as AUX2 to enable when the switch is equal to or between 500 and 1000 on a scale that ranges from -1000 to 1000
+	Flight log will automatically format in the background when "wiz cala" is run. No need to format flash separately during the setup process
+	DSM2 protocol activated
+	Change RC wizard. It will now only set the sticks. The switches must be assigned manually
+	Moved arm method to Modes. It must be set after using the RC wizard (wiz rca) like so:
+		"modes ARMED=4=500=1000"
+	Added commands: dsm2_t1, dsm2_t3, dsm2_t4, dsm2_r1, dsm2_r3, dsm2_r4
+	Fix LED Code
+
+Version 0.149.045:
+	Modified filters
+	Added usb ack
+	Improved HID speed
+	try rap to 1, 88 or manual
+	try yaw_press to 0, 1 or 2. (yaw press is a filter modifier)
+	added command "error" for error diagnostics
+	Changes to HID I/O commands
+
+Version 0.150.045:
+	Changes to HID I/O commands
+
+Version 0.151.047:
+	Added LED modes
+	Added "idle" command and "idlestop" command.
+	Change logic for modes:
+		channel now starts at 1 and goes to 16. channels 1-4 are reserved and cannot be set to a mode.
+		range is now -100 to 100. -100 is the minium a channel can go (1000 us for traditional PPM). 100 is the max (2000 us for traditional PPM) 0 is middle. (1500 us for traditional PPM)
+	Changed dump command output to always list modes, version and flight log info
+	Changed defaults
+	Fixed DSM2 1024, added DSM2 1024 bind option, changed bid opperations
+	Changed RXdata dump, Changed RCdata dump
+
+Version 0.152.047:
+	Adjust HID timeouts.
+	Adjust 1wire command logic
+
+Version 0.153.047:
+	Adjust HID timeouts
+
+Version 0.154.047:
+	Adjust HID timeouts
+	Rewrote I/O format
+
+Version 0.155.047:
+	Adjust wizard I/O
+
+Version 0.156.047:
+	Adjust RCdata storage
+	Rescaled Acro+ to be 0 to 300 instead of 0 to 3
+
+Version 0.157.048:
+	Allow multiple lines of commands through console
+
+Version 0.158.048:
+	Fix bug in rc wizard
+
+Version 0.159.048:
+	Fix log downloading
+	Allow logging when armed by default if no logging mode is assigned
+	Added direct flight mode
+
+Version 0.160.048:
+	Automatic RX detection: wiz rx
+
+Version 0.161.048:
+	Buzzer mode connected
+	Failsafe mode connected
+	Updated defaults
+	Made RX wizard work
+
+Version 0.162.048:
+	Fix buzzer bug.
+
+Version 0.163.048:
+	Alter Auto RX detection routine
+	If LED MODE switch is enabled then LEDs will default to OFF at startup
+	RFBL support in RFC 163
+
+Version 0.164.048:
+	Change RX wizard routine
+
+Version 0.165.048:
+	Default changes
+
+Version 0.166.048:
+	Changed HID output
+	Added FC changes
+	Cleaned up config
+	Changed IO logic
+
+Version 0.167.048:
+	Change flight code a bit
+	Smooth out flight
+
+Version 0.168.049:
+	Lots of IO and code cleanup
+	Change how command I/O works
+	Add motor mixers
+	Add expo curve 4
+	Adjust defaults
+	//other 168
+	added nytfluffy, braindrain, rs2k default setups
+	made curve 4 default
+	changed defaults
+
+Version 0.169.050
+	Change dump and set command output
+	set filter_mod_0 = 1 to turn on yaw smoothing
+	set filter_mod_1 = 1 to turn on flight sharpeness
+	set filter_mod_2 = 0 through 6 to turn on filter mod
+	Added commands: 
+		pids139
+	Added test1 mode, smooths mixer at all times, will run if enabled
+	Added test2 mode, smooths mixer near center stick, will run if enabled and test1 not enabled
+	Added test3 mode, does nothing
+	Changed wiz cala
+	Changed wiz cala
+	Changed wiz rx
+	Removed wix rca
+	Added wix rc1
+	Added ADC support
+	Added 3d Mixer support
+	Added 3d mixer 1wire support
+	Added idle_percent_inv for separate inverted idle in 3D mode
+	Removed wiz mot
+	Added wiz mot1
+	Added wiz mot2
+
+Version 0.170.051
+	Removed commands: 
+		pids139
+	Added commands: 
+		rs2k
+		set mixer_style (default is 0, range is 0-1)
+	Added new mixer
+	changed defaults
+
+Version 0.171.051
+	Added kiss curve. "set pitch_curve=5" "set roll_curve=5" "set yaw_curve=5"
+	when set:
+		pitch_rate, roll_rate and yaw_rate will act like "Rate" does for kiss
+		pitch_expo, roll_expo, yaw_expo will act like "RC Curve" does for kiss
+		pitch_acrop, roll_acrop, yaw_acrop will act like "RC Rate" does for kiss
+		Normal numbers might be 0.7, 0.7, 0.4
+		so putting in standard raceflight numbers will cause crazy results
+
+Version 0.172.051
+	Added 1wire autoa which will set basic ESC calibration as well
+	Changed how rc mapping works and updated RC wizards
+	
+Version 0.172.051:
+	Updated wizards
+	Added pin inversion in config
+	Added motors 5 and 6 to revolt pinout. Not yet enabled
+
+Version 0.173.051:
+	Altered wizards
+
+Version 0.174.054:
+	Wizard update
+
+Version 0.175.054:
+	Wizard update
+
+Version 0.176.054:
+	Wizard update
+
+Version 0.177.054:
+	Expo change
+
+Version 0.178.054:
+	Add raw rx data output
+	Adjust defaults
+
+
+
+Features in current development:
+	Spektrum Telemtry
+	MSP compatibility
+	MAVlink compatibility
+	Change Horizon mode
+	Vbat input
+	Current input
+	wizards
+
+Features for future development:
+	transponder output
+	Sonar input
+	GPS input
+	Unobtanium detector

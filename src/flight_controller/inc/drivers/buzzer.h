@@ -13,16 +13,25 @@ enum
     STATE_BUZZER_ERROR,
 	STATE_BUZZER_LOST,
 	STATE_BUZZER_STARTUP,
+	STATE_BUZZER_DEBUG,
+	STATE_BUZZER_ARMING,
+	STATE_BUZZER_FAILSAFE,
 };
+
 
 typedef struct buzzerStatus_t
 {
-    uint8_t status;
-    uint8_t lastStatus;
-    bool on;
-    uint32_t timeStart;
-    uint32_t timeStop;
+
+    volatile uint8_t status;
+    uint8_t   lastStatus;
+    uint8_t   on;
+    uint32_t  timeStart;
+    uint32_t  timeStop;
+    uint32_t  arrayIndex;
+    uint32_t *arrayToUse;
+
 } buzzerStatus_t;
+
 
 extern buzzerStatus_t buzzerStatus;
 
@@ -32,4 +41,4 @@ void InitializeBuzzerPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 void Buzz(uint32_t timeNow, uint16_t time1, uint16_t time2);
 void UpdateBuzzer(void);
 void BuzzTest(void);
-
+void ComplexBuzz(uint32_t timeNow, uint32_t buzzArray[]);

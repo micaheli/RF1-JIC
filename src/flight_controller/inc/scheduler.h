@@ -1,9 +1,14 @@
 #pragma once
 
-extern uint32_t autoSaveTimer;
+#define SOFT_SERIAL_BIT_TIME_ARRAY_SIZE	80
 
-void scheduler(int32_t count);
-void taskAutoSaveConfig(void);
-void taskHandlePcComm(void);
-void taskLed(void);
-void taskBuzzer(void);
+extern uint32_t autoSaveTimer;
+extern volatile uint32_t softSerialEnabled;
+extern volatile uint32_t softSerialBuf[][SOFT_SERIAL_BIT_TIME_ARRAY_SIZE];
+extern volatile uint32_t softSerialInd[];
+extern volatile uint32_t softSerialCurBuf;
+extern volatile uint32_t softSerialLastByteProcessedLocation;
+extern volatile uint32_t softSerialSwitchBuffer;
+
+extern void scheduler(int32_t count);
+extern void SoftSerialCallback(void);
