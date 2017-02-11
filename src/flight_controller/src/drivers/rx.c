@@ -658,8 +658,9 @@ void InitRcData (void)
 }
 
 
-void PpmExtiCallback(void)
+void PpmExtiCallback(uint32_t callbackNumber)
 {
+	(void)(callbackNumber);
 	// EXTI line interrupt detected
 	if(__HAL_GPIO_EXTI_GET_IT(ppmPin) != RESET)
 	{

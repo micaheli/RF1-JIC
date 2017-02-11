@@ -28,6 +28,7 @@ extern void SystemResetToDfuBootloader(void);
 
 extern uint32_t GetExtinFromPin(uint16_t GPIO_Pin);
 extern uint32_t GetExtiCallbackFromPin(uint16_t GPIO_Pin);
+extern uint32_t GetDmaCallbackFromDmaStream(uint32_t dmaEnum);
 extern void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on);
 extern void InitializeGpioInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 

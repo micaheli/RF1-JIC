@@ -92,7 +92,9 @@ enum {
 #define USING_CPPM_T           10
 #define USING_DSM2_R           11
 #define USING_DSM2_T           12
-#define USING_RX_END           13
+#define USING_SPORT            13
+#define USING_MSP              14
+#define USING_RX_END           15
 
 extern uint32_t ppmPin;
 
@@ -127,5 +129,5 @@ extern void CheckFailsafe(void);
 extern uint32_t SpektrumChannelMap(uint32_t inChannel);
 extern uint32_t ChannelMap(uint32_t inChannel);
 
-extern void PpmExtiCallback(void);
+extern void PpmExtiCallback(uint32_t callbackNumber);
 extern void SetRxDefaults(uint32_t rxProtocol, uint32_t usart);

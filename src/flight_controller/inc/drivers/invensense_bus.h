@@ -9,8 +9,8 @@ uint32_t AccGyroInit(loopCtrl_e gyroLoop);
 
 // functions used to read and write to hardware
 
-extern void GyroExtiCallback(void);
-extern void GyroRxDmaCallback(void);
+extern void GyroExtiCallback(uint32_t callbackNumber);
+extern void GyroRxDmaCallback(uint32_t callbackNumber);
 
 uint32_t AccGyroWriteData(uint8_t *data, uint8_t length);
 uint32_t AccGyroWriteRegister(uint8_t reg, uint8_t data);

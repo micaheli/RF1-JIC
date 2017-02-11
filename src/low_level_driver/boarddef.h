@@ -304,6 +304,9 @@ typedef struct {
 	int32_t					serialTxBuffer;
 	int32_t					serialRxBuffer;
 
+	uint32_t				serialTxInverted;
+	uint32_t				serialRxInverted;
+
 } board_serial;
 
 typedef struct {
@@ -472,7 +475,7 @@ typedef struct
 
 */
 
-typedef void (*function_pointer)(void);
+typedef void (*function_pointer)(uint32_t callbackNumber);
 
 extern volatile function_pointer callbackFunctionArray[];
 

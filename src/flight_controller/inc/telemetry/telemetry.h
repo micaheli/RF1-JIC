@@ -17,7 +17,7 @@ enum {
 	TELEM_ACTUATOR6=12,
 	TELEM_ACTUATOR7=13,
 	TELEM_ACTUATOR8=14,
-	TELEM_LAST=14,
+	TELEM_NUM=15,
 };
 
 typedef struct {
@@ -39,5 +39,5 @@ extern void ProcessTelemtry(void);
 extern void TelemtryRxCallback(uint8_t serialBuffer[], uint32_t outputLength);
 extern void TelemtryTxCallback(uint8_t serialBuffer[], uint32_t outputLength);
 
-extern void SportSoftSerialExtiCallback(void);
-extern void SportSoftSerialDmaCallback(void);
+extern void SportSoftSerialExtiCallback(uint32_t callbackNumber);
+extern void SportSoftSerialDmaCallback(uint32_t callbackNumber);

@@ -3,7 +3,9 @@
 __IO ITStatus UartReady = RESET;
 
 uint8_t dmaRxBuffer = '\000';
-uint32_t dmaIndex[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 5 usarts
+uint32_t dmaIndex[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 6 usarts
+uint32_t dmaTxCallbackToUsartHandle[IRQH_FP_TOT] =  { 0 };
+
 
 uint32_t lastRXPacket;
 
@@ -125,6 +127,8 @@ void UsartInit(uint32_t serialNumber)
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].RXPort];
 			break;
+		case USING_MSP:
+		case USING_SPORT:
 		case USING_MANUAL:
 		default:
 			txPin  = board.serials[serialNumber].TXPin;
@@ -172,6 +176,23 @@ void UsartInit(uint32_t serialNumber)
 	uartHandles[board.serials[serialNumber].usartHandle].Init.Parity       = board.serials[serialNumber].Parity;
 	uartHandles[board.serials[serialNumber].usartHandle].Init.HwFlowCtl    = board.serials[serialNumber].HwFlowCtl;
 	uartHandles[board.serials[serialNumber].usartHandle].Init.Mode         = board.serials[serialNumber].Mode;
+
+#ifdef USART_USED_ADVANCED
+	//f0, f3, f7 usart advanced features.
+	//setup inversion
+	uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+	if (board.serials[usartNumber].serialTxInverted)
+	{
+		uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_TXINVERT_INIT;
+		uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.TxPinLevelInvert = UART_ADVFEATURE_TXINV_ENABLE;
+	}
+	if (board.serials[usartNumber].serialRxInverted)
+	{
+		uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.AdvFeatureInit = (uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.AdvFeatureInit | UART_ADVFEATURE_RXINVERT_INIT);
+		uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_ENABLE;
+	}
+#endif
+
 	//uartHandle.Init.OverSampling = UART_OVERSAMPLING_16;
 
 
@@ -294,6 +315,12 @@ void UsartDmaInit(uint32_t serialNumber)
 		HAL_NVIC_SetPriority(board.dmasActive[board.serials[serialNumber].TXDma].dmaIRQn, 1, 1);
 		HAL_NVIC_EnableIRQ(board.dmasActive[board.serials[serialNumber].TXDma].dmaIRQn);
 		board.dmasActive[board.serials[serialNumber].TXDma].enabled = 1;
+
+		//set this so we know which DMA callback is assigned to which usart handle when the callback function is callse
+		dmaTxCallbackToUsartHandle[GetDmaCallbackFromDmaStream(board.dmasActive[board.serials[serialNumber].TXDma].dmaStream)] = board.serials[serialNumber].usartHandle;
+		//set the callback function
+		callbackFunctionArray[GetDmaCallbackFromDmaStream(board.dmasActive[board.serials[serialNumber].TXDma].dmaStream)] = SerialTxCallback;
+
 	}
 
 	/* Configure the DMA handler for reception process */
@@ -427,18 +454,14 @@ void InitBoardUsarts (void)
 		if (board.serials[serialNumber].enabled)
 		{
 
-
-
-
-
 			if (board.dmasSerial[board.serials[serialNumber].TXDma].enabled) //only move the DMA into the Active DMA if the serial needs it
 			{
 				board.dmasSerial[board.serials[serialNumber].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH;
 				board.dmasSerial[board.serials[serialNumber].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
-				board.dmasSerial[board.serials[serialNumber].TXDma].dmaMemInc          = DMA_MINC_DISABLE;
+				board.dmasSerial[board.serials[serialNumber].TXDma].dmaMemInc          = DMA_MINC_ENABLE;
 				board.dmasSerial[board.serials[serialNumber].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
 				board.dmasSerial[board.serials[serialNumber].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
-				board.dmasSerial[board.serials[serialNumber].TXDma].dmaMode            = DMA_CIRCULAR;
+				board.dmasSerial[board.serials[serialNumber].TXDma].dmaMode            = DMA_NORMAL;
 				board.dmasSerial[board.serials[serialNumber].TXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
 				board.dmasSerial[board.serials[serialNumber].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 				memcpy( &board.dmasActive[board.serials[serialNumber].TXDma], &board.dmasSerial[board.serials[serialNumber].TXDma], sizeof(board_dma) ); //TODO: Add dmasUsart
@@ -494,6 +517,12 @@ void DeInitBoardUsarts (void) {
 	}
 
 }
+
+void SerialTxCallback(uint32_t callbackNumber)
+{
+	HAL_DMA_IRQHandler(uartHandles[dmaTxCallbackToUsartHandle[callbackNumber]].hdmatx);
+}
+
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -554,14 +583,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 					ProcessSumdPacket(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], board.serials[serialNumber].FrameSize);
 				else if ( (board.serials[serialNumber].Protocol == USING_IBUS_T) || (board.serials[serialNumber].Protocol == USING_IBUS_R) )
 					ProcessIbusPacket(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], board.serials[serialNumber].FrameSize);
+				else if (board.serials[serialNumber].Protocol == USING_SPORT)
+				{
+					//simply fill the telemetry RX buffer. The scheduler and s.port driver will handle the rest.
+					telemtryRxBuffer[0] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0];
+					telemtryRxBuffer[1] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1];
+				}
+				else if (board.serials[serialNumber].Protocol == USING_MSP)
+				{
+					//simply fill the telemetry RX buffer. The scheduler and s.port driver will handle the rest.
+					telemtryRxBuffer[0] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0];
+					telemtryRxBuffer[1] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1];
+				}
 			}
 			break;
 		}
 	}
 
-}
-
-void SerialTxCallback(void)
-{
-	//HAL_DMA_IRQHandler(&uartHandles[board.serials[2].usartHandle].hdmatx);
 }

@@ -14,4 +14,4 @@ extern void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 extern void USARTx_DMA_RX_IRQHandler(void);
 extern void USARTx_DMA_TX_IRQHandler(void);
 extern void USARTx_IRQHandler(void);
-extern void SerialTxCallback(void);
+extern void SerialTxCallback(uint32_t callbackNumber);

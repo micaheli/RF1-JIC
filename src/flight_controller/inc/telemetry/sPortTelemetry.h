@@ -83,6 +83,8 @@
 
 extern uint32_t sendSmartPortAt;
 
+extern volatile uint8_t telemtryRxBuffer[];
 extern void SendSmartPort(void);
 extern void CheckIfSportReadyToSend(void);
+extern void InitSport(uint32_t usartNumber);
 extern void InitSoftSport(void);

@@ -512,11 +512,22 @@ Version 0.177.054:
 Version 0.178.054:
 	Add raw rx data output
 	Adjust defaults
+	Enable Spektrum Telemtry
+	Partial Vbat support implemented. Not enabled
+	Partial Curr support implemented. Not enabled
+	Enabled assignment of Telemtry ports. Not full enabled. On Revolt, enable telem as such:
+		set telem_sport=14                   to enable s.port on rx pin 3
+		set telem_spek=1                     to enable spektrum telemtry on USART used by the spektrum Rx
+		set telem_msp=1,2,3,4,5 or 6         to enable MSP telemtry output on selected USART RX and TX pin
+		set telem_mavlink=1,2,3,4,5 or 6     to enable Mavlink telemtry output on selected USART RX and TX pin
+		set telem_smartaudio=1,2,3,4,5 or 6  to enable Smart Audio I/O on selected USART TX pin
+		set telem_bst=1,2,3,4,5 or 6         to enable BST on selected USART TX pin
+
+
 
 
 
 Features in current development:
-	Spektrum Telemtry
 	MSP compatibility
 	MAVlink compatibility
 	Change Horizon mode
