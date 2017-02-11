@@ -10,6 +10,7 @@ static uint32_t packetTime = 11;
 
 uint32_t PreArmFilterCheck = 0;
 uint32_t activeFailsafe = 0;
+uint32_t failsafeHappend = 0;
 
 uint32_t rxDataRaw[MAXCHANNELS];
 uint32_t rxData[MAXCHANNELS];
@@ -166,6 +167,7 @@ inline void CheckFailsafe(void)
 
 	if ((boardArmed) && ( (rx_timeout > 1000) || (ModeActive(M_FAILSAFE)) ) )
 	{
+		failsafeHappend = 1;
 		buzzerStatus.status = STATE_BUZZER_FAILSAFE;
 		DisarmBoard();
 		ZeroActuators(32000); //immediately set actuators to disarmed position.
@@ -756,6 +758,9 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 			break;
 		case KISS_EXPO:
 			return ((2000*(1/(1-ABS(rcCommand)*mainConfig.rcControlsConfig.rates[axis])))* ( ((rcCommand*((rcCommand*1000)*(rcCommand*1000)/1000000))*mainConfig.rcControlsConfig.curveExpo[axis]+rcCommand*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10) ) );
+			break;
+		case KISS_EXPO2:
+			return ( ((2000*(1/(1-ABS(rcCommand)*mainConfig.rcControlsConfig.rates[axis])))* ( ((rcCommand*((rcCommand*1000)*(rcCommand*1000)/1000000))*mainConfig.rcControlsConfig.curveExpo[axis]+rcCommand*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10) ) ) * 1.25);
 			break;
 		case NO_EXPO:
 		default:

@@ -126,7 +126,7 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_x", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],		0, 10, 0, "" },
 		{ "sml_board_rot_y", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Y],		0, 10, 0, "" },
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		0, 10, 0, "" },
-		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_H32, "" },
+		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
 		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 160.00, "" }, //1000 18
 		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 140.00, "" },
@@ -140,7 +140,7 @@ const config_variables_rec valueTable[] = {
 		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 800.00, "" },
 		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1000.00, "" },
 
-		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 						0, 32, 0, "" },
+		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 						0, 32, 4, "" },
 		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 						0, 32, 0, "" },
 		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 					0, 32, 0, "" },
 
@@ -157,21 +157,21 @@ const config_variables_rec valueTable[] = {
 		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
 		{ "filter_mode2",		typeUINT,  "filt", &mainConfig.filterConfig[2].filterMod, 				0, 10, 2, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 20.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 10.000, "" },
 #ifdef STM32F446xx	//TODO remove target specific ifdefs
 		{ "yaw_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r,				0, 200, 1, "" },
 #else
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 200, 88.000, "" },
 #endif
 
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 30.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 25.000, "" },
 #ifdef STM32F446xx	//TODO remove target specific ifdefs
 		{ "roll_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r,				0, 200, 1, "" },
 #else
 		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 200, 88.000, "" },
 #endif
 
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 30.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 25.000, "" },
 #ifdef STM32F446xx	//TODO remove target specific ifdefs
 		{ "pitch_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r,				0, 200, 1, "" },
 #else
@@ -239,8 +239,8 @@ const config_variables_rec valueTable[] = {
 
 		{ "pitch_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[PITCH], 		0, 100, 2, "" },
 		{ "roll_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[ROLL], 		0, 100, 1, "" },
-		{ "yaw_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[YAW], 		0, 100, 0, "" },
-		{ "throttle_map", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[THROTTLE],	0, 100, 3, "" },
+		{ "yaw_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[YAW], 		0, 100, 3, "" },
+		{ "throttle_map", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[THROTTLE],	0, 100, 0, "" },
 		{ "aux1_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX1], 		0, 100, 4, "" },
 		{ "aux2_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX2], 		0, 100, 5, "" },
 		{ "aux3_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX3], 		0, 100, 6, "" },
@@ -817,6 +817,7 @@ void ProcessCommand(char *inString)
 			DelayMs(10);
 			IdleActuator( motorToSpin );
 		}
+
 	else if (!strcmp("fakerx", inString))
 		{
 			rxData[0] = 1100;
@@ -849,7 +850,7 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("error", inString))
 		{
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu %lu", deviceWhoAmI, errorMask);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu %lu %lu", deviceWhoAmI, errorMask, failsafeHappend);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("fakeflash", inString))
@@ -867,6 +868,14 @@ void ProcessCommand(char *inString)
 			if (!SetVariable(args))
 			{
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Setting Not Found:%s", inString);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+		}
+	else if (!strcmp("rxraw", inString))
+		{
+			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rw %u=%u", (volatile unsigned int)xx+1, (volatile unsigned int)(rxDataRaw[xx]));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -1380,24 +1389,24 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("pidsdefault", inString))
 		{
 
-			mainConfig.gyroConfig.loopCtrl   = LOOP_H32;
-			mainConfig.pidConfig[YAW].kp     = 220.00;
+			mainConfig.gyroConfig.loopCtrl   = LOOP_UH32;
+			mainConfig.pidConfig[YAW].kp     = 150.00;
 			mainConfig.pidConfig[ROLL].kp    = 130.00;
 			mainConfig.pidConfig[PITCH].kp   = 140.00;
 
-			mainConfig.pidConfig[YAW].ki     = 475.00;
-			mainConfig.pidConfig[ROLL].ki    = 370.00;
-			mainConfig.pidConfig[PITCH].ki   = 435.00;
+			mainConfig.pidConfig[YAW].ki     = 500.00;
+			mainConfig.pidConfig[ROLL].ki    = 400.00;
+			mainConfig.pidConfig[PITCH].ki   = 450.00;
 
-			mainConfig.pidConfig[YAW].kd     = 2100.00;
+			mainConfig.pidConfig[YAW].kd     = 1200.00;
 			mainConfig.pidConfig[ROLL].kd    = 800.00;
 			mainConfig.pidConfig[PITCH].kd   = 1000.00;
 
-			mainConfig.pidConfig[YAW].ga     = 0;
+			mainConfig.pidConfig[YAW].ga     = 12;
 			mainConfig.pidConfig[ROLL].ga    = 0;
 			mainConfig.pidConfig[PITCH].ga   = 0;
 
-			mainConfig.pidConfig[YAW].wc     = 0;
+			mainConfig.pidConfig[YAW].wc     = 4;
 			mainConfig.pidConfig[ROLL].wc    = 0;
 			mainConfig.pidConfig[PITCH].wc   = 0;
 
@@ -1405,9 +1414,9 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
 			mainConfig.filterConfig[PITCH].gyro.r = 88.00;
 
-			mainConfig.filterConfig[YAW].gyro.q   = 30.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 60.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 60.000;
+			mainConfig.filterConfig[YAW].gyro.q   = 10.000;
+			mainConfig.filterConfig[ROLL].gyro.q  = 25.000;
+			mainConfig.filterConfig[PITCH].gyro.q = 25.000;
 
 			mainConfig.filterConfig[0].filterMod  = 0;
 			mainConfig.filterConfig[1].filterMod  = 0;
@@ -1428,23 +1437,23 @@ void ProcessCommand(char *inString)
 		{
 
 			mainConfig.gyroConfig.loopCtrl = LOOP_UH32;
-			mainConfig.pidConfig[YAW].kp   = 220.00;
+			mainConfig.pidConfig[YAW].kp   = 150.00;
 			mainConfig.pidConfig[ROLL].kp  = 130.00;
 			mainConfig.pidConfig[PITCH].kp = 140.00;
 
-			mainConfig.pidConfig[YAW].ki   = 475.00;
-			mainConfig.pidConfig[ROLL].ki  = 370.00;
-			mainConfig.pidConfig[PITCH].ki = 435.00;
+			mainConfig.pidConfig[YAW].ki   = 500.00;
+			mainConfig.pidConfig[ROLL].ki  = 400.00;
+			mainConfig.pidConfig[PITCH].ki = 450.00;
 
-			mainConfig.pidConfig[YAW].kd   = 2100.00;
-			mainConfig.pidConfig[ROLL].kd  = 800.00;
-			mainConfig.pidConfig[PITCH].kd = 1000.00;
+			mainConfig.pidConfig[YAW].kd   = 1200.00;
+			mainConfig.pidConfig[ROLL].kd  = 1000.00;
+			mainConfig.pidConfig[PITCH].kd = 1200.00;
 
-			mainConfig.pidConfig[YAW].ga   = 0;
+			mainConfig.pidConfig[YAW].ga   = 12;
 			mainConfig.pidConfig[ROLL].ga  = 0;
 			mainConfig.pidConfig[PITCH].ga = 0;
 
-			mainConfig.pidConfig[YAW].wc   = 0;
+			mainConfig.pidConfig[YAW].wc   = 4;
 			mainConfig.pidConfig[ROLL].wc  = 0;
 			mainConfig.pidConfig[PITCH].wc = 0;
 
@@ -1452,9 +1461,9 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
 			mainConfig.filterConfig[PITCH].gyro.r = 88.00;
 
-			mainConfig.filterConfig[YAW].gyro.q   = 30.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 60.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 60.000;
+			mainConfig.filterConfig[YAW].gyro.q   = 10.000;
+			mainConfig.filterConfig[ROLL].gyro.q  = 30.000;
+			mainConfig.filterConfig[PITCH].gyro.q = 30.000;
 
 			mainConfig.filterConfig[0].filterMod  = 0;
 			mainConfig.filterConfig[1].filterMod  = 0;
@@ -1690,6 +1699,25 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("dlflstatusdump", inString))
 		{
 			DlflStatusDump();
+		}
+	else if (!strcmp("quadwall", inString))
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
 		}
 	else if (!strcmp("readflash", inString))
 		{

@@ -74,6 +74,7 @@ enum {
 	FAST_EXPO = 3,
 	ACRO_PLUS = 4,
 	KISS_EXPO = 5,
+	KISS_EXPO2 = 6,
 	EXPO_CURVE_END,
 };
 
@@ -106,6 +107,7 @@ extern volatile unsigned char isRxDataNew;
 extern uint32_t skipRxMap;
 extern uint32_t PreArmFilterCheck;
 extern uint32_t activeFailsafe;
+extern uint32_t failsafeHappend;
 
 extern void SpektrumBind (uint32_t bindNumber);
 

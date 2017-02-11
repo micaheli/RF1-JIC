@@ -80,11 +80,11 @@ static float stabilizerAttenuation;
 volatile float motorOutput[MAX_MOTOR_NUMBER];
 volatile float servoOutput[MAX_SERVO_NUMBER];
 int32_t activeMotorCounter = -1; //number of active motors minus 1
-float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.30, 1.25, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
-float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
-float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
+float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.40, 1.35, 1.28, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
+float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
+float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
 
-static float ApplyAttenuationCurve (float input, float curve[], int curveSize);
+static float ApplyAttenuationCurve (float input, float curve[], uint32_t curveSize);
 
 void InitMixer(void) {
 	int32_t i;
@@ -138,16 +138,23 @@ void InitMixer(void) {
 	activeMotorCounter=3;
 }
 
-static float ApplyAttenuationCurve (float inputAttn, float curve[], int curveSize) {
+static float ApplyAttenuationCurve (float inputAttn, float curve[], uint32_t curveSize)
+{
 
-	//return(1.0f);
     uint32_t indexAttn;
     float remainderAttn;
 
-    remainderAttn = (float)((float)inputAttn * (float)curveSize);
-    indexAttn =(int)remainderAttn;
+#ifdef STM32F446xx
+    return(1.0f);
+#endif
+
+    remainderAttn = inputAttn * (float)curveSize;
+    indexAttn = lrintf(remainderAttn);
+
     if (indexAttn == 0)
+    {
         return (curve[0]);
+    }
     else
     {
         remainderAttn = remainderAttn - (float)indexAttn;
@@ -155,102 +162,8 @@ static float ApplyAttenuationCurve (float inputAttn, float curve[], int curveSiz
     }
 }
 
-
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
-/*
-inline float InlineApplyMotorMixer(pid_output pids[], float curvedRcCommandF[], volatile float motorOutputHere[])
-{
-
-	int x;
-
-	float highestMotor  = -100.0f;
-	float lowestMotor   =  100.0f;
-	float actuatorRange =    0.0f;
-	float throttle      = curvedRcCommandF[THROTTLE];
-	int32_t i           = 0;
-
-	uint32_t threeDeeMode = 0;
-
-	if (!threeDeeMode)
-	{
-		throttle = (throttle+1) * 0.5; //0 to +1
-	}
-
-	for (i = activeMotorCounter; i >= 0; i--)
-	{
-		motorOutputHere[i] = (
-			(
-				(pids[YAW].kp * ApplyAttenuationCurve(motorOutputHere[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[YAW].kd * ApplyAttenuationCurve(motorOutputHere[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[YAW].ki * ApplyAttenuationCurve(motorOutputHere[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
-			) * motorMixer[i].yaw +
-			(
-				(pids[ROLL].kp * ApplyAttenuationCurve(motorOutputHere[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[ROLL].kd * ApplyAttenuationCurve(motorOutputHere[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[ROLL].ki * ApplyAttenuationCurve(motorOutputHere[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
-			) * motorMixer[i].roll +
-			(
-				(pids[PITCH].kp * ApplyAttenuationCurve(motorOutputHere[i], kpAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[PITCH].kd * ApplyAttenuationCurve(motorOutputHere[i], kdAttenuationCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[PITCH].ki * ApplyAttenuationCurve(motorOutputHere[i], kiAttenuationCurve, ATTENUATION_CURVE_SIZE ) )
-			) * motorMixer[i].pitch
-		);
-		if (motorOutputHere[i] > highestMotor) { highestMotor = motorOutputHere[i]; }
-		if (motorOutputHere[i] < lowestMotor)  { lowestMotor  = motorOutputHere[i]; }
-	}
-
-	actuatorRange = highestMotor - lowestMotor;
-
-	if (lowestMotor < 0)
-	{
-
-		//add the negative motor to the throttle, throttle has to at least make all motors 0%
-		for (i = activeMotorCounter; i >= 0; i--)
-		{ //throttle is not zero, so we can add throttle.
-			motorOutputHere[i] += (-1 * lowestMotor);
-		}
-
-	} //this makes sure actuator is at least 0 on each motor
-
-	if (actuatorRange > 1)
-	{ //this should never happen since the PIDC actively monitors the actuator range
-
-		//no need to apply throttle since throttle is automatically at 50% and cannot go lower or higher once an actuator is out of bounds
-
-		//(1 / highestMotor); //this give us the multiplier we apply to each motor
-
-		for (i = activeMotorCounter; i >= 0; i--)
-		{ //throttle is not zero, so we can add throttle.
-			motorOutputHere[i] *= (1 / actuatorRange); //this squashes the mixer to fit within range.
-			//this is a horrible way to do it though, so we need to make sure the PIDC doesn't allow this to happen.
-			//we do this by communicating the actuator condition back to the PIDC
-		}
-		throttle=0;
-
-	}
-	else
-	{
-
-		throttle=InlineConstrainf( throttle, 0, (1-(actuatorRange * 0.5))); //constrain throttle to maximum amount of throttle we can apply.
-		//throttle can't make actuator go out of bounds at this point since actuator range is between 0 and 1.
-		//throttle needs to shift actuators up to the point they at least hit 0.
-		//this can't make actuator go out of bounds since the range is less than 1;
-		//for this reason we can do an if, else if here since both conditions can never be true at the same time since we check the total range first.
-
-	}
-
-	for(x=7; x>=0; x--)
-	{
-		motorOutputHere[x] = InlineConstrainf(motorOutputHere[x]+throttle,0.0f,1.0f);
-	}
-
-	return actuatorRange;
-
-}
-*/
-
-//just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
-float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn)
+inline float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn)
 {
 	float idleNum1;
 	float idleNum2;
@@ -322,7 +235,7 @@ float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn)
 
 }
 
-float InlineApplyMotorMixer3dInverted(pid_output pids[], float throttleIn)
+inline float InlineApplyMotorMixer3dInverted(pid_output pids[], float throttleIn)
 {
 	float idleNum;
 	float highestMotor  = -100.0f;
@@ -390,7 +303,7 @@ float InlineApplyMotorMixer3dInverted(pid_output pids[], float throttleIn)
 	return(actuatorRange);
 }
 
-float InlineApplyMotorMixer3dNeutral(pid_output pids[], float throttleIn)
+inline float InlineApplyMotorMixer3dNeutral(pid_output pids[], float throttleIn)
 {
 	(void)(pids);
 	(void)(throttleIn);
@@ -402,7 +315,7 @@ float InlineApplyMotorMixer3dNeutral(pid_output pids[], float throttleIn)
 	return(0.0f);
 }
 
- float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
+inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 {
 
 	float highestMotor  = -100.0f;
