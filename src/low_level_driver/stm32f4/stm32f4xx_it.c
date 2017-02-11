@@ -300,3 +300,8 @@ void EXTI15_10_IRQHandler(void)
 	if (callbackFunctionArray[FP_EXTI15_10])
 		callbackFunctionArray[FP_EXTI15_10](FP_EXTI15_10);
 }
+
+void ADC_IRQHandler(void)
+{
+  //HAL_ADC_IRQHandler(&adcHandleT);
+}

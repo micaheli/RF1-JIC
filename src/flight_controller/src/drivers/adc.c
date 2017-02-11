@@ -1,5 +1,13 @@
 #include "includes.h"
 
+uint32_t adcVoltage;
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
+{
+	(void)(AdcHandle);
+  /* Get the converted value of regular channel */
+  //uhADCxConvertedValue = HAL_ADC_GetValue(AdcHandle);
+}
 
 void InitAdc(void)
 {
