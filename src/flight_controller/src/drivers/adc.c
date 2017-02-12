@@ -1,12 +1,35 @@
 #include "includes.h"
 
+
 uint32_t adcVoltage;
+
+
+static void ConvertAdcVoltage(uint32_t rawAdcVoltage);
+
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
 {
 	(void)(AdcHandle);
   /* Get the converted value of regular channel */
   //uhADCxConvertedValue = HAL_ADC_GetValue(AdcHandle);
+}
+
+//Poll ADC is run by the task scheduler.
+void PollAdc(void)
+{
+	if (HAL_ADC_PollForConversion(&adcHandle[board.boardADC[1].adcHandle], 2) == HAL_OK)
+	{
+		ConvertAdcVoltage( HAL_ADC_GetValue(&adcHandle[board.boardADC[1].adcHandle]) );
+	}
+	else
+	{
+		adcVoltage = 0;
+	}
+}
+
+static void ConvertAdcVoltage(uint32_t rawAdcVoltage)
+{
+	adcVoltage = rawAdcVoltage * 10;
 }
 
 void InitAdc(void)

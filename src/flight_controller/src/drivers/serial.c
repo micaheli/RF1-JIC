@@ -475,7 +475,7 @@ void InitBoardUsarts (void)
 				board.dmasSerial[board.serials[serialNumber].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
 				board.dmasSerial[board.serials[serialNumber].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
 				board.dmasSerial[board.serials[serialNumber].RXDma].dmaMode            = DMA_CIRCULAR;
-				board.dmasSerial[board.serials[serialNumber].RXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
+				board.dmasSerial[board.serials[serialNumber].RXDma].dmaPriority        = DMA_PRIORITY_VERY_HIGH;
 				board.dmasSerial[board.serials[serialNumber].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 		    	memcpy( &board.dmasActive[board.serials[serialNumber].RXDma], &board.dmasSerial[board.serials[serialNumber].RXDma], sizeof(board_dma) );
 		    }

@@ -80,14 +80,7 @@ void scheduler(int32_t count)
 
 void TaskAdc(void)
 {
-	if (HAL_ADC_PollForConversion(&adcHandle[board.boardADC[1].adcHandle], 2) == HAL_OK)
-	{
-		adcVoltage = HAL_ADC_GetValue(&adcHandle[board.boardADC[1].adcHandle]);
-	}
-	else
-	{
-		adcVoltage = 0;
-	}
+	PollAdc();
 }
 
  void TaskProcessSoftSerial(void) {

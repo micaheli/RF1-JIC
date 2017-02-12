@@ -1,11 +1,14 @@
 #include "includes.h"
 
 
+volatile uint32_t telemEnabled = 1;
 
 
-void ProcessTelemtry(void) {
+void ProcessTelemtry(void)
+{
 
-
+	if (!telemEnabled)
+		return;
 	//This function is run by the task manager quite often.
 	//is telemetry bidirectional or unidirectional
 

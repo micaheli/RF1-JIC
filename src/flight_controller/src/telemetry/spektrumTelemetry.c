@@ -208,6 +208,9 @@ void sendSpektrumBind()
 
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 {
+	if (!telemEnabled)
+			return;
+
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
 	{
 		if ( (board.serials[serialNumber].enabled) && (mainConfig.telemConfig.telemSpek) )

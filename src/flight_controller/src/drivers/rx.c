@@ -343,6 +343,7 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 
 void ProcessSpektrumPacket(uint32_t serialNumber)
 {
+	static uint32_t timeSinceLastPacket = 0;
 	volatile uint32_t spektrumChannel;
 	uint32_t x;
 	int32_t y;
@@ -350,6 +351,9 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	uint16_t channelIdMask;
 	uint16_t servoPosMask;
 	uint32_t bitShift;
+
+	if ( (InlineMillis() - timeSinceLastPacket)  < 9)
+		return;
 
 	channelIdMask = 0x7800;
 	servoPosMask  = 0x07FF;
@@ -371,10 +375,14 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		spektrumChannel = (value & channelIdMask) >> bitShift;
 		if (spektrumChannel < MAXCHANNELS)
 		{
-			rxDataRaw[spektrumChannel] = value & servoPosMask;
+			rxDataRaw[spektrumChannel] = (value & servoPosMask);
 			rx_timeout = 0;
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
 				buzzerStatus.status = STATE_BUZZER_OFF;
+		}
+		else
+		{
+			rx_timeout++;
 		}
 	}
 
@@ -383,6 +391,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		rxData[y] = rxDataRaw[ChannelMap(y)];
 	}
 
+	timeSinceLastPacket = InlineMillis();
 	if ( !(board.serials[serialNumber].Protocol == USING_DSM2_T) && !(board.serials[serialNumber].Protocol == USING_DSM2_R) )
 	{
 		spekPhase = copiedBufferData[2] & 0x80;

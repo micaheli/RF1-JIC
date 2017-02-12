@@ -11,4 +11,6 @@ enum {
 extern ADC_HandleTypeDef adcHandleT;
 extern uint32_t adcVoltage;
 
-void InitAdc(void);
+
+extern void PollAdc(void);
+extern void InitAdc(void);

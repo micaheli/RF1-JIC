@@ -25,7 +25,7 @@ static uint32_t WizRxCheckRxDataLooksValid(void);
 
 static void ResetChannelCheck(void)
 {
-	memcpy(checkRxData, rxData, sizeof(checkRxData));
+	memcpy(checkRxData, rxDataRaw, sizeof(checkRxData));
 }
 
 
@@ -155,8 +155,6 @@ void PrepareRcWizard(void)
 	wizardStatus.currentStep   = 1;
 	//reset rcCalibration config
 	mainConfig.rcControlsConfig.rcCalibrated = 0;
-	//don't use RX map until wizard completes
-	skipRxMap = 1;
 
 	bzero(&tempRc, sizeof(rc_control_config));
 
@@ -186,16 +184,16 @@ static int32_t WizRcWhichInChannelChange(void)
 
 	for (uint32_t x = 0;x<MAXCHANNELS;x++) {
 
-		changeValue = ABS((int32_t)rxData[x] - (int32_t)checkRxData[x]);
+		changeValue = ABS((int32_t)rxDataRaw[x] - (int32_t)checkRxData[x]);
 
 		if ( changeValue > 200 )
 		{
 			if (inputChannelMapped[x] == 1000)
 			{
 				currentChannelRange = ABS((float)mainConfig.rcControlsConfig.maxRc[x] - (float)mainConfig.rcControlsConfig.minRc[x]); //1000    //0  //1
-				diffFloat      = (float)rxData[x] -  (float)mainConfig.rcControlsConfig.maxRc[x];
+				diffFloat      = (float)rxDataRaw[x] -  (float)mainConfig.rcControlsConfig.maxRc[x];
 				percentFromMax = (float)( ABS(diffFloat) / (float)currentChannelRange);
-				diffFloat      = (float)rxData[x] -  (float)mainConfig.rcControlsConfig.minRc[x];
+				diffFloat      = (float)rxDataRaw[x] -  (float)mainConfig.rcControlsConfig.minRc[x];
 				percentFromMin = (float)( ABS(diffFloat) / (float)currentChannelRange);
 				if (percentFromMax > percentFromMin)
 				{ //we're near min
@@ -233,22 +231,22 @@ void WizRcCheckMinMax(void)
 {
 	uint32_t x;
 
-	for (x = 0;x<MAXCHANNELS;x++)
+	for (x = 0;x<4;x++)
 	{
 		//for each channel we check if the current value is smaller than the set min value
-		if (rxData[x] < tempRc.minRc[x])
+		if (rxDataRaw[x] < tempRc.minRc[x])
 		{
-			tempRc.minRc[x] = (volatile unsigned int)rxData[x];
+			tempRc.minRc[x] = rxDataRaw[x];
 		}
 
 		//for each channel we check if the current value is larger than the set max value
-		if (rxData[x] > tempRc.maxRc[x])
+		if (rxDataRaw[x] > tempRc.maxRc[x])
 		{
-			tempRc.maxRc[x] = (volatile unsigned int)rxData[x];
+			tempRc.maxRc[x] = rxDataRaw[x];
 		}
 
 		//we just brute force set these for later use.
-		tempRc.midRc[x] = (volatile unsigned int)rxData[x];
+		tempRc.midRc[x] = rxDataRaw[x];
 		tempRc.channelMap[x] = 1000;
 		inputChannelMapped[x] = 1000;
 	}
@@ -267,14 +265,20 @@ void WizRcCheckCenter(void)
 			mainConfig.rcControlsConfig.minRc[x] = tempRc.minRc[x];
 			mainConfig.rcControlsConfig.maxRc[x] = tempRc.maxRc[x];
 
-			if ( ( ABS((int32_t)mainConfig.rcControlsConfig.midRc[x] - (int32_t)mainConfig.rcControlsConfig.minRc[x]) < 10 ) )
-			{ //looks like switch
-				mainConfig.rcControlsConfig.midRc[x] = mainConfig.rcControlsConfig.minRc[x]; //set center to min RC
+			//set 0 through 3 are set normally, others re set based on 0 (switches)
+			if (x >= 4){
+				mainConfig.rcControlsConfig.midRc[x] = tempRc.midRc[0];
+				mainConfig.rcControlsConfig.minRc[x] = tempRc.minRc[0];
+				mainConfig.rcControlsConfig.maxRc[x] = tempRc.maxRc[0];
 			}
-			else if ( ( ABS((int32_t)mainConfig.rcControlsConfig.midRc[x] - (int32_t)mainConfig.rcControlsConfig.maxRc[x]) < 10 ) )
-			{ //looks like switch
-				mainConfig.rcControlsConfig.midRc[x] = mainConfig.rcControlsConfig.minRc[x]; //set center to min RC
-			}
+			//if ( ( ABS((int32_t)mainConfig.rcControlsConfig.midRc[x] - (int32_t)mainConfig.rcControlsConfig.minRc[x]) < 10 ) )
+			//{ //looks like switch
+			//	mainConfig.rcControlsConfig.midRc[x] = mainConfig.rcControlsConfig.minRc[x]; //set center to min RC
+			//}
+			//else if ( ( ABS((int32_t)mainConfig.rcControlsConfig.midRc[x] - (int32_t)mainConfig.rcControlsConfig.maxRc[x]) < 10 ) )
+			//{ //looks like switch
+			//	mainConfig.rcControlsConfig.midRc[x] = mainConfig.rcControlsConfig.minRc[x]; //set center to min RC
+			//}
 
 		}
 
@@ -285,7 +289,7 @@ void WizRcCheckCenter(void)
 static int32_t WizRcSetChannelMapAndDirection(uint32_t inChannel, uint32_t outChannel)
 {
 
-	int32_t channelCheck = ( rxData[inChannel] < (mainConfig.rcControlsConfig.maxRc[inChannel] - 300) ); //channel is reversed
+	int32_t channelCheck = ( rxDataRaw[inChannel] < (mainConfig.rcControlsConfig.maxRc[inChannel] - 300) ); //channel is reversed
 
 	if (mainConfig.rcControlsConfig.channelMap[outChannel] == 1000)
 	{ //if channelMap for the inChannel is 50 than it's waiting to be assigned.
@@ -378,12 +382,12 @@ void WizRcCheckAndSendDirection(void)
 			if (WizRcCheckAndSetChannel(ROLL) > -1)
 			{
 				WizRcSetRestOfMap();
-				skipRxMap = 0;
 				RfCustomReplyBuffer("#wiz Roll Set");
 				RfCustomReplyBuffer("#wiz RC Setup Complete");
 				mainConfig.rcControlsConfig.rcCalibrated = 1;
 				bzero(&wizardStatus, sizeof(wizardStatus)); //all done
 				SaveAndSend();
+				telemEnabled = 1;
 			}
 			else
 			{
@@ -437,6 +441,7 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 	SetRxDefaults(rxProtocol,usart);
 	DelayMs(2);
 	InitFlight();
+	bzero(rxDataRaw, sizeof(rxDataRaw));
 	bzero(rxData, sizeof(rxData));
 	trueRcCommandF[0] = -1.1;
 	trueRcCommandF[1] = -1.1;
@@ -447,6 +452,7 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 	DisarmBoard();
 	if (WizRxCheckRxDataLooksValid())
 	{
+		bzero(rxDataRaw, sizeof(rxDataRaw));
 		bzero(rxData, sizeof(rxData));
 		trueRcCommandF[0] = -1.1;
 		trueRcCommandF[1] = -1.1;
@@ -456,6 +462,7 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 		//check twice after a reset of data checks
 		if (WizRxCheckRxDataLooksValid())
 		{
+			bzero(rxDataRaw, sizeof(rxDataRaw));
 			bzero(rxData, sizeof(rxData));
 			trueRcCommandF[0] = -1.1;
 			trueRcCommandF[1] = -1.1;
@@ -537,8 +544,10 @@ void SetupWizard(char *inString)
 	{
 		if (wizardStatus.currentWizard != WIZ_RX)
 		{
+			DeInitBoardUsarts();
 			wizardStatus.currentWizard = WIZ_RX;
 			wizardStatus.currentStep = 0;
+			DelayMs(5);
 		}
 		HandleWizRx();
 		return;
@@ -584,6 +593,7 @@ void SetupWizard(char *inString)
 	}
 	else if (!strcmp("rc1", inString))
 	{
+		telemEnabled = 0;
 		bzero(&wizardStatus, sizeof(wizardStatus));
 		HandleWizRc();
 		return;
