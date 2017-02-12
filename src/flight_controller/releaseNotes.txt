@@ -522,7 +522,7 @@ Version 0.178.054:
 		set telem_mavlink=1,2,3,4,5 or 6     to enable Mavlink telemtry output on selected USART RX and TX pin
 		set telem_smartaudio=1,2,3,4,5 or 6  to enable Smart Audio I/O on selected USART TX pin
 		set telem_bst=1,2,3,4,5 or 6         to enable BST on selected USART TX pin
-
+	Changed how RC and RX wizards function
 
 
 

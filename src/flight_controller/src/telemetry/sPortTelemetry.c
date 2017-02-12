@@ -134,9 +134,12 @@ void SendSmartPort(void)
 			break;
 		case 5:
 			SmartPortCreatePacket(0x0721, (int32_t)(filteredGyroData[YAW]), sPortPacket );
-			sPortTelemCount = 0;
 			break;
 		case 6:
+			SmartPortCreatePacket(0xf104, (int32_t)(adcVoltage), sPortPacket );
+			sPortTelemCount = 0;
+			break;
+		case 7:
 		default:
 			sPortTelemCount = 0;
 			return;
