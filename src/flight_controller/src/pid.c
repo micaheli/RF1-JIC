@@ -211,11 +211,9 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 			// calculate Ki ////////////////////////// V
 			if ( fullKiLatched )
 			{
-
 				if (ModeActive(M_TEST3)) //let Ki only act on erros above 100
 				{
 					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
-
 					if ( ( actuatorRange > .9999 ) || (pidError > 110) ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
 					{
 						flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
@@ -228,7 +226,6 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 				else
 				{
 					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
-
 					if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
 					{
 						flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
@@ -238,9 +235,6 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 						kiErrorLimit[axis] = ABS(flightPids[axis].ki);
 					}
 				}
-
-
-
 			}
 			else
 			{

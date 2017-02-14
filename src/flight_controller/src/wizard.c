@@ -22,6 +22,9 @@ static void     WizRcSetRestOfMap(void);
 
 static void     HandleWizRx(void);
 static uint32_t WizRxCheckRxDataLooksValid(void);
+static void WizRcCheckArmSwitchDisarmed(void);
+static uint32_t WizRcCheckArmSwitchArmed(void);
+
 
 static void ResetChannelCheck(void)
 {
@@ -116,9 +119,9 @@ void WizRcSetRestOfMap(void)
 				if (mainConfig.rcControlsConfig.channelMap[y] == 1000) //this channel is not assigned a map, so we assign it X and set min max to the mapped channel 0
 				{
 					mainConfig.rcControlsConfig.channelMap[y] = x;
-					mainConfig.rcControlsConfig.minRc[x] = mainConfig.rcControlsConfig.minRc[0];
-					mainConfig.rcControlsConfig.midRc[x] = mainConfig.rcControlsConfig.midRc[0];
-					mainConfig.rcControlsConfig.maxRc[x] = mainConfig.rcControlsConfig.maxRc[0];
+					mainConfig.rcControlsConfig.minRc[y] = mainConfig.rcControlsConfig.minRc[0];
+					mainConfig.rcControlsConfig.midRc[y] = mainConfig.rcControlsConfig.midRc[0];
+					mainConfig.rcControlsConfig.maxRc[y] = mainConfig.rcControlsConfig.maxRc[0];
 					break; //break out of inner loop
 				}
 			}
@@ -190,10 +193,11 @@ static int32_t WizRcWhichInChannelChange(void)
 		{
 			if (inputChannelMapped[x] == 1000)
 			{
-				currentChannelRange = ABS((float)mainConfig.rcControlsConfig.maxRc[x] - (float)mainConfig.rcControlsConfig.minRc[x]); //1000    //0  //1
-				diffFloat      = (float)rxDataRaw[x] -  (float)mainConfig.rcControlsConfig.maxRc[x];
+				//				mainConfig.rcControlsConfig.midRc[x] = tempRc.midRc[0];
+				currentChannelRange = ABS((float)tempRc.maxRc[x] - (float)tempRc.minRc[x]); //1000    //0  //1
+				diffFloat      = (float)rxDataRaw[x] -  (float)tempRc.maxRc[x];
 				percentFromMax = (float)( ABS(diffFloat) / (float)currentChannelRange);
-				diffFloat      = (float)rxDataRaw[x] -  (float)mainConfig.rcControlsConfig.minRc[x];
+				diffFloat      = (float)rxDataRaw[x] -  (float)tempRc.minRc[x];
 				percentFromMin = (float)( ABS(diffFloat) / (float)currentChannelRange);
 				if (percentFromMax > percentFromMin)
 				{ //we're near min
@@ -261,15 +265,16 @@ void WizRcCheckCenter(void)
 
 		if ( tempRc.maxRc[x] != 1000000 )
 		{
-			mainConfig.rcControlsConfig.midRc[x] = tempRc.midRc[x];
-			mainConfig.rcControlsConfig.minRc[x] = tempRc.minRc[x];
-			mainConfig.rcControlsConfig.maxRc[x] = tempRc.maxRc[x];
+			tempRc.midRc[x] = rxDataRaw[x];
+			//mainConfig.rcControlsConfig.midRc[x] = tempRc.midRc[x];
+			//mainConfig.rcControlsConfig.minRc[x] = tempRc.minRc[x];
+			//mainConfig.rcControlsConfig.maxRc[x] = tempRc.maxRc[x];
 
 			//set 0 through 3 are set normally, others re set based on 0 (switches)
 			if (x >= 4){
-				mainConfig.rcControlsConfig.midRc[x] = tempRc.midRc[0];
-				mainConfig.rcControlsConfig.minRc[x] = tempRc.minRc[0];
-				mainConfig.rcControlsConfig.maxRc[x] = tempRc.maxRc[0];
+				tempRc.midRc[x] = tempRc.midRc[0];
+				tempRc.minRc[x] = tempRc.minRc[0];
+				tempRc.maxRc[x] = tempRc.maxRc[0];
 			}
 			//if ( ( ABS((int32_t)mainConfig.rcControlsConfig.midRc[x] - (int32_t)mainConfig.rcControlsConfig.minRc[x]) < 10 ) )
 			//{ //looks like switch
@@ -289,7 +294,7 @@ void WizRcCheckCenter(void)
 static int32_t WizRcSetChannelMapAndDirection(uint32_t inChannel, uint32_t outChannel)
 {
 
-	int32_t channelCheck = ( rxDataRaw[inChannel] < (mainConfig.rcControlsConfig.maxRc[inChannel] - 300) ); //channel is reversed
+	int32_t channelCheck = ( rxDataRaw[inChannel] < (tempRc.maxRc[inChannel] - 400) ); //channel is reversed
 
 	if (mainConfig.rcControlsConfig.channelMap[outChannel] == 1000)
 	{ //if channelMap for the inChannel is 50 than it's waiting to be assigned.
@@ -298,9 +303,15 @@ static int32_t WizRcSetChannelMapAndDirection(uint32_t inChannel, uint32_t outCh
 
 		if ( channelCheck )
 		{ //min is higher so channel is reversed, reverse if needed
-			channelCheck = (int32_t)mainConfig.rcControlsConfig.maxRc[inChannel];
-			mainConfig.rcControlsConfig.maxRc[inChannel] = mainConfig.rcControlsConfig.minRc[inChannel];
-			mainConfig.rcControlsConfig.minRc[inChannel] = (uint32_t)channelCheck;
+			mainConfig.rcControlsConfig.minRc[outChannel] = tempRc.maxRc[inChannel];
+			mainConfig.rcControlsConfig.midRc[outChannel] = tempRc.midRc[inChannel];
+			mainConfig.rcControlsConfig.maxRc[outChannel] = tempRc.minRc[inChannel];
+		}
+		else
+		{
+			mainConfig.rcControlsConfig.maxRc[outChannel] = tempRc.maxRc[inChannel];
+			mainConfig.rcControlsConfig.midRc[outChannel] = tempRc.midRc[inChannel];
+			mainConfig.rcControlsConfig.minRc[outChannel] = tempRc.minRc[inChannel];
 		}
 		return(1);
 
@@ -322,8 +333,8 @@ int32_t WizRcCheckAndSetChannel(uint32_t outChannel)
 		{
 			if ( (outChannel == THROTTLE) || (outChannel == AUX1) || (outChannel == AUX2) || (outChannel == AUX3) || (outChannel == AUX4) )
 			{ //set mid point at center between extremes
-				throttleFix = (int32_t)(((int32_t)mainConfig.rcControlsConfig.maxRc[changedInChannel] - (int32_t)mainConfig.rcControlsConfig.minRc[changedInChannel]) / 2);
-				mainConfig.rcControlsConfig.midRc[changedInChannel] = (uint32_t)( throttleFix + (int32_t)mainConfig.rcControlsConfig.minRc[changedInChannel]);
+				throttleFix = (int32_t)(((int32_t)mainConfig.rcControlsConfig.maxRc[outChannel] - (int32_t)mainConfig.rcControlsConfig.minRc[outChannel]) / 2);
+				mainConfig.rcControlsConfig.midRc[outChannel] = (uint32_t)( throttleFix + (int32_t)mainConfig.rcControlsConfig.minRc[outChannel]);
 			}
 			return(1);
 		}
@@ -383,11 +394,7 @@ void WizRcCheckAndSendDirection(void)
 			{
 				WizRcSetRestOfMap();
 				RfCustomReplyBuffer("#wiz Roll Set");
-				RfCustomReplyBuffer("#wiz RC Setup Complete");
-				mainConfig.rcControlsConfig.rcCalibrated = 1;
-				bzero(&wizardStatus, sizeof(wizardStatus)); //all done
-				SaveAndSend();
-				telemEnabled = 1;
+				RfCustomReplyBuffer("#wiz Set arm switch to DISARMED and please run wiz rc4");
 			}
 			else
 			{
@@ -396,6 +403,27 @@ void WizRcCheckAndSendDirection(void)
 			break;
 
 	}
+}
+
+static void WizRcCheckArmSwitchDisarmed(void)
+{
+	memcpy(checkRxData, rxData, sizeof(checkRxData));
+}
+
+static uint32_t WizRcCheckArmSwitchArmed(void)
+{
+	uint32_t x;
+	for (x=4;x<MAXCHANNELS;x++)
+	{
+		//we don't look at the first 4 channels as they are sricks
+		if ( ABS(rxData[x] - checkRxData[x]) > 300)
+		{
+			//found the arm switch
+			SetMode(M_ARMED, x, (int16_t)(InlineConstrainf((trueRcCommandF[x] - 0.25),-1.0f,1.0f) * 100), (int16_t)(InlineConstrainf((trueRcCommandF[x] + 0.25),-1.0f,1.0f) * 100));
+			return(1);
+		}
+	}
+	return(0);
 }
 
 void HandleWizRc(void)
@@ -423,6 +451,26 @@ void HandleWizRc(void)
 		case 3:
 			//min max values are set, let's save them and now check centers
 			WizRcCheckAndSendDirection();
+			break;
+		case 4:
+			//min max values are set, let's save them and now check centers
+			WizRcCheckArmSwitchDisarmed();
+			RfCustomReplyBuffer("#wiz Disarm Set. Please run wiz rc5");
+			break;
+		case 5:
+			if (WizRcCheckArmSwitchArmed())
+			{
+				RfCustomReplyBuffer("#wiz Wiz RC Successful");
+				mainConfig.rcControlsConfig.rcCalibrated = 1;
+				bzero(&wizardStatus, sizeof(wizardStatus)); //all done
+				SaveAndSend();
+				telemEnabled = 1;
+			}
+			else
+			{
+				RfCustomReplyBuffer("#wiz Wiz RC Failed");
+			}
+
 			break;
 		default:
 			RfCustomReplyBuffer("#wiz Unknown Step, Wiz RC");
@@ -515,9 +563,9 @@ void HandleWizRx(void)
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					wizardStatus.currentWizard = 0;
 					wizardStatus.currentStep = 0;
-					SetMode(M_ARMED, 4, 50, 100);
 					resetBoard = 1;
-					mainConfig.rcControlsConfig.rcCalibrated = 1;
+					SetMode(M_ARMED, 0, 0, 0);
+					mainConfig.rcControlsConfig.rcCalibrated = 0;
 					SaveAndSend();
 					return;
 				}
@@ -618,6 +666,32 @@ void SetupWizard(char *inString)
 		if (!mainConfig.rcControlsConfig.rcCalibrated)
 		{
 			wizardStatus.currentStep = 3;
+			HandleWizRc();
+		}
+		else
+		{
+			RfCustomReplyBuffer("#wiz please run wiz rc1 first.");
+		}
+		return;
+	}
+	else if (!strcmp("rc4", inString))
+	{
+		if (!mainConfig.rcControlsConfig.rcCalibrated)
+		{
+			wizardStatus.currentStep = 4;
+			HandleWizRc();
+		}
+		else
+		{
+			RfCustomReplyBuffer("#wiz please run wiz rc1 first.");
+		}
+		return;
+	}
+	else if (!strcmp("rc5", inString))
+	{
+		if (!mainConfig.rcControlsConfig.rcCalibrated)
+		{
+			wizardStatus.currentStep = 5;
 			HandleWizRc();
 		}
 		else

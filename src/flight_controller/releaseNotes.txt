@@ -524,6 +524,13 @@ Version 0.178.054:
 		set telem_bst=1,2,3,4,5 or 6         to enable BST on selected USART TX pin
 	Changed how RC and RX wizards function
 
+Version 0.179.054:
+	Made changes to mixer
+	Added armed switch to wiz rc
+	Changed how pid controller handles Ki
+	Changed RX wizard to uncalibrate radio
+		Make sure you run wiz rc after wiz rx
+
 
 
 

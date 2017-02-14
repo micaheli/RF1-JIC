@@ -165,7 +165,7 @@ inline void CheckFailsafe(void)
 
 	FeedTheDog(); //resets IWDG time to 0. This tells the timer the board is running.
 
-	if ((boardArmed) && ( (rx_timeout > 1000) || (ModeActive(M_FAILSAFE)) ) )
+	if ((boardArmed) && ( (rx_timeout > 500) || (ModeActive(M_FAILSAFE)) ) )
 	{
 		failsafeHappend = 1;
 		buzzerStatus.status = STATE_BUZZER_FAILSAFE;
@@ -442,7 +442,8 @@ void ProcessSbusPacket(uint32_t serialNumber)
 	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SBUS_FRAME_SIZE);
 
 	// do we need to hook these into rxData[ChannelMap(i)] ?
-	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) ) {
+	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) )
+	{
 		rxDataRaw[0] = frame->chan0;
 		rxDataRaw[1] = frame->chan1;
 		rxDataRaw[2] = frame->chan2;
