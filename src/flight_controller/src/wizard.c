@@ -357,36 +357,36 @@ void WizRcCheckAndSendDirection(void)
 			if (WizRcCheckAndSetChannel(THROTTLE) > -1)
 			{
 				RfCustomReplyBuffer("#wiz Throttle Set");
-				RfCustomReplyBuffer("#wiz Set Yaw To Right");
+				RfCustomReplyBuffer("#wiz Push Yaw Stick To Right");
 				wizardStatus.wicRcCheckDirection = WIZ_RC_YAW_RIGHT;
 			}
 			else
 			{
-				RfCustomReplyBuffer("#wiz Set Throttle To Top");
+				RfCustomReplyBuffer("#wiz Push Throttle Stick To Top");
 			}
 			break;
 		case WIZ_RC_YAW_RIGHT:
 			if (WizRcCheckAndSetChannel(YAW) > -1)
 			{
 				RfCustomReplyBuffer("#wiz Yaw Set");
-				RfCustomReplyBuffer("#wiz Set Pitch To Top");
+				RfCustomReplyBuffer("#wiz Push Pitch Stick To Top");
 				wizardStatus.wicRcCheckDirection = WIZ_RC_PITCH_UP;
 			}
 			else
 			{
-				RfCustomReplyBuffer("#wiz Set Yaw To Right");
+				RfCustomReplyBuffer("#wiz Push Yaw Stick To Right");
 			}
 			break;
 		case WIZ_RC_PITCH_UP:
 			if (WizRcCheckAndSetChannel(PITCH) > -1)
 			{
 				RfCustomReplyBuffer("#wiz Pitch Set");
-				RfCustomReplyBuffer("#wiz Set Roll To Right");
+				RfCustomReplyBuffer("#wiz Push Roll Stick To Right");
 				wizardStatus.wicRcCheckDirection = WIZ_RC_ROLL_RIGHT;
 			}
 			else
 			{
-				RfCustomReplyBuffer("#wiz Set Pitch To Top");
+				RfCustomReplyBuffer("#wiz Push Pitch Stick To Top");
 			}
 			break;
 		case WIZ_RC_ROLL_RIGHT:

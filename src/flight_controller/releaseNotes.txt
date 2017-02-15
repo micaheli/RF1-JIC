@@ -546,6 +546,9 @@ Version 0.182.057:
 Version 0.183.057:
 	Added famf setting. "set famf=1.0" Range is 0.90 to 1.10
 
+Version 0.184.057:
+	Changed wizard wording
+
 Features in current development:
 	MSP compatibility
 	MAVlink compatibility
