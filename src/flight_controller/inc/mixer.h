@@ -17,6 +17,7 @@ typedef struct {
 } actuator_mixer;
 
 typedef struct {
+    float    foreAftMixerFixer;
     uint32_t mixerType;
     uint32_t mixerStyle;
     uint32_t escProtcol;
@@ -72,3 +73,4 @@ extern float InlineApplyMotorMixer(pid_output pids[], float throttleIn);  //free
 extern float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn);
 extern float InlineApplyMotorMixer3dInverted(pid_output pids[], float throttleIn);
 extern float InlineApplyMotorMixer3dNeutral(pid_output pids[], float throttleIn);
+extern float ForeAftMixerFixer(float motorOutputFloat, float throttleFloat, uint32_t motorNumber);

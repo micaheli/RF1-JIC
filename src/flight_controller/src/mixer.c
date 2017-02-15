@@ -320,6 +320,44 @@ inline float InlineApplyMotorMixer3dNeutral(pid_output pids[], float throttleIn)
 	return(0.0f);
 }
 
+inline float ForeAftMixerFixer(float motorOutputFloat, float throttleFloat, uint32_t motorNumber)
+{
+
+	if (mainConfig.mixerConfig.foreAftMixerFixer == 1.0f)
+	{
+		//famx not active
+		return(InlineConstrainf(motorOutputFloat+throttleFloat,0.0f,1.0f));
+	}
+
+	if (activeMotorCounter == 3)
+	{
+		//quad mixer. Motor 0 is always front left. Motor 1 is always front right. Motor 2 is always rear right. Motor 3 is always rear left.
+		switch (motorNumber)
+		{
+			case 0:
+			case 1:
+				//front motors
+				if (mainConfig.mixerConfig.foreAftMixerFixer < 1.0f)
+				{
+					//reduce front motors by mixer fixer
+					throttleFloat = InlineChangeRangef(throttleFloat, motorMixer[motorNumber].throttle, 0.0f, (motorMixer[motorNumber].throttle * mainConfig.mixerConfig.foreAftMixerFixer), 0.0f);
+				}
+				break;
+			case 2:
+			case 3:
+				//rear motors
+				if (mainConfig.mixerConfig.foreAftMixerFixer > 1.0f)
+				{
+					//reduce rear motors by difference between mixer fixer and normal value (1.05 will reduce rear numbers to 95% at full throttle
+					throttleFloat = InlineChangeRangef(throttleFloat, motorMixer[motorNumber].throttle, 0.0f, (motorMixer[motorNumber].throttle * ( 1.0f - (mainConfig.mixerConfig.foreAftMixerFixer - 1.0f ) ) ), 0.0f);
+				}
+				break;
+		}
+	}
+
+	return(InlineConstrainf(motorOutputFloat+throttleFloat,0.0f,1.0f));
+}
+
 inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 {
 
@@ -380,7 +418,7 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 
 	for(i=7; i>=0; i--)
 	{
-		motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f);
+		motorOutput[i] = ForeAftMixerFixer( motorOutput[i], throttle, i);
 	}
 
 	return(actuatorRange);

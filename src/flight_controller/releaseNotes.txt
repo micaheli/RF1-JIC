@@ -543,6 +543,8 @@ Version 0.182.057:
 	added "set stick_curve" It replaces "set pitch_curve, set roll_curve, set yaw_curve"
 	Reticulated splines
 
+Version 0.183.057:
+	Added famf setting. "set famf=1.0" Range is 0.90 to 1.10
 
 Features in current development:
 	MSP compatibility
