@@ -60,7 +60,7 @@ void sendSpektrumTelem(void)
 	case TELEM_INTERNAL:
 		{
 			telemetry.packet.data.internalSensors.id = INTERNAL_ID;      
-			telemetry.packet.data.internalSensors.packVoltage = UINT16_ENDIAN(adcVoltage);
+			telemetry.packet.data.internalSensors.packVoltage = UINT16_ENDIAN((uint16_t)adcVoltage * 100);
 
 			//Currently we have no values to provide here. Send 0xFFFF so receiver will use its own values
 			//RPM data is multipurposed with Lap Time data, so changing the value here will mean the receiver wont use its own measured RPM/Lap Time

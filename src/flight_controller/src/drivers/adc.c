@@ -1,7 +1,7 @@
 #include "includes.h"
 
 
-uint32_t adcVoltage;
+float adcVoltage;
 
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage);
@@ -29,7 +29,7 @@ void PollAdc(void)
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage)
 {
-	adcVoltage = rawAdcVoltage * 10;
+	adcVoltage = (float)rawAdcVoltage / 113.0;
 }
 
 void InitAdc(void)

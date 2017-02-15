@@ -791,7 +791,7 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("polladc", inString))
 		{
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ADC: %lu", adcVoltage );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ADC: %lu", (uint32_t)adcVoltage );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("idle", inString))
