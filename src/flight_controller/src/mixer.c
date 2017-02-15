@@ -82,9 +82,13 @@ volatile float servoOutput[MAX_SERVO_NUMBER];
 
 int32_t activeMotorCounter = -1; //number of active motors minus 1
 
-float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.30, 1.25, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
-float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
-float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
+//float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.30, 1.25, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
+//float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
+//float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
+
+float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.40, 1.35, 1.28, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
+float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
+float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
 
 static float ApplyAttenuationCurve (float input, float curve[], uint32_t curveSize);
 

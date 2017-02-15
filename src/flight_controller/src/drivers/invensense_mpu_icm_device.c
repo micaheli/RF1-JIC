@@ -172,14 +172,18 @@ int AccGyroDeviceDetect(void)
         switch (data)
         {
         	case MPU6000_WHO_AM_I:
+        		//deviceWhoAmI = data;
+				//return data;
+				//break;
         	case MPU6500_WHO_AM_I:
             case MPU6555_WHO_AM_I:
-            case MPU9250_WHO_AM_I:
             case ICM20689_WHO_AM_I:
             case ICM20608G_WHO_AM_I:
+				return 0;
+				break;
+            case MPU9250_WHO_AM_I:
             	deviceWhoAmI = data;
                 return data;
-				return 0;
 				break;
             case ICM20602_WHO_AM_I:
             	deviceWhoAmI = data;

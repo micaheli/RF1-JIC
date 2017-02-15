@@ -963,6 +963,13 @@ void OneWire(char *inString) {
 			bytesWritten = 0;
 
 		}
+		if (doingAuto)
+		{
+			oneWireActive = 0;
+			OneWireDeinit();
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "1Wire Session Ended.");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
 
 	}
 	else if (!strcmp("list", inString))

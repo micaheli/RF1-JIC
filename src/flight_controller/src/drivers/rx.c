@@ -14,6 +14,7 @@ uint32_t failsafeHappend = 0;
 
 uint32_t rxDataRaw[MAXCHANNELS];
 uint32_t rxData[MAXCHANNELS];
+float    flopAngle[MAXCHANNELS];
 
 uint32_t skipRxMap = 0;
 uint32_t progMode  = 0;
@@ -708,6 +709,9 @@ inline void InlineCollectRcCommand (void)
 
 	//calculate main controls.
 	//rc data is taken from RX and using the map is put into the correct "axis"
+	mainConfig.rcControlsConfig.useCurve[YAW]  = mainConfig.rcControlsConfig.useCurve[PITCH];
+	mainConfig.rcControlsConfig.useCurve[ROLL] = mainConfig.rcControlsConfig.useCurve[PITCH];
+
 	for (axis = 0; axis < MAXCHANNELS; axis++) {
 
 		if (axis == THROTTLE)
@@ -728,10 +732,13 @@ inline void InlineCollectRcCommand (void)
 
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
-		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis]) {
+		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis])
+		{
 			trueRcCommandF[axis]   = InlineConstrainf ( rangedRx, -1, 1);
 			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis], axis);
-		} else {
+		}
+		else
+		{
 			// no need to calculate if movement is below deadband
 			trueRcCommandF[axis]   = 0;
 			curvedRcCommandF[axis] = 0;
@@ -747,6 +754,7 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 {
 
 	float maxOutput, maxOutputMod, returnValue;
+	float flopRate, flopExpo, flopFactor;
 
 	maxOutput    = 1;
 	maxOutputMod = 0.01;
@@ -761,7 +769,26 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 			}
 			return (returnValue);
 			break;
+		case BETAFLOP_EXPO:
+			flopExpo = (mainConfig.rcControlsConfig.curveExpo[axis] * 0.01);
+			flopRate = (mainConfig.rcControlsConfig.acroPlus[axis] * 0.01);
+			if (flopRate > 2.0f)
+				flopRate = flopRate + (14.56f * (flopRate - 1.998f));
 
+			if (flopExpo != 0.0f)
+			{
+				rcCommand = rcCommand * Powerf(ABS(rcCommand), 3) * flopExpo + rcCommand * (1-flopExpo);
+			}
+
+			flopAngle[axis] = 200.0f * flopRate * rcCommand;
+
+			if (mainConfig.rcControlsConfig.rates[axis] != 0.0f)
+			{
+				flopFactor = 1.0f / (InlineConstrainf(1.0f - (ABS(rcCommand) * (mainConfig.rcControlsConfig.rates[axis] * 0.01f)), 0.01f, 1.00f));
+				flopAngle[axis] *= flopFactor;
+			}
+			return(rcCommand);
+			break;
 		case TARANIS_EXPO:
 		case ACRO_PLUS:
 		case FAST_EXPO:

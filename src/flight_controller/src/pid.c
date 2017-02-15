@@ -37,34 +37,34 @@ void InitPid (void)
 		pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 100000;
 		pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 50000) * loopSpeed.dT;
 		pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[0].wc = mainConfig.pidConfig[0].wc;
+		pidsUsed[0].wc = mainConfig.pidConfig[0].wc = (mainConfig.pidConfig[0].ga * 0.333);
 
 		pidsUsed[1].kp = mainConfig.pidConfig[1].kp  / 100000;
 		pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 50000) * loopSpeed.dT;
 		pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[1].wc = mainConfig.pidConfig[1].wc;
+		pidsUsed[1].wc = mainConfig.pidConfig[1].wc = (mainConfig.pidConfig[0].ga * 0.333);
 
 		pidsUsed[2].kp = mainConfig.pidConfig[2].kp  / 100000;
 		pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 50000) * loopSpeed.dT;
 		pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[2].wc = mainConfig.pidConfig[2].wc;
+		pidsUsed[2].wc = mainConfig.pidConfig[2].wc = (mainConfig.pidConfig[0].ga * 0.333);
 	}
 	else
 	{
 		pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 50000;
 		pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 25000) * loopSpeed.dT;
 		pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[0].wc = mainConfig.pidConfig[0].wc;
+		pidsUsed[0].wc = mainConfig.pidConfig[0].wc = (mainConfig.pidConfig[0].ga * 0.333);
 
 		pidsUsed[1].kp = mainConfig.pidConfig[1].kp  / 50000;
 		pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 25000) * loopSpeed.dT;
 		pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[1].wc = mainConfig.pidConfig[1].wc;
+		pidsUsed[1].wc = mainConfig.pidConfig[1].wc = (mainConfig.pidConfig[0].ga * 0.333);
 
 		pidsUsed[2].kp = mainConfig.pidConfig[2].kp  / 50000;
 		pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 25000) * loopSpeed.dT;
 		pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[2].wc = mainConfig.pidConfig[2].wc;
+		pidsUsed[2].wc = mainConfig.pidConfig[2].wc = (mainConfig.pidConfig[0].ga * 0.333);
 	}
 
 	LpfInit(&yawKpLpf, 30.0f, loopSpeed.dT);
@@ -143,7 +143,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 	for (axis = 2; axis >= 0; --axis)
 	{
 
-		if (ModeActive(M_TEST1))
+		if (0)
 		{
 			//limit setpoint change to 0.05 degrees per iteration
 			if (flightSetPoints[axis] > lastSetPoint[axis])
@@ -158,7 +158,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 			}
 			usedFlightSetPoints[axis] = lastSetPoint[axis];
 		}
-		else if (ModeActive(M_TEST2))
+		else if (0)
 		{
 			//limit setpoint change to 0.05 degrees per iteration only when setpoint is being reduced and under 200 DPS (near center stick and reducing)
 			if ( (flightSetPoints[axis] > lastSetPoint[axis]) && ( ABS(flightSetPoints[axis]) < mainConfig.filterConfig[1].gyro.p) && ( ABS(lastSetPoint[axis]) < mainConfig.filterConfig[1].gyro.p) )
@@ -211,7 +211,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 			// calculate Ki ////////////////////////// V
 			if ( fullKiLatched )
 			{
-				if (ModeActive(M_TEST3)) //let Ki only act on erros above 100
+				if (0) //let Ki only act on erros above 100
 				{
 					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
 					if ( ( actuatorRange > .9999 ) || (pidError > 110) ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators

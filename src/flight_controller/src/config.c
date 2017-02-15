@@ -140,10 +140,6 @@ const config_variables_rec valueTable[] = {
 		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 800.00, "" },
 		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1000.00, "" },
 
-		{ "yaw_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].wc, 						0, 32, 4, "" },
-		{ "roll_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].wc, 						0, 32, 0, "" },
-		{ "pitch_wc", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].wc, 					0, 32, 0, "" },
-
 		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 12, "" },
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
@@ -256,9 +252,7 @@ const config_variables_rec valueTable[] = {
 
 		{ "rc_calibrated", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rcCalibrated,			0, 1, 0, "" },
 
-		{ "pitch_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[PITCH], 		0, EXPO_CURVE_END, ACRO_PLUS, "" },
-		{ "roll_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[ROLL], 		0, EXPO_CURVE_END, ACRO_PLUS, "" },
-		{ "yaw_curve", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[YAW], 			0, EXPO_CURVE_END, ACRO_PLUS, "" },
+		{ "stick_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[PITCH], 		0, EXPO_CURVE_END, ACRO_PLUS, "" },
 		{ "throttle_curve", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[THROTTLE], 	0, EXPO_CURVE_END, NO_EXPO, "" },
 		{ "aux1_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX1], 		0, EXPO_CURVE_END, NO_EXPO, "" },
 		{ "aux2_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX2], 		0, EXPO_CURVE_END, NO_EXPO, "" },
@@ -1166,8 +1160,6 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]    = ACRO_PLUS;
-			mainConfig.rcControlsConfig.useCurve[ROLL]     = ACRO_PLUS;
-			mainConfig.rcControlsConfig.useCurve[YAW]      = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[THROTTLE] = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX1]     = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX2]     = NO_EXPO;
@@ -1221,8 +1213,6 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 2;
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]      = KISS_EXPO;
-			mainConfig.rcControlsConfig.useCurve[ROLL]       = KISS_EXPO;
-			mainConfig.rcControlsConfig.useCurve[YAW]        = KISS_EXPO;
 			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
@@ -1263,8 +1253,6 @@ void ProcessCommand(char *inString)
 			mainConfig.mixerConfig.mixerType                 = 1;
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
-			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
-			mainConfig.rcControlsConfig.useCurve[YAW]        = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
@@ -1349,8 +1337,6 @@ void ProcessCommand(char *inString)
 
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
-			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
-			mainConfig.rcControlsConfig.useCurve[YAW]        = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
@@ -1399,10 +1385,6 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].ga    = 0;
 			mainConfig.pidConfig[PITCH].ga   = 0;
 
-			mainConfig.pidConfig[YAW].wc     = 4;
-			mainConfig.pidConfig[ROLL].wc    = 0;
-			mainConfig.pidConfig[PITCH].wc   = 0;
-
 			mainConfig.filterConfig[YAW].gyro.r   = 88.00;
 			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
 			mainConfig.filterConfig[PITCH].gyro.r = 88.00;
@@ -1445,10 +1427,6 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[YAW].ga   = 12;
 			mainConfig.pidConfig[ROLL].ga  = 0;
 			mainConfig.pidConfig[PITCH].ga = 0;
-
-			mainConfig.pidConfig[YAW].wc   = 4;
-			mainConfig.pidConfig[ROLL].wc  = 0;
-			mainConfig.pidConfig[PITCH].wc = 0;
 
 			mainConfig.filterConfig[YAW].gyro.r   = 88.00;
 			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
@@ -1580,6 +1558,91 @@ void ProcessCommand(char *inString)
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
+		}
+
+	else if (!strcmp("2wire", inString))
+		{
+			#define blob  ""\
+			"Reading ESCs...\n" \
+			"Motor 0 Unreadable\n" \
+			"Motor 1 Unreadable\n" \
+			"Motor 2: 16.65, #J_H_15#        #BLHELI$EFM8B21##16.65_Tones  \n" \
+			"Motor 3: 16.65, #J_H_15#        #BLHELI$EFM8B21##16.65_Tones  \n" \
+			"Motor 4 Disabled\n" \
+			"Motor 5 Disabled\n" \
+			"Motor 6 Disabled\n" \
+			"Motor 7 Disabled\n" \
+			"Error Motor 0 Config.\n" \
+			"Error Motor 1 Config.\n" \
+			"Motor 2 Config Read.\n" \
+			"Motor 3 Config Read.\n" \
+			"No upgrade available for ESC 0\n" \
+			"No upgrade available for ESC 1\n" \
+			"Upgrading 2...\n" \
+			"#ss Flashing ESC:2: 0 percent done\n" \
+			"#ss Flashing ESC:2: 7 percent done\n" \
+			"#ss Flashing ESC:2: 15 percent done\n" \
+			"#ss Flashing ESC:2: 22 percent done\n" \
+			"#ss Flashing ESC:2: 30 percent done\n" \
+			"#ss Flashing ESC:2: 37 percent done\n" \
+			"#ss Flashing ESC:2: 45 percent done\n" \
+			"#ss Flashing ESC:2: 52 percent done\n" \
+			"#ss Flashing ESC:2: 60 percent done\n" \
+			"#ss Flashing ESC:2: 68 percent done\n" \
+			"#ss Flashing ESC:2: 75 percent done\n" \
+			"#ss Flashing ESC:2: 83 percent done\n" \
+			"#ss Flashing ESC:2: 90 percent done\n" \
+			"#ss Flashing ESC:2: 98 percent done\n" \
+			"ESC 2 upgrade complete.\n" \
+			"Upgrading 3...\n" \
+			"#ss Flashing ESC:3: 0 percent done\n" \
+			"#ss Flashing ESC:3: 7 percent done\n" \
+			"#ss Flashing ESC:3: 15 percent done\n" \
+			"#ss Flashing ESC:3: 22 percent done\n" \
+			"#ss Flashing ESC:3: 30 percent done\n" \
+			"#ss Flashing ESC:3: 37 percent done\n" \
+			"#ss Flashing ESC:3: 45 percent done\n" \
+			"#ss Flashing ESC:3: 52 percent done\n" \
+			"#ss Flashing ESC:3: 60 percent done\n" \
+			"#ss Flashing ESC:3: 68 percent done\n" \
+			"#ss Flashing ESC:3: 75 percent done\n" \
+			"#ss Flashing ESC:3: 83 percent done\n" \
+			"#ss Flashing ESC:3: 90 percent done\n" \
+			"#ss Flashing ESC:3: 98 percent done\n" \
+			"ESC 3 upgrade complete.\n" \
+			"1wiredumpstart\n" \
+			"m2=beacondelay=5min\n" \
+			"m2=beaconstrength=80\n" \
+			"m2=beepstrength=92\n" \
+			"m2=brakeonstop=enable\n" \
+			"m2=demag=high\n" \
+			"m2=direction=normal\n" \
+			"m2=txprogramming=enable\n" \
+			"m2=frequency=NOT FOUND\n" \
+			"m2=maxthrottle=1872\n" \
+			"m2=minthrottle=1012\n" \
+			"m2=midthrottle=1432\n" \
+			"m2=startuppower=0.125\n" \
+			"m2=timing=medium\n" \
+			"m2=tempprotection=disable\n" \
+			"m3=beacondelay=5min\n" \
+			"m3=beaconstrength=80\n" \
+			"m3=beepstrength=91\n" \
+			"m3=brakeonstop=enable\n" \
+			"m3=demag=high\n" \
+			"m3=direction=normal\n" \
+			"m3=txprogramming=enable\n" \
+			"m3=frequency=NOT FOUND\n" \
+			"m3=maxthrottle=1872\n" \
+			"m3=minthrottle=1012\n" \
+			"m3=midthrottle=1432\n" \
+			"m3=startuppower=0.125\n" \
+			"m3=timing=medium\n" \
+			"m3=tempprotection=disable\n" \
+			"1wiredumpcomplete"
+
+			RfCustomReplyBuffer(blob);
+
 		}
 	else if (!strcmp("dump", inString))
 		{

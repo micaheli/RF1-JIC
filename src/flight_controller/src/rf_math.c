@@ -48,6 +48,20 @@ inline float InlineConstrainf(float amt, float low, float high)
         return amt;
 }
 
+inline float Powerf(float base, uint32_t exp)
+{
+    float result;
+    uint32_t count;
+
+    result = base;
+    for (count = 1; count < exp; count++)
+    {
+    	result *= base;
+    }
+
+    return(result);
+}
+
 inline float InlineChangeRangef(float oldValue, float oldMax, float oldMin, float newMax, float newMin)
 {
 	float oldRange = (oldMax - oldMin);

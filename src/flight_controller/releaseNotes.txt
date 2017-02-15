@@ -531,7 +531,17 @@ Version 0.179.054:
 	Changed RX wizard to uncalibrate radio
 		Make sure you run wiz rc after wiz rx
 
+Version 0.180.055:
+	Added betafloght rates
+	Removed wc
 
+Version 0.181.056:
+	Changed config slightly
+
+Version 0.182.057:
+	Changed tpa curve
+	added "set stick_curve" It replaces "set pitch_curve, set roll_curve, set yaw_curve"
+	Reticulated splines
 
 
 Features in current development:

@@ -67,15 +67,17 @@ enum {
 
 //We can use different styles of curves
 //used in config.c string table
-enum {
-	NO_EXPO = 0,
-	SKITZO_EXPO = 1,
-	TARANIS_EXPO = 2,
-	FAST_EXPO = 3,
-	ACRO_PLUS = 4,
-	KISS_EXPO = 5,
-	KISS_EXPO2 = 6,
-	EXPO_CURVE_END,
+enum
+{
+	NO_EXPO        = 0,
+	SKITZO_EXPO    = 1,
+	TARANIS_EXPO   = 2,
+	FAST_EXPO      = 3,
+	ACRO_PLUS      = 4,
+	KISS_EXPO      = 5,
+	KISS_EXPO2     = 6,
+	BETAFLOP_EXPO  = 7,
+	EXPO_CURVE_END = 8,
 };
 
 //used in config.c string table
@@ -97,6 +99,7 @@ enum {
 #define USING_RX_END           15
 
 extern uint32_t ppmPin;
+extern float    flopAngle[];
 
 
 extern volatile uint32_t rx_timeout;
