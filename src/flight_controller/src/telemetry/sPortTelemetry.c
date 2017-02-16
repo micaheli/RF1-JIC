@@ -27,11 +27,6 @@ static float    FindSoftSerialLineIdleTime(float byteWidth);
 static uint32_t IsSoftSerialLineIdle();
 static uint32_t sPortTelemCount = 0;
 
-uint32_t sendSmartPortAt = 0;
-
-
-
-
 static uint8_t SmartPortGetByte(uint8_t inByte, uint16_t *crcp) {
 
 	uint8_t outByte;

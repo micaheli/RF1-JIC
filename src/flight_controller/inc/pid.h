@@ -3,6 +3,11 @@
 #define AXIS_NUMBER 3
 #define VECTOR_NUMBER 3
 #define KD_RING_BUFFER_SIZE 256
+
+#define MAX_KP_FM1 0.90f
+#define MAX_KI_FM1 0.30f
+#define MAX_KD_FM1 0.55f
+
 #define MAX_KP 0.75f
 #define MAX_KI 0.15f
 #define MAX_KD 0.35f

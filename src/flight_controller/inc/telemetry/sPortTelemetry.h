@@ -81,7 +81,6 @@
 #define SPORT_FRAME_HEADER		0x10
 #define BYTESTUFF				0x7d
 
-extern uint32_t sendSmartPortAt;
 
 extern volatile uint8_t telemtryRxBuffer[];
 extern void SendSmartPort(void);
