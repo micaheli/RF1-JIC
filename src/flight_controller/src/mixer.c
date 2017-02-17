@@ -139,6 +139,12 @@ void InitMixer(void) {
 		case MIXER_X4213RY:
 			memcpy(motorMixer, CONST_MIXER_X4213RY, sizeof(motorMixer));
 			break;
+		case MIXER_PLUS1234:
+			memcpy(motorMixer, CONST_MIXER_PLUS1234, sizeof(motorMixer));
+			break;
+		case MIXER_PLUS1234RY:
+			memcpy(motorMixer, CONST_MIXER_PLUS1234RY, sizeof(motorMixer));
+			break;
 		case MIXER_CUSTOM:
 			//fill mixer customer here, for now it defaults to MIXER_X1234
 		case MIXER_X1234RY_3D:
