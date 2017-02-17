@@ -213,7 +213,7 @@ void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 	if (!telemEnabled)
 			return;
 
-	memcpy(spektrumTxBuffer, baseAddress, packetSize);
+	memcpy(spektrumTxBuffer, (uint8_t *)baseAddress, packetSize);
 
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
 	{
