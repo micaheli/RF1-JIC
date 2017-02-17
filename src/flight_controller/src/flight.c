@@ -441,8 +441,8 @@ void ComplementaryFilterUpdateAttitude(void)
 
 	if (boardArmed)
 	{
-		accCompAccTrust  = (mainConfig.filterConfig[ACCX].acc.p * 0.001);
-		accCompGyroTrust = (1.0 - (mainConfig.filterConfig[ACCX].acc.p * 0.001));
+		accCompAccTrust  = (mainConfig.filterConfig[ACCX].acc.p * 0.003);
+		accCompGyroTrust = (1.0 - (mainConfig.filterConfig[ACCX].acc.p * 0.003));
 	}
 	else
 	{
