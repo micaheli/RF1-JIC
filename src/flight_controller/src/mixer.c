@@ -51,6 +51,30 @@ const actuator_mixer CONST_MIXER_X4213RY[MAX_MOTOR_NUMBER] =  {
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
 };
 
+const actuator_mixer CONST_MIXER_PLUS1234[MAX_MOTOR_NUMBER] =  {
+	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
+	{ 1.0f,  0.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1 counter clockwise
+	{-1.0f, -1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2 clockwise
+	{ 1.0f, 0.0f,  -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3 counter clockwise
+	{-1.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4 clockwise
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 7
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
+};
+
+const actuator_mixer CONST_MIXER_PLUS1234RY[MAX_MOTOR_NUMBER] =  {
+	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
+	{-1.0f,  0.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1 counter clockwise
+	{ 1.0f, -1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2 clockwise
+	{-1.0f, 0.0f,  -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3 counter clockwise
+	{ 1.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4 clockwise
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 7
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
+};
+
 actuator_mixer motorMixer[MAX_MOTOR_NUMBER] =  {
 	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
 	{-1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
