@@ -182,13 +182,23 @@ int AccGyroDeviceDetect(void)
 				return 0;
 				break;
             case MPU9250_WHO_AM_I:
+#ifdef SPMFC400
             	deviceWhoAmI = data;
                 return data;
 				break;
+#else
+				return 0;
+				break;
+#endif
             case ICM20602_WHO_AM_I:
+#if defined(REVOLT) || defined(REVOLTF7)
             	deviceWhoAmI = data;
                 return data;
                 break;
+#else
+				return 0;
+				break;
+#endif
         }
 
     }

@@ -2,6 +2,8 @@
 
 #include "mcu_include.h"
 
+#define REVOLT
+
 //USB config
 #define RFFW_HID_PRODUCT_STRING "RaceFlight FC"
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
