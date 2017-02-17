@@ -562,6 +562,7 @@ Version 0.188.057:
 	Change S.port battery ID and scaled voltage slightly.
 	Put s.port on USART 3 RX pin and run "set telem_sport=14" to enable S.port.
 	Rescaled voltage for spektrum telelmtry. "set telem_spek=1" to enable spektrum telemtry on same TX pin the telemtry capable spektrum RX is located.
+	Added plus and reverse yaw plus mixer. set mixer_type=8 for normal yaw plus, set mixer_type=9 for reverse yaw plus mixer
 
 
 
