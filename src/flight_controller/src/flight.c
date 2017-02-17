@@ -577,8 +577,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
 			lastPitchAttitudeError   = pitchAttitudeError;
 
-			flightSetPoints[ROLL]    = (rollAttitudeError * mainConfig.pidConfig[PITCH].slp) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld);
-			flightSetPoints[PITCH]   = (pitchAttitudeError * mainConfig.pidConfig[PITCH].slp) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld);
+			flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * mainConfig.pidConfig[PITCH].slp) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld), -400, 400);
+			flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * mainConfig.pidConfig[PITCH].slp) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld), -400, 400);
 		}
 
 		//Run PIDC
@@ -797,6 +797,8 @@ inline float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, floa
 	{
 		returnValue = (curvedRcCommandF * (rates + (rates * acroPlus) ) ) ;
 	}
+
+	returnValue = InlineConstrainf(returnValue,-1400,1400);
 
 	return (returnValue);
 }
