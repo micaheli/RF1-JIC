@@ -131,7 +131,7 @@ void SendSmartPort(void)
 			SmartPortCreatePacket(0x0721, (int32_t)(filteredGyroData[YAW]), sPortPacket );
 			break;
 		case 6:
-			SmartPortCreatePacket(0xf104, (int32_t)(adcVoltage * 100.0), sPortPacket );
+			SmartPortCreatePacket(VFAS_FIRST_ID, (int32_t)(adcVoltage * 100), sPortPacket );
 			sPortTelemCount = 0;
 			break;
 		case 7:
@@ -182,6 +182,7 @@ void InitSport(uint32_t usartNumber)
 
 	board.serials[usartNumber].serialTxInverted = 1;
 	board.serials[usartNumber].serialRxInverted = 1;
+	board.serials[usartNumber].FrameSize = 2;
 
 
 	board.dmasSerial[board.serials[usartNumber].TXDma].enabled  = 1;

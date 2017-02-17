@@ -1562,89 +1562,61 @@ void ProcessCommand(char *inString)
 			SaveAndSend();
 		}
 
-	else if (!strcmp("2wire", inString))
+	else if (!strcmp("vtxinit", inString))
 		{
-			#define blob  ""\
-			"Reading ESCs...\n" \
-			"Motor 0 Unreadable\n" \
-			"Motor 1 Unreadable\n" \
-			"Motor 2: 16.65, #J_H_15#        #BLHELI$EFM8B21##16.65_Tones  \n" \
-			"Motor 3: 16.65, #J_H_15#        #BLHELI$EFM8B21##16.65_Tones  \n" \
-			"Motor 4 Disabled\n" \
-			"Motor 5 Disabled\n" \
-			"Motor 6 Disabled\n" \
-			"Motor 7 Disabled\n" \
-			"Error Motor 0 Config.\n" \
-			"Error Motor 1 Config.\n" \
-			"Motor 2 Config Read.\n" \
-			"Motor 3 Config Read.\n" \
-			"No upgrade available for ESC 0\n" \
-			"No upgrade available for ESC 1\n" \
-			"Upgrading 2...\n" \
-			"#ss Flashing ESC:2: 0 percent done\n" \
-			"#ss Flashing ESC:2: 7 percent done\n" \
-			"#ss Flashing ESC:2: 15 percent done\n" \
-			"#ss Flashing ESC:2: 22 percent done\n" \
-			"#ss Flashing ESC:2: 30 percent done\n" \
-			"#ss Flashing ESC:2: 37 percent done\n" \
-			"#ss Flashing ESC:2: 45 percent done\n" \
-			"#ss Flashing ESC:2: 52 percent done\n" \
-			"#ss Flashing ESC:2: 60 percent done\n" \
-			"#ss Flashing ESC:2: 68 percent done\n" \
-			"#ss Flashing ESC:2: 75 percent done\n" \
-			"#ss Flashing ESC:2: 83 percent done\n" \
-			"#ss Flashing ESC:2: 90 percent done\n" \
-			"#ss Flashing ESC:2: 98 percent done\n" \
-			"ESC 2 upgrade complete.\n" \
-			"Upgrading 3...\n" \
-			"#ss Flashing ESC:3: 0 percent done\n" \
-			"#ss Flashing ESC:3: 7 percent done\n" \
-			"#ss Flashing ESC:3: 15 percent done\n" \
-			"#ss Flashing ESC:3: 22 percent done\n" \
-			"#ss Flashing ESC:3: 30 percent done\n" \
-			"#ss Flashing ESC:3: 37 percent done\n" \
-			"#ss Flashing ESC:3: 45 percent done\n" \
-			"#ss Flashing ESC:3: 52 percent done\n" \
-			"#ss Flashing ESC:3: 60 percent done\n" \
-			"#ss Flashing ESC:3: 68 percent done\n" \
-			"#ss Flashing ESC:3: 75 percent done\n" \
-			"#ss Flashing ESC:3: 83 percent done\n" \
-			"#ss Flashing ESC:3: 90 percent done\n" \
-			"#ss Flashing ESC:3: 98 percent done\n" \
-			"ESC 3 upgrade complete.\n" \
-			"1wiredumpstart\n" \
-			"m2=beacondelay=5min\n" \
-			"m2=beaconstrength=80\n" \
-			"m2=beepstrength=92\n" \
-			"m2=brakeonstop=enable\n" \
-			"m2=demag=high\n" \
-			"m2=direction=normal\n" \
-			"m2=txprogramming=enable\n" \
-			"m2=frequency=NOT FOUND\n" \
-			"m2=maxthrottle=1872\n" \
-			"m2=minthrottle=1012\n" \
-			"m2=midthrottle=1432\n" \
-			"m2=startuppower=0.125\n" \
-			"m2=timing=medium\n" \
-			"m2=tempprotection=disable\n" \
-			"m3=beacondelay=5min\n" \
-			"m3=beaconstrength=80\n" \
-			"m3=beepstrength=91\n" \
-			"m3=brakeonstop=enable\n" \
-			"m3=demag=high\n" \
-			"m3=direction=normal\n" \
-			"m3=txprogramming=enable\n" \
-			"m3=frequency=NOT FOUND\n" \
-			"m3=maxthrottle=1872\n" \
-			"m3=minthrottle=1012\n" \
-			"m3=midthrottle=1432\n" \
-			"m3=startuppower=0.125\n" \
-			"m3=timing=medium\n" \
-			"m3=tempprotection=disable\n" \
-			"1wiredumpcomplete"
+			InitRfVtx(ENUM_USART3);
+			DelayMs(100);
+			RfCustomReplyBuffer("vtxinit");
 
-			RfCustomReplyBuffer(blob);
+		}
+	else if (!strcmp("vtxbaud", inString))
+		{
+			for (uint32_t x=0;x<4;x++)
+					rfVtxRxBuffer[x]=0;
 
+			uint32_t returnValueThis = RfVtxBaud();
+			DelayMs(100);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("vtxoff", inString))
+		{
+			for (uint32_t x=0;x<4;x++)
+					rfVtxRxBuffer[x]=0;
+
+			uint32_t returnValueThis = RfVtxOff();
+			DelayMs(100);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+		}
+	else if (!strcmp("vtx25", inString))
+		{
+			uint32_t returnValueThis = RfVtxOn25();
+			DelayMs(100);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("vtx200", inString))
+		{
+			uint32_t returnValueThis = RfVtxOn200();
+			DelayMs(100);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("vtxb", inString))
+		{
+			uint32_t returnValueThis = RfVtxBand(atoi(args));
+			DelayMs(100);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("vtxc", inString))
+		{
+			uint32_t returnValueThis = RfVtxChannel(atoi(args));
+			DelayMs(100);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("dump", inString))
 		{

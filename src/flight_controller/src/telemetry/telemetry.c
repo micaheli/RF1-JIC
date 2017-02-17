@@ -48,12 +48,6 @@ void ProcessTelemtry(void)
 	}
 }
 
-
-void InitMsp(uint32_t serialPort)
-{
-	(void)(serialPort);
-}
-
 void InitMavlink(uint32_t serialPort)
 {
 	(void)(serialPort);

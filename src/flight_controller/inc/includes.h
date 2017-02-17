@@ -34,6 +34,7 @@
 #include "telemetry/telemetry.h"
 #include "telemetry/mspTelemetry.h"
 #include "telemetry/spektrumTelemetry.h"
+#include "telemetry/rfVtx.h"
 
 
 //input

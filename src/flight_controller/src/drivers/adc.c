@@ -29,7 +29,19 @@ void PollAdc(void)
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage)
 {
-	adcVoltage = (float)rawAdcVoltage / 113.0;
+	static float adcAverage[50];
+	static float adcAdder = 0;
+	static uint32_t acdPointer = 0;
+
+	adcAverage[acdPointer++] = ((float)rawAdcVoltage / 113.0);
+	adcAdder += ((float)rawAdcVoltage / 113.0);
+
+	if (acdPointer == 50)
+		acdPointer = 0;
+
+	adcVoltage = (adcAdder / 50.0);
+	adcAdder -= adcAverage[acdPointer];
+
 }
 
 void InitAdc(void)

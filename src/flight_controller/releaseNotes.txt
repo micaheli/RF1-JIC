@@ -558,6 +558,12 @@ Version 0.186.057:
 Version 0.187.057:
 	GUI changes
 
+Version 0.188.057:
+	Change S.port battery ID and scaled voltage slightly.
+	Put s.port on USART 3 RX pin and run "set telem_sport=14" to enable S.port.
+	Rescaled voltage for spektrum telelmtry. "set telem_spek=1" to enable spektrum telemtry on same TX pin the telemtry capable spektrum RX is located.
+
+
 
 Features in current development:
 	MSP compatibility

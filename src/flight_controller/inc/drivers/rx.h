@@ -96,7 +96,8 @@ enum
 #define USING_DSM2_T           12
 #define USING_SPORT            13
 #define USING_MSP              14
-#define USING_RX_END           15
+#define USING_RFVTX            15
+#define USING_RX_END           16
 
 extern uint32_t ppmPin;
 extern float    flopAngle[];

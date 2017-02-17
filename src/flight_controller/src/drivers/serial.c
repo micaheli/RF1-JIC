@@ -129,6 +129,7 @@ void UsartInit(uint32_t serialNumber)
 			break;
 		case USING_MSP:
 		case USING_SPORT:
+		case USING_RFVTX:
 		case USING_MANUAL:
 		default:
 			txPin  = board.serials[serialNumber].TXPin;
@@ -595,6 +596,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 					telemtryRxBuffer[0] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0];
 					telemtryRxBuffer[1] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1];
 				}
+				else if (board.serials[serialNumber].Protocol == USING_RFVTX)
+				{
+					//simply fill the telemetry RX buffer. The scheduler and s.port driver will handle the rest.
+					rfVtxRxBuffer[0] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0];
+					rfVtxRxBuffer[1] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1];
+					rfVtxRxBuffer[2] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][2];
+					rfVtxRxBuffer[3] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][3];
+				}
+
+
 			}
 			break;
 		}
