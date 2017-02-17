@@ -1,6 +1,9 @@
 #include "includes.h"
 
 
+volatile uint32_t sendSmartPortAt = 0;
+volatile uint32_t sendSpektrumTelemtryAt = 0;
+
 volatile uint32_t telemEnabled = 1;
 
 
@@ -23,7 +26,7 @@ void ProcessTelemtry(void)
 
 	if (mainConfig.telemConfig.telemSport)
 	{
-		if ( (sendSmartPortAt) && (sendSmartPortAt > Micros()) )
+		if ( (sendSmartPortAt) && ( sendSmartPortAt > Micros() ) )
 		{
 			sendSmartPortAt = 0; //reset send time to 0 which disables it
 			SendSmartPort();     //send the data. Blind of soft or hard s.port
@@ -35,6 +38,14 @@ void ProcessTelemtry(void)
 		}
 	}
 
+	if (mainConfig.telemConfig.telemSpek)
+	{
+		if ( (sendSpektrumTelemtryAt) && ( sendSpektrumTelemtryAt > Micros() ) )
+		{
+			sendSpektrumTelemtryAt = 0; //reset send time to 0 which disables it
+			sendSpektrumTelem();     //send the data. Blind of soft or hard s.port
+		}
+	}
 }
 
 

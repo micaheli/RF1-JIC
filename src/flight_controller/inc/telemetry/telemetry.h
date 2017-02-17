@@ -28,6 +28,9 @@ typedef struct {
 } telem_config;
 
 
+extern volatile uint32_t sendSmartPortAt;
+extern volatile uint32_t sendSpektrumTelemtryAt;
+
 extern volatile uint32_t telemEnabled;
 extern volatile uint32_t lastTimeSPort;
 extern volatile uint32_t okToSendSPort;

@@ -9,7 +9,7 @@ enum {
 
 
 extern ADC_HandleTypeDef adcHandleT;
-extern uint32_t adcVoltage;
+extern float adcVoltage;
 
 
 extern void PollAdc(void);

@@ -549,6 +549,16 @@ Version 0.183.057:
 Version 0.184.057:
 	Changed wizard wording
 
+Version 0.185.057:
+	Rescaled ADC voltage
+
+Version 0.186.057:
+	GUI changes
+
+Version 0.187.057:
+	GUI changes
+
+
 Features in current development:
 	MSP compatibility
 	MAVlink compatibility

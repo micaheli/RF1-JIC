@@ -414,8 +414,13 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 
 		if (!spekPhase && mainConfig.telemConfig.telemSpek)
 		{
-			sendSpektrumTelem();
+			sendSpektrumTelemtryAt = Micros() + 1000;
 		}
+		else
+		{
+			sendSpektrumTelemtryAt = 0;
+		}
+
 		packetTime = 11;
 	}
 	else

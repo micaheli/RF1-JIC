@@ -211,30 +211,24 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 			// calculate Ki ////////////////////////// V
 			if ( fullKiLatched )
 			{
-				if (0) //let Ki only act on erros above 100
+				if (mainConfig.filterConfig[1].filterMod == 1)
 				{
-					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
-					if ( ( actuatorRange > .9999 ) || (pidError > 110) ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
-					{
-						flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
-					}
-					else
-					{
-						kiErrorLimit[axis] = ABS(flightPids[axis].ki);
-					}
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI_FM1, MAX_KI_FM1); //prevent insane windup
 				}
 				else
 				{
 					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
-					if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
-					{
-						flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
-					}
-					else
-					{
-						kiErrorLimit[axis] = ABS(flightPids[axis].ki);
-					}
 				}
+
+				if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+				{
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
+				}
+				else
+				{
+					kiErrorLimit[axis] = ABS(flightPids[axis].ki);
+				}
+
 			}
 			else
 			{
@@ -259,7 +253,15 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 				InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 1.66f);
 			}
 
-			flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD, MAX_KD);
+			if (mainConfig.filterConfig[1].filterMod == 1) //let Ki only act on erros above 100
+			{
+				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD_FM1, MAX_KD_FM1);
+			}
+			else
+			{
+				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD, MAX_KD);
+			}
+
 			// calculate Kd ////////////////////////// ^
 
 			//yaw Kd 8 KHz
