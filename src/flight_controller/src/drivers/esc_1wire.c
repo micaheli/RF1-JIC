@@ -869,7 +869,7 @@ void OneWireDeinit(void) {
 		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 		{
 
-			escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].esc1WireProtocol->Disconnect(board.motors[outputNumber], 22);
+			escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].esc1WireProtocol->Disconnect(board.motors[outputNumber], 40);
 
 			DeInitDmaOutputForSoftSerial(board.motors[outputNumber]);
 
@@ -877,8 +877,7 @@ void OneWireDeinit(void) {
 
 	}
 
-	DeInitAllowedSoftOutputs(); //deinit all the soft outputs
-
+	DelayMs(5);
 	InitFlight();
 
 }

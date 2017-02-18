@@ -565,6 +565,12 @@ Version 0.188.057:
 	Added plus and reverse yaw plus mixer. set mixer_type=8 for normal yaw plus, set mixer_type=9 for reverse yaw plus mixer
 	Made changed to auto level mode.
 
+Version 0.189.057:
+	Change how failsafe works on sbus
+
+Version 0.190.057:
+	WS2812 LEDs will no longer power up when connected to USB
+	Small 1wire changes
 
 
 Features in current development:

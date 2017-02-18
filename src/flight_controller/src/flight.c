@@ -441,13 +441,13 @@ void ComplementaryFilterUpdateAttitude(void)
 
 	if (boardArmed)
 	{
-		accCompAccTrust  = (mainConfig.filterConfig[ACCX].acc.p * 0.003);
-		accCompGyroTrust = (1.0 - (mainConfig.filterConfig[ACCX].acc.p * 0.003));
+		accCompAccTrust  = (0.000001);
+		accCompGyroTrust = (1.0 - (0.000001) );
 	}
 	else
 	{
-		accCompAccTrust  = 0.05;
-		accCompGyroTrust = 0.95;
+		accCompAccTrust  = 0.001;
+		accCompGyroTrust = 0.999;
 	}
 
     // Integrate the gyroscope data
@@ -577,8 +577,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
 			lastPitchAttitudeError   = pitchAttitudeError;
 
-			flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * mainConfig.pidConfig[PITCH].slp) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld), -400, 400);
-			flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * mainConfig.pidConfig[PITCH].slp) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld), -400, 400);
+			flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * mainConfig.pidConfig[PITCH].slp) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld), -200.0, 200.0);
+			flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * mainConfig.pidConfig[PITCH].slp) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld), -200.0, 200.0);
 		}
 
 		//Run PIDC

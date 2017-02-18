@@ -72,6 +72,31 @@ int main(void)
 
 }
 
+void InitVbusSensing(void)
+{
+#ifdef VBUS_SENSING
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    HAL_GPIO_DeInit(ports[VBUS_SENSING_GPIO], VBUS_SENSING_PIN);
+
+    GPIO_InitStructure.Pin   = VBUS_SENSING_PIN;
+    GPIO_InitStructure.Mode  = GPIO_MODE_INPUT;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_NOPULL;
+    HAL_GPIO_Init(ports[VBUS_SENSING_GPIO], &GPIO_InitStructure);
+#endif
+}
+
+uint32_t IsUsbConnected(void)
+{
+#ifdef VBUS_SENSING
+	return(!inlineIsPinStatusHi(ports[VBUS_SENSING_GPIO], VBUS_SENSING_PIN));
+#else
+	return(0);
+#endif
+
+}
+
 void InitFlight(void) {
 
     //TODO: move the check into the init functions.
@@ -84,13 +109,14 @@ void InitFlight(void) {
     	InitFlightLogger();
     }
 
+    InitVbusSensing();
     InitRcData();
     InitMixer();
     InitFlightCode();     //flight code before PID code is a must since flight.c contains loop time settings the pid.c uses.
     InitPid();            //Relies on InitFlightCode for proper activations.
     DeInitActuators();    //Deinit before Init is a shotgun startup
     InitActuators();      //Actuator init should happen after soft serial init.
-    ZeroActuators(10000); //output actuators to idle after timers are stable;
+    ZeroActuators(5000);  //output actuators to idle after timers are stable;
 
 	InitAdc();
     InitModes();          //set flight modes mask to zero.
@@ -102,9 +128,13 @@ void InitFlight(void) {
 	}
 
 	InitTelemtry();
-	InitWs2812();
+
+	if (!IsUsbConnected())
+	{
+		InitWs2812();
+	}
 	//InitTransponderTimer();
-	DelayMs(5);
+	DelayMs(2);
 
 }
 
