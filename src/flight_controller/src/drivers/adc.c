@@ -29,19 +29,18 @@ void PollAdc(void)
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage)
 {
-	static float adcAverage[50];
-	static float adcAdder = 0;
-	static uint32_t acdPointer = 0;
+	#define NORMAL_VOLTAGE 3.33
+	#define HIGH_RESISTOR 100.00
+	#define LOW_RESISTOR 10.00
 
-	adcAverage[acdPointer++] = ((float)rawAdcVoltage / 113.0);
-	adcAdder += ((float)rawAdcVoltage / 113.0);
-
-	if (acdPointer == 50)
-		acdPointer = 0;
-
-	adcVoltage = (adcAdder / 50.0);
-	adcAdder -= adcAverage[acdPointer];
-
+	if (adcVoltage == 0 )
+	{
+		adcVoltage = (float)rawAdcVoltage * (float)((float)NORMAL_VOLTAGE/4096.00) * (float)(((float)HIGH_RESISTOR+(float)LOW_RESISTOR)/(float)LOW_RESISTOR);
+	}
+	else
+	{
+		adcVoltage = ((((float)adcVoltage * (float)49.00) + ((float)rawAdcVoltage * (float)((float)NORMAL_VOLTAGE/4096.00) * (float)(((float)HIGH_RESISTOR+(float)LOW_RESISTOR)/(float)LOW_RESISTOR))) * .02);
+	}
 }
 
 void InitAdc(void)
