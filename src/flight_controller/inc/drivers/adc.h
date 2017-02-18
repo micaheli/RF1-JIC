@@ -14,3 +14,4 @@ extern float adcVoltage;
 
 extern void PollAdc(void);
 extern void InitAdc(void);
+extern void CheckBatteryCellCount(void);

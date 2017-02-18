@@ -81,6 +81,7 @@ void scheduler(int32_t count)
 void TaskAdc(void)
 {
 	PollAdc();
+	CheckBatteryCellCount();
 }
 
  void TaskProcessSoftSerial(void) {

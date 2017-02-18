@@ -2,7 +2,7 @@
 
 
 float adcVoltage;
-
+uint32_t cellCount=0;
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage);
 
@@ -40,6 +40,25 @@ static void ConvertAdcVoltage(uint32_t rawAdcVoltage)
 	else
 	{
 		adcVoltage = ((((float)adcVoltage * (float)49.00) + ((float)rawAdcVoltage * (float)((float)NORMAL_VOLTAGE/4096.00) * (float)(((float)HIGH_RESISTOR+(float)LOW_RESISTOR)/(float)LOW_RESISTOR))) * .02);
+	}
+}
+
+void CheckBatteryCellCount()
+{
+	if (InlineMillis() > 1000 && cellCount == 0)
+	{
+		if ( (adcVoltage > 21.5) && (adcVoltage< 25.8) )
+			cellCount=6;
+		if ( (adcVoltage > 17.5) && (adcVoltage< 21.5) )
+			cellCount=5;
+		if ( (adcVoltage > 13.5) && (adcVoltage < 17.5) )
+			cellCount=4;
+		if ( (adcVoltage > 8.6 ) && (adcVoltage< 13.5) )
+			cellCount=3;
+		if ( (adcVoltage > 4.5) && (adcVoltage< 8.6) )
+			cellCount=2;
+		if (adcVoltage < 4.5)
+			cellCount=1;
 	}
 }
 
