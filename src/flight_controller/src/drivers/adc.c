@@ -61,7 +61,7 @@ void CheckBatteryCellCount()
 		if (adcVoltage < 4.5)
 			cellCount=1;
 	}
-	if (cellCount*cellCutoff >= adcVoltage && boardArmed && adcVoltage > 0)
+	if (cellCount*cellCutoff >= adcVoltage && boardArmed && adcVoltage > 2)
 	{
 		//turn buzzer on
 		buzzerStatus.status = STATE_BUZZER_LOWBAT;
