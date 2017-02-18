@@ -3,7 +3,7 @@
 
 float adcVoltage;
 uint32_t cellCount=0;
-float cellCutoff=3.8;
+float cellCutoff=3.8f;
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage);
 
@@ -61,7 +61,7 @@ void CheckBatteryCellCount()
 		if (adcVoltage < 4.5)
 			cellCount=1;
 	}
-	if (cellCount*cellCutoff >= adcVoltage && boardArmed)
+	if (cellCount*cellCutoff >= adcVoltage && boardArmed && adcVoltage > 0)
 	{
 		//turn buzzer on
 		buzzerStatus.status = STATE_BUZZER_LOWBAT;
