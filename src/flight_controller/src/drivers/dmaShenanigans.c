@@ -14,6 +14,7 @@ uint32_t normalPulseWidth[17];
 uint32_t endPulseWidth[17];
 uint32_t loPulseWidth[17];
 
+uint32_t oneWireHasRun = 0;
 
 static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma actuatorDma);
 static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timerHz, uint32_t inverted);
@@ -103,6 +104,9 @@ void InitWs2812(void)
 	uint32_t actuatorNumOutput;
 	uint32_t outputNumber;
 
+	//fix for revolt. If 1wire has run we can't use LEDs or motor outputs won't work right.
+	if (oneWireHasRun)
+		return;
 
 	ws2812LedRecord.enabled = 0;
 	//TODO: We need more actuators, no more max motor number, instead we use max_actuator number.
@@ -161,7 +165,7 @@ void InitDmaInputOnMotors(motor_type actuator) {
 	pwmTimers[actuator.actuatorArrayNum].Init.CounterMode 	= TIM_COUNTERMODE_UP;
 
 	pwmTimers[actuator.actuatorArrayNum].State               = HAL_TIM_STATE_RESET;
-	__TIM3_CLK_ENABLE();
+
 	HAL_TIM_Base_Init(&pwmTimers[actuator.actuatorArrayNum]);
 	HAL_TIM_IC_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
@@ -610,8 +614,6 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 	uint16_t timerPrescaler;
 	TIM_TypeDef *timer;
 
-	(void)(inverted);
-
     //Timer Init
     timer = timers[actuator.timer];
 
@@ -660,7 +662,7 @@ static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma
 		HAL_DMA_DeInit(htim->hdma[handlerIndex]);
 		board.dmasActive[actuatorDma.dmaHandle].enabled = 0;
 	}
-
+	//dmaHandles[board.dmasActive[actuatorDma.dmaHandle].dmaHandle].Instance = dmaStream[actuatorDma.dmaStream];
 	dmaHandles[actuatorDma.dmaHandle].Instance                 = dmaStream[actuatorDma.dmaStream];
 	dmaHandles[actuatorDma.dmaHandle].Init.Channel             = actuatorDma.dmaChannel;
 	dmaHandles[actuatorDma.dmaHandle].Init.Direction           = actuatorDma.dmaDirection;

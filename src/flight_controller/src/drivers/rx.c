@@ -450,43 +450,46 @@ void ProcessSbusPacket(uint32_t serialNumber)
 	// do we need to hook these into rxData[ChannelMap(i)] ?
 	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) )
 	{
-		rxDataRaw[0] = frame->chan0;
-		rxDataRaw[1] = frame->chan1;
-		rxDataRaw[2] = frame->chan2;
-		rxDataRaw[3] = frame->chan3;
-		rxDataRaw[4] = frame->chan4;
-		rxDataRaw[5] = frame->chan5;
-		rxDataRaw[6] = frame->chan6;
-		rxDataRaw[7] = frame->chan7;
-		rxDataRaw[8] = frame->chan8;
-		rxDataRaw[9] = frame->chan9;
-		rxDataRaw[10] = frame->chan10;
-		rxDataRaw[11] = frame->chan11;
-		rxDataRaw[12] = frame->chan12;
-		rxDataRaw[13] = frame->chan13;
-		rxDataRaw[14] = frame->chan14;
-		rxDataRaw[15] = frame->chan15;
-
-		for (y=MAXCHANNELS-1;y>-1;y--)
-		{
-			rxData[y] = rxDataRaw[ChannelMap(y)];
-		}
-
-		inSync++;
-		// TODO: is this best way to deal with failsafe stuff?
-		//if (!(frame->flags & (SBUS_FRAME_LOSS_FLAG | SBUS_FAILSAFE_FLAG))) {
-		//	rx_timeout = 0;
-		//}
-		// TODO: No, we should only look at SBUS_FAILSAFE_FLAG for failsafe.
 		if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
 		{
+
 			rx_timeout = 0;
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
 				buzzerStatus.status = STATE_BUZZER_OFF;
+
+			rxDataRaw[0] = frame->chan0;
+			rxDataRaw[1] = frame->chan1;
+			rxDataRaw[2] = frame->chan2;
+			rxDataRaw[3] = frame->chan3;
+			rxDataRaw[4] = frame->chan4;
+			rxDataRaw[5] = frame->chan5;
+			rxDataRaw[6] = frame->chan6;
+			rxDataRaw[7] = frame->chan7;
+			rxDataRaw[8] = frame->chan8;
+			rxDataRaw[9] = frame->chan9;
+			rxDataRaw[10] = frame->chan10;
+			rxDataRaw[11] = frame->chan11;
+			rxDataRaw[12] = frame->chan12;
+			rxDataRaw[13] = frame->chan13;
+			rxDataRaw[14] = frame->chan14;
+			rxDataRaw[15] = frame->chan15;
+
+			for (y=MAXCHANNELS-1;y>-1;y--)
+			{
+				rxData[y] = rxDataRaw[ChannelMap(y)];
+			}
+
+			inSync++;
+			// TODO: is this best way to deal with failsafe stuff?
+			//if (!(frame->flags & (SBUS_FRAME_LOSS_FLAG | SBUS_FAILSAFE_FLAG))) {
+			//	rx_timeout = 0;
+			//}
+			// TODO: No, we should only look at SBUS_FAILSAFE_FLAG for failsafe.
+
+			packetTime = 9;
+			InlineCollectRcCommand();
+			RxUpdate();
 		}
-		packetTime = 9;
-		InlineCollectRcCommand();
-		RxUpdate();
 	} else {
 		outOfSync++;
 	}
@@ -775,8 +778,8 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 			return (returnValue);
 			break;
 		case BETAFLOP_EXPO:
-			flopExpo = (mainConfig.rcControlsConfig.curveExpo[axis] * 0.01);
-			flopRate = (mainConfig.rcControlsConfig.acroPlus[axis] * 0.01);
+			flopExpo = (mainConfig.rcControlsConfig.curveExpo[axis]);
+			flopRate = (mainConfig.rcControlsConfig.acroPlus[axis]);
 			if (flopRate > 2.0f)
 				flopRate = flopRate + (14.56f * (flopRate - 1.998f));
 
@@ -789,7 +792,7 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 
 			if (mainConfig.rcControlsConfig.rates[axis] != 0.0f)
 			{
-				flopFactor = 1.0f / (InlineConstrainf(1.0f - (ABS(rcCommand) * (mainConfig.rcControlsConfig.rates[axis] * 0.01f)), 0.01f, 1.00f));
+				flopFactor = 1.0f / (InlineConstrainf(1.0f - (ABS(rcCommand) * (mainConfig.rcControlsConfig.rates[axis])), 0.01f, 1.00f));
 				flopAngle[axis] *= flopFactor;
 			}
 			return(rcCommand);

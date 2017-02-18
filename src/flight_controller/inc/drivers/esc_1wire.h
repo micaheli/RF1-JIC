@@ -161,6 +161,7 @@ typedef struct {
 
 
 extern uint32_t doingAutoA;
+extern uint32_t oneWireHasRun;
 
 extern const oneWireParameter_t motorBeaconDelayParameter;
 extern const oneWireParameter_t motorBeaconStrengthParameter;

@@ -21,11 +21,9 @@ void DeInitActuators(void)  {
 
 		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 		{
-
 			HAL_GPIO_DeInit(ports[board.motors[outputNumber].port], board.motors[outputNumber].pin);
 			HAL_TIM_PWM_DeInit(&pwmTimers[board.motors[outputNumber].actuatorArrayNum]);
 			HAL_TIM_Base_DeInit(&pwmTimers[board.motors[outputNumber].actuatorArrayNum]);
-
 		}
 	}
 }
@@ -138,7 +136,7 @@ void InitActuators(void) {
 		}
 	}
 
-	DelayMs(1); //give timer time to stabilize.
+	DelayMs(2); //give timer time to stabilize.
 
 	// Start the timers
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
@@ -149,7 +147,7 @@ void InitActuators(void) {
 		}
 	}
 
-	DelayMs(5); //give timer time to stabilize.
+	DelayMs(2); //give timer time to stabilize.
 
 }
 
@@ -306,13 +304,18 @@ void ZeroActuators(uint32_t delayUs)
 	if ( (mainConfig.mixerConfig.escProtcol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT150) )
 		__disable_irq();
 
-	for (uint32_t motorNum=0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+	for (uint32_t motorNum=0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+	{
 		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
-		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-			if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) ) {
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+		{
+			if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) )
+			{
 				ThrottleToDshot(serialOutBuffer, 0, 0);
 				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
-			} else {
+			}
+			else
+			{
 				if (threeDeeMode)
 					*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue3d;
 				else
@@ -339,10 +342,13 @@ void IdleActuator(uint32_t motorNum)
 
 	if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 	{
-		if ( IsDshotEnabled() ) {
+		if ( IsDshotEnabled() )
+		{
 			ThrottleToDshot(serialOutBuffer, motorOutput[outputNumber], mainConfig.mixerConfig.idlePercent);
 			OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
-		} else {
+		}
+		else
+		{
 			if (threeDeeMode)
 				*ccr[board.motors[outputNumber].timCCR] = (uint16_t)disarmPulseValue3d; //idle is handled by mixer in 3D mode
 			else

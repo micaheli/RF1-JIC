@@ -496,7 +496,10 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 	trueRcCommandF[2] = -1.1;
 	trueRcCommandF[3] = -1.1;
 	DisarmBoard();
-	DelayMs(20);
+	if ( (rxProtocol == USING_DSM2_R) || (rxProtocol == USING_DSM2_T) )
+		DelayMs(40);
+	else
+		DelayMs(15);
 	DisarmBoard();
 	if (WizRxCheckRxDataLooksValid())
 	{
@@ -506,7 +509,7 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 		trueRcCommandF[1] = -1.1;
 		trueRcCommandF[2] = -1.1;
 		trueRcCommandF[3] = -1.1;
-		DelayMs(40);
+		DelayMs(60);
 		//check twice after a reset of data checks
 		if (WizRxCheckRxDataLooksValid())
 		{
@@ -516,7 +519,7 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 			trueRcCommandF[1] = -1.1;
 			trueRcCommandF[2] = -1.1;
 			trueRcCommandF[3] = -1.1;
-			DelayMs(60);
+			DelayMs(80);
 			//check thrice after a reset of data checks
 			if (WizRxCheckRxDataLooksValid())
 			{
