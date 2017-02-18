@@ -4,6 +4,7 @@ uint32_t doingAutoA = 0;
 esc_one_wire_status escOneWireStatus[16];
 esc_hex_location escHexByPosition[50];
 uint32_t oneWireActive = 0;
+uint32_t oneWireHasRun = 0;
 
 // EEPROM layout - BLHeli rev 20, bumped in 14.0
 const BLHeli_EEprom_t BLHeli20_EEprom = {
@@ -863,6 +864,7 @@ void OneWireDeinit(void) {
 	uint32_t x;
 	uint32_t outputNumber;
 
+	oneWireHasRun = 1;
 	for (x = 0; x < MAX_MOTOR_NUMBER; x++)
 	{
 		outputNumber = mainConfig.mixerConfig.motorOutput[x];

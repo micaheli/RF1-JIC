@@ -14,6 +14,7 @@ uint32_t normalPulseWidth[17];
 uint32_t endPulseWidth[17];
 uint32_t loPulseWidth[17];
 
+uint32_t oneWireHasRun = 0;
 
 static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma actuatorDma);
 static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timerHz, uint32_t inverted);
@@ -103,6 +104,9 @@ void InitWs2812(void)
 	uint32_t actuatorNumOutput;
 	uint32_t outputNumber;
 
+	//fix for revolt. If 1wire has run we can't use LEDs or motor outputs won't work right.
+	if (oneWireHasRun)
+		return;
 
 	ws2812LedRecord.enabled = 0;
 	//TODO: We need more actuators, no more max motor number, instead we use max_actuator number.

@@ -571,15 +571,13 @@ Version 0.189.057:
 Version 0.190.057:
 	WS2812 LEDs will no longer power up when connected to USB
 	Small 1wire changes
+	
 
 
 Features in current development:
 	MSP compatibility
 	MAVlink compatibility
-	Change Horizon mode
-	Vbat input
 	Current input
-	wizards
 
 Features for future development:
 	transponder output
