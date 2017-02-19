@@ -497,9 +497,9 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 	trueRcCommandF[3] = -1.1;
 	DisarmBoard();
 	if ( (rxProtocol == USING_DSM2_R) || (rxProtocol == USING_DSM2_T) )
-		DelayMs(40);
+		DelayMs(60);
 	else
-		DelayMs(15);
+		DelayMs(30);
 	DisarmBoard();
 	if (WizRxCheckRxDataLooksValid())
 	{
@@ -711,7 +711,7 @@ void SetupWizard(char *inString)
 		DisarmBoard();
 		motorOutput[0] = 1.0;
 		OutputActuators(motorOutput, servoOutput);
-		if (CheckSafeMotors(1000, 10000)) { //check for safe motors for 3 seconds, 10000 standard deviation allowed
+		if (CheckSafeMotors(1000, 13000)) { //check for safe motors for 3 seconds, 10000 standard deviation allowed
 			RfCustomReplyBuffer("#me Plug in battery, run wiz mot2 when tones finish");
 			return;
 		} else {

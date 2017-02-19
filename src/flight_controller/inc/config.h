@@ -2,7 +2,7 @@
 
 #define CONFIG_VERSION			(uint32_t)(57U)
 #define CONFIG_VERSION_STR		"57"
-#define FIRMWARE_VERSION		"0.190.057 BETA 2"
+#define FIRMWARE_VERSION		"0.191.057 BETA 3"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
 
@@ -10,7 +10,8 @@
 #define FLIGHT_MODE_ARRAY_SIZE 96
 // 32 flight modes listed from 0 to 31. first value is channel, second and third value is min and max
 
-typedef struct {
+typedef struct
+{
 	rc_control_config rcControlsConfig;
 	gyro_config       gyroConfig;
 	mixer_config      mixerConfig;
@@ -27,7 +28,8 @@ typedef struct {
 
 enum {typeINT=0,typeUINT,typeFLOAT,typeSTRING,};
 
-typedef struct {
+typedef struct
+{
     const char *name;
     const uint32_t type;
     const char *group;
@@ -38,7 +40,8 @@ typedef struct {
     const char *strDefault;
 } config_variables_rec;
 
-typedef struct {
+typedef struct
+{
     const char *valueString;
     const int32_t valueInt;
 } string_comp_rec;

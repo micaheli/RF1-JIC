@@ -574,6 +574,11 @@ Version 0.190.057:
 	Added low voltage buzzer
 	Beta versions Increment
 	
+Version 0.191.057:
+	Fix RX detection method
+	Updated motor calibration routine
+
+
 
 
 Features in current development:
