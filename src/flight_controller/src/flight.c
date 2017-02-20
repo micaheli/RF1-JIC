@@ -59,12 +59,14 @@ uint32_t usedGa[AXIS_NUMBER];
 volatile loop_speed_record loopSpeed;
 
 
-void ArmBoard(void) {
+void ArmBoard(void)
+{
 	InitWatchdog(WATCHDOG_TIMEOUT_2S);
 	boardArmed = 1;
 }
 
-void DisarmBoard(void) {
+void DisarmBoard(void)
+{
 	boardArmed = 0;
 	InitWatchdog(WATCHDOG_TIMEOUT_32S);
 }
@@ -92,7 +94,8 @@ int SetCalibrate1(void)
 int SetCalibrate2(void)
 {
 
-	if (!boardOrientation1) { //make sure step one completed successfully.
+	if (!boardOrientation1)
+	{ //make sure step one completed successfully.
 		return (0);
 	}
 

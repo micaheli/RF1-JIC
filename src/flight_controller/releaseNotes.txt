@@ -572,7 +572,13 @@ Version 0.190.057:
 	WS2812 LEDs will no longer power up when connected to USB
 	Minor 1wire changes
 	Added low voltage buzzer
+	Beta versions Increment
 	
+Version 0.191.057:
+	Fix RX detection method
+	Updated motor calibration routine
+
+
 
 
 Features in current development:

@@ -391,7 +391,7 @@ inline void TaskLed(void)
 	{
 		modeLatch = 1;
 		currentLedMode ++;
-		if (currentLedMode >= MAX_LED_MODES)
+		if (currentLedMode >= LED_MODE_END)
 		{
 			currentLedMode = 0;
 		}
@@ -418,35 +418,35 @@ inline void TaskLed(void)
 
 		switch (mainConfig.ledConfig.ledMode)
 		{
-			case 0:
+			case LED_MODE_OFF:
 				//leds off
 				updateInterval = 250;
 				redAmount      = 0;
 				greenAmount    = 0;
 				blueAmount     = 0;
 				break;
-			case 1:
+			case LED_MODE_ON:
 				//leds on
 				updateInterval = 250;
 				redAmount      = mainConfig.ledConfig.ledRed;
 				greenAmount    = mainConfig.ledConfig.ledGreen;
 				blueAmount     = mainConfig.ledConfig.ledBlue;
 				break;
-			case 2:
+			case LED_MODE_DISO_FAST:
 				//Disco Fast
 				updateInterval = 20;
 				redAmount      = (rand() & 0xF0) + 1;
 				greenAmount    = (rand() & 0xF0) + 1;
 				blueAmount     = (rand() & 0xF0) + 1;
 				break;
-			case 3:
+			case LED_MODE_DISCO_SLOW:
 				//Disco Slow
 				updateInterval = 100;
 				redAmount      = (rand() & 0xF0) + 1;
 				greenAmount    = (rand() & 0xF0) + 1;
 				blueAmount     = (rand() & 0xF0) + 1;
 				break;
-			case 4:
+			case LED_MODE_PARTY_FAST:
 				//Party Fast
 				updateInterval = 20;
 				redAmount   = (rand() & 0xF0) + 1;
@@ -468,7 +468,7 @@ inline void TaskLed(void)
 				if (greenAmount > redAmount)
 					blueAmount = 0;
 				break;
-			case 5:
+			case LED_MODE_PARTY_SLOW:
 				//Party Slow
 				updateInterval = 100;
 				redAmount   = (rand() & 0xF0) + 1;
@@ -490,7 +490,7 @@ inline void TaskLed(void)
 				if (greenAmount > redAmount)
 					blueAmount = 0;
 				break;
-			case 6:
+			case LED_MODE_GYRO_MOTION:
 				//Gyro motion Slow
 				updateInterval = 5;
 
@@ -498,7 +498,7 @@ inline void TaskLed(void)
 				greenAmount = (uint8_t)CONSTRAIN(ABS(filteredGyroData[ROLL]),0,254)+1;
 				blueAmount  = (uint8_t)CONSTRAIN(ABS(filteredGyroData[PITCH]),0,254)+1;
 				break;
-			case 7:
+			case LED_MODE_COLOR_PULSE:
 				//Color Pulse
 				updateInterval = 40;
 
@@ -541,21 +541,21 @@ inline void TaskLed(void)
 		{
 			switch (mainConfig.ledConfig.ledMode)
 			{
-				case 8:
+				case LED_MODE_MULTI_DISCO_FAST:
 					//Disco Fast
 					updateInterval = 20;
 					redAmount      = (rand() & 0xF0) + 1;
 					greenAmount    = (rand() & 0xF0) + 1;
 					blueAmount     = (rand() & 0xF0) + 1;
 					break;
-				case 9:
+				case LED_MODE_MULTI_DISCO_SLOW:
 					//Disco Slow
 					updateInterval = 100;
 					redAmount      = (rand() & 0xF0) + 1;
 					greenAmount    = (rand() & 0xF0) + 1;
 					blueAmount     = (rand() & 0xF0) + 1;
 					break;
-				case 10:
+				case LED_MODE_MULTI_PARTY_FAST:
 					//Party Fast
 					updateInterval = 20;
 					redAmount   = (rand() & 0xF0) + 1;
@@ -577,7 +577,7 @@ inline void TaskLed(void)
 					if (greenAmount > redAmount)
 						blueAmount = 0;
 					break;
-				case 11:
+				case LED_MODE_MULTI_PARTY_SLOW:
 					//Party Slow
 					updateInterval = 100;
 					redAmount   = (rand() & 0xF0) + 1;
