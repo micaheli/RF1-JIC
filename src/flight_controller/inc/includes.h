@@ -17,6 +17,7 @@
 #include "exti.h"
 
 //general includes
+#include "imu.h"
 #include "pid.h"
 #include "mixer.h"
 #include "modes.h"

@@ -348,7 +348,7 @@ void InitFlightCode(void)
 	InlineInitKdFilters();
 	InlineInitSpectrumNoiseFilter();
 	InlineInitAccFilters();
-
+	InitImu();
 }
 
 inline void InlineInitGyroFilters(void)
@@ -440,7 +440,13 @@ inline void InlineUpdateAttitude(float geeForceAccArray[])
 
 void ComplementaryFilterUpdateAttitude(void)
 {
+
 	static float pitchAcc = 0, rollAcc = 0;
+
+	//QuaternionUpdate(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[PITCH], filteredGyroData[ROLL], filteredGyroData[YAW], 0, 0, 0);
+	//QuaternionUpdate(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], 0, 0, 0, 0, 0);
+
+	CalculateQuaternions();
 
 	if (boardArmed)
 	{

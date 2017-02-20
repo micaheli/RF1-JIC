@@ -578,7 +578,8 @@ Version 0.191.057:
 	Fix RX detection method
 	Updated motor calibration routine
 
-
+Version 0.192.057:
+	Fixed kiss rates.
 
 
 Features in current development:
