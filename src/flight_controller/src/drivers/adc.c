@@ -1,9 +1,11 @@
 #include "includes.h"
 
 
-float adcVoltage;
+float adcVoltage=0;
 uint32_t cellCount=0;
 float cellCutoff=3.8f;
+float averageVoltage=0;
+uint32_t lastTime=0;
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage);
 
@@ -36,11 +38,17 @@ static void ConvertAdcVoltage(uint32_t rawAdcVoltage)
 
 	if (adcVoltage == 0 )
 	{
-		adcVoltage = (float)rawAdcVoltage * (float)((float)NORMAL_VOLTAGE/4096.00) * (float)(((float)HIGH_RESISTOR+(float)LOW_RESISTOR)/(float)LOW_RESISTOR);
+		averageVoltage = adcVoltage = (float)rawAdcVoltage * (float)((float)NORMAL_VOLTAGE/4096.00) * (float)(((float)HIGH_RESISTOR+(float)LOW_RESISTOR)/(float)LOW_RESISTOR);
 	}
 	else
 	{
 		adcVoltage = ((((float)adcVoltage * (float)49.00) + ((float)rawAdcVoltage * (float)((float)NORMAL_VOLTAGE/4096.00) * (float)(((float)HIGH_RESISTOR+(float)LOW_RESISTOR)/(float)LOW_RESISTOR))) * .02);
+
+		if (InlineMillis()-lastTime > 250 )
+		{
+			lastTime=InlineMillis();
+			averageVoltage = ((((float)averageVoltage * (float)19.00) + adcVoltage) * .05);
+		}
 	}
 }
 
@@ -48,20 +56,20 @@ void CheckBatteryCellCount()
 {
 	if (InlineMillis() > 1000 && cellCount == 0)
 	{
-		if ( (adcVoltage > 21.5) && (adcVoltage< 25.8) )
+		if ( (averageVoltage > 21.5) && (averageVoltage< 25.8) )
 			cellCount=6;
-		if ( (adcVoltage > 17.5) && (adcVoltage< 21.5) )
+		if ( (averageVoltage > 17.5) && (averageVoltage< 21.5) )
 			cellCount=5;
-		if ( (adcVoltage > 13.5) && (adcVoltage < 17.5) )
+		if ( (averageVoltage > 13.5) && (averageVoltage < 17.5) )
 			cellCount=4;
-		if ( (adcVoltage > 8.6 ) && (adcVoltage< 13.5) )
+		if ( (averageVoltage > 8.6 ) && (averageVoltage< 13.5) )
 			cellCount=3;
-		if ( (adcVoltage > 4.5) && (adcVoltage< 8.6) )
+		if ( (averageVoltage > 4.5) && (averageVoltage< 8.6) )
 			cellCount=2;
-		if (adcVoltage < 4.5)
+		if (averageVoltage < 4.5)
 			cellCount=1;
 	}
-	if (cellCount*cellCutoff >= adcVoltage && boardArmed && adcVoltage > 2)
+	if (cellCount*cellCutoff >= averageVoltage && boardArmed && averageVoltage > 2)
 	{
 		//turn buzzer on
 		buzzerStatus.status = STATE_BUZZER_LOWBAT;
