@@ -326,13 +326,13 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 					BlackboxWriteSignedVB( (int32_t)(999) );
 					BlackboxWriteSignedVB( (int32_t)(999) );
 
-					BlackboxWriteSignedVB( (int32_t)(rx_timeout) );
-					BlackboxWriteSignedVB( (int32_t)(rx_timeout) );
-					BlackboxWriteSignedVB( (int32_t)(rx_timeout) );
+					BlackboxWriteSignedVB( (int32_t)(rx_timeout)   );
+					BlackboxWriteSignedVB( (int32_t)(deviceWhoAmI) );
+					BlackboxWriteSignedVB( (int32_t)(errorMask)    );
 
-					BlackboxWriteSignedVB( (int32_t)(activeModes) );
-					BlackboxWriteSignedVB( (int32_t)(activeModes) );
-					BlackboxWriteSignedVB( (int32_t)(activeModes) );
+					BlackboxWriteSignedVB( (int32_t)(failsafeHappend) );
+					BlackboxWriteSignedVB( (int32_t)(activeModes)     );
+					BlackboxWriteSignedVB( (int32_t)(activeModes)     );
 				}
 				else
 				{
