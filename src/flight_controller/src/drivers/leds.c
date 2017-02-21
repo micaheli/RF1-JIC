@@ -259,6 +259,39 @@ inline void UpdateWs2812Leds(void)
 				greenAmount = (uint8_t)CONSTRAIN(ABS(filteredGyroData[ROLL]),0,254)+1;
 				blueAmount  = (uint8_t)CONSTRAIN(ABS(filteredGyroData[PITCH]),0,254)+1;
 				break;
+			case LED_MODE_BATTERY_LEVEL:
+				//Chnage color based on battery level
+				updateInterval=20;
+				if (averageVoltage > fullVoltage)
+				{
+					//make leds green
+					greenAmount = 255;
+					redAmount   = 0;
+					blueAmount  = 0;
+				}
+
+				if (averageVoltage <= fullVoltage && averageVoltage> runningVoltage)
+				{
+					//make leds blue / green
+					greenAmount = 200;
+					redAmount   = 80;
+					blueAmount  = 200;
+				}
+				if (averageVoltage <= runningVoltage && averageVoltage > lowVoltage)
+				{
+					//make leds yellow
+					greenAmount=125;
+					redAmount=124;
+					blueAmount=0;
+				}
+				if (averageVoltage <= lowVoltage)
+				{
+					//make leds red
+					greenAmount = 0;
+					redAmount   = 255;
+					blueAmount  = 0;
+				}
+				break;
 			case LED_MODE_COLOR_PULSE:
 				//Color Pulse
 				updateInterval = 40;
