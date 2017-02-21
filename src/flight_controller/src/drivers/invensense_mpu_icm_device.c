@@ -175,13 +175,13 @@ int AccGyroDeviceDetect(void)
         		//deviceWhoAmI = data;
 				//return data;
 				//break;
-        	case MPU6500_WHO_AM_I:
             case MPU6555_WHO_AM_I:
+			case MPU9250_WHO_AM_I:
             case ICM20689_WHO_AM_I:
             case ICM20608G_WHO_AM_I:
 				return 0;
 				break;
-            case MPU9250_WHO_AM_I:
+			case MPU6500_WHO_AM_I:
 #ifdef SPMFC400
             	deviceWhoAmI = data;
                 return data;

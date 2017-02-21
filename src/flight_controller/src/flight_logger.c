@@ -105,7 +105,8 @@ void DisableLogging(void)
  void FinishBlock(uint32_t count)
  {
 	uint32_t finishY = ((flashInfo.currentWriteAddress + (flashInfo.buffer[flashInfo.bufferNum].txBufferPtr - FLASH_CHIP_BUFFER_WRITE_DATA_START)) % count);
-	if (finishY != 0) {
+	if (finishY != 0)
+	{
 		for (uint32_t x=0;x<(count - finishY);x++)
 		{
 			WriteByteToFlash('\0');
@@ -126,7 +127,8 @@ inline void InlineWrite16To8 (int16_t data)
 
 	buffer->txBuffer[buffer->txBufferPtr++] = data;
 
-	if (buffer->txBufferPtr > FLASH_CHIP_BUFFER_WRITE_DATA_END) {
+	if (buffer->txBufferPtr > FLASH_CHIP_BUFFER_WRITE_DATA_END)
+	{
 		if (flashInfo.bufferNum == 0)
 		{
 			flashInfo.bufferNum = 1;
@@ -137,7 +139,8 @@ inline void InlineWrite16To8 (int16_t data)
 		}
 		flashInfo.buffer[flashInfo.bufferNum].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 
-		if (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS) {
+		if (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS)
+		{
 			//only write and increment write address is flash chip s not busy to prevent blocks of FFFFFFF
 			M25p16DmaWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer); //write buffer to flash using DMA
 			flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
@@ -183,8 +186,10 @@ void BlackboxWriteSignedVB(int32_t value)
 void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsGyroArray[], float filteredGyroData[], float filteredAccData[] )
 {
 
-	uint32_t finishX;
+	uint32_t        finishX;
 	static uint32_t loggingStartedLatch = 0;
+	static int32_t  disarmLast = 0;
+	uint32_t        recordJunkData = 0;
 
 	pid_output currFlightPids[AXIS_NUMBER];
 	float      currFlightSetPoints[AXIS_NUMBER];
@@ -195,22 +200,28 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 
 	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (ModeActive(M_LOGGING)) && (flashInfo.enabled == FLASH_ENABLED) )
 	{
-		ledStatus.status = LEDS_FASTER_BLINK;
-		LoggingEnabled = 1;
+		ledStatus.status    = LEDS_FASTER_BLINK;
+		LoggingEnabled      = 1;
 		loggingStartedLatch = 1;
+		disarmLast          = 25;
+		recordJunkData      = 0;
 	}
 	else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (!ModeSet(M_LOGGING)) && (flashInfo.enabled == FLASH_ENABLED) )
 	{
-		ledStatus.status = LEDS_FASTER_BLINK;
-		LoggingEnabled = 1;
+		ledStatus.status    = LEDS_FASTER_BLINK;
+		LoggingEnabled      = 1;
 		loggingStartedLatch = 1;
+		disarmLast          = 25;
+		recordJunkData      = 0;
 	}
 	else if ( flashCountdownFake > 1 )
 	{
 		flashCountdownFake--;
-		ledStatus.status = LEDS_FASTER_BLINK;
-		LoggingEnabled = 1;
+		ledStatus.status    = LEDS_FASTER_BLINK;
+		LoggingEnabled      = 1;
 		loggingStartedLatch = 1;
+		disarmLast          = 25;
+		recordJunkData      = 0;
 	}
 	else
 	{
@@ -219,13 +230,18 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 		else
 			ledStatus.status = LEDS_SLOW_BLINK;
 
-		LoggingEnabled = 0;
-		firstLogging = 1;
-		if (loggingStartedLatch)
+		if (disarmLast-- < 1)
 		{
-			loggingStartedLatch = 0;
-			FinishPage();
+			disarmLast = -1;
+			LoggingEnabled = 0;
+			firstLogging = 1;
+			if (loggingStartedLatch)
+			{
+				loggingStartedLatch = 0;
+				FinishPage();
+			}
 		}
+		recordJunkData = 1;
 	}
 
 
@@ -241,7 +257,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 			flashInfo.buffer[1].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 			flashInfo.buffer[0].rxBufferPtr = 0;
 			flashInfo.buffer[1].rxBufferPtr = 0;
-			flashInfo.bufferNum = 0;
+			flashInfo.bufferNum             = 0;
 
 			finishX = (flashInfo.currentWriteAddress % UPDATE_BB_DATA_SIZE);
 			if (finishX != 0)
@@ -304,17 +320,34 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				BlackboxWriteUnsignedVB(logItteration);
 				BlackboxWriteUnsignedVB(logStartMicros + (logItteration * logRateTime) );
 
-				BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].kp           * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].ki           * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].kd           * 1000) );
+				if (recordJunkData)
+				{
+					BlackboxWriteSignedVB( (int32_t)(999) );
+					BlackboxWriteSignedVB( (int32_t)(999) );
+					BlackboxWriteSignedVB( (int32_t)(999) );
 
-				BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].kp          * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].ki          * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].kd          * 1000) );
+					BlackboxWriteSignedVB( (int32_t)(rx_timeout)   );
+					BlackboxWriteSignedVB( (int32_t)(deviceWhoAmI) );
+					BlackboxWriteSignedVB( (int32_t)(errorMask)    );
 
-				BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].kp         * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].ki         * 1000) );
-				BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].kd         * 1000) );
+					BlackboxWriteSignedVB( (int32_t)(failsafeHappend) );
+					BlackboxWriteSignedVB( (int32_t)(activeModes)     );
+					BlackboxWriteSignedVB( (int32_t)(activeModes)     );
+				}
+				else
+				{
+					BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].kp           * 1000) );
+					BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].ki           * 1000) );
+					BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].kd           * 1000) );
+
+					BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].kp          * 1000) );
+					BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].ki          * 1000) );
+					BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].kd          * 1000) );
+
+					BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].kp         * 1000) );
+					BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].ki         * 1000) );
+					BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].kd         * 1000) );
+				}
 
 				//-1 to 1 to -500 to 500
 				BlackboxWriteSignedVB( (int32_t)( ((smoothedRcCommandF[YAW])      * 500)) ); //20
@@ -346,10 +379,10 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				BlackboxWriteSignedVB( (int32_t)(currFilteredAccData[ACCZ]   * 2048) ); //50
 
 				//0 TO 1 to 1000 to 2000
-				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[0] + 1) * 1000) ); //52
-				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[1] + 1) * 1000) ); //54
-				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[2] + 1) * 1000) ); //56
-				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[3] + 1) * 1000) ); //58
+				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[0] + 1)   * 1000) ); //52
+				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[1] + 1)   * 1000) ); //54
+				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[2] + 1)   * 1000) ); //56
+				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[3] + 1)   * 1000) ); //58
 			}
 
 			logItterationCounter--;
@@ -407,7 +440,9 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 */
 		}
 
-	} else {
+	}
+	else
+	{
 		ledStatus.status = LEDS_SLOW_BLINK;
 	}
 }

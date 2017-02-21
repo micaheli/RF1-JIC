@@ -578,7 +578,12 @@ Version 0.191.057:
 	Fix RX detection method
 	Updated motor calibration routine
 
-
+Version 0.192.057:
+	Fixed kiss rates.
+	Changed DSMX 22ms detection.
+	Added logging continuation after disarm / failsafe for 25 itterations with trouble codes
+	
+	
 
 
 Features in current development:

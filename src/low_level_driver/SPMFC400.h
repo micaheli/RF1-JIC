@@ -65,7 +65,7 @@
 #define SBUS_INVERTER_USART			0
 
 //Serial Config
-#undef VBUS_SENSING
+#define VBUS_SENSING
 #define VBUS_SENSING_GPIO			ENUM_PORTA
 #define VBUS_SENSING_PIN			GPIO_PIN_9
 

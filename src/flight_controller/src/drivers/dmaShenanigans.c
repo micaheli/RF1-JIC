@@ -28,7 +28,7 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 	uint32_t outputIndex;
 	uint32_t bitsPerFrame = 8;
 
-	uint8_t tempBuffer[1500];
+	uint8_t  tempBuffer[1500];
 
 	tempBuffer[bufferIdx++] = NO_PULSE;
 
