@@ -16,7 +16,7 @@ enum
 {
 	LED_MODE_OFF              = 0,
 	LED_MODE_ON               = 1,
-	LED_MODE_DISO_FAST        = 2,
+	LED_MODE_DISCO_FAST       = 2,
 	LED_MODE_DISCO_SLOW       = 3,
 	LED_MODE_PARTY_FAST       = 4,
 	LED_MODE_PARTY_SLOW       = 5,
