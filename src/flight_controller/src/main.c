@@ -129,10 +129,13 @@ void InitFlight(void) {
 
 	InitTelemtry();
 
+#ifndef SPMFC400
 	if (!IsUsbConnected())
 	{
 		InitWs2812();
 	}
+#else	InitWs2812();
+#endif
 	//InitTransponderTimer();
 	DelayMs(2);
 
