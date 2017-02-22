@@ -55,8 +55,8 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
 	 {
 		 currentColorChart = 0;
 	 }
-	 greenTemp = colorChart[currentColorChart++][1];
-	 redTemp = colorChart[currentColorChart++][0];
+	greenTemp = colorChart[currentColorChart++][1];
+	redTemp = colorChart[currentColorChart++][0];
 	blueTemp = colorChart[currentColorChart++][2];
 
  	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
@@ -71,7 +71,7 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
 	 updateInterval = speed;
 
 
- 	for (x=0;x < mainConfig.ledConfig.ledCount;x++)
+ 	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
  	{
  		SetPixel(x,mainConfig.ledConfig.ledRed,mainConfig.ledConfig.ledGreen,mainConfig.ledConfig.ledBlue);
  	}
@@ -97,12 +97,13 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
   {
 	 //setup & math
 	 greenTemp = (rand() & 0xF0) + 1;
+	 blueTemp = (rand() & 0xF0) + 1;
 	 updateInterval=speed;
 
 
-  	for (x=0;x < mainConfig.ledConfig.ledCount;x++)
+  	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
   	{
-  		SetPixel(x,255,0,0);
+  		SetPixel(x,255,greenTemp,blueTemp); //TODO: FIX THIS
   	}
   }
 
@@ -111,7 +112,7 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
 	 //setup & math
 	 updateInterval=speed;
 
-  	for (x=0;x < mainConfig.ledConfig.ledCount;x++)
+  	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
   	{
   		SetPixel(x,(uint8_t)CONSTRAIN(ABS(filteredGyroData[YAW]),0,254)+1,(uint8_t)CONSTRAIN(ABS(filteredGyroData[ROLL]),0,254)+1,(uint8_t)CONSTRAIN(ABS(filteredGyroData[PITCH]),0,254)+1);
   	}
@@ -128,23 +129,26 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
 		 currentLedPulse++;
 		 colorPulse = 0;
 	 }
+	 redTemp=greenTemp=blueTemp=0;
+
+	switch (currentLedPulse)
+	 {
+		 case 3:
+			 currentLedPulse=0;
+		 case 0:
+			 redTemp = currentLedPulse;
+			 break;
+		 case 1:
+			 greenTemp = currentLedPulse;
+			 break;
+		 case 2:
+			 blueTemp = currentLedPulse;
+			 break;
+	 }
 	 //for loop for setting the led, dont change any math in here if you want all to update at once
-  	for (x=0;x < mainConfig.ledConfig.ledCount;x++)
+  	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
   	{
-  		 switch (currentLedPulse)
-  		 {
-  		 	 case 3:
-  		 		 currentLedPulse=0;
-  		 	 case 0:
-  		 		 SetPixel(x,colorPulse,0,0);
-  		 		 break;
-  		 	 case 1:
-  		 		 SetPixel(x,0,colorPulse,0);
-  		 		 break;
-  		 	 case 2:
-  		 		 SetPixel(x,0,0,colorPulse);
-  		 		 break;
-  		 }
+  		SetPixel(x,redTemp, greenTemp, blueTemp);
   	}
   }
 
@@ -168,9 +172,9 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
 	 //setup & math
 	 updateInterval=speed;
 
-   	for (x=0;x < mainConfig.ledConfig.ledCount;x++)
+   	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
    	{
-   		SetPixel(x,0,0,0);
+   		SetPixel(x,255,255,255); //TODO: fix this
    	}
    }
 
@@ -179,9 +183,9 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
 	 //setup & math
 	 updateInterval=speed;
 
-   	for (x=0;x < mainConfig.ledConfig.ledCount;x++)
+   	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
    	{
-   		SetPixel(x,0,0,0);
+   		SetPixel(x,0,0,255); //TODO: FIX this
    	}
    }
 
@@ -368,7 +372,7 @@ inline void UpdateWs2812Leds(void)
 				break;
 			case LED_MODE_COLOR_PULSE:
 				//Color Pulse
-				LedModeColorPulse(40);
+				LedModeColorPulse(20);
 				break;
 			case LED_MODE_MULTI_DISCO_FAST:
 				//Disco Fast
