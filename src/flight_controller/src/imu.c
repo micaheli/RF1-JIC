@@ -207,10 +207,7 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 	float accTrust;
 	float accTrustKi = 112.1000f;
 	float norm;
-	//float vx, vy, vz;
 	float accToGyroError[3];
-	//volatile float c1, c2, c3;
-	//volatile float s1, s2, s3;
 
 	static float accTrustKiStorage[3] = {0.0f, 0.0f, 0.0f};
 	static uint32_t gyroToAccDivisorCounter = 0;
