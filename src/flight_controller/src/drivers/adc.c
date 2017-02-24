@@ -1,10 +1,16 @@
 #include "includes.h"
 
+#define CHARGED_VOLTAGE 4.0
+#define RUNNING_VOLTAGE 3.85
+#define DEAD_VOLTAGE    3.65
 
 float adcVoltage=0;
 uint32_t cellCount=0;
-float cellCutoff=3.8f;
+float cellCutoff=3.6f;
 float averageVoltage=0;
+float lowVoltage = 0;
+float runningVoltage = 0;
+float fullVoltage = 0;
 uint32_t lastTime=0;
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage);
@@ -72,8 +78,13 @@ void CheckBatteryCellCount()
 			cellCount=2;
 		if (averageVoltage < 4.5)
 			cellCount=1;
+
+		fullVoltage = (CHARGED_VOLTAGE * cellCount);
+		runningVoltage = (RUNNING_VOLTAGE * cellCount);
+		lowVoltage = (DEAD_VOLTAGE * cellCount);
+
 	}
-	if (cellCount*cellCutoff >= averageVoltage && boardArmed && averageVoltage > 2)
+	if (averageVoltage<lowVoltage && boardArmed && averageVoltage > 2.0f)
 	{
 		//turn buzzer on
 		buzzerStatus.status = STATE_BUZZER_LOWBAT;
