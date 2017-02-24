@@ -148,7 +148,7 @@ const config_variables_rec valueTable[] = {
 
 		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25, 15, "" },
 		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25, 15, "" },
-		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 50, 25, "" },
+		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 75, 40, "" },
 		{ "sld", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.9, 0.45, "" },
 
 		{ "filter_mode0",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterMod, 				0, 10, 0, "" },
@@ -903,6 +903,10 @@ void ProcessCommand(char *inString)
 			char gx[12];
 			char gy[12];
 			char gz[12];
+			char qx[12];
+			char qy[12];
+			char qz[12];
+			char qw[12];
 
 			ftoa(pitchAttitude, pitchString);
 			ftoa(rollAttitude, rollString);
@@ -927,12 +931,23 @@ void ProcessCommand(char *inString)
 			StripSpaces(gy);
 			StripSpaces(gz);
 
+			ftoa(quat.w, qw);
+			ftoa(quat.x, qx);
+			ftoa(quat.y, qy);
+			ftoa(quat.z, qz);
+			StripSpaces(qw);
+			StripSpaces(qx);
+			StripSpaces(qy);
+			StripSpaces(qz);
+
 			//todo: make a way to combine strings
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm pitch=%s\n#tm roll=%s\n#tm heading=%s", pitchString,rollString,yawString);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm ax=%s\n#tm ay=%s\n#tm az=%s", ax,ay,az);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm gx=%s\n#tm gy=%s\n#tm gz=%s", gx,gy,gz);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm qx=%s\n#tm qy=%s\n#tm qz=%s\n#tm qw=%s", qx,qy,qz,qw);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 		}
@@ -1154,7 +1169,36 @@ void ProcessCommand(char *inString)
 
 			SaveAndSend();
 		}
-		else if (!strcmp("nytfluffy", inString))
+		else if (!strcmp("nytfluffyrates", inString))
+		{
+
+			mainConfig.rcControlsConfig.useCurve[PITCH]    = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[THROTTLE] = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX1]     = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX2]     = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX3]     = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX4]     = NO_EXPO;
+
+			mainConfig.rcControlsConfig.rates[PITCH]       = 300;
+			mainConfig.rcControlsConfig.rates[ROLL]        = 300;
+			mainConfig.rcControlsConfig.rates[YAW]         = 150;
+
+			mainConfig.rcControlsConfig.curveExpo[PITCH]   = 50;
+			mainConfig.rcControlsConfig.curveExpo[ROLL]    = 50;
+			mainConfig.rcControlsConfig.curveExpo[YAW]     = 20;
+
+			mainConfig.rcControlsConfig.acroPlus[PITCH]    = 58;
+			mainConfig.rcControlsConfig.acroPlus[ROLL]     = 58;
+			mainConfig.rcControlsConfig.acroPlus[YAW]      = 40;
+
+			resetBoard = 1;
+
+			RfCustomReplyBuffer("#me Nyfluffy mode engaged");
+
+			SaveAndSend();
+
+		}
+		else if (!strcmp("nytfluffyall", inString))
 		{
 
 			SetRxDefaults(USING_SBUS_T, ENUM_USART1);
@@ -1616,6 +1660,13 @@ void ProcessCommand(char *inString)
 			uint32_t returnValueThis = RfVtxChannel(atoi(args));
 			DelayMs(100);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("serial", inString))
+		{
+
+			DelayMs(100);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#serial: %lu%lu%lu", STM32_UUID[0], STM32_UUID[1], STM32_UUID[2] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("dump", inString))

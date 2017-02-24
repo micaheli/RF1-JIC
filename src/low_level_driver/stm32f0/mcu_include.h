@@ -4,6 +4,8 @@
 #include "stm32f0xx_it.h"
 #include "stm32f0xx_hal_conf.h"
 
+//#define STM32_UUID ((uint32_t *)0x1FFF7A10)
+
 //asm delay used for not so accurate delays needed before the board is initialized
 //todo: either make this change based on CPU speed or move this to general_functions for MCU family.
 #define simpleDelay_ASM(us) do {\

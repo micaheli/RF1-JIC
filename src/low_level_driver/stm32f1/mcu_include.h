@@ -6,6 +6,8 @@
 #include "stm32f1xx_hal_conf.h"
 #include "flash.h"
 
+//#define STM32_UUID ((uint32_t *)0x1FFF7A10)
+
 //asm delay used for not so accurate delays needed before the board is initialized
 #define simpleDelay_ASM(us) do {\
 	asm volatile (	"MOV R0,%[loops]\n\t"\
