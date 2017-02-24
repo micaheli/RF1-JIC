@@ -3,7 +3,7 @@
 #include <stdio.h>
 /*-----------------Variables--------------*/
 
-uint32_t x = 0;
+
 static uint32_t updateInterval = 100;
 uint8_t greenTemp = 0;
 uint8_t redTemp = 0;
@@ -12,6 +12,8 @@ static uint8_t currentLedPulse = 0;
 static uint8_t colorPulse = 0;
 static uint32_t currentColorChart = 0;
 uint32_t ledArraySize = 0;
+int32_t adding = 0;
+int32_t pixel = 0;
 
 
 ledStatus_t ledStatus;
@@ -28,6 +30,20 @@ uint8_t colorChart[COLOR_CHART_SIZE][3] = {
 uint8_t rgbArray[WS2812_MAX_LEDS*3];
 
 /*-------------------------Inline Functions----------------*/
+inline uint8_t LowerLed(uint8_t input, uint8_t sub)
+{
+  if ((input - sub) >= 0)
+  {
+    return(input - sub);
+  }
+
+  else
+
+  {
+    return(0);
+  }
+}
+
  inline void SetPixel(uint8_t pixel, uint8_t red, uint8_t green, uint8_t blue)
 {
 	//sets led in array, wont be need with matrix
@@ -40,6 +56,7 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
  {
 	 //setup & math
 	 updateInterval = speed;
+	 uint32_t x = 0;
 
 	 //set colors
  	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
@@ -51,6 +68,7 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
  static inline void LedModeColor()
  {
 	 //setup & math
+	 uint32_t x = 0;
 	 if (currentColorChart >= COLOR_CHART_SIZE)
 	 {
 		 currentColorChart = 0;
@@ -69,6 +87,7 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
  {
 	 //setup & math
 	 updateInterval = speed;
+	 uint32_t x = 0;
 
 
  	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
@@ -82,6 +101,7 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
  {
 	 //setup & math
 	 updateInterval=speed;
+	 uint32_t x = 0;
 	 greenTemp = ((rand() & 0xF0) + 1);
 	 redTemp = ((rand() & 0xF0) + 1);
 	 blueTemp = ((rand() & 0xF0) + 1);
@@ -99,6 +119,7 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
 	 greenTemp = (rand() & 0xF0) + 1;
 	 blueTemp = (rand() & 0xF0) + 1;
 	 updateInterval=speed;
+	 uint32_t x = 0;
 
 
   	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
@@ -111,6 +132,7 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
   {
 	 //setup & math
 	 updateInterval=speed;
+	 uint32_t x = 0;
 
   	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
   	{
@@ -123,32 +145,36 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
 	 //setup & math
 	 updateInterval=speed;
 	 colorPulse +=1;
+	 uint32_t x = 0;
 
 	 if (colorPulse > 254)
 	 {
 		 currentLedPulse++;
 		 colorPulse = 0;
 	 }
-	 redTemp=greenTemp=blueTemp=0;
+	 redTemp=blueTemp=greenTemp=0;
 
-	switch (currentLedPulse)
-	 {
-		 case 3:
-			 currentLedPulse=0;
-		 case 0:
-			 redTemp = currentLedPulse;
-			 break;
-		 case 1:
-			 greenTemp = currentLedPulse;
-			 break;
-		 case 2:
-			 blueTemp = currentLedPulse;
-			 break;
-	 }
+	 switch (currentLedPulse)
+		 {
+			 case 3:
+				 currentLedPulse=0;
+			 case 0:
+				 redTemp=colorPulse;
+				 break;
+			 case 1:
+
+				 greenTemp=colorPulse;
+				 break;
+			 case 2:
+
+				 blueTemp=colorPulse;
+				 break;
+		 }
+
 	 //for loop for setting the led, dont change any math in here if you want all to update at once
   	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
   	{
-  		SetPixel(x,redTemp, greenTemp, blueTemp);
+  		SetPixel(x,redTemp,greenTemp,blueTemp);
   	}
   }
 
@@ -156,6 +182,7 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
    {
 	 //setup & math
 	 updateInterval=speed;
+	 uint32_t x = 0;
 
  	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
  	{
@@ -171,6 +198,7 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
    {
 	 //setup & math
 	 updateInterval=speed;
+	 uint32_t x = 0;
 
    	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
    	{
@@ -178,15 +206,46 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
    	}
    }
 
- static inline void LedModeMultiBattery(uint8_t speed)
+ static inline void LedModeMultiBattery()
    {
 	 //setup & math
-	 updateInterval=speed;
+	 updateInterval=1000;
+	 redTemp =0;
+	 blueTemp=255;
+	 greenTemp=0;
 
-   	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
-   	{
-   		SetPixel(x,0,0,255); //TODO: FIX this
-   	}
+	 if (adding) {
+	    pixel = pixel + 1;
+	    if (pixel == ((int32_t)mainConfig.ledConfig.ledCount+1))
+	    {
+	      adding=0;
+	    }
+	  }
+	  else
+	  {
+	    pixel = pixel - 1;
+	    if (pixel == 0)
+	    {
+	      adding=1;
+	    }
+	  }
+
+
+	  SetPixel(pixel, redTemp, greenTemp, blueTemp);
+	  if ((pixel - 1) >= 0 ) {
+	   SetPixel(pixel - 1, LowerLed(redTemp, 200), LowerLed(greenTemp, 200), LowerLed(blueTemp, 200));
+	  }
+	  if ((pixel - 2) >= 0 ) {
+	    SetPixel(pixel - 2, LowerLed(redTemp, 225), LowerLed(greenTemp, 225), LowerLed(blueTemp, 225));
+	  }
+
+	  if ((pixel + 1) <= 7 ) {
+	    SetPixel(pixel + 1, LowerLed(redTemp, 200), LowerLed(greenTemp, 200), LowerLed(blueTemp, 200));
+
+	  }
+	  if ((pixel + 2) <= 7 ) {
+	    SetPixel(pixel + 2, LowerLed(redTemp, 225), LowerLed(greenTemp, 225), LowerLed(blueTemp, 225));
+	  }
    }
 
  /*-----------------------Functions-----------------------*/
@@ -393,7 +452,7 @@ inline void UpdateWs2812Leds(void)
 
 			case LED_MODE_BATTERY_LEVEL:
 				//Change color based on battery level
-				LedModeMultiBattery(20);
+				LedModeMultiBattery();
 				break;
 		}
 		//updates the led
