@@ -332,8 +332,9 @@ void InitFlightCode(void)
 
 	//TODO: gyroConfig.accDenom is not set until after gyro is running.
 	//loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
-	loopSpeed.accdT     = loopSpeed.gyrodT * 8;
-	loopSpeed.InversedT = (1/loopSpeed.dT);
+	loopSpeed.halfGyrodT = loopSpeed.gyrodT * 0.5f;
+	loopSpeed.accdT      = loopSpeed.gyrodT * 8.0f;
+	loopSpeed.InversedT  = (1/loopSpeed.dT);
 
 
 
@@ -446,7 +447,9 @@ void ComplementaryFilterUpdateAttitude(void)
 	//QuaternionUpdate(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[PITCH], filteredGyroData[ROLL], filteredGyroData[YAW], 0, 0, 0);
 	//QuaternionUpdate(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], 0, 0, 0, 0, 0);
 
+	ConvertToQuaternion(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], filteredGyroData[PITCH], filteredGyroData[YAW]);
 	CalculateQuaternions();
+	return;
 
 	if (boardArmed)
 	{
@@ -470,6 +473,7 @@ void ComplementaryFilterUpdateAttitude(void)
 		yawAttitude = (yawAttitude + 360);
 
     float forceMagnitudeApprox = ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ]);
+
     if (forceMagnitudeApprox > .45 && forceMagnitudeApprox < 2.1) //only look at ACC data if it's within .45 and 2.1 Gees
     {
     	// Turning around the X axis results in a vector on the Y-axis

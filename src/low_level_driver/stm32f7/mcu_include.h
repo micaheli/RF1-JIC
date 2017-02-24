@@ -69,6 +69,8 @@
 #define _USART7 USART7
 #define _USART7s 1
 
+#define STM32_UUID ((uint32_t *)0x1FF0F420)
+
 #if defined(stm32f745xx) || defined(STM32F745xx)
 
 #include <stm32f745xx.h>

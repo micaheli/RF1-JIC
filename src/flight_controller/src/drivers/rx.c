@@ -803,10 +803,10 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 			return ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0)) * rcCommand);
 			break;
 		case KISS_EXPO:
-			return ((2000*(1/(1-ABS(rcCommand)*mainConfig.rcControlsConfig.rates[axis])))* ( ((rcCommand*((rcCommand*1000)*(rcCommand*1000)/1000000))*mainConfig.rcControlsConfig.curveExpo[axis]+rcCommand*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10) ) );
+			return ( ((2000*(1/(1-ABS(rcCommand)*mainConfig.rcControlsConfig.rates[axis])))* ( ((rcCommand*((rcCommand*1000)*(rcCommand*1000)/1000000))*mainConfig.rcControlsConfig.curveExpo[axis]+rcCommand*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10) ) ) * 1.375);
 			break;
 		case KISS_EXPO2:
-			return ( ((2000*(1/(1-ABS(rcCommand)*mainConfig.rcControlsConfig.rates[axis])))* ( ((rcCommand*((rcCommand*1000)*(rcCommand*1000)/1000000))*mainConfig.rcControlsConfig.curveExpo[axis]+rcCommand*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10) ) ) * 1.25);
+			return ( ((2000*(1/(1-ABS(rcCommand)*mainConfig.rcControlsConfig.rates[axis])))* ( ((rcCommand*((rcCommand*1000)*(rcCommand*1000)/1000000))*mainConfig.rcControlsConfig.curveExpo[axis]+rcCommand*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10) ) ) * 1.375);
 			break;
 		case NO_EXPO:
 		default:

@@ -48,6 +48,8 @@
 #define _PORTH 7
 #define _PORTI 8
 
+#define STM32_UUID ((uint32_t *)0x1FFF7A10)
+
 #if defined(stm32f405xx) || defined(STM32F405xx)
 
 #include <stm32f405xx.h>

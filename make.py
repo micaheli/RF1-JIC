@@ -408,6 +408,9 @@ def configure_target(TARGET):
             SOURCE_FILES.append("src/%s/src/drivers/" % (PROJECT) + feature + ".c")
             INCLUDE_DIRS.append("src/%s/inc/drivers/" % (PROJECT))
 
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/CommonTables/arm_common_tables.c")
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FastMathFunctions/arm_cos_f32.c")
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FastMathFunctions/arm_sin_f32.c")
     SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FilteringFunctions/arm_fir_init_f32.c")
     SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FilteringFunctions/arm_fir_f32.c")
     ################################################################################

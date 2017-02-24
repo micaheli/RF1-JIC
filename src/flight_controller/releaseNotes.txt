@@ -579,12 +579,15 @@ Version 0.191.057:
 	Updated motor calibration routine
 
 Version 0.192.057:
-	Fixed kiss rates.
-	Changed DSMX 22ms detection.
+	Fixed kiss rates
+	Changed DSMX 22ms detection
 	Added logging continuation after disarm / failsafe for 25 itterations with trouble codes
+	Added serial number command
 	
+Version 0.193.057:
+	Wizard changes
+	Nytfluffyrates command added
 	
-
 
 Features in current development:
 	MSP compatibility
