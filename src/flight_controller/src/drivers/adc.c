@@ -35,6 +35,10 @@ static void ConvertAdcVoltage(uint32_t rawAdcVoltage)
 	#define NORMAL_VOLTAGE 3.33
 	#define HIGH_RESISTOR 100.00
 	#define LOW_RESISTOR 10.00
+	#ifdef SPMFC400
+		#define HIGH_RESISTOR 68.00
+		#define LOW_RESISTOR 3.30
+	#endif
 
 	if (adcVoltage == 0 )
 	{
