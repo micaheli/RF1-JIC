@@ -7,6 +7,10 @@
 #define PI180f    0.01745329251f
 #define d180PIf   57.2957795131f
 
+#ifndef SQUARE
+  #define SQUARE(x) ((x)*(x))
+#endif
+
 //These were defined in a lib file?
 #ifndef MIN
   #define MIN(a, b) ((a) < (b) ? (a) : (b))

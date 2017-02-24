@@ -252,6 +252,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 24000;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 32;
+			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			break;
 		case LOOP_UH16:
 		case LOOP_H16:
@@ -260,6 +261,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 12000;
 			loopSpeed.gyroDivider = 2;
 			loopSpeed.khzDivider  = 16;
+			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			break;
 		case LOOP_UH8:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -267,6 +269,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 4;
 			loopSpeed.khzDivider  = 8;
+			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			break;
 		case LOOP_H8:
 		case LOOP_M8:
@@ -275,6 +278,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 8;
+			loopSpeed.gyroAccDiv  = 2;
 			break;
 		case LOOP_UH4:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -282,6 +286,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 8;
 			loopSpeed.khzDivider  = 4;
+			loopSpeed.gyroAccDiv  = 8;
 			break;
 		case LOOP_H4:
 		case LOOP_M4:
@@ -290,6 +295,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 2;
 			loopSpeed.khzDivider  = 4;
+			loopSpeed.gyroAccDiv  = 2;
 			break;
 		case LOOP_UH2:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -297,6 +303,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 16;
 			loopSpeed.khzDivider  = 2;
+			loopSpeed.gyroAccDiv  = 8;
 		case LOOP_H2:
 		case LOOP_M2:
 			loopSpeed.gyrodT      = 0.00012500;
@@ -304,6 +311,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 4;
 			loopSpeed.khzDivider  = 2;
+			loopSpeed.gyroAccDiv  = 2;
 			break;
 		case LOOP_UH1:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -311,6 +319,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 32;
 			loopSpeed.khzDivider  = 1;
+			loopSpeed.gyroAccDiv  = 8;
 			break;
 		case LOOP_H1:
 		case LOOP_M1:
@@ -319,6 +328,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 8;
 			loopSpeed.khzDivider  = 1;
+			loopSpeed.gyroAccDiv  = 2;
 			break;
 		case LOOP_L1:
 		default:
@@ -327,14 +337,15 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 1;
+			loopSpeed.gyroAccDiv  = 1;
 			break;
 	}
 
 	//TODO: gyroConfig.accDenom is not set until after gyro is running.
 	//loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
-	loopSpeed.halfGyrodT = loopSpeed.gyrodT * 0.5f;
-	loopSpeed.accdT      = loopSpeed.gyrodT * 8.0f;
-	loopSpeed.InversedT  = (1/loopSpeed.dT);
+	loopSpeed.halfGyrodT       = loopSpeed.gyrodT * 0.5f;
+	loopSpeed.accdT            = loopSpeed.gyrodT * (float)loopSpeed.gyroAccDiv;
+	loopSpeed.InversedT        = (1/loopSpeed.dT);
 
 
 
@@ -442,25 +453,9 @@ inline void InlineUpdateAttitude(float geeForceAccArray[])
 void ComplementaryFilterUpdateAttitude(void)
 {
 
-	static float pitchAcc = 0, rollAcc = 0;
-
-	//QuaternionUpdate(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[PITCH], filteredGyroData[ROLL], filteredGyroData[YAW], 0, 0, 0);
-	//QuaternionUpdate(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], 0, 0, 0, 0, 0);
-
-	ConvertToQuaternion(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], filteredGyroData[PITCH], filteredGyroData[YAW]);
-	CalculateQuaternions();
+	UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], filteredGyroData[PITCH], filteredGyroData[YAW]);
 	return;
-
-	if (boardArmed)
-	{
-		accCompAccTrust  = (0.000001);
-		accCompGyroTrust = (1.0 - (0.000001) );
-	}
-	else
-	{
-		accCompAccTrust  = 0.001;
-		accCompGyroTrust = 0.999;
-	}
+/*
 
     // Integrate the gyroscope data
 	pitchAttitude += (filteredGyroData[PITCH] * loopSpeed.dT);
@@ -484,6 +479,7 @@ void ComplementaryFilterUpdateAttitude(void)
         rollAcc = (atan2f((float)filteredAccData[ACCY], (float)filteredAccData[ACCZ]) + PIf) * (180.0 * IPIf) - 180.0;
         rollAttitude = rollAttitude * accCompGyroTrust + rollAcc * accCompAccTrust;
     }
+*/
 }
 
 inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
