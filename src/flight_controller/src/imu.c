@@ -12,12 +12,13 @@ volatile float currentSpinRate = 0.0f;
 volatile float rotationalMatrix[3][3];
 
 static void QuaternionZeroRotation(volatile quaternion_record *quaternion);
-static void QuaternionMultiply(volatile quaternion_record *out, volatile quaternion_record *q1, volatile quaternion_record *q2);
-//static void QuaternionConjugate (volatile quaternion_record *out);
 static void QuaternionNormalize (volatile quaternion_record *out);
-static quaternion_record QuaternionFromEuler (float halfBankRads, float halfAttitudeRads, float halfHeadingRads);
+//static void QuaternionMultiply(volatile quaternion_record *out, volatile quaternion_record *q1, volatile quaternion_record *q2);
+//static void QuaternionConjugate (volatile quaternion_record *out);
+//static quaternion_record QuaternionFromEuler (float halfBankRads, float halfAttitudeRads, float halfHeadingRads);
 //static void QuaternionToEuler(volatile quaternion_record *inQuat, float *roll, float *pitch, float *yaw);
 static void UpdateRotationMatrix(void);
+static void UpdateAttitudeFrameQuat(float gyroRollDiffRads, float gyroPitchDiffRads, float gyroYawDiffRads);
 
 static void QuaternionZeroRotation(volatile quaternion_record *quaternion)
 {
@@ -26,26 +27,6 @@ static void QuaternionZeroRotation(volatile quaternion_record *quaternion)
 	quaternion->y = 0.0f;
 	quaternion->z = 0.0f;
 }
-
-static void QuaternionMultiply (volatile quaternion_record *out, volatile quaternion_record *q1, volatile quaternion_record *q2)
-{
-	float q1x = q1->x, q1y = q1->y, q1z = q1->z, q1w = q1->w;
-	float q2x = q2->x, q2y = q2->y, q2z = q2->z, q2w = q2->w;
-
-	out->x =  q1x * q2w + q1y * q2z - q1z * q2y + q1w * q2x;
-	out->y = -q1x * q2z + q1y * q2w + q1z * q2x + q1w * q2y;
-	out->z =  q1x * q2y - q1y * q2x + q1z * q2w + q1w * q2z;
-	out->w = -q1x * q2x - q1y * q2y - q1z * q2z + q1w * q2w;
-}
-
-/*
-static void QuaternionConjugate (volatile quaternion_record *out)
-{
-	out->x = -out->x;
-	out->y = -out->y;
-	out->z = -out->z;
-}
-*/
 
 static void QuaternionNormalize (volatile quaternion_record *out)
 {
@@ -59,11 +40,30 @@ static void QuaternionNormalize (volatile quaternion_record *out)
 }
 
 /*
+static void QuaternionMultiply (volatile quaternion_record *out, volatile quaternion_record *q1, volatile quaternion_record *q2)
+{
+	float q1x = q1->x, q1y = q1->y, q1z = q1->z, q1w = q1->w;
+	float q2x = q2->x, q2y = q2->y, q2z = q2->z, q2w = q2->w;
+
+	out->x =  q1x * q2w + q1y * q2z - q1z * q2y + q1w * q2x;
+	out->y = -q1x * q2z + q1y * q2w + q1z * q2x + q1w * q2y;
+	out->z =  q1x * q2y - q1y * q2x + q1z * q2w + q1w * q2z;
+	out->w = -q1x * q2x - q1y * q2y - q1z * q2z + q1w * q2w;
+}
+
+
+static void QuaternionConjugate (volatile quaternion_record *out)
+{
+	out->x = -out->x;
+	out->y = -out->y;
+	out->z = -out->z;
+}
+
 static float QuaternionDotProduct (volatile quaternion_record *a, volatile quaternion_record *b)
 {
 	return(a->w * b->w + a->x * b->x + a->y * b->y + a->z * b->z);
 }
-*/
+
 
 static quaternion_record QuaternionFromEuler (float halfBankRads, float halfAttitudeRads, float halfHeadingRads)
 {
@@ -86,34 +86,6 @@ static quaternion_record QuaternionFromEuler (float halfBankRads, float halfAtti
 	return(tempQuaternion);
 }
 
-
-static void UpdateRotationMatrix(void)
-{
-    float qxqx = (attitudeFrameQuat.x * attitudeFrameQuat.x);
-    float qyqy = (attitudeFrameQuat.y * attitudeFrameQuat.y);
-    float qzqz = (attitudeFrameQuat.z * attitudeFrameQuat.z);
-
-    float qwqx = (attitudeFrameQuat.w * attitudeFrameQuat.x);
-    float qwqy = (attitudeFrameQuat.w * attitudeFrameQuat.y);
-    float qwqz = (attitudeFrameQuat.w * attitudeFrameQuat.z);
-    float qxqy = (attitudeFrameQuat.x * attitudeFrameQuat.y);
-    float qxqz = (attitudeFrameQuat.x * attitudeFrameQuat.z);
-    float qyqz = (attitudeFrameQuat.y * attitudeFrameQuat.z);
-
-    rotationalMatrix[0][0] = (1.0f - 2.0f * qyqy - 2.0f * qzqz);
-    rotationalMatrix[0][1] = (2.0f * (qxqy - qwqz));
-    rotationalMatrix[0][2] = (2.0f * (qxqz + qwqy));
-
-    rotationalMatrix[1][0] = (2.0f * (qxqy + qwqz));
-    rotationalMatrix[1][1] = (1.0f - 2.0f * qxqx - 2.0f * qzqz);
-    rotationalMatrix[1][2] = (2.0f * (qyqz - qwqx));
-
-    rotationalMatrix[2][0] = (2.0f * (qxqz - qwqy));
-    rotationalMatrix[2][1] = (2.0f * (qyqz + qwqx));
-    rotationalMatrix[2][2] = (1.0f - 2.0f * qxqx - 2.0f * qyqy);
-}
-
-/*
 static void QuaternionToEuler(volatile quaternion_record *inQuat, float *roll, float *pitch, float *yaw)
 {
 
@@ -156,6 +128,32 @@ static void QuaternionToEuler(volatile quaternion_record *inQuat, float *roll, f
 }
 */
 
+static void UpdateRotationMatrix(void)
+{
+    float qxqx = (attitudeFrameQuat.x * attitudeFrameQuat.x);
+    float qyqy = (attitudeFrameQuat.y * attitudeFrameQuat.y);
+    float qzqz = (attitudeFrameQuat.z * attitudeFrameQuat.z);
+
+    float qwqx = (attitudeFrameQuat.w * attitudeFrameQuat.x);
+    float qwqy = (attitudeFrameQuat.w * attitudeFrameQuat.y);
+    float qwqz = (attitudeFrameQuat.w * attitudeFrameQuat.z);
+    float qxqy = (attitudeFrameQuat.x * attitudeFrameQuat.y);
+    float qxqz = (attitudeFrameQuat.x * attitudeFrameQuat.z);
+    float qyqz = (attitudeFrameQuat.y * attitudeFrameQuat.z);
+
+    rotationalMatrix[0][0] = (1.0f - 2.0f * qyqy - 2.0f * qzqz);
+    rotationalMatrix[0][1] = (2.0f * (qxqy - qwqz));
+    rotationalMatrix[0][2] = (2.0f * (qxqz + qwqy));
+
+    rotationalMatrix[1][0] = (2.0f * (qxqy + qwqz));
+    rotationalMatrix[1][1] = (1.0f - 2.0f * qxqx - 2.0f * qzqz);
+    rotationalMatrix[1][2] = (2.0f * (qyqz - qwqx));
+
+    rotationalMatrix[2][0] = (2.0f * (qxqz - qwqy));
+    rotationalMatrix[2][1] = (2.0f * (qyqz + qwqx));
+    rotationalMatrix[2][2] = (1.0f - 2.0f * qxqx - 2.0f * qyqy);
+}
+
 void InitImu(void)
 {
 	uint32_t x, y;
@@ -176,18 +174,41 @@ void InitImu(void)
 	QuaternionZeroRotation(&commandQuat);
 	QuaternionZeroRotation(&accQuat);
 
+	UpdateRotationMatrix();
 }
 
-
-void UpdateImu(float ax, float ay, float az, float gyroRoll, float gyroPitch, float gyroYaw)
+void UpdateAttitudeFrameQuat(float gyroRollDiffRads, float gyroPitchDiffRads, float gyroYawDiffRads)
 {
-	volatile quaternion_record differenceQuat;
+	quaternion_record tempQuat;
+
+	tempQuat.w = attitudeFrameQuat.w;
+	tempQuat.x = attitudeFrameQuat.x;
+	tempQuat.y = attitudeFrameQuat.y;
+	tempQuat.z = attitudeFrameQuat.z;
+
+	gyroRollDiffRads  = InlineDegreesToRadians( gyroRollDiffRads )  * loopSpeed.gyrodT;
+	gyroPitchDiffRads = InlineDegreesToRadians( gyroPitchDiffRads ) * loopSpeed.gyrodT;
+	gyroYawDiffRads   = InlineDegreesToRadians( gyroYawDiffRads )   * loopSpeed.gyrodT;
+
+	attitudeFrameQuat.w += (-tempQuat.x * gyroRollDiffRads  - tempQuat.y * gyroPitchDiffRads - tempQuat.z * gyroYawDiffRads);
+	attitudeFrameQuat.x += (tempQuat.w  * gyroRollDiffRads  + tempQuat.y * gyroYawDiffRads   - tempQuat.z * gyroPitchDiffRads);
+	attitudeFrameQuat.y += (tempQuat.w  * gyroPitchDiffRads - tempQuat.x * gyroYawDiffRads   + tempQuat.z * gyroRollDiffRads);
+	attitudeFrameQuat.z += (tempQuat.w  * gyroYawDiffRads   + tempQuat.x * gyroPitchDiffRads - tempQuat.y * gyroRollDiffRads);
+
+	QuaternionNormalize(&attitudeFrameQuat);
+}
+
+void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPitch, float gyroYaw)
+{
+
+	gyroPitch = -gyroPitch;
+	gyroYaw   = -gyroYaw;
 
 	float accTrust;
-	float accTrustKi = 0.00100f;
+	float accTrustKi = 112.1000f;
 	float norm;
 	//float vx, vy, vz;
-	float ex, ey, ez;
+	float accToGyroError[3];
 	//volatile float c1, c2, c3;
 	//volatile float s1, s2, s3;
 
@@ -199,7 +220,7 @@ void UpdateImu(float ax, float ay, float az, float gyroRoll, float gyroPitch, fl
 	currentSpinRate = norm;
 
 	//use ACC to fix Gyro drift here. Only needs to be done every eigth iteration at 32 KHz.
-	if( !( (ax == 0.0f) && (ay == 0.0f) && (az == 0.0f) ) )
+	if( !( (accX == 0.0f) && (accY == 0.0f) && (accZ == 0.0f) ) )
 	{
 
 		gyroToAccDivisorCounter++;
@@ -210,53 +231,44 @@ void UpdateImu(float ax, float ay, float az, float gyroRoll, float gyroPitch, fl
 			gyroToAccDivisorCounter = 0;
 
 			//normalize the acc readings
-			arm_sqrt_f32( (ax * ax + ay * ay + az * az), &norm);
+			arm_sqrt_f32( (accX * accX + accY * accY + accZ * accZ), &norm);
 			norm = 1.0f/norm;
-			ax *= norm;
-			ay *= norm;
-			az *= norm;
+			accX *= norm;
+			accY *= norm;
+			accZ *= norm;
 
-			ex += (ay * rotationalMatrix[2][2] - az * rotationalMatrix[2][1]);
-			ey += (az * rotationalMatrix[2][0] - ax * rotationalMatrix[2][2]);
-			ez += (ax * rotationalMatrix[2][1] - ay * rotationalMatrix[2][0]);
+			accToGyroError[ACCX] += (accY * rotationalMatrix[2][2] - accZ * rotationalMatrix[2][1]);
+			accToGyroError[ACCY] += (accZ * rotationalMatrix[2][0] - accX * rotationalMatrix[2][2]);
+			accToGyroError[ACCZ] += (accX * rotationalMatrix[2][1] - accY * rotationalMatrix[2][0]);
 
 			if (currentSpinRate < MAX_SPIN_RATE_RAD)
 			{
-				accTrustKiStorage[ACCX] += accTrustKi * ex * loopSpeed.gyrodT;
-				accTrustKiStorage[ACCY] += accTrustKi * ey * loopSpeed.gyrodT;
-				accTrustKiStorage[ACCZ] += accTrustKi * ez * loopSpeed.gyrodT;
+				accTrustKiStorage[ACCX] += accTrustKi * accToGyroError[ACCX] * loopSpeed.gyrodT;
+				accTrustKiStorage[ACCY] += accTrustKi * accToGyroError[ACCY] * loopSpeed.gyrodT;
+				accTrustKiStorage[ACCZ] += accTrustKi * accToGyroError[ACCZ] * loopSpeed.gyrodT;
 			}
 
 			//trust ACCs more when the quad is disamred.
 			if (boardArmed)
 			{
-				accTrust  = 1.13000f;
+				accTrust  = 11.13000f;
 			}
 			else
 			{
-				accTrust  = 113.000f;
+				accTrust  = 4000.3000f;
 			}
 
-			gyroRoll  += accTrust * ex + accTrustKiStorage[ACCX];
-			gyroPitch += accTrust * ey + accTrustKiStorage[ACCY];
-			gyroYaw   += accTrust * ez + accTrustKiStorage[ACCZ];
+			gyroRoll  += accTrust * accToGyroError[ACCX] + accTrustKiStorage[ACCX];
+			gyroPitch += accTrust * accToGyroError[ACCY] + accTrustKiStorage[ACCY];
+			gyroYaw   += accTrust * accToGyroError[ACCZ] + accTrustKiStorage[ACCZ];
 
 		}
 
 	}
 
-	//find difference quaternion
-	differenceQuat = QuaternionFromEuler ( -InlineDegreesToRadians( gyroRoll ) * loopSpeed.gyrodT, -InlineDegreesToRadians( gyroPitch ) * loopSpeed.gyrodT, -InlineDegreesToRadians( gyroYaw ) * loopSpeed.gyrodT);
-	QuaternionNormalize(&differenceQuat);
-
-	QuaternionMultiply(&attitudeFrameQuat,&attitudeFrameQuat,&differenceQuat);
-	QuaternionNormalize(&attitudeFrameQuat);
-
+	UpdateAttitudeFrameQuat(gyroRoll, gyroPitch, gyroYaw);
 	UpdateRotationMatrix();
 
-	//roll goes positive when rolling right
-	//pitch goes positive when pitching up
-	//yaw goes positive when yawing right
 	rollAttitude  = InlineRadiansToDegrees(atan2f(rotationalMatrix[2][1], rotationalMatrix[2][2]));
 	pitchAttitude = -InlineRadiansToDegrees(HALF_PI_F - acosf(-rotationalMatrix[2][0]));
 	yawAttitude   = -InlineRadiansToDegrees(atan2f(rotationalMatrix[1][0], rotationalMatrix[0][0]));

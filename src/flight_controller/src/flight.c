@@ -37,7 +37,10 @@ volatile float flightcodeTime;
 float pitchAttitude = 0, rollAttitude = 0, yawAttitude = 0;
 uint32_t boardOrientation1 = 0;
 uint32_t RfblDisasterPreventionCheck = 1;
-
+uint32_t timeSinceSelfLevelActivated;
+float slpUsed;
+float sliUsed;
+float sldUsed;
 
 float accCompAccTrust, accCompGyroTrust;
 uint32_t khzLoopCounter = 0;
@@ -235,6 +238,10 @@ void InitFlightCode(void)
 	bzero(gyroStdDeviationTotals, sizeof(gyroStdDeviationTotals));
 	gyroStdDeviationPointer = 0;
 	gyroStdDeviationTotalsPointer = 0;
+	timeSinceSelfLevelActivated = 0;
+	slpUsed = 0.0f;
+	sliUsed = 0.0f;
+	sldUsed = 0.0f;
 
 	averagedGyroDataPointerMultiplier[YAW]   = (1.0 / (float)mainConfig.pidConfig[YAW].ga);
 	averagedGyroDataPointerMultiplier[ROLL]  = (1.0 / (float)mainConfig.pidConfig[ROLL].ga);
@@ -561,6 +568,9 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		//get setpoint for PIDC
 		if (!ModeActive(M_ATTITUDE)) //if rateMode
 		{
+			if (timeSinceSelfLevelActivated)
+				timeSinceSelfLevelActivated = 0;
+
 			if (ModeActive(M_DIRECT))
 			{
 				flightSetPoints[YAW]   = InlineGetSetPoint(curvedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
@@ -576,18 +586,36 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		}
 		else //if angleMode
 		{
+			if (!timeSinceSelfLevelActivated)
+				timeSinceSelfLevelActivated = InlineMillis();
+
+			//todo move this check to the 1khz section
+			//slowly ramp up self leveling over 100 milliseconds
+			if ((InlineMillis() - timeSinceSelfLevelActivated) < 100)
+			{
+				slpUsed = mainConfig.pidConfig[PITCH].slp * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.01f;
+				sliUsed = mainConfig.pidConfig[PITCH].sli * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.01f;
+				sldUsed = mainConfig.pidConfig[PITCH].sld * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.01f;
+			}
+			else
+			{
+				slpUsed = mainConfig.pidConfig[PITCH].slp;
+				sliUsed = mainConfig.pidConfig[PITCH].sli;
+				sldUsed = mainConfig.pidConfig[PITCH].sld;
+			}
+
 			flightSetPoints[YAW]     = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
 			rollAttitudeError        = ( (trueRcCommandF[ROLL] * mainConfig.pidConfig[PITCH].sla) - rollAttitude );
 			pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla) - pitchAttitude );
-			rollAttitudeErrorKi      = (rollAttitudeErrorKi + rollAttitudeError * mainConfig.pidConfig[PITCH].sli * loopSpeed.dT);
-			pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * mainConfig.pidConfig[PITCH].sli * loopSpeed.dT);
+			rollAttitudeErrorKi      = (rollAttitudeErrorKi + rollAttitudeError * sliUsed * loopSpeed.dT);
+			pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.dT);
 			rollAttitudeErrorKdelta  = -(rollAttitudeError - lastRollAttitudeError);
 			lastRollAttitudeError    = rollAttitudeError;
 			pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
 			lastPitchAttitudeError   = pitchAttitudeError;
 
-			flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * mainConfig.pidConfig[PITCH].slp) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld), -200.0, 200.0);
-			flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * mainConfig.pidConfig[PITCH].slp) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld), -200.0, 200.0);
+			flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
+			flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
 		}
 
 		//Run PIDC
