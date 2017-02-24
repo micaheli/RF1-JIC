@@ -61,6 +61,7 @@
 #include "drivers/invensense_device.h"
 #include "drivers/invensense_register_map.h"
 #include "drivers/dmaShenanigans.h"
+#include "drivers/spm_laptimer.h"
 
 
 //config

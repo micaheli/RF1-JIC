@@ -134,24 +134,8 @@ void sendSpektrumTelem(void)
 					}
 				case 1:
 					{
-					
-						//if (feature(FEATURE_SPM_LAPTIMER))
-						//{
-						//	memcpy(&sensorData, &lap_timer, 16);
-						//}
-						//else
-						//{
-							sensorData.user_16SU.identifier = TELE_DEVICE_USER_16SU;
-							sensorData.user_16SU.sID = 0x00;
-							sensorData.user_16SU.sField1 = 1;
-							sensorData.user_16SU.sField2 = 2;
-							sensorData.user_16SU.sField3 = 3;
-							sensorData.user_16SU.uField1 = 4;
-							sensorData.user_16SU.uField2 = 5;
-							sensorData.user_16SU.uField3 = 6;
-							sensorData.user_16SU.uField4 = 7;
-						//}
-						
+
+						memcpy(&sensorData, &lap_timer, 16);
 						break;
 					}
 				case 2:
