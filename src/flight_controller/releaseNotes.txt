@@ -586,11 +586,18 @@ Version 0.192.057:
 	
 Version 0.193.057:
 	Wizard changes
-	Nytfluffyrates command added
 
 Version 0.194.057:
 	Self level mode updates
-	
+	Make force flashing ESCs slightly safer
+	Nytfluffyrates command added
+
+
+
+
+
+
+
 
 Features in current development:
 	MSP compatibility

@@ -66,6 +66,7 @@ void ArmBoard(void)
 {
 	InitWatchdog(WATCHDOG_TIMEOUT_2S);
 	boardArmed = 1;
+	timeSinceSelfLevelActivated = 0;
 }
 
 void DisarmBoard(void)
@@ -591,11 +592,11 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 			//todo move this check to the 1khz section
 			//slowly ramp up self leveling over 100 milliseconds
-			if ((InlineMillis() - timeSinceSelfLevelActivated) < 100)
+			if ((InlineMillis() - timeSinceSelfLevelActivated) < 300)
 			{
-				slpUsed = mainConfig.pidConfig[PITCH].slp * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.01f;
-				sliUsed = mainConfig.pidConfig[PITCH].sli * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.01f;
-				sldUsed = mainConfig.pidConfig[PITCH].sld * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.01f;
+				slpUsed = mainConfig.pidConfig[PITCH].slp * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
+				sliUsed = mainConfig.pidConfig[PITCH].sli * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
+				sldUsed = mainConfig.pidConfig[PITCH].sld * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
 			}
 			else
 			{
