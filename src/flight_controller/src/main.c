@@ -1,10 +1,6 @@
 /* Includes ------------------------------------------------------------------*/
-#include <stdbool.h>
-
 #include "includes.h"
 
-//#include "usbd_hid.h"
-//#include "usb_device.h"
 
 #include "input/gyro.h"
 #include "drivers/invensense_bus.h"
@@ -33,7 +29,7 @@ int main(void)
 	VectorIrqInit(ADDRESS_RFFW_START);
 
 	//TODO Needs to pull parameters from flash here. For now we use defines
-	getBoardHardwareDefs();
+	GetBoardHardwareDefs();
 
     InitializeMCUSettings();
 
@@ -43,7 +39,7 @@ int main(void)
 
     LoadConfig(ADDRESS_CONFIG_START);
 
-    SpektrumBind (mainConfig.rcControlsConfig.bind);
+    SpektrumBind(mainConfig.rcControlsConfig.bind);
 
     HandleFcStartupReg();
 

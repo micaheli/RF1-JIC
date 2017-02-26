@@ -169,8 +169,6 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
         STM32F4_ARCH_FLAGS_ADD  = ""
-        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
-        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f405xx_rfbll":
         TARGET_DEVICE_LC = "stm32f405xx"
@@ -181,8 +179,25 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
         STM32F4_ARCH_FLAGS_ADD  = ""
-        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
-        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
+
+    elif TARGET == "stm32f405xx_pt":
+        TARGET_DEVICE_LC = "stm32f405xx"
+        PROJECT = "passthru"
+        TARGET_DEVICE = "STM32F405xx"
+        TARGET_SCRIPT = "stm32_flash_f405_passthru.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Og"
+        STM32F4_ARCH_FLAGS_ADD  = ""
+
+    elif TARGET == "stm32f405xx_temp":
+        TARGET_DEVICE_LC = "stm32f405xx"
+        PROJECT = "template"
+        TARGET_DEVICE = "STM32F405xx"
+        TARGET_SCRIPT = "stm32_flash_f405_template.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Og"
 
     elif TARGET == "stm32f411xe":
         PROJECT = "flight_controller"
@@ -357,6 +372,16 @@ def configure_target(TARGET):
         FEATURES.extend(["adc", "transponder", "softSerial", "esc_1wire", "leds", "dmaShenanigans", "actuator_output", "buzzer", "flash_chip", "mpu_icm_device/spi", "rx", "serial"])
     elif PROJECT == "esc":
         FEATURES.extend(["leds"])
+    elif PROJECT == "passthru":
+        FEATURES.extend(["leds"])
+        excluded_files.append("stm32f3xx_spi_msp.c")
+        excluded_files.append("stm32f4xx_spi_msp.c")
+        excluded_files.append("stm32f7xx_spi_msp.c")
+    elif PROJECT == "template":
+        FEATURES.extend(["leds"])
+        excluded_files.append("stm32f3xx_spi_msp.c")
+        excluded_files.append("stm32f4xx_spi_msp.c")
+        excluded_files.append("stm32f7xx_spi_msp.c")
     elif PROJECT == "boot_loader":
         FEATURES.extend(["leds"])
         excluded_files.append("stm32f3xx_spi_msp.c")
