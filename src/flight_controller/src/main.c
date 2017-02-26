@@ -1,23 +1,7 @@
-/* Includes ------------------------------------------------------------------*/
 #include "includes.h"
 
-
-#include "input/gyro.h"
-#include "drivers/invensense_bus.h"
-
-/* Private typedef -----------------------------------------------------------*/
-
-/* Private define ------------------------------------------------------------*/
-
-/* Private macro -------------------------------------------------------------*/
-
-/* Private variables ---------------------------------------------------------*/
 uint32_t errorMask = 0;
 uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
-
-/* Private function prototypes -----------------------------------------------*/
-
-/* Private functions ---------------------------------------------------------*/
 
 int main(void)
 {
