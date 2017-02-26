@@ -1,7 +1,5 @@
 #include "includes.h"
 
-#include <stdio.h>
-
 ledStatus_t ledStatus;
 
 uint8_t colorChart[COLOR_CHART_SIZE][3] = {
