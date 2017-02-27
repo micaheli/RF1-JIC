@@ -7,7 +7,7 @@
 #define SPM_LAPTIMER_TIM              	TIM1
 #define	SPM_LAPTIMER_CHANNEL			TIM_Channel_3
 #define	SPM_LAPTIMER_IT_CC				TIM_IT_CC3
-#define SPM_LAPTIMER_TIM_AF      	    GPIO_AF_TIM1
+#define SPM_LAPTIMER_TIM_AF      	    GPIO_AF1_TIM1
 #define SPM_LAPTIMER_TIM_PERIPH       	RCC_APB2Periph_TIM1
 
 #define SPM_LAPTIMER_TIM_CC_IRQN		TIM1_CC_IRQn

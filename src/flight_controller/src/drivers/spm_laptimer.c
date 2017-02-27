@@ -19,44 +19,57 @@ void laptimerInit(void)
 	lap_timer.lastLapTime = 0;
 	lap_timer.gateTime = 0;
 
-	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-	TIM_ICInitTypeDef  TIM_ICInitStructure;
-	GPIO_InitTypeDef GPIO_InitStructure;
+	uint8_t actuatorNumOutput;
+	motor_type actuator;
+
+	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++)
+	{
+
+		if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_SPMLAPTIMER)
+		{
+			actuator = board.motors[actuatorNumOutput];
+			break;
+
+		}
+
+	}
+
+	GPIO_InitTypeDef GPIO_InitStruct;
+	TIM_IC_InitTypeDef TIM_ICInitStruct;
 
 	uint16_t prescalerValue;
 
 	    //GPIOA Configuration: TIM5 Channel 1 as alternate function push-pull
-	GPIO_InitStructure.Pin = SPM_LAPTIMER_PIN;
-	GPIO_InitStructure.Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.Pull = GPIO_PULLUP;
-	GPIO_InitStructure.OType = GPIO_OType_PP;
-	GPIO_InitStructure.Speed = GPIO_Speed_100MHz;
-	GPIO_Init(SPM_LAPTIMER_GPIO, &GPIO_InitStructure);
+	// Initialize GPIO
+	HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
 
-	GPIO_PinAFConfig(SPM_LAPTIMER_GPIO, SPM_LAPTIMER_PINSOURCE, SPM_LAPTIMER_TIM_AF);
+	GPIO_InitStruct.Pin       = actuator.pin;
+	GPIO_InitStruct.Pull      = (actuator.polarity == TIM_OCPOLARITY_LOW) ? GPIO_PULLDOWN : GPIO_PULLUP;
+	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Alternate = actuator.AF;
 
+	HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStruct);
 
-	    // Stop timer
-	TIM_Cmd(SPM_LAPTIMER_TIM, DISABLE);
 
 	    // Compute the prescaler value 
-	prescalerValue = (uint16_t)(SystemCoreClock / 1000000) - 1;
+	prescalerValue = (uint16_t)(SystemCoreClock / TimerPrescalerDivisor(actuator.timer)/ 1000000) - 1;
 	// Time base configuration 
-	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-	TIM_TimeBaseStructure.TIM_Period = SEQUENCE_TIMEOUT;
-	TIM_TimeBaseStructure.TIM_Prescaler = prescalerValue;
-	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
-	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseInit(SPM_LAPTIMER_TIM, &TIM_TimeBaseStructure);
+	pwmTimers[actuator.actuatorArrayNum].Instance           = timers[actuator.timer];
+	pwmTimers[actuator.actuatorArrayNum].Init.Prescaler     = prescalerValue;
+	pwmTimers[actuator.actuatorArrayNum].Init.CounterMode   = TIM_COUNTERMODE_UP;
+	pwmTimers[actuator.actuatorArrayNum].Init.Period        = SEQUENCE_TIMEOUT;
+	pwmTimers[actuator.actuatorArrayNum].Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	HAL_TIM_Base_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
 	// PWM1 Mode configuration: Channel1
-	TIM_ICStructInit(&TIM_ICInitStructure);
-	TIM_ICInitStructure.TIM_Channel = SPM_LAPTIMER_CHANNEL;
-	TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Falling;
-	TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
-	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
-	TIM_ICInitStructure.TIM_ICFilter = 0x00;
-	TIM_ICInit(SPM_LAPTIMER_TIM, &TIM_ICInitStructure);
+	TIM_ICStructInit(&TIM_ICInitStruct);
+	TIM_ICInitStruct.TIM_Channel = SPM_LAPTIMER_CHANNEL;
+	TIM_ICInitStruct.TIM_ICPolarity = TIM_ICPolarity_Falling;
+	TIM_ICInitStruct.TIM_ICSelection = TIM_ICSelection_DirectTI;
+	TIM_ICInitStruct.TIM_ICPrescaler = TIM_ICPSC_DIV1;
+	TIM_ICInitStruct.TIM_ICFilter = 0x00;
+	TIM_ICInit(SPM_LAPTIMER_TIM, &TIM_ICInitStruct);
 
   
   // Configure interrupts
