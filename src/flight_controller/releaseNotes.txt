@@ -592,6 +592,7 @@ Version 0.194.057:
 	Make force flashing ESCs slightly safer
 	nytfluffyrates command added
 	braindrainrates command added
+	Fix betafloght rates
 
 
 

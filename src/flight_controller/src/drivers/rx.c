@@ -762,7 +762,7 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 {
 
 	float maxOutput, maxOutputMod, returnValue;
-	float flopRate, flopExpo, flopFactor;
+	float flopSuperRate, flopRcRate, flopExpo, flopFactor;
 
 	maxOutput    = 1;
 	maxOutputMod = 0.01;
@@ -778,21 +778,21 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 			return (returnValue);
 			break;
 		case BETAFLOP_EXPO:
-			flopExpo = (mainConfig.rcControlsConfig.curveExpo[axis]);
-			flopRate = (mainConfig.rcControlsConfig.acroPlus[axis]);
-			if (flopRate > 2.0f)
-				flopRate = flopRate + (14.56f * (flopRate - 1.998f));
+			flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
+			flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
+			flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
+
+			if (flopRcRate > 2.0f)
+				flopRcRate = flopRcRate + (14.55f * (flopRcRate - 1997.0f));
 
 			if (flopExpo != 0.0f)
-			{
-				rcCommand = rcCommand * Powerf(ABS(rcCommand), 3) * flopExpo + rcCommand * (1-flopExpo);
-			}
+				rcCommand = rcCommand * Powerf(ABS(rcCommand), 3) * flopExpo + rcCommand * (1.0f-flopExpo);
 
-			flopAngle[axis] = 200.0f * flopRate * rcCommand;
+			flopAngle[axis] = 200.0f * flopRcRate * rcCommand;
 
-			if (mainConfig.rcControlsConfig.rates[axis] != 0.0f)
+			if (flopSuperRate != 0.0)
 			{
-				flopFactor = 1.0f / (InlineConstrainf(1.0f - (ABS(rcCommand) * (mainConfig.rcControlsConfig.rates[axis])), 0.01f, 1.00f));
+				flopFactor = 1.0 / (InlineConstrainf(1.0f - (ABS(rcCommand) * (flopSuperRate)), 0.01f, 1.00f));
 				flopAngle[axis] *= flopFactor;
 			}
 			return(rcCommand);
