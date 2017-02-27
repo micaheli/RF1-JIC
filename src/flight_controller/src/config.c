@@ -1432,9 +1432,6 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.acroPlus[ROLL]       = 0;
 			mainConfig.rcControlsConfig.acroPlus[YAW]        = 0;
 
-			mainConfig.gyroConfig.gyroRotation               = CW0;
-			mainConfig.gyroConfig.boardCalibrated            = 1;
-
 			resetBoard = 1;
 
 			RfCustomReplyBuffer("#me Braindrain mode engaged");
