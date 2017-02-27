@@ -15,16 +15,15 @@
 #include "general_functions.h"
 #include "exti.h"
 #include "scheduler.h"
+#include "rfbl.h"
 
 #include "usbd_hid.h"
 #include "usb_device.h"
-
 
 #include "drivers/leds.h"
 
 void BoardInit(void);
 void gpioClockInit(void);
-
 
 //unused functions reference by board defs
 extern void GyroExtiCallback (uint32_t callbackNumber);

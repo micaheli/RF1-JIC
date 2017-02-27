@@ -1327,7 +1327,7 @@ void ProcessCommand(char *inString)
 			SaveAndSend();
 
 		}
-		else if (!strcmp("braindrain", inString))
+		else if (!strcmp("braindrainall", inString))
 		{
 
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
@@ -1382,6 +1382,37 @@ void ProcessCommand(char *inString)
 			SetMode(M_ARMED, 4, 50, 100);
 
 
+			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX3]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX4]       = NO_EXPO;
+
+			mainConfig.rcControlsConfig.rates[PITCH]         = 320;
+			mainConfig.rcControlsConfig.rates[ROLL]          = 300;
+			mainConfig.rcControlsConfig.rates[YAW]           = 280;
+
+			mainConfig.rcControlsConfig.curveExpo[PITCH]     = 60;
+			mainConfig.rcControlsConfig.curveExpo[ROLL]      = 60;
+			mainConfig.rcControlsConfig.curveExpo[YAW]       = 25;
+
+			mainConfig.rcControlsConfig.acroPlus[PITCH]      = 0;
+			mainConfig.rcControlsConfig.acroPlus[ROLL]       = 0;
+			mainConfig.rcControlsConfig.acroPlus[YAW]        = 0;
+
+			mainConfig.gyroConfig.gyroRotation               = CW0;
+			mainConfig.gyroConfig.boardCalibrated            = 1;
+
+			resetBoard = 1;
+
+			RfCustomReplyBuffer("#me Braindrain mode engaged");
+
+			SaveAndSend();
+
+		}
+		else if (!strcmp("braindrainrates", inString))
+		{
 			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;

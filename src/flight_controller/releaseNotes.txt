@@ -590,7 +590,8 @@ Version 0.193.057:
 Version 0.194.057:
 	Self level mode updates
 	Make force flashing ESCs slightly safer
-	Nytfluffyrates command added
+	nytfluffyrates command added
+	braindrainrates command added
 
 
 
