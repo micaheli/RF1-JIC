@@ -14,6 +14,7 @@
 #include "mcu_include.h"
 #include "general_functions.h"
 #include "exti.h"
+#include "scheduler.h"
 
 #include "usbd_hid.h"
 #include "usb_device.h"

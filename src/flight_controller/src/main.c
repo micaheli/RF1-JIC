@@ -43,7 +43,7 @@ int main(void)
     while (1)
     {
 
-    	scheduler(count--);
+    	Scheduler(count--);
 
     	if (count == -1)
     		count = 16;
@@ -119,61 +119,4 @@ void InitFlight(void) {
 	//InitTransponderTimer();
 	DelayMs(2);
 
-}
-
-void ErrorHandler(uint32_t error)
-{
-	errorMask |= (error);
-
-	switch (error) {
-		case TIMER_INPUT_INIT_FAILIURE:
-		case ADC_INIT_FAILIURE:
-		case ADC_DMA_INIT_FAILIURE:
-		case MSP_DMA_GYRO_RX_INIT_FAILIURE:
-		case MSP_DMA_GYRO_TX_INIT_FAILIURE:
-		case MSP_DMA_SPI_RX_INIT_FAILIURE:
-		case MSP_DMA_SPI_TX_INIT_FAILIURE:
-			//ping warning to user here, may not a valid reason to crash the board though
-			return;
-			break;
-		case SERIAL_HALF_DUPLEX_INIT_FAILURE:
-			//ping warning to user here, not a valid reason to crash the board though
-			return;
-			break;
-		case SERIAL_INIT_FAILURE:
-			//ping warning to user here, not a valid reason to crash the board though
-			return;
-			break;
-		case FLASH_SPI_INIT_FAILIURE:
-			//ping warning to user here, not a valid reason to crash the board though
-			return;
-			break;
-		case WS2812_LED_INIT_FAILIURE:
-			//ping warning to user here, not a valid reason to crash the board though
-			return;
-			break;
-		case GYRO_SPI_INIT_FAILIURE: //gyro failed to init. Can't fly like this.
-		case GYRO_INIT_FAILIURE: //gyro failed to init. Can't fly like this.
-		case GYRO_SETUP_COMMUNICATION_FAILIURE: //gyro init success, but setting up register failed. Can't fly like this.
-			return;
-			break;
-		case HARD_FAULT:  //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
-		case MEM_FAULT:   //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
-		case BUS_FAULT:   //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
-		case USAGE_FAULT: //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
-		default:
-			break;
-	}
-
-	//bad errors will fall through here
-	ZeroActuators(32000);
-    while (1) {
-		DoLed(0, 1);
-		DoLed(1, 0);
-		simpleDelay_ASM(50000);
-		DoLed(0, 0);
-		DoLed(1, 1);
-		simpleDelay_ASM(75000);
-    	ZeroActuators(10);
-    }
 }
