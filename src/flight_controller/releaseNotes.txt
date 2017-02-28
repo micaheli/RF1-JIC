@@ -595,6 +595,7 @@ Version 0.195.057:
 	nytfluffyrates command added
 	braindrainrates command added
 	Fix betafloght rates
+	general code cleanup
 
 
 

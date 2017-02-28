@@ -15,6 +15,9 @@ uint32_t failsafeHappend = 0;
 uint32_t rxDataRaw[MAXCHANNELS];
 uint32_t rxData[MAXCHANNELS];
 float    flopAngle[MAXCHANNELS];
+float    kissAngle[MAXCHANNELS];
+float    maxKissRate[MAXCHANNELS];
+float    maxFlopRate[MAXCHANNELS];
 
 uint32_t skipRxMap = 0;
 uint32_t progMode  = 0;
@@ -665,6 +668,18 @@ void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx)
 
 void InitRcData (void)
 {
+	uint32_t axis;
+
+	//pitch yaw and roll must all use the same curve. We make sure that's set here.
+	mainConfig.rcControlsConfig.useCurve[YAW]  = mainConfig.rcControlsConfig.useCurve[PITCH];
+	mainConfig.rcControlsConfig.useCurve[ROLL] = mainConfig.rcControlsConfig.useCurve[PITCH];
+
+	//precalculate max angles for RC Curves for the three stick axis
+	for (axis = 0; axis < 3; axis++)
+	{
+		maxKissRate[axis] = InlineApplyRcCommandCurve(1.0, KISS_EXPO, mainConfig.rcControlsConfig.curveExpo[axis], axis);
+		maxFlopRate[axis] = InlineApplyRcCommandCurve(1.0, BETAFLOP_EXPO, mainConfig.rcControlsConfig.curveExpo[axis], axis);
+	}
 
 	bzero(trueRcCommandF, MAXCHANNELS);
 	bzero(curvedRcCommandF, MAXCHANNELS);
@@ -717,9 +732,6 @@ inline void InlineCollectRcCommand (void)
 
 	//calculate main controls.
 	//rc data is taken from RX and using the map is put into the correct "axis"
-	mainConfig.rcControlsConfig.useCurve[YAW]  = mainConfig.rcControlsConfig.useCurve[PITCH];
-	mainConfig.rcControlsConfig.useCurve[ROLL] = mainConfig.rcControlsConfig.useCurve[PITCH];
-
 	for (axis = 0; axis < MAXCHANNELS; axis++) {
 
 		if (axis == THROTTLE)
@@ -763,6 +775,7 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 
 	float maxOutput, maxOutputMod, returnValue;
 	float flopSuperRate, flopRcRate, flopExpo, flopFactor;
+	float kissSetpoint, kissRate, kissGRate, kissUseCurve, kissTempCurve, kissRpyUseRates, kissRxRaw;
 
 	maxOutput    = 1;
 	maxOutputMod = 0.01;
@@ -793,9 +806,9 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 			if (flopSuperRate != 0.0)
 			{
 				flopFactor = 1.0 / (InlineConstrainf(1.0f - (ABS(rcCommand) * (flopSuperRate)), 0.01f, 1.00f));
-				flopAngle[axis] *= flopFactor;
+				flopAngle[axis] *= flopFactor; ; //setpoint is calculated directly here
 			}
-			return(rcCommand);
+			return(flopAngle[axis] / maxFlopRate[axis]); //get curved stick position based on percentage of setpoint
 			break;
 		case TARANIS_EXPO:
 		case ACRO_PLUS:
@@ -803,10 +816,19 @@ inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, fl
 			return ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0)) * rcCommand);
 			break;
 		case KISS_EXPO:
-			return ( ((2000*(1/(1-ABS(rcCommand)*mainConfig.rcControlsConfig.rates[axis])))* ( ((rcCommand*((rcCommand*1000)*(rcCommand*1000)/1000000))*mainConfig.rcControlsConfig.curveExpo[axis]+rcCommand*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10) ) ) * 1.375);
-			break;
 		case KISS_EXPO2:
-			return ( ((2000*(1/(1-ABS(rcCommand)*mainConfig.rcControlsConfig.rates[axis])))* ( ((rcCommand*((rcCommand*1000)*(rcCommand*1000)/1000000))*mainConfig.rcControlsConfig.curveExpo[axis]+rcCommand*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10) ) ) * 1.375);
+			kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
+			kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis]);
+			kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
+			kissSetpoint = rcCommand;
+
+			kissRpyUseRates = 1 - abs(rcCommand) * kissGRate;
+			kissRxRaw = rcCommand * 1000;
+			kissTempCurve = (kissRxRaw * kissRxRaw / 1000000);
+			kissSetpoint = ((kissSetpoint * kissTempCurve) * kissUseCurve + kissSetpoint * (1 - kissUseCurve)) * (kissRate / 10);
+			kissAngle[axis] = ((2000.0 * (1.0 / kissRpyUseRates)) * kissSetpoint); //setpoint is calculated directly here
+			returnValue  = (kissAngle[axis] / maxKissRate[axis]); //get curved stick position based on percentage of setpoint
+			return(returnValue);
 			break;
 		case NO_EXPO:
 		default:

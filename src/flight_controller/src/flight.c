@@ -823,9 +823,14 @@ inline float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, floa
 	float returnValue;
 
 
+	//betaflop and kiss set points are calculated in rx.c during curve calculation
 	if (curveToUse == BETAFLOP_EXPO)
 	{
 		returnValue = (flopAngle[axis]) ;
+	}
+	else if ( (curveToUse == KISS_EXPO) || (curveToUse == KISS_EXPO2) )
+	{
+		returnValue = (kissAngle[axis]);
 	}
 	else if (curveToUse == ACRO_PLUS)
 	{

@@ -101,6 +101,7 @@ enum
 
 extern uint32_t ppmPin;
 extern float    flopAngle[];
+extern float    kissAngle[];
 
 
 extern volatile uint32_t rx_timeout;
