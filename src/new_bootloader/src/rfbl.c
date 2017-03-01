@@ -314,7 +314,7 @@ static void CheckRfblCommand(void) {
 
 			case RFBLC_LAST:
 				rfblState = RFBLS_ERROR;
-				tOutBuffer[1] = rfblTagString[1];
+				memcpy( &tOutBuffer[0], rfblTagString, sizeof(rfblTagString) ); //save a string into code :)
 				break;
 
 		}
