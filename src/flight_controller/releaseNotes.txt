@@ -593,6 +593,11 @@ Version 0.194.057:
 
 Version 0.195.058:
 	RC1
+	GUI - Added rates graphs
+	GUI - Fixed ESC tab
+	GUI - General bug fixes
+	GUI - Added default PIDs
+	GUI - Added multilangual support
 	nytfluffyrates command added
 	braindrainrates command added
 	Fix betafloght rates
@@ -602,7 +607,9 @@ Version 0.195.058:
 	LEDs now Breathe
 	Preliminary Smart Audio Support - Not yet enabled
 
-
+Version 0.196.058:
+	RC2
+	Adjust self level defaults
 
 
 
@@ -611,6 +618,8 @@ Version 0.195.058:
 Features in current development:
 	MSP compatibility
 	MAVlink compatibility
+	SmartAudio
+	RFVTX
 	Current input
 
 Features for future development:
