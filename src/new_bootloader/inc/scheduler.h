@@ -1,5 +1,8 @@
 #pragma once
 
+//this doesn't really belong here
+extern uint8_t tInBuffer[], tOutBuffer[];
+
 enum {
 	GYRO_INIT_FAILIURE                =  (1 << 0),
 	SERIAL_INIT_FAILIURE              =  (1 << 1),

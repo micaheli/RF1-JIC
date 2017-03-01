@@ -28,3 +28,7 @@ extern void DoLed(uint32_t number, uint32_t on);
 extern void InitLeds (void);
 extern void UpdateLeds(void);
 extern void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2);
+extern void StartupBlink (uint16_t blinks, uint32_t delay);
+extern void ErrorBlink(void);
+extern void DoneFlashBlink(void);
+extern void CoolLedEffect(uint32_t pwmPeriod, uint32_t dutyNumber, uint32_t ledNumber);

@@ -5,20 +5,22 @@ int main(void)
 
 	int32_t count;
 
-	count = 16;
+	count = 2;
 
-	VectorIrqInit(0x08060000);
+	VectorIrqInit(bootloaderAddress);
 	GetBoardHardwareDefs();
     InitializeMCUSettings();
     BoardInit();
-    InitLeds();
+
+    InitRfbl();
+    //FC will either boot into app or continue on here after the InitRfbl function runs
 
     while (1)
     {
     	Scheduler(count--);
 
     	if (count == -1)
-    		count = 16;
+    		count = 2;
     }
 
 }

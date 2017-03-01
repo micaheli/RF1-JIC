@@ -1,17 +1,19 @@
 #pragma once
 
+
+typedef void (*pFunction)(void);
+
+
 extern volatile uint32_t systemUsTicks;
-
-
-
-
+extern volatile uint32_t usbStarted;
+extern pFunction JumpToApplication;
 extern uint32_t InlineMillis(void);
 extern uint32_t Micros(void);
 
-extern void DelayMs(uint32_t mSec);
-extern void delayUs(uint32_t uSec);
-extern uint32_t rtc_read_backup_reg(uint32_t BackupRegister);
-extern void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data);
+extern void     DelayMs(uint32_t mSec);
+extern void     delayUs(uint32_t uSec);
+extern uint32_t RtcReadBackupRegister(uint32_t BackupRegister);
+extern void     RtcWriteBackupRegister(uint32_t BackupRegister, uint32_t data);
 
 extern void InitUsb(void);
 
@@ -31,8 +33,8 @@ extern uint32_t GetExtiCallbackFromPin(uint16_t GPIO_Pin);
 extern uint32_t GetDmaCallbackFromDmaStream(uint32_t dmaEnum);
 extern void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on);
 extern void InitializeGpioInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern void BootToAddress(uint32_t address);
 
-extern void InitFlight(void);
 
 
 #define RFBU					0x52464255
@@ -49,11 +51,11 @@ extern void InitFlight(void);
 #define RFPM					0x5246504D
 #define PL						0x504C
 
-#define RECOVERY_VERSION		16
-#define RFBL_VERSION			16
-#define CFG1_VERSION			16
-#define RCVR_TAG				"RCVRVERSION#00160016" //must be 20 bytes max
-#define RFBL_TAG				"RFBLVERSION#00160016" //must be 20 bytes max
+#define RECOVERY_VERSION		17
+#define RFBL_VERSION			17
+#define CFG1_VERSION			17
+#define RCVR_TAG				"RCVRVERSION#00170017" //must be 20 bytes max
+#define RFBL_TAG				"RFBLVERSION#00170017" //must be 20 bytes max
 
 enum {
 	APP_ADDRESS						= 0x08008000,

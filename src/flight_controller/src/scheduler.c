@@ -1,11 +1,10 @@
 #include "includes.h"
 
-extern uint8_t tOutBuffer[];
-extern uint8_t tInBuffer[];
-uint32_t skipTaskHandlePcComm   = 0;
-uint32_t failsafeStage          = 0;
-uint32_t autoSaveTimer          = 0;
+//this doesn't really belong here
+volatile uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 
+uint32_t skipTaskHandlePcComm   = 0;
+volatile uint32_t errorMask              = 0;
 
 //soft serial buffer handling. TODO: make a structure
 volatile uint32_t softSerialEnabled = 0;
@@ -94,7 +93,7 @@ inline void TaskWizard(void) {
 		case WIZ_RC:
 			if (wizardStatus.currentStep == 1) //step three needs to be polled by user/gui
 				HandleWizRc();
-			break;
+				break;
 		case 0:
 		default:
 			return;
@@ -108,13 +107,16 @@ inline void TaskTelemtry(void)
 
 inline void TaskHandlePcComm(void)
 {
+	uint32_t x;
+
 	if (skipTaskHandlePcComm)
 		return;
 
 	if (tOutBuffer[0]==2) { //we have a usb report
 
 		ProcessCommand((char *)tOutBuffer);
-		bzero(tOutBuffer, HID_EPIN_SIZE);
+		for (x=0;x<(HID_EPIN_SIZE-1);x++)
+			tOutBuffer[x] = 0;
 
 	}
 

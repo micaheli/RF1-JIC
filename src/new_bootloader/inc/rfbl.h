@@ -23,7 +23,7 @@ typedef enum {
 	RFBLS_IDLE,
 	RFBLS_ERROR,
 	RFBLS_LAST,
-} RfblState_e;
+} rfbl_state_enum;
 
 typedef enum {
 	RFBLC_NONE,
@@ -40,22 +40,9 @@ typedef enum {
 	RFBLC_REBOOT_TO_CUSTOM,
 	RFBLC_ERROR,
 	RFBLC_LAST,
-} RfblCommand_e;
+} rfbl_command_enum;
 
-// EEPROM variables for the bootloader.
-typedef struct cfg1_t {
-	uint8_t cfg1_version;		//256 version numbers to go!
-	uint8_t rfbl_version;		//256 version numbers to go!
-	uint16_t size;				//good for 64 KB. Plenty big.
-	uint32_t magic_f1eaf00d;	//incase flash in magic numbers.
-	uint32_t boot_direction;	//boot to app or RFBL?
-	uint32_t boot_cycles;		//How many times have we rebooted?
-	uint32_t reboot_address;	//Reboot to address other than defined app address?
-	uint32_t magic_a0ddba11;	//incase flash in magic numbers.
-	uint8_t czechsum;			//Do we have enough korunas?
-} cfg1_t;
-
-typedef struct FwInfo_t {
+typedef struct {
 	uint32_t size;
 	uint32_t type;
 	uint32_t address;
@@ -68,26 +55,21 @@ typedef struct FwInfo_t {
 	uint32_t time_last_packet;
 	uint32_t skipTo;
 	uint8_t data[HID_EPIN_SIZE-1];
-} FwInfo_t;
+} firmware_info;
 
 /* Private define ------------------------------------------------------------*/
 #define MAX_FW_PACKET_WAIT_TIME	5000000	//wait 0.5 seconds
 
-void startupBlink (uint16_t blinks, uint32_t delay);
-void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState);
-void rfbl_report_state (RfblState_e *RfblState);
-void boot_to_app (void);
-uint32_t checkOldConfigDirection (uint32_t bootDirection, uint32_t bootCycles);
-
-void rfbl_parse_load_command(void);
-void rfbl_execute_load_command(void);
-void rfbl_prepare_flash(void);
-void rfbl_write_packet(void);
-void rfbl_finish_flash(void);
-void errorBlink(void);
-void erase_all_flash (void);
-void ZeroActuators(uint32_t delayUs);
 
 typedef void (*pFunction)(void);
 pFunction JumpToApplication;
 uint32_t jumpAddress;
+extern uint32_t bootloaderAddress;
+extern uint32_t applicationAddress;
+extern uint32_t rfblLedSpeed1;
+extern uint32_t rfblLedSpeed2;
+
+
+extern void InitRfbl(void);
+extern void CheckRfblState(void);
+extern void RfblUpdateLed(uint32_t heartbeatMs, uint32_t heartbeatMsHalf);

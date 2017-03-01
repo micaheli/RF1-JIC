@@ -30,8 +30,9 @@ enum {
 
 #define SOFT_SERIAL_BIT_TIME_ARRAY_SIZE	80
 
-extern uint32_t errorMask;
-extern uint32_t autoSaveTimer;
+extern volatile uint8_t tOutBuffer[];
+extern volatile uint8_t tInBuffer[];
+extern volatile uint32_t errorMask;
 extern volatile uint32_t softSerialEnabled;
 extern volatile uint32_t softSerialBuf[][SOFT_SERIAL_BIT_TIME_ARRAY_SIZE];
 extern volatile uint32_t softSerialInd[];

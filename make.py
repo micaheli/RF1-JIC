@@ -199,11 +199,20 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
-    elif TARGET == "stm32f405xx_nb":
-        TARGET_DEVICE_LC = "stm32f405xx"
+    elif TARGET == "stm32f405xx_nrfbl":
+        TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f405xx"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
+        TARGET_PROCESSOR_TYPE  = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Og"
+
+    elif TARGET == "stm32f405xx_nrecovery":
+        TARGET_DEVICE_LC = "stm32f405xx"
+        PROJECT = "new_bootloader"
+        TARGET_DEVICE = "STM32F405xx"
+        TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
@@ -259,31 +268,25 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
-    elif TARGET == "stm32f446xx_rfbl":
-        TARGET_DEVICE_LC = "stm32f446xx"
-        PROJECT = "boot_loader"
+    elif TARGET == "stm32f446xx_nrfbl":
+        TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f446xx"
+        PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
         STM32F4_ARCH_FLAGS_ADD  = ""
-        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
-        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
-
-    elif TARGET == "stm32f446xx_rfbll":
+    elif TARGET == "stm32f446xx_nrecovery":
         TARGET_DEVICE_LC = "stm32f446xx"
-        PROJECT = "recovery_loader"
+        PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
         STM32F4_ARCH_FLAGS_ADD  = ""
-        #STM32F4_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
-        #STM32F4_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
-
     
     else:
         print("ERROR: NOT VALID TARGET: ", TARGET, file=sys.stderr)

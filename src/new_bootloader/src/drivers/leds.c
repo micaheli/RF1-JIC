@@ -96,3 +96,74 @@ void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2)
 		ledStatus.timeStart = timeNow;
 	}
 }
+
+void StartupBlink (uint16_t blinks, uint32_t delay)
+{
+
+	uint32_t a, ledToggle;
+
+	//Startup Blink
+	ledToggle = 0;
+	DoLed(0, 1);
+	DoLed(1, 0);
+	for( a = 0; a < blinks; a = a + 1 )
+	{ //fast blink
+		if (ledToggle)
+		{
+			ledToggle=0;
+			DoLed(0, 1);
+			DoLed(1, 0);
+		}
+		else
+		{
+			ledToggle=1;
+			DoLed(0, 0);
+			DoLed(1, 1);
+		}
+		DelayMs(delay);
+	}
+	DoLed(0, 0);
+	DoLed(1, 0);
+
+}
+
+void ErrorBlink(void)
+{
+	uint32_t x;
+
+	for (x = 0; x < 100; x += 10)
+	{
+		StartupBlink(10, x);
+	}
+}
+
+void DoneFlashBlink(void)
+{
+	int32_t x;
+
+	for (x = 50; x >= 0; x -= 2)
+	{
+		StartupBlink(2, x);
+	}
+}
+
+void CoolLedEffect(uint32_t pwmPeriod, uint32_t dutyNumber, uint32_t ledNumber)
+{
+	//pwm an LED based on Micros()
+	uint32_t currentTime;
+	uint32_t currentDutyIn;
+	uint32_t pwmOffAt;
+
+	currentTime   = Micros();
+	currentDutyIn = (currentTime % pwmPeriod);
+	pwmOffAt      = currentTime - currentDutyIn + dutyNumber;
+
+	if (currentTime > pwmOffAt)
+	{
+		DoLed(ledNumber, 1);
+	}
+	else
+	{
+		DoLed(ledNumber, 0);
+	}
+}

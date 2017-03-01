@@ -52,3 +52,4 @@ extern void InitLeds (void);
 extern void UpdateLeds(void);
 extern void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2);
 extern void UpdateWs2812Leds(void);
+extern void CoolLedEffect(uint32_t pwmPeriod, uint32_t dutyNumber, uint32_t ledNumber);

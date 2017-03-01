@@ -798,7 +798,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, filteredAccData);
 
 			//check for fullKiLatched here
-			if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) ) {
+			if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) )
+			{
 				fullKiLatched = 1;
 			}
 
@@ -818,30 +819,117 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 }
 
+//return setpoint in degrees per second, this is after stick smoothing
 inline float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, float rates, float acroPlus, uint32_t axis)
 {
 	float returnValue;
 
-
 	//betaflop and kiss set points are calculated in rx.c during curve calculation
-	if (curveToUse == BETAFLOP_EXPO)
+	switch(curveToUse)
 	{
-		returnValue = (flopAngle[axis]) ;
-	}
-	else if ( (curveToUse == KISS_EXPO) || (curveToUse == KISS_EXPO2) )
-	{
-		returnValue = (kissAngle[axis]);
-	}
-	else if (curveToUse == ACRO_PLUS)
-	{
-		returnValue = (curvedRcCommandF * ( rates + ( ABS(curvedRcCommandF) * rates * acroPlus ) ) ) ;
-	}
-	else
-	{
-		returnValue = (curvedRcCommandF * (rates + (rates * acroPlus) ) ) ;
+		case ACRO_PLUS:
+			returnValue = (curvedRcCommandF * ( rates + ( ABS(curvedRcCommandF) * rates * acroPlus ) ) );
+			break;
+		case BETAFLOP_EXPO:
+			returnValue = (curvedRcCommandF * maxFlopRate[axis]);
+			break;
+		case KISS_EXPO:
+		case KISS_EXPO2:
+			returnValue = (curvedRcCommandF * maxKissRate[axis]);
+			break;
+		case TARANIS_EXPO:
+		case SKITZO_EXPO:
+		case FAST_EXPO:
+		case NO_EXPO:
+		default:
+			returnValue = (curvedRcCommandF * (rates + (rates * acroPlus) ) );
+			break;
+
 	}
 
 	returnValue = InlineConstrainf(returnValue,-1400,1400);
 
 	return (returnValue);
+}
+
+
+
+
+//these functions really don't belong here
+
+
+
+static void InitVbusSensing(void);
+static uint32_t IsUsbConnected(void);
+
+static void InitVbusSensing(void)
+{
+#ifdef VBUS_SENSING
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    HAL_GPIO_DeInit(ports[VBUS_SENSING_GPIO], VBUS_SENSING_PIN);
+
+    GPIO_InitStructure.Pin   = VBUS_SENSING_PIN;
+    GPIO_InitStructure.Mode  = GPIO_MODE_INPUT;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_NOPULL;
+    HAL_GPIO_Init(ports[VBUS_SENSING_GPIO], &GPIO_InitStructure);
+#endif
+}
+
+static uint32_t IsUsbConnected(void)
+{
+#ifdef VBUS_SENSING
+	return(!inlineIsPinStatusHi(ports[VBUS_SENSING_GPIO], VBUS_SENSING_PIN));
+#else
+	return(0);
+#endif
+
+}
+
+//init the board
+void InitFlight(void) {
+
+    //TODO: move the check into the init functions.
+
+	DeInitAllowedSoftOutputs();
+
+    if (board.flash[0].enabled)
+    {
+    	InitFlashChip();
+    	InitFlightLogger();
+    }
+
+    InitVbusSensing();
+    InitRcData();
+    InitMixer();          //init mixders
+    InitFlightCode();     //flight code before PID code is a must since flight.c contains loop time settings the pid.c uses.
+    InitPid();            //Relies on InitFlightCode for proper activations.
+    DeInitActuators();    //Deinit before Init is a shotgun startup
+    InitActuators();      //Actuator init should happen after soft serial init.
+    ZeroActuators(5000);  //output actuators to idle after timers are stable;
+
+	InitAdc();            //init ADC functions
+    InitModes();          //set flight modes mask to zero.
+    InitBoardUsarts();    //most important thing is activated last, the ability to control the craft.
+
+	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl))
+	{
+		ErrorHandler(GYRO_INIT_FAILIURE);
+	}
+
+	InitTelemtry();
+
+#ifndef SPMFC400
+	if (!IsUsbConnected())
+	{
+		InitWs2812();
+	}
+#else
+	InitWs2812();
+#endif
+
+	//InitTransponderTimer();
+	DelayMs(2);
+
 }
