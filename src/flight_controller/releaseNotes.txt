@@ -610,6 +610,8 @@ Version 0.195.058:
 Version 0.196.058:
 	RC2
 	Adjust self level defaults
+	GUI - updates and bug fixes
+	Updated ESC bins
 
 
 
