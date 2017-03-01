@@ -592,6 +592,7 @@ Version 0.194.057:
 	Make force flashing ESCs slightly safer
 
 Version 0.195.058:
+	RC1
 	nytfluffyrates command added
 	braindrainrates command added
 	Fix betafloght rates
@@ -599,7 +600,7 @@ Version 0.195.058:
 	general code cleanup
 	Update default PIDs
 	LEDs now Breathe
-
+	Preliminary Smart Audio Support - Not yet enabled
 
 
 
