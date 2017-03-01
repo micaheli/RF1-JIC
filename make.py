@@ -131,7 +131,7 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
-    elif TARGET == "stm32f303xc_rfbl":
+    elif TARGET == "stm32f303xc_nrfbl":
         TARGET_DEVICE_LC = "stm32f303xc"
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F303xC"
@@ -140,7 +140,7 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
-    elif TARGET == "stm32f303xc_rfbll":
+    elif TARGET == "stm32f303xc_nrecovery":
         TARGET_DEVICE_LC = "stm32f303xc"
         PROJECT = "recovery_loader"
         TARGET_DEVICE = "STM32F303xC"
@@ -159,26 +159,6 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-O3"
         STM32F4_ARCH_FLAGS_ADD = ""
         #STM32F4_ARCH_FLAGS_ADD = "-s -fdata-sections -ffunction-sections -flto"
-
-    elif TARGET == "stm32f405xx_rfbl":
-        TARGET_DEVICE_LC = "stm32f405xx"
-        PROJECT = "boot_loader"
-        TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
-        STM32F4_ARCH_FLAGS_ADD  = ""
-
-    elif TARGET == "stm32f405xx_rfbll":
-        TARGET_DEVICE_LC = "stm32f405xx"
-        PROJECT = "recovery_loader"
-        TARGET_DEVICE = "STM32F405xx"
-        TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
-        FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
-        STM32F4_ARCH_FLAGS_ADD  = ""
 
     elif TARGET == "stm32f405xx_pt":
         TARGET_DEVICE_LC = "stm32f405xx"
@@ -235,7 +215,7 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-O3"
         STM32F7_ARCH_FLAGS_ADD = ""
 
-    elif TARGET == "stm32f745xx_rfbl":
+    elif TARGET == "stm32f745xx_nrfbl":
         TARGET_DEVICE_LC = "stm32f745xx"
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F745xx"
@@ -247,8 +227,8 @@ def configure_target(TARGET):
         #STM32F7_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
-    elif TARGET == "stm32f745xx_rfbll":
-        TARGET_DEVICE_LC = "stm32f745xx"
+    elif TARGET == "stm32f745xx_nrecovery":
+        TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f745xx"
         PROJECT = "recovery_loader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_recovery.ld"
