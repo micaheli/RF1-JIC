@@ -4,9 +4,10 @@
 #define RUNNING_VOLTAGE 3.85
 #define DEAD_VOLTAGE    3.65
 
+
 float adcVoltage=0;
 uint32_t cellCount=0;
-float cellCutoff=3.6f;
+float cellCutoff=3.65f;
 float averageVoltage=0;
 float lowVoltage = 0;
 float runningVoltage = 0;
@@ -82,9 +83,8 @@ void CheckBatteryCellCount()
 		fullVoltage = (CHARGED_VOLTAGE * cellCount);
 		runningVoltage = (RUNNING_VOLTAGE * cellCount);
 		lowVoltage = (DEAD_VOLTAGE * cellCount);
-
 	}
-	if (averageVoltage<lowVoltage && boardArmed && averageVoltage > 2.0f)
+	if ( (averageVoltage<lowVoltage) && boardArmed && (averageVoltage > 2.0f) )
 	{
 		//turn buzzer on
 		buzzerStatus.status = STATE_BUZZER_LOWBAT;
@@ -147,4 +147,4 @@ void InitAdc(void)
 //		/* Start Conversation Error */
 //		ErrorHandler(ADC_DMA_INIT_FAILIURE);
 //	}
-}
+}
