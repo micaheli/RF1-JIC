@@ -22,6 +22,7 @@ uint32_t checkTooManyStarts = 0;
 uint32_t bootupDelay        = 155;
 uint32_t upgradeSkip        = ADDRESS_RFBL_START;
 uint32_t isRfbl             = 1;
+uint32_t rfblTagToUse       = RFBL_TAG;
 #else //Not RFBL so it must be recovery which is bootloader 1
 uint32_t bootloaderAddress  = ADDRESS_RECOVERY_START;
 uint32_t applicationAddress = ADDRESS_RFBL_START;
@@ -32,9 +33,10 @@ uint32_t checkTooManyStarts = 1;
 uint32_t bootupDelay        = 0;
 uint32_t upgradeSkip        = 0;
 uint32_t isRfbl             = 0;
+uint32_t rfblTagToUse       = RCVR_TAG;
 #endif
 
-char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
+char rfblTagString[20] = rfblTagToUse; //used to store a string in the flash. :)
 
 
 static void HandleBackupRegistersAndBooting(void);
