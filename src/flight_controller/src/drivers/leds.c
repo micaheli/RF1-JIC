@@ -116,16 +116,30 @@ inline uint8_t LowerLed(uint8_t input, uint8_t sub)
  static inline void LedModeParty(uint8_t speed)
   {
 	 //setup & math
+	 redTemp =  (rand() & 0xF0) + 1;
 	 greenTemp = (rand() & 0xF0) + 1;
 	 blueTemp = (rand() & 0xF0) + 1;
 	 updateInterval=speed;
 	 uint32_t x = 0;
 
+		if (redTemp > greenTemp)
+			greenTemp = 0;
+		if (redTemp > blueTemp)
+			blueTemp = 0;
+		if (blueTemp > greenTemp)
+			greenTemp = 0;
+		if (blueTemp > redTemp)
+			redTemp = 0;
+		if (greenTemp > blueTemp)
+			blueTemp = 0;
+		if (greenTemp > redTemp)
+			blueTemp = 0;
 
-  	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
-  	{
-  		SetPixel(x,255,greenTemp,blueTemp); //TODO: FIX THIS
-  	}
+	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
+		 {
+		 	SetPixel(x,redTemp,greenTemp,blueTemp);
+		 }
+
   }
 
  static inline void LedModeGyroMotion(uint8_t speed)
@@ -152,29 +166,29 @@ inline uint8_t LowerLed(uint8_t input, uint8_t sub)
 		 currentLedPulse++;
 		 colorPulse = 0;
 	 }
-	 redTemp=blueTemp=greenTemp=0;
+	 redTemp= 0;
+	 blueTemp= 0;
+	 greenTemp=0;
 
-	 switch (currentLedPulse)
-		 {
-			 case 3:
-				 currentLedPulse=0;
-			 case 0:
-				 redTemp=colorPulse;
-				 break;
-			 case 1:
 
-				 greenTemp=colorPulse;
-				 break;
-			 case 2:
-
-				 blueTemp=colorPulse;
-				 break;
-		 }
 
 	 //for loop for setting the led, dont change any math in here if you want all to update at once
   	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
   	{
-  		SetPixel(x,redTemp,greenTemp,blueTemp);
+  		 switch (currentLedPulse)
+  			 {
+  				 case 3:
+  					 currentLedPulse=0;
+  				 case 0:
+  					SetPixel(x,colorPulse,0,0);
+  					 break;
+  				 case 1:
+  					SetPixel(x,0,colorPulse,0);
+  					 break;
+  				 case 2:
+  					SetPixel(x,0,0,colorPulse);
+  					 break;
+  			 }
   	}
   }
 
@@ -197,12 +211,32 @@ inline uint8_t LowerLed(uint8_t input, uint8_t sub)
  static inline void LedModeMultiParty(uint8_t speed)
    {
 	 //setup & math
+	 redTemp = (rand() & 0xF0) + 1;
+	 greenTemp = (rand() & 0xF0) + 1;
+	 blueTemp = (rand() & 0xF0) + 1;
 	 updateInterval=speed;
 	 uint32_t x = 0;
 
+
    	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
    	{
-   		SetPixel(x,255,255,255); //TODO: fix this
+   		redTemp = (rand() & 0xF0) + 1;
+   		greenTemp = (rand() & 0xF0) + 1;
+   		blueTemp = (rand() & 0xF0) + 1;
+		if (redTemp > greenTemp)
+			greenTemp = 0;
+		if (redTemp > blueTemp)
+			blueTemp = 0;
+		if (blueTemp > greenTemp)
+			greenTemp = 0;
+		if (blueTemp > redTemp)
+			redTemp = 0;
+		if (greenTemp > blueTemp)
+			blueTemp = 0;
+		if (greenTemp > redTemp)
+			blueTemp = 0;
+
+   		SetPixel(x,redTemp,blueTemp,greenTemp);
    	}
    }
 
