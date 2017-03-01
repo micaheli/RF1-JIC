@@ -112,12 +112,11 @@ inline void TaskHandlePcComm(void)
 	if (skipTaskHandlePcComm)
 		return;
 
-	if (tOutBuffer[0]==2) { //we have a usb report
-
+	if (tOutBuffer[0]==2)
+	{ //we have a usb report
 		ProcessCommand((char *)tOutBuffer);
 		for (x=0;x<(HID_EPIN_SIZE-1);x++)
 			tOutBuffer[x] = 0;
-
 	}
 
 }
@@ -137,7 +136,8 @@ void ErrorHandler(uint32_t error)
 {
 	errorMask |= (error);
 
-	switch (error) {
+	switch (error)
+	{
 		case TIMER_INPUT_INIT_FAILIURE:
 		case ADC_INIT_FAILIURE:
 		case ADC_DMA_INIT_FAILIURE:
@@ -179,7 +179,9 @@ void ErrorHandler(uint32_t error)
 
 	//bad errors will fall through here
 	ZeroActuators(32000);
-    while (1) {
+
+    while (1)
+    {
 		DoLed(0, 1);
 		DoLed(1, 0);
 		simpleDelay_ASM(50000);
@@ -188,4 +190,5 @@ void ErrorHandler(uint32_t error)
 		simpleDelay_ASM(75000);
     	ZeroActuators(10);
     }
+
 }
