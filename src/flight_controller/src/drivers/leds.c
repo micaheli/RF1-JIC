@@ -316,6 +316,8 @@ inline uint8_t LowerLed(uint8_t input, uint8_t sub)
  }
 
  /*-----------------------Functions-----------------------*/
+
+ static void HandleCoolLeds(uint32_t heartbeatMs, uint32_t heartbeatMsHalf);
  //todo: Do we want to init LEDs like this? Maybe an array is a better method
 void InitLeds (void)
 {
