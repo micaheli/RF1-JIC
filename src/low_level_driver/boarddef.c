@@ -177,7 +177,7 @@ int InitializeMCUSettings() {
 }
 
 uint32_t boardSize;
-void getBoardHardwareDefs(void)
+void GetBoardHardwareDefs(void)
 {
 
 	boardSize = sizeof(board);

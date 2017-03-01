@@ -2,7 +2,7 @@
 
 uint32_t doingAutoA = 0;
 esc_one_wire_status escOneWireStatus[16];
-esc_hex_location escHexByPosition[50];
+esc_hex_location escHexByPosition[51];
 uint32_t oneWireActive = 0;
 uint32_t oneWireHasRun = 0;
 
@@ -188,7 +188,7 @@ uint32_t ListAllEscHexesInFlash(void) {
 	uint32_t firmwareFinderData[5];
 	uint8_t  firmwareFinderByteData[5 * 4];
 	uint32_t x;
-	uint32_t found = 0;
+	uint32_t found = 1;
 	uint8_t  escStart[3] = {0x02, 0x19, 0xFD};
 
 	for (wordOffset = addressFlashStart; wordOffset < (addressFlashEnd - 0x1A6F); wordOffset++) { //scan up to 1mb of flash starting at after rfbl //todo:set per mcu

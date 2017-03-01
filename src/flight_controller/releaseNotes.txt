@@ -579,16 +579,47 @@ Version 0.191.057:
 	Updated motor calibration routine
 
 Version 0.192.057:
-	Fixed kiss rates.
-	Changed DSMX 22ms detection.
+	Fixed kiss rates
+	Changed DSMX 22ms detection
 	Added logging continuation after disarm / failsafe for 25 itterations with trouble codes
+	Added serial number command
 	
-	
+Version 0.193.057:
+	Wizard changes
+
+Version 0.194.057:
+	Self level mode updates
+	Make force flashing ESCs slightly safer
+
+Version 0.195.058:
+	RC1
+	GUI - Added rates graphs
+	GUI - Fixed ESC tab
+	GUI - General bug fixes
+	GUI - Added default PIDs
+	GUI - Added multilangual support
+	nytfluffyrates command added
+	braindrainrates command added
+	Fix betafloght rates
+	Fix kiss rates
+	general code cleanup
+	Update default PIDs
+	LEDs now Breathe
+	Preliminary Smart Audio Support - Not yet enabled
+
+Version 0.196.058:
+	RC2
+	Adjust self level defaults
+
+
+
 
 
 Features in current development:
 	MSP compatibility
 	MAVlink compatibility
+	SmartAudio
+	RFVTX
 	Current input
 
 Features for future development:

@@ -14,7 +14,8 @@ uint32_t failsafeHappend = 0;
 
 uint32_t rxDataRaw[MAXCHANNELS];
 uint32_t rxData[MAXCHANNELS];
-float    flopAngle[MAXCHANNELS];
+volatile float maxFlopRate[3];
+volatile float maxKissRate[3];
 
 uint32_t skipRxMap = 0;
 uint32_t progMode  = 0;
@@ -38,7 +39,8 @@ static rx_calibration_records rxCalibrationRecords[3];
 static void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx);
 
 static void checkRxPreArmCalibration(void);
-
+static float GetKissMaxRates(float rcCommand, uint32_t axis);
+static float GetFlopMaxRates(float rcCommand, uint32_t axis);
 
 //check
 static void checkRxPreArmCalibration(void)
@@ -222,9 +224,9 @@ inline void CheckFailsafe(void)
 			latchFirstArm = 1; //1 is double single single single, 0 is double double double double
 			disarmCount   = 0;
 
-			if ( !(rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) ) {
+			if ( !(RtcReadBackupRegister(FC_STATUS_REG) == FC_STATUS_INFLIGHT) ) {
 				//fc crashed during flight
-				rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_INFLIGHT);
+				RtcWriteBackupRegister(FC_STATUS_REG,FC_STATUS_INFLIGHT);
 				buzzerStatus.status = STATE_BUZZER_ARMING;
 			}
 
@@ -259,7 +261,7 @@ inline void CheckFailsafe(void)
 					latchFirstArm = 2;
 				}
 				DisarmBoard();
-				rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_IDLE);
+				RtcWriteBackupRegister(FC_STATUS_REG,FC_STATUS_IDLE);
 			}
 		}
 	}
@@ -663,8 +665,20 @@ void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx)
 
 }
 
-void InitRcData (void)
+void InitRcData(void)
 {
+	uint32_t axis;
+
+	//pitch yaw and roll must all use the same curve. We make sure that's set here.
+	mainConfig.rcControlsConfig.useCurve[YAW]  = mainConfig.rcControlsConfig.useCurve[PITCH];
+	mainConfig.rcControlsConfig.useCurve[ROLL] = mainConfig.rcControlsConfig.useCurve[PITCH];
+
+	//precalculate max angles for RC Curves for the three stick axis
+	for (axis = 0; axis < 3; axis++)
+	{
+		maxKissRate[axis] = GetKissMaxRates(1.0f, axis);
+		maxFlopRate[axis] = GetFlopMaxRates(1.0f, axis);
+	}
 
 	bzero(trueRcCommandF, MAXCHANNELS);
 	bzero(curvedRcCommandF, MAXCHANNELS);
@@ -717,96 +731,134 @@ inline void InlineCollectRcCommand (void)
 
 	//calculate main controls.
 	//rc data is taken from RX and using the map is put into the correct "axis"
-	mainConfig.rcControlsConfig.useCurve[YAW]  = mainConfig.rcControlsConfig.useCurve[PITCH];
-	mainConfig.rcControlsConfig.useCurve[ROLL] = mainConfig.rcControlsConfig.useCurve[PITCH];
+	for (axis = 0; axis < MAXCHANNELS; axis++)
+	{
 
-	for (axis = 0; axis < MAXCHANNELS; axis++) {
-
-		if (axis == THROTTLE)
-		{
-			if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
-				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0 + mainConfig.rcControlsConfig.deadBand[axis], -1.0); //-1 to 0
-			else
-				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.0, 0 - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
-		}
+		if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.0f + mainConfig.rcControlsConfig.deadBand[axis], -1.0f); //-1 to 0
 		else
-		{
-			if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
-				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0 + mainConfig.rcControlsConfig.deadBand[axis], -1.0); //-1 to 0
-			else
-				rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.0, 0 - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
-
-		}
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.0f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
 
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
 		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis])
 		{
-			trueRcCommandF[axis]   = InlineConstrainf ( rangedRx, -1, 1);
-			curvedRcCommandF[axis] = InlineApplyRcCommandCurve (trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis], axis);
+			trueRcCommandF[axis]   = InlineConstrainf( rangedRx, -1.0f, 1.0f);
+			curvedRcCommandF[axis] = InlineApplyRcCommandCurve(trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis], axis);
 		}
 		else
 		{
 			// no need to calculate if movement is below deadband
-			trueRcCommandF[axis]   = 0;
-			curvedRcCommandF[axis] = 0;
+			trueRcCommandF[axis]   = 0.0f;
+			curvedRcCommandF[axis] = 0.0f;
 		}
 
 	}
 
-
 }
 
+static float GetKissMaxRates(float rcCommand, uint32_t axis)
+{
+	float kissSetpoint, kissRate, kissGRate, kissUseCurve, kissTempCurve, kissRpyUseRates, kissRxRaw, kissAngle;
 
-inline float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo, uint32_t axis)
+	kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
+	kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis]);
+	kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
+	kissSetpoint = rcCommand;
+
+	kissRpyUseRates = 1.0f - abs(rcCommand) * kissGRate;
+	kissRxRaw       = rcCommand * 1000.0f;
+	kissTempCurve   = (kissRxRaw * kissRxRaw / 1000000.0f);
+	kissSetpoint    = ((kissSetpoint * kissTempCurve) * kissUseCurve + kissSetpoint * (1.0f - kissUseCurve)) * (kissRate / 10.0f);
+	kissAngle       = ((2000.0f * (1.0f / kissRpyUseRates)) * kissSetpoint); //setpoint is calculated directly here
+	return(kissAngle);
+}
+
+static float GetFlopMaxRates(float rcCommand, uint32_t axis)
+{
+	float flopSuperRate, flopRcRate, flopExpo, flopFactor, flopAngle;
+
+	flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
+	flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
+	flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
+
+	if (flopRcRate > 2.0f)
+		flopRcRate = flopRcRate + (14.55f * (flopRcRate - 1997.0f));
+
+	if (flopExpo != 0.0f)
+		rcCommand = rcCommand * Powerf(ABS(rcCommand), 3) * flopExpo + rcCommand * (1.0f-flopExpo);
+
+	flopAngle = 200.0f * flopRcRate * rcCommand;
+
+	if (flopSuperRate != 0.0f)
+	{
+		flopFactor = 1.0f / (InlineConstrainf(1.0f - (ABS(rcCommand) * (flopSuperRate)), 0.01f, 1.00f));
+		flopAngle *= flopFactor; ; //setpoint is calculated directly here
+	}
+	return(flopAngle);
+}
+
+//return curved RC command as a percentage of max rate (-1.0 to 1.0)
+inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, float expo, uint32_t axis)
 {
 
 	float maxOutput, maxOutputMod, returnValue;
-	float flopRate, flopExpo, flopFactor;
+	float flopSuperRate, flopRcRate, flopExpo, flopFactor, flopAngle;
+	float kissSetpoint, kissRate, kissGRate, kissUseCurve, kissTempCurve, kissRpyUseRates, kissRxRaw, kissAngle;
 
-	maxOutput    = 1;
-	maxOutputMod = 0.01;
+	maxOutput    = 1.0f;
+	maxOutputMod = 0.01f;
 
 	switch (curveToUse)
 	{
 
 		case SKITZO_EXPO:
-			returnValue = ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0)) * rcCommand * rcCommand);
-			if (rcCommand < 0) {
+			returnValue = ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0f)) * rcCommand * rcCommand);
+			if (rcCommand < 0.0f) {
 				returnValue = -returnValue;
 			}
 			return (returnValue);
 			break;
 		case BETAFLOP_EXPO:
-			flopExpo = (mainConfig.rcControlsConfig.curveExpo[axis]);
-			flopRate = (mainConfig.rcControlsConfig.acroPlus[axis]);
-			if (flopRate > 2.0f)
-				flopRate = flopRate + (14.56f * (flopRate - 1.998f));
+			flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
+			flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
+			flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
+
+			if (flopRcRate > 2.0f)
+				flopRcRate = flopRcRate + (14.55f * (flopRcRate - 1997.0f));
 
 			if (flopExpo != 0.0f)
-			{
-				rcCommand = rcCommand * Powerf(ABS(rcCommand), 3) * flopExpo + rcCommand * (1-flopExpo);
-			}
+				rcCommand = rcCommand * Powerf(ABS(rcCommand), 3) * flopExpo + rcCommand * (1.0f-flopExpo);
 
-			flopAngle[axis] = 200.0f * flopRate * rcCommand;
+			flopAngle = 200.0f * flopRcRate * rcCommand;
 
-			if (mainConfig.rcControlsConfig.rates[axis] != 0.0f)
+			if (flopSuperRate != 0.0f)
 			{
-				flopFactor = 1.0f / (InlineConstrainf(1.0f - (ABS(rcCommand) * (mainConfig.rcControlsConfig.rates[axis])), 0.01f, 1.00f));
-				flopAngle[axis] *= flopFactor;
+				flopFactor = 1.0f / (InlineConstrainf(1.0f - (ABS(rcCommand) * (flopSuperRate)), 0.01f, 1.00f));
+				flopAngle *= flopFactor; ; //setpoint is calculated directly here
 			}
-			return(rcCommand);
+			returnValue = (flopAngle / maxFlopRate[axis]); //get curved stick position based on percentage of setpoint
+			return(returnValue);
 			break;
 		case TARANIS_EXPO:
 		case ACRO_PLUS:
 		case FAST_EXPO:
-			return ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0)) * rcCommand);
+			return ((maxOutput + maxOutputMod * expo * (rcCommand * rcCommand - 1.0f)) * rcCommand);
 			break;
 		case KISS_EXPO:
-			return ((2000*(1/(1-ABS(rcCommand)*mainConfig.rcControlsConfig.rates[axis])))* ( ((rcCommand*((rcCommand*1000)*(rcCommand*1000)/1000000))*mainConfig.rcControlsConfig.curveExpo[axis]+rcCommand*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10) ) );
-			break;
 		case KISS_EXPO2:
-			return ( ((2000*(1/(1-ABS(rcCommand)*mainConfig.rcControlsConfig.rates[axis])))* ( ((rcCommand*((rcCommand*1000)*(rcCommand*1000)/1000000))*mainConfig.rcControlsConfig.curveExpo[axis]+rcCommand*(1-mainConfig.rcControlsConfig.curveExpo[axis]))*( mainConfig.rcControlsConfig.acroPlus[axis]/10) ) ) * 1.25);
+			kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
+			kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis]);
+			kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
+			kissSetpoint = rcCommand;
+
+			kissRpyUseRates = 1.0f - abs(rcCommand) * kissGRate;
+			kissRxRaw       = rcCommand * 1000.0f;
+			kissTempCurve   = (kissRxRaw * kissRxRaw / 1000000.0f);
+			kissSetpoint    = ((kissSetpoint * kissTempCurve) * kissUseCurve + kissSetpoint * (1.0f - kissUseCurve)) * (kissRate / 10.0f);
+			kissAngle       = ((2000.0f * (1.0f / kissRpyUseRates)) * kissSetpoint); //setpoint is calculated directly here
+			returnValue = (kissAngle / maxKissRate[axis]); //get curved stick position based on percentage of setpoint
+			return(returnValue);
 			break;
 		case NO_EXPO:
 		default:

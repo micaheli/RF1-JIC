@@ -1,17 +1,19 @@
 #pragma once
 
+
+typedef void (*pFunction)(void);
+
+
 extern volatile uint32_t systemUsTicks;
-
-
-
-
+extern volatile uint32_t usbStarted;
+extern pFunction JumpToApplication;
 extern uint32_t InlineMillis(void);
 extern uint32_t Micros(void);
 
-extern void DelayMs(uint32_t mSec);
-extern void delayUs(uint32_t uSec);
-extern uint32_t rtc_read_backup_reg(uint32_t BackupRegister);
-extern void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data);
+extern void     DelayMs(uint32_t mSec);
+extern void     delayUs(uint32_t uSec);
+extern uint32_t RtcReadBackupRegister(uint32_t BackupRegister);
+extern void     RtcWriteBackupRegister(uint32_t BackupRegister, uint32_t data);
 
 extern void InitUsb(void);
 
@@ -31,39 +33,9 @@ extern uint32_t GetExtiCallbackFromPin(uint16_t GPIO_Pin);
 extern uint32_t GetDmaCallbackFromDmaStream(uint32_t dmaEnum);
 extern void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on);
 extern void InitializeGpioInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern void BootToAddress(uint32_t address);
 
-extern void ErrorHandler(uint32_t error);
-extern void InitFlight(void);
 
-extern uint32_t errorMask;
-
-enum {
-	GYRO_INIT_FAILIURE                =  (1 << 0),
-	SERIAL_INIT_FAILIURE              =  (1 << 1),
-	DMA_INIT_FAILIURE                 =  (1 << 2),
-	FLASH_INIT_FAILIURE               =  (1 << 3),
-	WS2812_LED_INIT_FAILIURE          =  (1 << 4),
-	FLASH_SPI_INIT_FAILIURE           =  (1 << 5),
-	GYRO_SETUP_COMMUNICATION_FAILIURE =  (1 << 6),
-	SERIAL_HALF_DUPLEX_INIT_FAILURE   =  (1 << 7),
-	SERIAL_INIT_FAILURE               =  (1 << 8),
-	MSP_DMA_GYRO_RX_INIT_FAILIURE     =  (1 << 9),
-	MSP_DMA_GYRO_TX_INIT_FAILIURE     =  (1 << 10),
-	MSP_DMA_SPI_RX_INIT_FAILIURE      =  (1 << 11),
-	MSP_DMA_SPI_TX_INIT_FAILIURE      =  (1 << 12),
-	NOT_USED1					      =  (1 << 13),
-	NOT_USED2					      =  (1 << 14),
-	NOT_USED3					      =  (1 << 15),
-	NOT_USED4					      =  (1 << 16),
-	HARD_FAULT                        =  (1 << 17),
-	MEM_FAULT                         =  (1 << 18),
-	BUS_FAULT                         =  (1 << 19),
-	USAGE_FAULT                       =  (1 << 20),
-	GYRO_SPI_INIT_FAILIURE            =  (1 << 21),
-	TIMER_INPUT_INIT_FAILIURE         =  (1 << 22),
-	ADC_INIT_FAILIURE                 =  (1 << 23),
-	ADC_DMA_INIT_FAILIURE             =  (1 << 24),
-};
 
 #define RFBU					0x52464255
 #define RFBL					0x5246424C
@@ -79,11 +51,11 @@ enum {
 #define RFPM					0x5246504D
 #define PL						0x504C
 
-#define RECOVERY_VERSION		16
-#define RFBL_VERSION			16
-#define CFG1_VERSION			16
-#define RCVR_TAG				"RCVRVERSION#00160016" //must be 20 bytes max
-#define RFBL_TAG				"RFBLVERSION#00160016" //must be 20 bytes max
+#define RECOVERY_VERSION		17
+#define RFBL_VERSION			17
+#define CFG1_VERSION			17
+#define RCVR_TAG				"RCVRVERSION#00170017" //must be 20 bytes max
+#define RFBL_TAG				"RFBLVERSION#00170017" //must be 20 bytes max
 
 enum {
 	APP_ADDRESS						= 0x08008000,

@@ -74,6 +74,10 @@ typedef struct FwInfo_t {
 /* Private define ------------------------------------------------------------*/
 #define MAX_FW_PACKET_WAIT_TIME	5000000	//wait 0.5 seconds
 
+extern RfblCommand_e RfblCommand;
+extern RfblState_e   RfblState;
+extern uint32_t      ledTime;
+
 void startupBlink (uint16_t blinks, uint32_t delay);
 void check_rfbl_command(RfblCommand_e *RfblCommand, RfblState_e *RfblState);
 void rfbl_report_state (RfblState_e *RfblState);
@@ -88,7 +92,3 @@ void rfbl_finish_flash(void);
 void errorBlink(void);
 void erase_all_flash (void);
 void ZeroActuators(uint32_t delayUs);
-
-typedef void (*pFunction)(void);
-pFunction JumpToApplication;
-uint32_t jumpAddress;

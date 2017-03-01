@@ -128,3 +128,13 @@ uint8_t GetChecksum8(const uint8_t *config, uint32_t len)
     return(checksum);
 
 }
+
+inline float InlineDegreesToRadians(float degrees)
+{
+	return(degrees * PI180f);
+}
+
+inline float InlineRadiansToDegrees(float radians)
+{
+	return(radians * d180PIf);
+}

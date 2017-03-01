@@ -37,7 +37,10 @@ volatile float flightcodeTime;
 float pitchAttitude = 0, rollAttitude = 0, yawAttitude = 0;
 uint32_t boardOrientation1 = 0;
 uint32_t RfblDisasterPreventionCheck = 1;
-
+uint32_t timeSinceSelfLevelActivated;
+float slpUsed;
+float sliUsed;
+float sldUsed;
 
 float accCompAccTrust, accCompGyroTrust;
 uint32_t khzLoopCounter = 0;
@@ -63,6 +66,7 @@ void ArmBoard(void)
 {
 	InitWatchdog(WATCHDOG_TIMEOUT_2S);
 	boardArmed = 1;
+	timeSinceSelfLevelActivated = 0;
 }
 
 void DisarmBoard(void)
@@ -235,6 +239,10 @@ void InitFlightCode(void)
 	bzero(gyroStdDeviationTotals, sizeof(gyroStdDeviationTotals));
 	gyroStdDeviationPointer = 0;
 	gyroStdDeviationTotalsPointer = 0;
+	timeSinceSelfLevelActivated = 0;
+	slpUsed = 0.0f;
+	sliUsed = 0.0f;
+	sldUsed = 0.0f;
 
 	averagedGyroDataPointerMultiplier[YAW]   = (1.0 / (float)mainConfig.pidConfig[YAW].ga);
 	averagedGyroDataPointerMultiplier[ROLL]  = (1.0 / (float)mainConfig.pidConfig[ROLL].ga);
@@ -252,6 +260,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 24000;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 32;
+			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			break;
 		case LOOP_UH16:
 		case LOOP_H16:
@@ -260,6 +269,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 12000;
 			loopSpeed.gyroDivider = 2;
 			loopSpeed.khzDivider  = 16;
+			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			break;
 		case LOOP_UH8:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -267,6 +277,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 4;
 			loopSpeed.khzDivider  = 8;
+			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			break;
 		case LOOP_H8:
 		case LOOP_M8:
@@ -275,6 +286,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 8;
+			loopSpeed.gyroAccDiv  = 2;
 			break;
 		case LOOP_UH4:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -282,6 +294,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 8;
 			loopSpeed.khzDivider  = 4;
+			loopSpeed.gyroAccDiv  = 8;
 			break;
 		case LOOP_H4:
 		case LOOP_M4:
@@ -290,6 +303,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 2;
 			loopSpeed.khzDivider  = 4;
+			loopSpeed.gyroAccDiv  = 2;
 			break;
 		case LOOP_UH2:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -297,6 +311,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 16;
 			loopSpeed.khzDivider  = 2;
+			loopSpeed.gyroAccDiv  = 8;
 		case LOOP_H2:
 		case LOOP_M2:
 			loopSpeed.gyrodT      = 0.00012500;
@@ -304,6 +319,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 4;
 			loopSpeed.khzDivider  = 2;
+			loopSpeed.gyroAccDiv  = 2;
 			break;
 		case LOOP_UH1:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -311,6 +327,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 32;
 			loopSpeed.khzDivider  = 1;
+			loopSpeed.gyroAccDiv  = 8;
 			break;
 		case LOOP_H1:
 		case LOOP_M1:
@@ -319,6 +336,7 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 8;
 			loopSpeed.khzDivider  = 1;
+			loopSpeed.gyroAccDiv  = 2;
 			break;
 		case LOOP_L1:
 		default:
@@ -327,13 +345,15 @@ void InitFlightCode(void)
 			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 1;
+			loopSpeed.gyroAccDiv  = 1;
 			break;
 	}
 
 	//TODO: gyroConfig.accDenom is not set until after gyro is running.
 	//loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
-	loopSpeed.accdT     = loopSpeed.gyrodT * 8;
-	loopSpeed.InversedT = (1/loopSpeed.dT);
+	loopSpeed.halfGyrodT       = loopSpeed.gyrodT * 0.5f;
+	loopSpeed.accdT            = loopSpeed.gyrodT * (float)loopSpeed.gyroAccDiv;
+	loopSpeed.InversedT        = (1/loopSpeed.dT);
 
 
 
@@ -441,23 +461,9 @@ inline void InlineUpdateAttitude(float geeForceAccArray[])
 void ComplementaryFilterUpdateAttitude(void)
 {
 
-	static float pitchAcc = 0, rollAcc = 0;
-
-	//QuaternionUpdate(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[PITCH], filteredGyroData[ROLL], filteredGyroData[YAW], 0, 0, 0);
-	//QuaternionUpdate(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], 0, 0, 0, 0, 0);
-
-	CalculateQuaternions();
-
-	if (boardArmed)
-	{
-		accCompAccTrust  = (0.000001);
-		accCompGyroTrust = (1.0 - (0.000001) );
-	}
-	else
-	{
-		accCompAccTrust  = 0.001;
-		accCompGyroTrust = 0.999;
-	}
+	UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], filteredGyroData[PITCH], filteredGyroData[YAW]);
+	return;
+/*
 
     // Integrate the gyroscope data
 	pitchAttitude += (filteredGyroData[PITCH] * loopSpeed.dT);
@@ -470,6 +476,7 @@ void ComplementaryFilterUpdateAttitude(void)
 		yawAttitude = (yawAttitude + 360);
 
     float forceMagnitudeApprox = ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ]);
+
     if (forceMagnitudeApprox > .45 && forceMagnitudeApprox < 2.1) //only look at ACC data if it's within .45 and 2.1 Gees
     {
     	// Turning around the X axis results in a vector on the Y-axis
@@ -480,6 +487,7 @@ void ComplementaryFilterUpdateAttitude(void)
         rollAcc = (atan2f((float)filteredAccData[ACCY], (float)filteredAccData[ACCZ]) + PIf) * (180.0 * IPIf) - 180.0;
         rollAttitude = rollAttitude * accCompGyroTrust + rollAcc * accCompAccTrust;
     }
+*/
 }
 
 inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
@@ -561,6 +569,9 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		//get setpoint for PIDC
 		if (!ModeActive(M_ATTITUDE)) //if rateMode
 		{
+			if (timeSinceSelfLevelActivated)
+				timeSinceSelfLevelActivated = 0;
+
 			if (ModeActive(M_DIRECT))
 			{
 				flightSetPoints[YAW]   = InlineGetSetPoint(curvedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
@@ -576,18 +587,36 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		}
 		else //if angleMode
 		{
+			if (!timeSinceSelfLevelActivated)
+				timeSinceSelfLevelActivated = InlineMillis();
+
+			//todo move this check to the 1khz section
+			//slowly ramp up self leveling over 100 milliseconds
+			if ((InlineMillis() - timeSinceSelfLevelActivated) < 300)
+			{
+				slpUsed = mainConfig.pidConfig[PITCH].slp * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
+				sliUsed = mainConfig.pidConfig[PITCH].sli * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
+				sldUsed = mainConfig.pidConfig[PITCH].sld * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
+			}
+			else
+			{
+				slpUsed = mainConfig.pidConfig[PITCH].slp;
+				sliUsed = mainConfig.pidConfig[PITCH].sli;
+				sldUsed = mainConfig.pidConfig[PITCH].sld;
+			}
+
 			flightSetPoints[YAW]     = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
 			rollAttitudeError        = ( (trueRcCommandF[ROLL] * mainConfig.pidConfig[PITCH].sla) - rollAttitude );
 			pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla) - pitchAttitude );
-			rollAttitudeErrorKi      = (rollAttitudeErrorKi + rollAttitudeError * mainConfig.pidConfig[PITCH].sli * loopSpeed.dT);
-			pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * mainConfig.pidConfig[PITCH].sli * loopSpeed.dT);
+			rollAttitudeErrorKi      = (rollAttitudeErrorKi + rollAttitudeError * sliUsed * loopSpeed.dT);
+			pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.dT);
 			rollAttitudeErrorKdelta  = -(rollAttitudeError - lastRollAttitudeError);
 			lastRollAttitudeError    = rollAttitudeError;
 			pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
 			lastPitchAttitudeError   = pitchAttitudeError;
 
-			flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * mainConfig.pidConfig[PITCH].slp) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld), -200.0, 200.0);
-			flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * mainConfig.pidConfig[PITCH].slp) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * mainConfig.pidConfig[PITCH].sld), -200.0, 200.0);
+			flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
+			flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
 		}
 
 		//Run PIDC
@@ -769,7 +798,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, filteredAccData);
 
 			//check for fullKiLatched here
-			if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) ) {
+			if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) )
+			{
 				fullKiLatched = 1;
 			}
 
@@ -789,25 +819,117 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 }
 
+//return setpoint in degrees per second, this is after stick smoothing
 inline float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, float rates, float acroPlus, uint32_t axis)
 {
 	float returnValue;
 
+	//betaflop and kiss set points are calculated in rx.c during curve calculation
+	switch(curveToUse)
+	{
+		case ACRO_PLUS:
+			returnValue = (curvedRcCommandF * ( rates + ( ABS(curvedRcCommandF) * rates * acroPlus ) ) );
+			break;
+		case BETAFLOP_EXPO:
+			returnValue = (curvedRcCommandF * maxFlopRate[axis]);
+			break;
+		case KISS_EXPO:
+		case KISS_EXPO2:
+			returnValue = (curvedRcCommandF * maxKissRate[axis]);
+			break;
+		case TARANIS_EXPO:
+		case SKITZO_EXPO:
+		case FAST_EXPO:
+		case NO_EXPO:
+		default:
+			returnValue = (curvedRcCommandF * (rates + (rates * acroPlus) ) );
+			break;
 
-	if (curveToUse == BETAFLOP_EXPO)
-	{
-		returnValue = (flopAngle[axis]) ;
-	}
-	else if (curveToUse == ACRO_PLUS)
-	{
-		returnValue = (curvedRcCommandF * ( rates + ( ABS(curvedRcCommandF) * rates * acroPlus ) ) ) ;
-	}
-	else
-	{
-		returnValue = (curvedRcCommandF * (rates + (rates * acroPlus) ) ) ;
 	}
 
 	returnValue = InlineConstrainf(returnValue,-1400,1400);
 
 	return (returnValue);
+}
+
+
+
+
+//these functions really don't belong here
+
+
+
+static void InitVbusSensing(void);
+static uint32_t IsUsbConnected(void);
+
+static void InitVbusSensing(void)
+{
+#ifdef VBUS_SENSING
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    HAL_GPIO_DeInit(ports[VBUS_SENSING_GPIO], VBUS_SENSING_PIN);
+
+    GPIO_InitStructure.Pin   = VBUS_SENSING_PIN;
+    GPIO_InitStructure.Mode  = GPIO_MODE_INPUT;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_NOPULL;
+    HAL_GPIO_Init(ports[VBUS_SENSING_GPIO], &GPIO_InitStructure);
+#endif
+}
+
+static uint32_t IsUsbConnected(void)
+{
+#ifdef VBUS_SENSING
+	return(!inlineIsPinStatusHi(ports[VBUS_SENSING_GPIO], VBUS_SENSING_PIN));
+#else
+	return(0);
+#endif
+
+}
+
+//init the board
+void InitFlight(void) {
+
+    //TODO: move the check into the init functions.
+
+	DeInitAllowedSoftOutputs();
+
+    if (board.flash[0].enabled)
+    {
+    	InitFlashChip();
+    	InitFlightLogger();
+    }
+
+    InitVbusSensing();
+    InitRcData();
+    InitMixer();          //init mixders
+    InitFlightCode();     //flight code before PID code is a must since flight.c contains loop time settings the pid.c uses.
+    InitPid();            //Relies on InitFlightCode for proper activations.
+    DeInitActuators();    //Deinit before Init is a shotgun startup
+    InitActuators();      //Actuator init should happen after soft serial init.
+    ZeroActuators(5000);  //output actuators to idle after timers are stable;
+
+	InitAdc();            //init ADC functions
+    InitModes();          //set flight modes mask to zero.
+    InitBoardUsarts();    //most important thing is activated last, the ability to control the craft.
+
+	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl))
+	{
+		ErrorHandler(GYRO_INIT_FAILIURE);
+	}
+
+	InitTelemtry();
+
+#ifndef SPMFC400
+	if (!IsUsbConnected())
+	{
+		InitWs2812();
+	}
+#else
+	InitWs2812();
+#endif
+
+	//InitTransponderTimer();
+	DelayMs(2);
+
 }

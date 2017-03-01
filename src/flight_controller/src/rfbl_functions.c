@@ -7,14 +7,16 @@ uint32_t rebootAddress;
 uint32_t bootCycles;
 uint32_t bootDirection;
 
-void HandleRfbl (void) {
+void HandleRfbl(void)
+{
     ReadRfblBkRegs();
 #ifdef DEBUG
     HandleRfblDisasterPrevention();
 #endif
 }
 
-void HandleRfblDisasterPrevention (void) {
+void HandleRfblDisasterPrevention(void)
+{
 	//flight code is working and has been running at least 5 seconds. Safe to reset RFBL/Recovery disaster counter.
 	bootDirection = BOOT_TO_APP_COMMAND;
 	bootCycles    = (uint32_t)0x00000000;
@@ -22,43 +24,47 @@ void HandleRfblDisasterPrevention (void) {
 	WriteRfblBkRegs();
 }
 
-void HandleFcStartupReg(void) {
-    if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight.
+void HandleFcStartupReg(void)
+{
+    if (RtcReadBackupRegister(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight.
     	//crashed FC startup
-    } else if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM9) {
+    } else if (RtcReadBackupRegister(FC_STATUS_REG) == BOOT_TO_SPEKTRUM9) {
     	//SpektrumBind (mainConfig.rcControlsConfig.bind);
-    	rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_STARTUP);
-    } else if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM5) {
+    	RtcWriteBackupRegister(FC_STATUS_REG,FC_STATUS_STARTUP);
+    } else if (RtcReadBackupRegister(FC_STATUS_REG) == BOOT_TO_SPEKTRUM5) {
     	//SpektrumBind (mainConfig.rcControlsConfig.bind);
-    	rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_STARTUP);
-    } else if (rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG) == BOOT_TO_SPEKTRUM9) {
+    	RtcWriteBackupRegister(FC_STATUS_REG,FC_STATUS_STARTUP);
+    } else if (RtcReadBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG) == BOOT_TO_SPEKTRUM9) {
 		//SpektrumBind (mainConfig.rcControlsConfig.bind);
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_APP_COMMAND);
-	} else if (rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG) == BOOT_TO_SPEKTRUM5) {
+		RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_APP_COMMAND);
+	} else if (RtcReadBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG) == BOOT_TO_SPEKTRUM5) {
 		//SpektrumBind (mainConfig.rcControlsConfig.bind);
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_APP_COMMAND);
+		RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_APP_COMMAND);
     } else {
-    	rtc_write_backup_reg(FC_STATUS_REG,FC_STATUS_STARTUP);
+    	RtcWriteBackupRegister(FC_STATUS_REG,FC_STATUS_STARTUP);
     }
 }
 
-void WriteRfblBkRegs (void) {
-	rtc_write_backup_reg(RFBL_BKR_RFBL_VERSION_REG,   rfblVersion);
-	rtc_write_backup_reg(RFBL_BKR_CFG1_VERSION_REG,   cfg1Version);
-	rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, bootDirection);
-	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG,    bootCycles);
-	rtc_write_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG,  rebootAddress); //todo: make configurable
+void WriteRfblBkRegs(void)
+{
+	RtcWriteBackupRegister(RFBL_BKR_RFBL_VERSION_REG,   rfblVersion);
+	RtcWriteBackupRegister(RFBL_BKR_CFG1_VERSION_REG,   cfg1Version);
+	RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG, bootDirection);
+	RtcWriteBackupRegister(RFBL_BKR_BOOT_CYCLES_REG,    bootCycles);
+	RtcWriteBackupRegister(RFBL_BKR_BOOT_ADDRESSS_REG,  rebootAddress); //todo: make configurable
 }
 
-void ReadRfblBkRegs (void) {
-    rfblVersion   = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
-    cfg1Version   = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
-    bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
-    bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG);
-    rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
+void ReadRfblBkRegs(void)
+{
+    rfblVersion   = RtcReadBackupRegister(RFBL_BKR_RFBL_VERSION_REG);
+    cfg1Version   = RtcReadBackupRegister(RFBL_BKR_CFG1_VERSION_REG);
+    bootDirection = RtcReadBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG);
+    bootCycles    = RtcReadBackupRegister(RFBL_BKR_BOOT_CYCLES_REG);
+    rebootAddress = RtcReadBackupRegister(RFBL_BKR_BOOT_ADDRESSS_REG);
 }
 
-void upgradeRfbl(void) {
+void upgradeRfbl(void)
+{
 	/*
 	uint16_t rfblSize          = 0x0000;
 	uint32_t rfblAddress       = 0x00000000;
@@ -113,7 +119,8 @@ void upgradeRfbl(void) {
 	*/
 }
 
-void eraseRfbl(uint32_t firmwareSize) {
+void eraseRfbl(uint32_t firmwareSize)
+{
 	(void)(firmwareSize);
 	/*
 	FLASH_Status status       = 0;

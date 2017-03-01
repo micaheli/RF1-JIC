@@ -131,7 +131,7 @@ void SendSmartPort(void)
 			SmartPortCreatePacket(0x0721, (int32_t)(filteredGyroData[YAW]), sPortPacket );
 			break;
 		case 6:
-			SmartPortCreatePacket(VFAS_FIRST_ID, (int32_t)(adcVoltage * 100), sPortPacket );
+			SmartPortCreatePacket(VFAS_FIRST_ID, (int32_t)(averageVoltage * 100), sPortPacket );
 			sPortTelemCount = 0;
 			break;
 		case 7:

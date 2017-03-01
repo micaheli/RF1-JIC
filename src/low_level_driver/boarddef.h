@@ -24,6 +24,13 @@
 #define uid2_4 (*(uint8_t*)0x1fff7a1b)
 
 enum {
+	ADC_DISABLED = 0,
+	ADC_CURRENT  = 1,
+	ADC_VOLTAGE  = 2,
+	ADC_RSSI     = 3,
+};
+
+enum {
 	ENUM_ACTUATOR_TYPE_DISABLED		= 0,
 	ENUM_ACTUATOR_TYPE_SERVO		= 1,
 	ENUM_ACTUATOR_TYPE_MOTOR		= 2,
@@ -504,4 +511,4 @@ extern unsigned char serialRxBuffer[][RXBUFFERSIZE];
 extern uint32_t motorOutputBuffer[][1500];
 
 extern int InitializeMCUSettings();
-void getBoardHardwareDefs();
+extern void GetBoardHardwareDefs();

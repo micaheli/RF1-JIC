@@ -16,7 +16,6 @@ uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 uint32_t StartSector = 0, EndSector = 0, Address = 0, i = 0 ;
 __IO uint32_t data32 = 0 , MemoryProgramStatus = 0 ;
 uint32_t toggle_led = 0;
-int usbStarted = 0;
 uint32_t ApplicationAddress = 0x08020000;
 uint8_t bindSpektrum = 0;
 char rfblTagString[20] = RFBL_TAG; //used to store a string in the flash. :)
@@ -60,33 +59,33 @@ int main(void)
     BoardInit();
 
 
-    if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight. Imediately jump into program
+    if (RtcReadBackupRegister(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight. Imediately jump into program
     	skipDelay = 1;
     	boot_to_app();
     }
 
-    bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
+    bootDirection = RtcReadBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG);
     if (!(bootDirection))
-    	rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,   BOOT_TO_APP_COMMAND);
+    	RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,   BOOT_TO_APP_COMMAND);
 
-	rtc_write_backup_reg(RFBL_BKR_RFBL_VERSION_REG,   RFBL_VERSION);
-	rtc_write_backup_reg(RFBL_BKR_CFG1_VERSION_REG,   CFG1_VERSION);
+    RtcWriteBackupRegister(RFBL_BKR_RFBL_VERSION_REG,   RFBL_VERSION);
+    RtcWriteBackupRegister(RFBL_BKR_CFG1_VERSION_REG,   CFG1_VERSION);
 
-	rfblVersion = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
-	cfg1Version = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
+	rfblVersion = RtcReadBackupRegister(RFBL_BKR_RFBL_VERSION_REG);
+	cfg1Version = RtcReadBackupRegister(RFBL_BKR_CFG1_VERSION_REG);
 
     //get config data from backup registers
-	rfblVersion   = rtc_read_backup_reg(RFBL_BKR_RFBL_VERSION_REG);
-	cfg1Version   = rtc_read_backup_reg(RFBL_BKR_CFG1_VERSION_REG);
-	bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
-	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG);
-	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
+	rfblVersion   = RtcReadBackupRegister(RFBL_BKR_RFBL_VERSION_REG);
+	cfg1Version   = RtcReadBackupRegister(RFBL_BKR_CFG1_VERSION_REG);
+	bootDirection = RtcReadBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG);
+	bootCycles    = RtcReadBackupRegister(RFBL_BKR_BOOT_CYCLES_REG);
+	rebootAddress = RtcReadBackupRegister(RFBL_BKR_BOOT_ADDRESSS_REG);
 
 
 	(void)(rfblVersion);
 	(void)(cfg1Version);
 	if (bootDirection == BOOT_TO_APP_AFTER_RECV_COMMAND) {
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+		RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
 		boot_to_app();
 	}
 
@@ -94,25 +93,25 @@ int main(void)
 
 
 	if (bootDirection == BOOT_TO_RECOVERY_COMMAND) {
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_RECOVERY_COMMAND);
+		RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_RECOVERY_COMMAND);
 		SystemReset();
 	}
 
 	if (bootDirection == BOOT_TO_APP_AFTER_SPEK_COMMAND) {
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+		RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
 		boot_to_app();
 	}
 
 
-	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
+	RtcWriteBackupRegister(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
 
-    if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM5) { //FC crashed while inflight. Imediately jump into program
+    if (RtcReadBackupRegister(FC_STATUS_REG) == BOOT_TO_SPEKTRUM5) { //FC crashed while inflight. Imediately jump into program
 		skipDelay = 1;
 		boot_to_app();
 	}
 
-    if (rtc_read_backup_reg(FC_STATUS_REG) == BOOT_TO_SPEKTRUM9) { //FC crashed while inflight. Imediately jump into program
+    if (RtcReadBackupRegister(FC_STATUS_REG) == BOOT_TO_SPEKTRUM9) { //FC crashed while inflight. Imediately jump into program
 		skipDelay = 1;
 		boot_to_app();
 	}
@@ -305,10 +304,10 @@ uint32_t checkOldConfigDirection (uint32_t bootDirection, uint32_t bootCycles) {
 				bootDirection = firmwareFinderData[4];
 			} else {
 				bootDirection = firmwareFinderData[4];
-				//rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, 0x00000000);
-				//rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
+				//RtcWriteBackupRegister(RFBL_BKR_BOOT_CYCLES_REG, 0x00000000);
+				//RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND);
 				//old crappy firmware
-				//rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG,    (uint32_t)0x00000000);
+				//RtcWriteBackupRegister(RFBL_BKR_BOOT_CYCLES_REG,    (uint32_t)0x00000000);
 				//bootDirection = BOOT_TO_APP_COMMAND;
 			}
 			break;

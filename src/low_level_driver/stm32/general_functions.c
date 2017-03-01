@@ -3,6 +3,7 @@
 static volatile uint32_t micros;
 static volatile uint32_t millisClock;
 volatile uint32_t systemUsTicks;
+volatile uint32_t usbStarted = 0;
 
 inline uint32_t InlineMillis(void) {
 	return HAL_GetTick();
@@ -47,13 +48,13 @@ void DelayMs(uint32_t mSec) {
 	HAL_Delay(mSec);
 }
 
-uint32_t rtc_read_backup_reg(uint32_t BackupRegister) {
+uint32_t RtcReadBackupRegister(uint32_t BackupRegister) {
     RTC_HandleTypeDef RtcHandle;
     RtcHandle.Instance = RTC;
     return HAL_RTCEx_BKUPRead(&RtcHandle, BackupRegister);
 }
 
-void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data) {
+void RtcWriteBackupRegister(uint32_t BackupRegister, uint32_t data) {
     RTC_HandleTypeDef RtcHandle;
     RtcHandle.Instance = RTC;
     HAL_PWR_EnableBkUpAccess();
@@ -62,6 +63,7 @@ void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data) {
 }
 
 void InitUsb(void) {
+	usbStarted = 1;
 	USB_DEVICE_Init();
 }
 
@@ -230,4 +232,28 @@ uint32_t GetDmaCallbackFromDmaStream(uint32_t dmaEnum)
 
 	return (0);
 
+}
+
+void BootToAddress(uint32_t address)
+{
+	pFunction JumpToApplication;
+	uint32_t jumpAddress;
+
+	//only disable USB if it's been started, otherwise we get a hard fault
+	if (usbStarted)
+	{
+		USB_DEVICE_DeInit();
+	}
+
+	HAL_RCC_DeInit();
+	DelayMs(2); //let MCU stabilize
+
+	__disable_irq(); // disable interrupts for jump
+
+	jumpAddress = *(__IO uint32_t*)(address + 4);
+    JumpToApplication = (pFunction)jumpAddress;
+
+    // Initialize user application's Stack Pointer
+    __set_MSP(*(__IO uint32_t*)address);
+    JumpToApplication();
 }

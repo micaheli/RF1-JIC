@@ -1139,7 +1139,7 @@ void OneWire(char *inString) {
 				{
 					if (forceUpgrade)
 					{
-						if (atoi(args) < 50)
+						if ( (atoi(args)) && (atoi(args) < 51) )
 						{
 							memcpy(&escHexLocation, &escHexByPosition[atoi(args)], sizeof(esc_hex_location));
 						}

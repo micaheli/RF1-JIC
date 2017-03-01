@@ -369,19 +369,19 @@ void UpdateLeds(void)
 			DoLed(2, 1);
 			break;
 		case LEDS_SLOW_BLINK:
-			BlinkAllLeds(timeNow, 999, 1998);
+			HandleCoolLeds(3000, 1500);
 			break;
 		case LEDS_MED_BLINK:
-			BlinkAllLeds(timeNow, 333, 666);
+			HandleCoolLeds(2000, 1000);
 			break;
 		case LEDS_FAST_BLINK:
-			BlinkAllLeds(timeNow, 100, 200);
+			HandleCoolLeds(1000, 500);
 			break;
 		case LEDS_FASTER_BLINK:
-			BlinkAllLeds(timeNow, 25, 50);
+			HandleCoolLeds(300, 150);
 			break;
 		case LEDS_FASTEST_BLINK:
-			BlinkAllLeds(timeNow, 10, 20);
+			HandleCoolLeds(150, 75);
 			break;
 		default:
 			DoLed(0, 0);
@@ -389,6 +389,26 @@ void UpdateLeds(void)
 			DoLed(2, 0);
 			break;
 	}
+}
+
+void HandleCoolLeds(uint32_t heartbeatMs, uint32_t heartbeatMsHalf)
+{
+	uint32_t dutyNumber;
+
+	dutyNumber = (InlineMillis() % heartbeatMs);
+
+	if (dutyNumber > heartbeatMsHalf)
+	{
+		dutyNumber = (heartbeatMs - dutyNumber) * 2;
+	}
+	else
+	{
+		dutyNumber *= 2;
+	}
+
+	//update 1000 times faster
+	CoolLedEffect(heartbeatMs, dutyNumber, 0);
+
 }
 
 void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2)
@@ -408,6 +428,27 @@ void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2)
 	} else if ((timeNow - ledStatus.timeStart) > time2 )
 	{
 		ledStatus.timeStart = timeNow;
+	}
+}
+
+void CoolLedEffect(uint32_t pwmPeriod, uint32_t dutyNumber, uint32_t ledNumber)
+{
+	//pwm an LED based on Micros()
+	uint32_t currentTime;
+	uint32_t currentDutyIn;
+	uint32_t pwmOffAt;
+
+	currentTime   = Micros();
+	currentDutyIn = (currentTime % pwmPeriod);
+	pwmOffAt      = currentTime - currentDutyIn + dutyNumber;
+
+	if (currentTime > pwmOffAt)
+	{
+		DoLed(ledNumber, 1);
+	}
+	else
+	{
+		DoLed(ledNumber, 0);
 	}
 }
 

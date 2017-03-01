@@ -100,7 +100,8 @@ enum
 #define USING_RX_END           16
 
 extern uint32_t ppmPin;
-extern float    flopAngle[];
+extern volatile float maxFlopRate[];
+extern volatile float maxKissRate[];
 
 
 extern volatile uint32_t rx_timeout;
@@ -118,8 +119,8 @@ extern uint32_t failsafeHappend;
 extern void SpektrumBind (uint32_t bindNumber);
 
 extern void InitRcData(void);
-extern void InlineCollectRcCommand (void);
-extern float InlineApplyRcCommandCurve (float rcCommand, uint32_t curveToUse, float expo, uint32_t axis);
+extern void InlineCollectRcCommand(void);
+extern float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, float expo, uint32_t axis);
 extern void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]);
 
 extern void ProcessSpektrumPacket(uint32_t serialNumber);

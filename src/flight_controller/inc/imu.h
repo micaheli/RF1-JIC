@@ -1,7 +1,26 @@
 #pragma once
 
-extern volatile float quat[];
+
+
+//	+X to the right
+//	+Y straight up
+//	+Z axis toward viewer
+//	Heading = rotation about y axis
+//	Attitude = rotation about z axis
+//	Bank = rotation about x axis
+
+//30 degrees per second
+#define MAX_SPIN_RATE_RAD 0.523599f
+
+typedef struct {
+	volatile float x;
+	volatile float y;
+	volatile float z;
+	volatile float w;
+} quaternion_record;
+
+extern volatile float currentSpinRate;
+extern volatile quaternion_record quat;
 
 extern void InitImu(void);
-extern void ConvertToQuaternion(float gx, float gy, float gz, float ax, float ay, float az);
-extern void CalculateQuaternions(void);
+extern void UpdateImu(float gx, float gy, float gz, float ax, float ay, float az);

@@ -97,7 +97,7 @@ int CheckRfblPinsAttatched(void) {
 	    	return (1);
 	    } else {
 	    	//pin not attached, let's go into RFBL
-	    	//rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_RFBL_COMMAND);
+	    	//RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_RFBL_COMMAND);
 	    	return (0);
 	    }
 	}
@@ -116,17 +116,17 @@ int main(void)
     HAL_DeInit();
     BoardInit();
 
-    if (rtc_read_backup_reg(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight. Imediately jump into program
+    if (RtcReadBackupRegister(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight. Imediately jump into program
     	boot_to_app();
     }
 
     //get config data from backup registers
-	bootDirection = rtc_read_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG);
-	bootCycles    = rtc_read_backup_reg(RFBL_BKR_BOOT_CYCLES_REG) + 1;
-	rebootAddress = rtc_read_backup_reg(RFBL_BKR_BOOT_ADDRESSS_REG);
-	rebootPending = rtc_read_backup_reg(RFBL_BKR_REBOOT_PENDING_REG);
+	bootDirection = RtcReadBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG);
+	bootCycles    = RtcReadBackupRegister(RFBL_BKR_BOOT_CYCLES_REG) + 1;
+	rebootAddress = RtcReadBackupRegister(RFBL_BKR_BOOT_ADDRESSS_REG);
+	rebootPending = RtcReadBackupRegister(RFBL_BKR_REBOOT_PENDING_REG);
 
-	rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
+	RtcWriteBackupRegister(RFBL_BKR_BOOT_CYCLES_REG, bootCycles);
 
 	if (bootCycles > 5) { //we've restarted for some reason, check restart register and clear it
 		//Let's clear the registers and go into Recovery mode.
@@ -138,9 +138,9 @@ int main(void)
 			//special case, if this equals 222 then we reboot to
 			ApplicationAddress = rebootAddress;
 		}
-		rtc_write_backup_reg(RFBL_BKR_REBOOT_PENDING_REG, 0); //clear the reboot pending since reboot happened
-		rtc_write_backup_reg(RFBL_BKR_BOOT_CYCLES_REG, 0);    //
-		rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND); //default is always boot to app
+		RtcWriteBackupRegister(RFBL_BKR_REBOOT_PENDING_REG, 0); //clear the reboot pending since reboot happened
+		RtcWriteBackupRegister(RFBL_BKR_BOOT_CYCLES_REG, 0);    //
+		RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_COMMAND); //default is always boot to app
 	}
 
 	//if (CheckRfblPinsAttatched())
@@ -158,7 +158,7 @@ int main(void)
 			SystemResetToDfuBootloader(); //reset to DFU
 			break;
 		case BOOT_TO_RECOVERY_COMMAND: //go into recovery mode
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_RECV_COMMAND); //force boot to app for crappy firmware now that we've entered recovery command
+			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG, BOOT_TO_APP_AFTER_RECV_COMMAND); //force boot to app for crappy firmware now that we've entered recovery command
 			break;
 		case BOOT_TO_ADDRESS:
 		case BOOT_TO_SPEKTRUM5:

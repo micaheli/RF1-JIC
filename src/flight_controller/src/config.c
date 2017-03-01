@@ -130,15 +130,15 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		0, 10, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 160.00, "" }, //1000 18
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 140.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 150.00, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 130.00, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 110.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 120.00, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 500.00, "" }, //1000 14
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 400.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 450.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 700.00, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 600.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 650.00, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1200.00, "" }, //1000000 114
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1200.00, "" },
 		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 800.00, "" },
 		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1000.00, "" },
 
@@ -146,10 +146,10 @@ const config_variables_rec valueTable[] = {
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
 
-		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25, 15, "" },
-		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25, 15, "" },
-		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 50, 25, "" },
-		{ "sld", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.9, 0.45, "" },
+		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 08.0, "" },
+		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25.0, 00.1, "" },
+		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 75.0, 40.0, "" },
+		{ "sld", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.90, 0.05, "" },
 
 		{ "filter_mode0",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterMod, 				0, 10, 0, "" },
 		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
@@ -604,8 +604,8 @@ int32_t SetVariable(char *inString)
 		if (!strcmp(valueTable[x].name, inString))
 		{
 			SetValueOrString(x, args);
-			autoSaveTimer = InlineMillis();
-			if ( (!strcmp(valueTable[x].group, "telm")) || (!strcmp(valueTable[x].group, "mixr")) || (!strcmp(valueTable[x].group, "gyro")) || (!strcmp(valueTable[x].group, "filt"))  || (!strcmp(valueTable[x].group, "rccf")) ) {
+			if ( (!strcmp(valueTable[x].group, "telm")) || (!strcmp(valueTable[x].group, "mixr")) || (!strcmp(valueTable[x].group, "gyro")) || (!strcmp(valueTable[x].group, "filt")) || (!strcmp(valueTable[x].group, "rccf"))  || (!strcmp(valueTable[x].group, "rate")) )
+			{
 				resetBoard=1;
 			}
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me %s=%s", inString, args);
@@ -903,6 +903,10 @@ void ProcessCommand(char *inString)
 			char gx[12];
 			char gy[12];
 			char gz[12];
+			char qx[12];
+			char qy[12];
+			char qz[12];
+			char qw[12];
 
 			ftoa(pitchAttitude, pitchString);
 			ftoa(rollAttitude, rollString);
@@ -927,12 +931,23 @@ void ProcessCommand(char *inString)
 			StripSpaces(gy);
 			StripSpaces(gz);
 
+			ftoa(quat.w, qw);
+			ftoa(quat.x, qx);
+			ftoa(quat.y, qy);
+			ftoa(quat.z, qz);
+			StripSpaces(qw);
+			StripSpaces(qx);
+			StripSpaces(qy);
+			StripSpaces(qz);
+
 			//todo: make a way to combine strings
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm pitch=%s\n#tm roll=%s\n#tm heading=%s", pitchString,rollString,yawString);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm ax=%s\n#tm ay=%s\n#tm az=%s", ax,ay,az);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm gx=%s\n#tm gy=%s\n#tm gz=%s", gx,gy,gz);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm qx=%s\n#tm qy=%s\n#tm qz=%s\n#tm qw=%s", qx,qy,qz,qw);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 		}
@@ -1154,7 +1169,38 @@ void ProcessCommand(char *inString)
 
 			SaveAndSend();
 		}
-		else if (!strcmp("nytfluffy", inString))
+		else if (!strcmp("nytfluffyrates", inString))
+		{
+
+			mainConfig.rcControlsConfig.useCurve[PITCH]    = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[ROLL]     = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[YAW]      = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[THROTTLE] = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX1]     = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX2]     = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX3]     = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX4]     = NO_EXPO;
+
+			mainConfig.rcControlsConfig.rates[PITCH]       = 300;
+			mainConfig.rcControlsConfig.rates[ROLL]        = 300;
+			mainConfig.rcControlsConfig.rates[YAW]         = 150;
+
+			mainConfig.rcControlsConfig.curveExpo[PITCH]   = 50;
+			mainConfig.rcControlsConfig.curveExpo[ROLL]    = 50;
+			mainConfig.rcControlsConfig.curveExpo[YAW]     = 20;
+
+			mainConfig.rcControlsConfig.acroPlus[PITCH]    = 58;
+			mainConfig.rcControlsConfig.acroPlus[ROLL]     = 58;
+			mainConfig.rcControlsConfig.acroPlus[YAW]      = 40;
+
+			resetBoard = 1;
+
+			RfCustomReplyBuffer("#me Nyfluffy mode engaged");
+
+			SaveAndSend();
+
+		}
+		else if (!strcmp("nytfluffyall", inString))
 		{
 
 			SetRxDefaults(USING_SBUS_T, ENUM_USART1);
@@ -1162,6 +1208,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]    = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[ROLL]     = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[YAW]      = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[THROTTLE] = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX1]     = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX2]     = NO_EXPO;
@@ -1215,6 +1263,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 2;
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]      = KISS_EXPO;
+			mainConfig.rcControlsConfig.useCurve[ROLL]       = KISS_EXPO;
+			mainConfig.rcControlsConfig.useCurve[YAW]        = KISS_EXPO;
 			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
@@ -1255,6 +1305,8 @@ void ProcessCommand(char *inString)
 			mainConfig.mixerConfig.mixerType                 = 1;
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[YAW]        = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
@@ -1283,7 +1335,7 @@ void ProcessCommand(char *inString)
 			SaveAndSend();
 
 		}
-		else if (!strcmp("braindrain", inString))
+		else if (!strcmp("braindrainall", inString))
 		{
 
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 1024;
@@ -1339,6 +1391,8 @@ void ProcessCommand(char *inString)
 
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[YAW]        = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
@@ -1367,17 +1421,47 @@ void ProcessCommand(char *inString)
 			SaveAndSend();
 
 		}
+		else if (!strcmp("braindrainrates", inString))
+		{
+			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[YAW]        = ACRO_PLUS;
+			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX3]       = NO_EXPO;
+			mainConfig.rcControlsConfig.useCurve[AUX4]       = NO_EXPO;
+
+			mainConfig.rcControlsConfig.rates[PITCH]         = 320;
+			mainConfig.rcControlsConfig.rates[ROLL]          = 300;
+			mainConfig.rcControlsConfig.rates[YAW]           = 280;
+
+			mainConfig.rcControlsConfig.curveExpo[PITCH]     = 60;
+			mainConfig.rcControlsConfig.curveExpo[ROLL]      = 60;
+			mainConfig.rcControlsConfig.curveExpo[YAW]       = 25;
+
+			mainConfig.rcControlsConfig.acroPlus[PITCH]      = 0;
+			mainConfig.rcControlsConfig.acroPlus[ROLL]       = 0;
+			mainConfig.rcControlsConfig.acroPlus[YAW]        = 0;
+
+			resetBoard = 1;
+
+			RfCustomReplyBuffer("#me Braindrain mode engaged");
+
+			SaveAndSend();
+
+		}
 	else if (!strcmp("pidsdefault", inString))
 		{
 
 			mainConfig.gyroConfig.loopCtrl   = LOOP_UH32;
-			mainConfig.pidConfig[YAW].kp     = 150.00;
-			mainConfig.pidConfig[ROLL].kp    = 130.00;
-			mainConfig.pidConfig[PITCH].kp   = 140.00;
+			mainConfig.pidConfig[YAW].kp     = 130.00;
+			mainConfig.pidConfig[ROLL].kp    = 110.00;
+			mainConfig.pidConfig[PITCH].kp   = 120.00;
 
-			mainConfig.pidConfig[YAW].ki     = 500.00;
-			mainConfig.pidConfig[ROLL].ki    = 400.00;
-			mainConfig.pidConfig[PITCH].ki   = 450.00;
+			mainConfig.pidConfig[YAW].ki     = 700.00;
+			mainConfig.pidConfig[ROLL].ki    = 600.00;
+			mainConfig.pidConfig[PITCH].ki   = 650.00;
 
 			mainConfig.pidConfig[YAW].kd     = 1200.00;
 			mainConfig.pidConfig[ROLL].kd    = 800.00;
@@ -1413,34 +1497,34 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("pidsrs2k", inString))
 		{
 
-			mainConfig.gyroConfig.loopCtrl = LOOP_UH32;
-			mainConfig.pidConfig[YAW].kp   = 150.00;
-			mainConfig.pidConfig[ROLL].kp  = 130.00;
-			mainConfig.pidConfig[PITCH].kp = 140.00;
+			mainConfig.gyroConfig.loopCtrl   = LOOP_UH32;
+			mainConfig.pidConfig[YAW].kp     = 130.00;
+			mainConfig.pidConfig[ROLL].kp    = 110.00;
+			mainConfig.pidConfig[PITCH].kp   = 120.00;
 
-			mainConfig.pidConfig[YAW].ki   = 500.00;
-			mainConfig.pidConfig[ROLL].ki  = 400.00;
-			mainConfig.pidConfig[PITCH].ki = 450.00;
+			mainConfig.pidConfig[YAW].ki     = 700.00;
+			mainConfig.pidConfig[ROLL].ki    = 600.00;
+			mainConfig.pidConfig[PITCH].ki   = 650.00;
 
-			mainConfig.pidConfig[YAW].kd   = 1200.00;
-			mainConfig.pidConfig[ROLL].kd  = 1000.00;
-			mainConfig.pidConfig[PITCH].kd = 1200.00;
+			mainConfig.pidConfig[YAW].kd     = 1200.00;
+			mainConfig.pidConfig[ROLL].kd    = 800.00;
+			mainConfig.pidConfig[PITCH].kd   = 1000.00;
 
-			mainConfig.pidConfig[YAW].ga   = 12;
-			mainConfig.pidConfig[ROLL].ga  = 0;
-			mainConfig.pidConfig[PITCH].ga = 0;
+			mainConfig.pidConfig[YAW].ga     = 12;
+			mainConfig.pidConfig[ROLL].ga    = 0;
+			mainConfig.pidConfig[PITCH].ga   = 0;
 
 			mainConfig.filterConfig[YAW].gyro.r   = 88.00;
 			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
 			mainConfig.filterConfig[PITCH].gyro.r = 88.00;
 
 			mainConfig.filterConfig[YAW].gyro.q   = 10.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 30.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 30.000;
+			mainConfig.filterConfig[ROLL].gyro.q  = 25.000;
+			mainConfig.filterConfig[PITCH].gyro.q = 25.000;
 
 			mainConfig.filterConfig[0].filterMod  = 0;
 			mainConfig.filterConfig[1].filterMod  = 0;
-			mainConfig.filterConfig[2].filterMod  = 1;
+			mainConfig.filterConfig[2].filterMod  = 2;
 
 			mainConfig.filterConfig[YAW].kd.r     = 90.0;
 			mainConfig.filterConfig[ROLL].kd.r    = 90.0;
@@ -1616,6 +1700,13 @@ void ProcessCommand(char *inString)
 			uint32_t returnValueThis = RfVtxChannel(atoi(args));
 			DelayMs(100);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("serial", inString))
+		{
+
+			DelayMs(100);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#serial: %lu%lu%lu", STM32_UUID[0], STM32_UUID[1], STM32_UUID[2] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("dump", inString))
@@ -1843,8 +1934,8 @@ void ProcessCommand(char *inString)
 	else if ( (!strcmp("bind9", inString)) || (!strcmp("bind", inString)) )
 		{
 			mainConfig.rcControlsConfig.bind = 9;
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
-			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
+			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
+			RtcWriteBackupRegister(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 9");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -1852,22 +1943,22 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("bind5", inString))
 		{
 			mainConfig.rcControlsConfig.bind = 5;
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
-			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
+			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
+			RtcWriteBackupRegister(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
 			RfCustomReplyBuffer("#me Binding 5");
 		}
 	else if (!strcmp("bind3", inString))
 		{
 			mainConfig.rcControlsConfig.bind = 3;
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
-			rtc_write_backup_reg(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
+			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
+			RtcWriteBackupRegister(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
 			RfCustomReplyBuffer("#me Binding 3");
 		}
 	else if (!strcmp("rebootrfbl", inString) || !strcmp("resetrfbl", inString))
 		{
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
+			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
 			RfCustomReply("#me Rebooting Into RFBL");
 			DelayMs(100);
 			SystemReset();
@@ -1875,7 +1966,7 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("rebootrecovery", inString) || !strcmp("resetrecovery", inString))
 		{
-			rtc_write_backup_reg(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
+			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
 			RfCustomReply("#me Rebooting Into Recovery");
 			DelayMs(100);
 			SystemReset();
