@@ -1,9 +1,5 @@
 #include "includes.h"
 
-#include <stdio.h>
-/*-----------------Variables--------------*/
-
-
 static uint32_t updateInterval = 100;
 uint8_t greenTemp = 0;
 uint8_t redTemp = 0;
@@ -29,22 +25,34 @@ uint8_t colorChart[COLOR_CHART_SIZE][3] = {
 };
 uint8_t rgbArray[WS2812_MAX_LEDS*3];
 
-/*-------------------------Inline Functions----------------*/
-inline uint8_t LowerLed(uint8_t input, uint8_t sub)
+static void HandleCoolLeds(uint32_t heartbeatMs, uint32_t heartbeatMsHalf);
+static inline uint8_t LowerLed(uint8_t input, uint8_t sub);
+static inline void SetPixel(uint8_t pixel, uint8_t red, uint8_t green, uint8_t blue);
+static inline void LedModeOff(uint8_t speed);
+static inline void LedModeColor();
+static inline void LedModeOn(uint8_t speed);
+static inline void LedModeDisco(uint8_t speed);
+static inline void LedModeParty(uint8_t speed);
+static inline void LedModeGyroMotion(uint8_t speed);
+static inline void LedModeColorPulse(uint8_t speed);
+static inline void LedModeMultiDisco(uint8_t speed);
+static inline void LedModeMultiParty(uint8_t speed);
+static inline void LedModeKnightRider(uint8_t speed, uint8_t red, uint8_t green, uint8_t blue);
+static inline void LedModeBatteryLevel(void);
+
+static inline uint8_t LowerLed(uint8_t input, uint8_t sub)
 {
-  if ((input - sub) >= 0)
-  {
-    return(input - sub);
-  }
-
-  else
-
-  {
-    return(0);
-  }
+	if ((input - sub) >= 0)
+	{
+		return(input - sub);
+	}
+	else
+	{
+		return(0);
+	}
 }
 
- inline void SetPixel(uint8_t pixel, uint8_t red, uint8_t green, uint8_t blue)
+static inline void SetPixel(uint8_t pixel, uint8_t red, uint8_t green, uint8_t blue)
 {
 	//sets led in array, wont be need with matrix
 	rgbArray[( ((pixel-1)*3))] = ~(uint8_t)green; //green is the first set, nothing needs to be added
@@ -52,177 +60,177 @@ inline uint8_t LowerLed(uint8_t input, uint8_t sub)
 	rgbArray[( ((pixel-1)*3) + 2)] = ~(uint8_t)blue;
 }
 
- static inline void LedModeOff(uint8_t speed)
- {
-	 //setup & math
-	 updateInterval = speed;
-	 uint32_t x = 0;
+static inline void LedModeOff(uint8_t speed)
+{
+	//setup & math
+	updateInterval = speed;
+	uint32_t x = 0;
 
-	 //set colors
- 	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
- 	{
- 		SetPixel(x,0,0,0);
- 	}
- }
+	//set colors
+	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
+	{
+		SetPixel(x,0,0,0);
+	}
+}
 
- static inline void LedModeColor()
- {
-	 //setup & math
-	 uint32_t x = 0;
-	 if (currentColorChart >= COLOR_CHART_SIZE)
-	 {
-		 currentColorChart = 0;
-	 }
+static inline void LedModeColor()
+{
+	//setup & math
+	uint32_t x = 0;
+	if (currentColorChart >= COLOR_CHART_SIZE)
+	{
+		currentColorChart = 0;
+	}
 	greenTemp = colorChart[currentColorChart++][1];
 	redTemp = colorChart[currentColorChart++][0];
 	blueTemp = colorChart[currentColorChart++][2];
 
- 	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
- 	{
- 		SetPixel(x,redTemp,greenTemp,blueTemp);
- 	}
- }
+	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
+	{
+		SetPixel(x,redTemp,greenTemp,blueTemp);
+	}
+}
 
- static inline void LedModeOn(uint8_t speed)
- {
-	 //setup & math
-	 updateInterval = speed;
-	 uint32_t x = 0;
+static inline void LedModeOn(uint8_t speed)
+{
+	//setup & math
+	updateInterval = speed;
+	uint32_t x = 0;
 
-
- 	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
- 	{
- 		SetPixel(x,mainConfig.ledConfig.ledRed,mainConfig.ledConfig.ledGreen,mainConfig.ledConfig.ledBlue);
- 	}
- }
-
-
- static inline void LedModeDisco(uint8_t speed)
- {
-	 //setup & math
-	 updateInterval=speed;
-	 uint32_t x = 0;
-	 greenTemp = ((rand() & 0xF0) + 1);
-	 redTemp = ((rand() & 0xF0) + 1);
-	 blueTemp = ((rand() & 0xF0) + 1);
-
- 	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
- 	{
- 		SetPixel(x,redTemp,greenTemp,blueTemp);
- 	}
- }
-
-
- static inline void LedModeParty(uint8_t speed)
-  {
-	 //setup & math
-	 redTemp =  (rand() & 0xF0) + 1;
-	 greenTemp = (rand() & 0xF0) + 1;
-	 blueTemp = (rand() & 0xF0) + 1;
-	 updateInterval=speed;
-	 uint32_t x = 0;
-
-		if (redTemp > greenTemp)
-			greenTemp = 0;
-		if (redTemp > blueTemp)
-			blueTemp = 0;
-		if (blueTemp > greenTemp)
-			greenTemp = 0;
-		if (blueTemp > redTemp)
-			redTemp = 0;
-		if (greenTemp > blueTemp)
-			blueTemp = 0;
-		if (greenTemp > redTemp)
-			blueTemp = 0;
 
 	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
-		 {
-		 	SetPixel(x,redTemp,greenTemp,blueTemp);
-		 }
+	{
+		SetPixel(x,mainConfig.ledConfig.ledRed,mainConfig.ledConfig.ledGreen,mainConfig.ledConfig.ledBlue);
+	}
+}
 
-  }
 
- static inline void LedModeGyroMotion(uint8_t speed)
-  {
+static inline void LedModeDisco(uint8_t speed)
+{
+	//setup & math
+	updateInterval=speed;
+	uint32_t x = 0;
+	greenTemp = ((rand() & 0xF0) + 1);
+	redTemp = ((rand() & 0xF0) + 1);
+	blueTemp = ((rand() & 0xF0) + 1);
+
+	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
+	{
+		SetPixel(x,redTemp,greenTemp,blueTemp);
+	}
+}
+
+
+static inline void LedModeParty(uint8_t speed)
+{
+	//setup & math
+	redTemp =  (rand() & 0xF0) + 1;
+	greenTemp = (rand() & 0xF0) + 1;
+	blueTemp = (rand() & 0xF0) + 1;
+	updateInterval=speed;
+	uint32_t x = 0;
+
+	if (redTemp > greenTemp)
+		greenTemp = 0;
+	if (redTemp > blueTemp)
+		blueTemp = 0;
+	if (blueTemp > greenTemp)
+		greenTemp = 0;
+	if (blueTemp > redTemp)
+		redTemp = 0;
+	if (greenTemp > blueTemp)
+		blueTemp = 0;
+	if (greenTemp > redTemp)
+		blueTemp = 0;
+
+	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
+	{
+		SetPixel(x,redTemp,greenTemp,blueTemp);
+	}
+
+}
+
+static inline void LedModeGyroMotion(uint8_t speed)
+{
 	 //setup & math
-	 updateInterval=speed;
-	 uint32_t x = 0;
+	updateInterval=speed;
+	uint32_t x = 0;
 
-  	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
-  	{
-  		SetPixel(x,(uint8_t)CONSTRAIN(ABS(filteredGyroData[YAW]),0,254)+1,(uint8_t)CONSTRAIN(ABS(filteredGyroData[ROLL]),0,254)+1,(uint8_t)CONSTRAIN(ABS(filteredGyroData[PITCH]),0,254)+1);
-  	}
-  }
+	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
+	{
+		SetPixel(x,(uint8_t)CONSTRAIN(ABS(filteredGyroData[YAW]),0,254)+1,(uint8_t)CONSTRAIN(ABS(filteredGyroData[ROLL]),0,254)+1,(uint8_t)CONSTRAIN(ABS(filteredGyroData[PITCH]),0,254)+1);
+	}
+}
 
- static inline void LedModeColorPulse(uint8_t speed)
-  {
-	 //setup & math
-	 updateInterval=speed;
-	 colorPulse +=1;
-	 uint32_t x = 0;
+static inline void LedModeColorPulse(uint8_t speed)
+{
+	//setup & math
+	updateInterval=speed;
+	colorPulse +=1;
+	uint32_t x = 0;
 
-	 if (colorPulse > 254)
-	 {
-		 currentLedPulse++;
-		 colorPulse = 0;
-	 }
-	 redTemp= 0;
-	 blueTemp= 0;
-	 greenTemp=0;
-
-
-
-	 //for loop for setting the led, dont change any math in here if you want all to update at once
-  	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
-  	{
-  		 switch (currentLedPulse)
-  			 {
-  				 case 3:
-  					 currentLedPulse=0;
-  				 case 0:
-  					SetPixel(x,colorPulse,0,0);
-  					 break;
-  				 case 1:
-  					SetPixel(x,0,colorPulse,0);
-  					 break;
-  				 case 2:
-  					SetPixel(x,0,0,colorPulse);
-  					 break;
-  			 }
-  	}
-  }
-
- static inline void LedModeMultiDisco(uint8_t speed)
-   {
-	 //setup & math
-	 updateInterval=speed;
-	 uint32_t x = 0;
-
- 	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
- 	{
- 		greenTemp = ((rand() & 0xF0) + 1);
- 		redTemp = ((rand() & 0xF0) + 1);
- 		blueTemp = ((rand() & 0xF0) + 1);
-
- 		SetPixel(x,redTemp,greenTemp,blueTemp);
- 	}
-   }
-
- static inline void LedModeMultiParty(uint8_t speed)
-   {
-	 //setup & math
-	 redTemp = (rand() & 0xF0) + 1;
-	 greenTemp = (rand() & 0xF0) + 1;
-	 blueTemp = (rand() & 0xF0) + 1;
-	 updateInterval=speed;
-	 uint32_t x = 0;
+	if (colorPulse > 254)
+	{
+		currentLedPulse++;
+		colorPulse = 0;
+	}
+	redTemp= 0;
+	blueTemp= 0;
+	greenTemp=0;
 
 
-   	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
-   	{
-   		redTemp = (rand() & 0xF0) + 1;
-   		greenTemp = (rand() & 0xF0) + 1;
-   		blueTemp = (rand() & 0xF0) + 1;
+
+	//for loop for setting the led, dont change any math in here if you want all to update at once
+	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
+	{
+		switch (currentLedPulse)
+		{
+			case 3:
+				currentLedPulse=0;
+			case 0:
+				SetPixel(x,colorPulse,0,0);
+				break;
+			case 1:
+				SetPixel(x,0,colorPulse,0);
+				break;
+			case 2:
+				SetPixel(x,0,0,colorPulse);
+				break;
+		}
+	}
+}
+
+static inline void LedModeMultiDisco(uint8_t speed)
+{
+	//setup & math
+	updateInterval=speed;
+	uint32_t x = 0;
+
+	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
+	{
+		greenTemp = ((rand() & 0xF0) + 1);
+		redTemp = ((rand() & 0xF0) + 1);
+		blueTemp = ((rand() & 0xF0) + 1);
+
+		SetPixel(x,redTemp,greenTemp,blueTemp);
+	}
+}
+
+static inline void LedModeMultiParty(uint8_t speed)
+{
+	//setup & math
+	redTemp = (rand() & 0xF0) + 1;
+	greenTemp = (rand() & 0xF0) + 1;
+	blueTemp = (rand() & 0xF0) + 1;
+	updateInterval=speed;
+	uint32_t x = 0;
+
+
+	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
+	{
+		redTemp = (rand() & 0xF0) + 1;
+		greenTemp = (rand() & 0xF0) + 1;
+		blueTemp = (rand() & 0xF0) + 1;
 		if (redTemp > greenTemp)
 			greenTemp = 0;
 		if (redTemp > blueTemp)
@@ -236,89 +244,91 @@ inline uint8_t LowerLed(uint8_t input, uint8_t sub)
 		if (greenTemp > redTemp)
 			blueTemp = 0;
 
-   		SetPixel(x,redTemp,blueTemp,greenTemp);
-   	}
-   }
+		SetPixel(x,redTemp,blueTemp,greenTemp);
+	}
+}
 
- static inline void LedModeKnightRider(uint8_t speed, uint8_t red, uint8_t green, uint8_t blue)
-   {
-	 //setup & math
-	 updateInterval=speed;
+static inline void LedModeKnightRider(uint8_t speed, uint8_t red, uint8_t green, uint8_t blue)
+{
+	//setup & math
+	updateInterval=speed;
 
-	 if (adding) {
-	    pixel = pixel + 1;
-	    if (pixel == ((int32_t)mainConfig.ledConfig.ledCount+1))
-	    {
-	      adding=0;
-	      pixel -= 2;
-	    }
-	  }
-	  else
-	  {
-	    pixel = pixel - 1;
-	    if (pixel == 0)
-	    {
-	      adding=1;
-	      pixel+=2;
-	    }
-	  }
+	if (adding) {
+		pixel = pixel + 1;
+		if (pixel == ((int32_t)mainConfig.ledConfig.ledCount+1))
+		{
+			adding=0;
+			pixel -= 2;
+		}
+	}
+	else
+	{
+		pixel = pixel - 1;
+		if (pixel == 0)
+		{
+			adding=1;
+			pixel+=2;
+		}
+	}
 
 
-	  SetPixel(pixel, red, green, blue);
+	SetPixel(pixel, red, green, blue);
 
-	  if (adding)
-	  {
-		  if ((pixel - 1) >= 0 ) {
-		   SetPixel(pixel - 1, LowerLed(red, 200), LowerLed(green, 200), LowerLed(blue, 200));
-		  }
-		  if ((pixel - 2) >= 0 ) {
+	if (adding)
+	{
+		if ((pixel - 1) >= 0 )
+		{
+			SetPixel(pixel - 1, LowerLed(red, 200), LowerLed(green, 200), LowerLed(blue, 200));
+		}
+		if ((pixel - 2) >= 0 )
+		{
 			SetPixel(pixel - 2, LowerLed(red, 250), LowerLed(green, 250), LowerLed(blue, 250));
-		  }
-		  if ((pixel - 3) >= 0 ) {
+		}
+		if ((pixel - 3) >= 0 )
+		{
 			SetPixel(pixel - 3, LowerLed(red, 255), LowerLed(green, 255), LowerLed(blue, 255));
-		  }
-	  }
+		}
+	}
 
-	  else
-	  {
-		  if ((pixel + 1) <= 7 ) {
+	else
+	{
+		if ((pixel + 1) <= 7 )
+		{
 			SetPixel(pixel + 1, LowerLed(red, 200), LowerLed(green, 200), LowerLed(blue, 200));
-		  }
-		  if ((pixel + 2) <= 7 ) {
+		}
+		if ((pixel + 2) <= 7 )
+		{
 			SetPixel(pixel + 2, LowerLed(red, 250), LowerLed(green, 250), LowerLed(blue, 250));
-		  }
-		  if ((pixel + 3) <= 7 ) {
+		}
+		if ((pixel + 3) <= 7 )
+		{
 			SetPixel(pixel + 3, LowerLed(red, 255), LowerLed(green, 255), LowerLed(blue, 255));
-		  }
-	  }
+		}
+	}
 
-   }
+}
 
- static inline void LedModeBatteryLevel()
- {
-	 if (averageVoltage >= fullVoltage)
-	 {
-		 LedModeKnightRider(60, 0, 255, 0);
-	 }
-	 if (averageVoltage > runningVoltage && averageVoltage<fullVoltage)
-	 	 {
-	 		 LedModeKnightRider(80, 0, 100, 150);
-	 	 }
-	 if (averageVoltage > lowVoltage && averageVoltage<=runningVoltage)
-	 	 {
-	 		 LedModeKnightRider(100, 150, 255, 0);
-	 	 }
-	 if (averageVoltage <= lowVoltage)
-	 	 {
-	 		 LedModeKnightRider(120, 255, 0, 0);
-	 	 }
+static inline void LedModeBatteryLevel()
+{
+	if (averageVoltage >= fullVoltage)
+	{
+		LedModeKnightRider(60, 0, 255, 0);
+	}
+	if (averageVoltage > runningVoltage && averageVoltage<fullVoltage)
+	{
+		LedModeKnightRider(80, 0, 100, 150);
+	}
+	if (averageVoltage > lowVoltage && averageVoltage<=runningVoltage)
+	{
+		LedModeKnightRider(100, 150, 255, 0);
+	}
+	if (averageVoltage <= lowVoltage)
+	{
+		LedModeKnightRider(120, 255, 0, 0);
+	}
+}
 
- }
 
- /*-----------------------Functions-----------------------*/
-
- static void HandleCoolLeds(uint32_t heartbeatMs, uint32_t heartbeatMsHalf);
- //todo: Do we want to init LEDs like this? Maybe an array is a better method
 void InitLeds (void)
 {
 	int x;
