@@ -135,7 +135,7 @@
 #define ADDRESS_RFBL_START		(uint32_t)(0x08008000)
 #define ADDRESS_CONFIG_START	(uint32_t)(0x08010000)
 #define ADDRESS_RFFW_START		(uint32_t)(0x08020000)
-#define ADDRESS_ESC_START		(uint32_t)(0x08060000)
+#define ADDRESS_ESC_START		(uint32_t)(0x08050000)
 #define ADDRESS_FLASH_END		(uint32_t)(0x0807FFF0)
 
 #endif

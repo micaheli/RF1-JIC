@@ -16,7 +16,7 @@ enum
 {
 	LED_MODE_OFF              = 0,
 	LED_MODE_ON               = 1,
-	LED_MODE_DISO_FAST        = 2,
+	LED_MODE_DISCO_FAST       = 2,
 	LED_MODE_DISCO_SLOW       = 3,
 	LED_MODE_PARTY_FAST       = 4,
 	LED_MODE_PARTY_SLOW       = 5,
@@ -26,10 +26,12 @@ enum
 	LED_MODE_MULTI_DISCO_SLOW = 9,
 	LED_MODE_MULTI_PARTY_FAST = 10,
 	LED_MODE_MULTI_PARTY_SLOW = 11,
-	LED_MODE_END              = 12,
+	LED_MODE_KNIGHT_RIDER     = 12,
+	LED_MODE_BATTERY_LEVEL    = 13,
+	LED_MODE_END              = 14,
 };
 
-#define MAX_LED_MODES 13
+#define MAX_LED_MODES 15
 #define COLOR_CHART_SIZE 7
 
 
