@@ -12,7 +12,7 @@ static uint8_t currentLedPulse = 0;
 static uint8_t colorPulse = 0;
 static uint32_t currentColorChart = 0;
 uint32_t ledArraySize = 0;
-int32_t adding = 0;
+int32_t adding = 1;
 int32_t pixel = 0;
 
 
@@ -206,19 +206,17 @@ inline uint8_t LowerLed(uint8_t input, uint8_t sub)
    	}
    }
 
- static inline void LedModeMultiBattery()
+ static inline void LedModeKnightRider(uint8_t speed, uint8_t red, uint8_t green, uint8_t blue)
    {
 	 //setup & math
-	 updateInterval=1000;
-	 redTemp =0;
-	 blueTemp=255;
-	 greenTemp=0;
+	 updateInterval=speed;
 
 	 if (adding) {
 	    pixel = pixel + 1;
 	    if (pixel == ((int32_t)mainConfig.ledConfig.ledCount+1))
 	    {
 	      adding=0;
+	      pixel -= 2;
 	    }
 	  }
 	  else
@@ -227,26 +225,61 @@ inline uint8_t LowerLed(uint8_t input, uint8_t sub)
 	    if (pixel == 0)
 	    {
 	      adding=1;
+	      pixel+=2;
 	    }
 	  }
 
 
-	  SetPixel(pixel, redTemp, greenTemp, blueTemp);
-	  if ((pixel - 1) >= 0 ) {
-	   SetPixel(pixel - 1, LowerLed(redTemp, 200), LowerLed(greenTemp, 200), LowerLed(blueTemp, 200));
-	  }
-	  if ((pixel - 2) >= 0 ) {
-	    SetPixel(pixel - 2, LowerLed(redTemp, 225), LowerLed(greenTemp, 225), LowerLed(blueTemp, 225));
+	  SetPixel(pixel, red, green, blue);
+
+	  if (adding)
+	  {
+		  if ((pixel - 1) >= 0 ) {
+		   SetPixel(pixel - 1, LowerLed(red, 200), LowerLed(green, 200), LowerLed(blue, 200));
+		  }
+		  if ((pixel - 2) >= 0 ) {
+			SetPixel(pixel - 2, LowerLed(red, 250), LowerLed(green, 250), LowerLed(blue, 250));
+		  }
+		  if ((pixel - 3) >= 0 ) {
+			SetPixel(pixel - 3, LowerLed(red, 255), LowerLed(green, 255), LowerLed(blue, 255));
+		  }
 	  }
 
-	  if ((pixel + 1) <= 7 ) {
-	    SetPixel(pixel + 1, LowerLed(redTemp, 200), LowerLed(greenTemp, 200), LowerLed(blueTemp, 200));
+	  else
+	  {
+		  if ((pixel + 1) <= 7 ) {
+			SetPixel(pixel + 1, LowerLed(red, 200), LowerLed(green, 200), LowerLed(blue, 200));
+		  }
+		  if ((pixel + 2) <= 7 ) {
+			SetPixel(pixel + 2, LowerLed(red, 250), LowerLed(green, 250), LowerLed(blue, 250));
+		  }
+		  if ((pixel + 3) <= 7 ) {
+			SetPixel(pixel + 3, LowerLed(red, 255), LowerLed(green, 255), LowerLed(blue, 255));
+		  }
+	  }
 
-	  }
-	  if ((pixel + 2) <= 7 ) {
-	    SetPixel(pixel + 2, LowerLed(redTemp, 225), LowerLed(greenTemp, 225), LowerLed(blueTemp, 225));
-	  }
    }
+
+ static inline void LedModeBatteryLevel()
+ {
+	 if (averageVoltage >= fullVoltage)
+	 {
+		 LedModeKnightRider(60, 0, 255, 0);
+	 }
+	 if (averageVoltage > runningVoltage && averageVoltage<fullVoltage)
+	 	 {
+	 		 LedModeKnightRider(80, 0, 100, 150);
+	 	 }
+	 if (averageVoltage > lowVoltage && averageVoltage<=runningVoltage)
+	 	 {
+	 		 LedModeKnightRider(100, 150, 255, 0);
+	 	 }
+	 if (averageVoltage <= lowVoltage)
+	 	 {
+	 		 LedModeKnightRider(120, 255, 0, 0);
+	 	 }
+
+ }
 
  /*-----------------------Functions-----------------------*/
  //todo: Do we want to init LEDs like this? Maybe an array is a better method
@@ -450,9 +483,12 @@ inline void UpdateWs2812Leds(void)
 				LedModeMultiParty(100);
 				break;
 
-			case LED_MODE_BATTERY_LEVEL:
+			case LED_MODE_KNIGHT_RIDER:
 				//Change color based on battery level
-				LedModeMultiBattery();
+				LedModeKnightRider(120, 255, 0, 0);
+				break;
+			case LED_MODE_BATTERY_LEVEL:
+				LedModeBatteryLevel();
 				break;
 		}
 		//updates the led
