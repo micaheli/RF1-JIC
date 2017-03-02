@@ -31,6 +31,23 @@ typedef struct
 	uint32_t timesOccurred;
 } rx_calibraation_record;
 
+typedef struct
+{
+	uint32_t boardArmed;
+	uint32_t latchFirstArm;
+	uint32_t armModeSet;
+	uint32_t armModeActive;
+	uint32_t rcCalibrated;
+	uint32_t boardCalibrated;
+	uint32_t progMode;
+	uint32_t throttleIsSafe;
+	uint32_t rxTimeout;
+	uint32_t failsafeHappend;
+	uint32_t activeFailsafe;
+} arming_structure;
+
+extern volatile arming_structure armingStructure;
+
 #define RX_CHECK_AMOUNT 24
 
 typedef struct
@@ -97,13 +114,15 @@ enum
 #define USING_SPORT            13
 #define USING_MSP              14
 #define USING_RFVTX            15
-#define USING_RX_END           16
+#define USING_SMARTAUDIO       16
+#define USING_RX_END           17
 
 extern uint32_t ppmPin;
 extern volatile float maxFlopRate[];
 extern volatile float maxKissRate[];
+extern volatile uint32_t armBoardAt;
 
-
+extern volatile SPM_VTX_DATA vtxData;
 extern volatile uint32_t rx_timeout;
 extern float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position
 extern float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the rcCommand after the curve is applied
@@ -123,6 +142,7 @@ extern void InlineCollectRcCommand(void);
 extern float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, float expo, uint32_t axis);
 extern void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[]);
 
+extern void ProcessArmingStructure(void);
 extern void ProcessSpektrumPacket(uint32_t serialNumber);
 extern void PowerInveter(uint32_t port, uint32_t pin, uint32_t direction);
 extern void ProcessSbusPacket(uint32_t serialNumber);

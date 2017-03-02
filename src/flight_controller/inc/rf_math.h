@@ -7,6 +7,20 @@
 #define PI180f    0.01745329251f
 #define d180PIf   57.2957795131f
 
+
+// a=target variable, b=bit number to act upon 0-n
+#define BIT_SET(a,b) ((a) |= (1<<(b)))
+#define BIT_CLEAR(a,b) ((a) &= ~(1<<(b)))
+#define BIT_FLIP(a,b) ((a) ^= (1<<(b)))
+#define BIT_CHECK(a,b) ((a) & (1<<(b)))
+
+// x=target variable, y=mask
+#define BITMASK_SET(x,y) ((x) |= (y))
+#define BITMASK_CLEAR(x,y) ((x) &= (~(y)))
+#define BITMASK_FLIP(x,y) ((x) ^= (y))
+#define BITMASK_CHECK(x,y) (((x) & (y)) == (y))
+
+
 #ifndef SQUARE
   #define SQUARE(x) ((x)*(x))
 #endif
@@ -28,7 +42,8 @@
   #define CONSTRAIN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #endif
 
-extern uint8_t BitReverse8(uint8_t byteToConvert);
+extern uint8_t  BitReverse8(uint8_t byteToConvert);
+extern uint8_t  SmCrc8(const uint8_t * ptr, uint8_t len);
 extern uint32_t BigToLittleEndian32(uint32_t numberIn);
 extern float InlineConstrainf(float amt, float low, float high);
 extern float Powerf(float base, uint32_t exp);
