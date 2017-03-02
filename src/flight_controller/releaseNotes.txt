@@ -702,16 +702,14 @@ Version 0.197.059:
 			VTX_POWER_500MW = 2,
 			VTX_POWER_800MW = 3,
 
+#Features in current development:
+#	MSP compatibility
+#	MAVlink compatibility
+#	RFVTX
+#	Current input
 
-Features in current development:
-	MSP compatibility
-	MAVlink compatibility
-	SmartAudio
-	RFVTX
-	Current input
-
-Features for future development:
-	transponder output
-	Sonar input
-	GPS input
-	Unobtanium detector
+#Features for future development:
+#	transponder output
+#	Sonar input
+#	GPS input
+#	Unobtanium detector
