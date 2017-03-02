@@ -131,10 +131,10 @@ typedef struct
 
 typedef enum
 {
-	REMOTE_A,
-	REMOTE_B,
-	REMOTE_L,
-	REMOTE_R
+	REMOTE_A = 0,
+	REMOTE_B = 1,
+	REMOTE_L = 2,
+	REMOTE_R = 3,
 } RF_REMOTES;
 
 struct
@@ -149,31 +149,31 @@ struct
 //VTX enums and struct
 typedef enum
 {
-	FATSHARK,
-	RACEBAND,
-	E,
-	B,
-	A
+	VTX_BAND_FATSHARK = 0,
+	VTX_BAND_RACEBAND = 1,
+	VTX_BAND_E        = 2,
+	VTX_BAND_B        = 3,
+	VTX_BAND_A        = 4,
 } VTX_BAND;
 
 typedef enum
 {
-	POWER_25MW,
-	POWER_250MW,
-	POWER_500MW
+	POWER_25MW  = 0,
+	POWER_250MW = 1,
+	POWER_500MW = 2,
 } VTX_POWER;
 
 typedef enum
 {
-	US,
-	EU
+	US = 0,
+	EU = 1,
 } VTX_REGION;
 
 typedef enum
 {
 	
-	ACTIVE,		//turn on power
-	PIT			//low power mode while in pit
+	ACTIVE = 0,		//turn on power
+	PIT    = 1,		//low power mode while in pit
 } VTX_PIT;
 
 typedef struct

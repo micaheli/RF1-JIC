@@ -130,6 +130,7 @@ void UsartInit(uint32_t serialNumber)
 		case USING_MSP:
 		case USING_SPORT:
 		case USING_RFVTX:
+		case USING_SMARTAUDIO:
 		case USING_MANUAL:
 		default:
 			txPin  = board.serials[serialNumber].TXPin;
@@ -213,9 +214,13 @@ void UsartInit(uint32_t serialNumber)
 		}
 	}
 
-	UsartDmaInit(serialNumber);
-	__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[serialNumber].usartHandle]);
-	HAL_UART_Receive_DMA(&uartHandles[board.serials[serialNumber].usartHandle], &dmaRxBuffer, 1);
+	//only enable DMA if the DMA is supposed to be enabled
+	if ( (board.dmasSerial[board.serials[serialNumber].TXDma].enabled) || (board.dmasSerial[board.serials[serialNumber].RXDma].enabled))
+	{
+		UsartDmaInit(serialNumber);
+		__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[serialNumber].usartHandle]);
+		HAL_UART_Receive_DMA(&uartHandles[board.serials[serialNumber].usartHandle], &dmaRxBuffer, 1);
+	}
 
 }
 

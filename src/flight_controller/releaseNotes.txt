@@ -612,10 +612,32 @@ Version 0.196.058:
 	Adjust self level defaults
 	GUI - updates and bug fixes
 	Updated ESC bins
+	Server autobuild increments minor version
+	Added BLHeli_s C_H_50 ESC firmware to flash
 
-
-
-
+Version 0.197.059:
+	Added arming structure data to error command to help diagnose non start issues
+	Smart Audio changes:
+		Added set telem_smartaudio command
+			1 is enabled on usart 3 TX
+			0 is disabled
+		Added VTXON mode
+			If telem_smartaudio = 1 and VTXON is set to a channel, a power on comand will be sent to the smart audio TX on USART 3 TX pin when the mode is actiaved
+				This will only happen when the board is disarmed
+			If telem_smartaudio = 1 and VTXON is not set to a channel, a power on comand will be sent to the smart audio TX on USART 3 TX pin during arming
+			NOTE! This is the recomended way to run smart audio - not using the VTXON mode will delay arming by half a second to allow the smart audio time to turn on
+		Added "sainit" command
+			If telem_smartaudio = 1 the VTX connected to usart 3's TX pin will be queried for current settings and reported back to the console
+		Added "sapit" command
+			If telem_smartaudio = 1 and sainit has been run, the VTX connected to usart 3's TX pin will be placed into semi-permanant pit mode
+				this means the vtx will always power up into pit mode once this command is run
+				the vtx can be returned to normal opperation by holding the VTX's button down during power up (hence it's only semi-permanant) :)
+		Added "saon" command
+			If telem_smartaudio = 1 and sainit has been run, the VTX connected to usart 3's TX pin will be sent the power up command (leave pit mode)
+		Added "salock" command
+			If telem_smartaudio = 1 and sainit has been run, the VTX connected to usart 3's TX pin will be sent the lock command
+		Added "saunlock" command
+			If telem_smartaudio = 1 and sainit has been run, the VTX connected to usart 3's TX pin will be sent the unlock command
 
 Features in current development:
 	MSP compatibility

@@ -5,13 +5,16 @@ float curvedRcCommandF[MAXCHANNELS];   //4 sticks. range is -1 to 1, this is the
 float smoothedRcCommandF[MAXCHANNELS]; //4 sticks. range is -1 to 1, this is the smoothed rcCommand
 volatile unsigned char isRxDataNew;
 volatile uint32_t disarmCount = 0, latchFirstArm = 0;
+volatile SPM_VTX_DATA vtxData;
 
+uint32_t throttleIsSafe = 0;
 static uint32_t packetTime = 11;
+volatile arming_structure armingStructure;
 
 uint32_t PreArmFilterCheck = 0;
 uint32_t activeFailsafe = 0;
 uint32_t failsafeHappend = 0;
-
+volatile uint32_t armBoardAt = 0;
 uint32_t rxDataRaw[MAXCHANNELS];
 uint32_t rxData[MAXCHANNELS];
 volatile float maxFlopRate[3];
@@ -94,8 +97,6 @@ static void checkRxPreArmCalibration(void)
 	}
 }
 
-SPM_VTX_DATA vtxData;
-
 #define SBUS_FRAME_SIZE 25
 #define SBUS_FRAME_LOSS_FLAG (1 << 2)
 #define SBUS_FAILSAFE_FLAG (1 << 3)
@@ -168,6 +169,11 @@ inline void CheckFailsafe(void)
 
 	FeedTheDog(); //resets IWDG time to 0. This tells the timer the board is running.
 
+	if (( (rx_timeout > 500) || (ModeActive(M_FAILSAFE)) ))
+		activeFailsafe = 1;
+	else
+		activeFailsafe = 0;
+
 	if ((boardArmed) && ( (rx_timeout > 500) || (ModeActive(M_FAILSAFE)) ) )
 	{
 		failsafeHappend = 1;
@@ -188,14 +194,31 @@ inline void CheckFailsafe(void)
 
 }
 
+void ProcessArmingStructure(void)
+{
+	if (boardArmed)
+		armingStructure.boardArmed = 1;
+	else
+		armingStructure.boardArmed = 0;
+
+	armingStructure.latchFirstArm   = latchFirstArm;
+	armingStructure.armModeSet      = ModeSet(M_ARMED);
+	armingStructure.armModeActive   = ModeActive(M_ARMED);
+	armingStructure.rcCalibrated    = mainConfig.rcControlsConfig.rcCalibrated;
+	armingStructure.boardCalibrated = mainConfig.gyroConfig.boardCalibrated;
+	armingStructure.progMode        = !progMode;
+	armingStructure.throttleIsSafe  = throttleIsSafe;
+	armingStructure.rxTimeout       = rx_timeout;
+	armingStructure.failsafeHappend = !failsafeHappend;
+	armingStructure.activeFailsafe  = !activeFailsafe;
+
+}
+
  void RxUpdate(void) // hook for when rx updates
 {
 
-	uint32_t throttleIsSafe = 0;
-
 	 //get current flight modes
 	CheckRxToModes();
-
 
 	if ( (!threeDeeMode) && (trueRcCommandF[THROTTLE] < -0.85) )
 		throttleIsSafe = 1;
@@ -218,7 +241,7 @@ inline void CheckFailsafe(void)
 			buzzerStatus.status = STATE_BUZZER_ARMING;
 			ResetGyroCalibration();
 		}
-		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!calibrateMotors) && (!boardArmed) && (ModeActive(M_ARMED)) && (mainConfig.gyroConfig.boardCalibrated) && throttleIsSafe && !progMode)
+		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!boardArmed) && (ModeActive(M_ARMED)) && (mainConfig.gyroConfig.boardCalibrated) && throttleIsSafe && !progMode)
 		{ //TODO: make uncalibrated board buzz
 
 			latchFirstArm = 1; //1 is double single single single, 0 is double double double double
@@ -230,26 +253,22 @@ inline void CheckFailsafe(void)
 				buzzerStatus.status = STATE_BUZZER_ARMING;
 			}
 
-			ArmBoard();
-
-			//todo: make sure stick movement on these three axis are next to zero before setting centers.
-
-			//ChannelMap(PITCH)
-
 			if ( ABS((int32_t)rxCalibrationRecords[PITCH].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
 				mainConfig.rcControlsConfig.midRc[PITCH] = rxCalibrationRecords[PITCH].highestDataValue;
 			if ( ABS((int32_t)rxCalibrationRecords[ROLL].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[ROLL]) < 30 )
 				mainConfig.rcControlsConfig.midRc[ROLL] = rxCalibrationRecords[ROLL].highestDataValue;
 			if ( ABS((int32_t)rxCalibrationRecords[YAW].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
 				mainConfig.rcControlsConfig.midRc[YAW] = rxCalibrationRecords[YAW].highestDataValue;
-			/*
-			if ( ABS((int32_t)rxData[PITCH] - (int32_t)mainConfig.rcControlsConfig.midRc[PITCH]) < 30 )
-				mainConfig.rcControlsConfig.midRc[PITCH] = rxData[PITCH];
-			if ( ABS((int32_t)rxData[ROLL] - (int32_t)mainConfig.rcControlsConfig.midRc[ROLL]) < 30 )
-				mainConfig.rcControlsConfig.midRc[ROLL]  = rxData[ROLL];
-			if ( ABS((int32_t)rxData[YAW] - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
-				mainConfig.rcControlsConfig.midRc[YAW]   = rxData[YAW];
-			*/
+
+			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && !vtxEnabled )
+			{
+				//smart audio is enabled, but no VTX mode is set, we send the on command during arming
+				armBoardAt = InlineMillis() + 400;
+			}
+			else
+			{
+				ArmBoard();
+			}
 
 		}
 		else if ( !ModeActive(M_ARMED) )
@@ -404,6 +423,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		{
 			vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
 			vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
+
 		}
 
 			  //Check channel slot 7 for vtx power, pit, and region data
@@ -688,6 +708,26 @@ void InitRcData(void)
 
 	isRxDataNew = 0;
 
+	vtxData.vtxChannel = 0;
+	vtxData.vtxBand    = 0;
+	vtxData.vtxPower   = 0;
+	vtxData.vtxRegion  = 0;
+	vtxData.vtxPit     = 0;
+
+	activeFailsafe     = 0;
+	failsafeHappend    = 0;
+
+	armingStructure.boardArmed      = 0;
+	armingStructure.latchFirstArm   = 0;
+	armingStructure.armModeSet      = 0;
+	armingStructure.armModeActive   = 0;
+	armingStructure.rcCalibrated    = 0;
+	armingStructure.boardCalibrated = 0;
+	armingStructure.progMode        = 0;
+	armingStructure.throttleIsSafe  = 0;
+	armingStructure.rxTimeout       = 0;
+	armingStructure.failsafeHappend = 0;
+	armingStructure.activeFailsafe  = 0;
 }
 
 

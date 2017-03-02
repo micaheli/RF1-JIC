@@ -26,6 +26,9 @@ static void TaskHandlePcComm(void);
 static void TaskLed(void);
 static void TaskBuzzer(void);
 static void TaskAdc(void);
+static void TaskCheckVtx(void);
+static void TaskCheckDelayedArming(void);
+static void TaskProcessArmingStructure(void);
 
 inline void Scheduler(int32_t count)
 {
@@ -54,10 +57,13 @@ inline void Scheduler(int32_t count)
 			TaskWizard();
 			break;
 		case 7:
+			TaskCheckVtx();
 			break;
 		case 8:
+			TaskCheckDelayedArming();
 			break;
 		case 9:
+			TaskProcessArmingStructure();
 			break;
 		case 10:
 			break;
@@ -68,6 +74,85 @@ inline void Scheduler(int32_t count)
 		default:
 			break;
 
+	}
+
+}
+
+inline void TaskProcessArmingStructure(void)
+{
+	ProcessArmingStructure();
+}
+
+inline void TaskCheckDelayedArming(void)
+{
+	//handles VTX enabling as well
+	if(armBoardAt)
+	{
+		//delayed arming window of 150 ms.
+		if ( (InlineMillis() > armBoardAt) && ((InlineMillis() - armBoardAt) < 150) )
+		{
+			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && !vtxEnabled )
+			{
+				//only try turning on the VTX once per arming
+				vtxEnabled = 1;
+				TurnOnVtx();
+			}
+			ArmBoard();
+			armBoardAt = 0;
+		}
+	}
+	if (!armBoardAt && !boardArmed && mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && vtxEnabled)
+		vtxEnabled = 0;
+}
+
+inline void TaskCheckVtx(void)
+{
+	static uint8_t vtxChannel   = 0;
+	static VTX_BAND vtxBand     = 0;
+	static VTX_POWER vtxPower   = 0;
+	//static VTX_REGION vtxRegion = 0;
+	static VTX_PIT vtxPit       = 0;
+
+	//don't do this task unless board is disarmed
+	if (boardArmed)
+		return;
+
+	if (!mainConfig.telemConfig.telemSmartAudio)
+		return;
+
+	if (ModeSet(M_VTXON) && ModeActive(M_VTXON) && !vtxEnabled)
+	{
+		//only try turning on the VTX once per mode enabling
+		vtxEnabled = 1;
+		TurnOnVtx();
+	}
+	else if (ModeSet(M_VTXON) && !ModeActive(M_VTXON) && vtxEnabled)
+	{
+		vtxEnabled = 0; //we can't turn off the VTX using smart audio, but we can reset the flag
+	}
+
+	if ( (vtxData.vtxBand != vtxBand) || (vtxData.vtxChannel != vtxChannel) )
+	{ //did vtxChannel change? If so, send change to SA VTX
+		SmartAudioSetChannelBlocking( SpektrumBandAndChannelToChannel(vtxData.vtxBand, vtxData.vtxChannel) );
+		if (vtxData.vtxPit == ACTIVE)
+		{
+			TurnOnVtx();
+			vtxPit = vtxData.vtxPit;
+		}
+		vtxBand    = vtxData.vtxBand;
+		vtxChannel = vtxData.vtxChannel;
+	}
+
+	if ( (vtxData.vtxPower != vtxPower) || (vtxData.vtxPit != vtxPit) )
+	{
+		SmartAudioSetPowerBlocking( vtxData.vtxPower );
+		if (vtxData.vtxPit == ACTIVE)
+		{
+			vtxPit = vtxData.vtxPit;
+			TurnOnVtx();
+		}
+		vtxPower = vtxData.vtxPower;
+		vtxPit   = vtxData.vtxPit;
 	}
 
 }

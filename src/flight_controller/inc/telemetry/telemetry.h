@@ -1,7 +1,8 @@
 #pragma once
 
 
-enum {
+enum
+{
 	TELEM_OFF=0,
 	TELEM_USART1=1,
 	TELEM_USART2=2,
@@ -20,7 +21,9 @@ enum {
 	TELEM_NUM=15,
 };
 
-typedef struct {
+typedef struct
+{
+	uint32_t telemSmartAudio;
     uint32_t telemSport;
     uint32_t telemSpek;
     uint32_t telemMsp;
