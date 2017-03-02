@@ -616,7 +616,10 @@ Version 0.196.058:
 	Added BLHeli_s C_H_50 ESC firmware to flash
 
 Version 0.197.059:
+	RC3
 	Added arming structure data to error command to help diagnose non start issues
+	Integrated Spektrum's VTX setup into SmartAudio
+		You can change Channels and turn on your radio via a Spektrum TX
 	Smart Audio changes:
 		Added set telem_smartaudio command
 			1 is enabled on usart 3 TX
@@ -638,6 +641,67 @@ Version 0.197.059:
 			If telem_smartaudio = 1 and sainit has been run, the VTX connected to usart 3's TX pin will be sent the lock command
 		Added "saunlock" command
 			If telem_smartaudio = 1 and sainit has been run, the VTX connected to usart 3's TX pin will be sent the unlock command
+	Recomended Smart Audio Setup:
+		1. Connect SmartAudio cable to USART3 TX pin (USART3 RX is still okay for Smart Port, you can use USART1 for Spektrum RXs)
+		2. Power up SmartAudio VTX and flight controller, connect to configurator
+		3. In console run the command "set telem_smartaudio=1"
+		4. In console run the command "sainit"
+		5. In console run the command "saunlock"
+		6. In console run the command "sapit"
+		7. On setup page in configurator, set VTXON mode to a channel (I use channel 8 on a momentary switch)
+		8. Click Save
+		9. Unpower FC and VTX
+		10. You can use your spektrum radio to set your VTX channel and band, or you can use console "sach x" where x is a channel number from 0 through 39 
+		11. enabling the VTXON mode will turn on the VTX, the VTX will not transmit until the flight mode is enabled at least momentarily
+	List of SmartAudio channels:
+		"set sach x" where x is the number coorisponding to the VTX power level listed below:
+			VTX_CH_A1 = 0,
+			VTX_CH_A2 = 1,
+			VTX_CH_A3 = 2,
+			VTX_CH_A4 = 3,
+			VTX_CH_A5 = 4,
+			VTX_CH_A6 = 5,
+			VTX_CH_A7 = 6,
+			VTX_CH_A8 = 7,
+			VTX_CH_B1 = 8,
+			VTX_CH_B2 = 9,
+			VTX_CH_B3 = 10,
+			VTX_CH_B4 = 11,
+			VTX_CH_B5 = 12,
+			VTX_CH_B6 = 13,
+			VTX_CH_B7 = 14,
+			VTX_CH_B8 = 15,
+			VTX_CH_E1 = 16,
+			VTX_CH_E2 = 17,
+			VTX_CH_E3 = 18,
+			VTX_CH_E4 = 19,
+			VTX_CH_E5 = 20,
+			VTX_CH_E6 = 21,
+			VTX_CH_E7 = 22,
+			VTX_CH_E8 = 23,
+			VTX_CH_F1 = 24,
+			VTX_CH_F2 = 25,
+			VTX_CH_F3 = 26,
+			VTX_CH_F4 = 27,
+			VTX_CH_F5 = 28,
+			VTX_CH_F6 = 29,
+			VTX_CH_F7 = 30,
+			VTX_CH_F8 = 31,
+			VTX_CH_R1 = 32,
+			VTX_CH_R2 = 33,
+			VTX_CH_R3 = 34,
+			VTX_CH_R4 = 35,
+			VTX_CH_R5 = 36,
+			VTX_CH_R6 = 37,
+			VTX_CH_R7 = 38,
+			VTX_CH_R8 = 39,
+	List of Smart Audio Power modes:
+		"set sapow x" where x is the number coorisponding to the VTX power level listed below:
+			VTX_POWER_025MW = 0,
+			VTX_POWER_200MW = 1,
+			VTX_POWER_500MW = 2,
+			VTX_POWER_800MW = 3,
+
 
 Features in current development:
 	MSP compatibility
