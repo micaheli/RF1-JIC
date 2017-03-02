@@ -591,8 +591,7 @@ Version 0.194.057:
 	Self level mode updates
 	Make force flashing ESCs slightly safer
 
-Version 0.195.058:
-	RC1
+Version 0.195.058 RC1:
 	GUI - Added rates graphs
 	GUI - Fixed ESC tab
 	GUI - General bug fixes
@@ -607,16 +606,14 @@ Version 0.195.058:
 	LEDs now Breathe
 	Preliminary Smart Audio Support - Not yet enabled
 
-Version 0.196.058:
-	RC2
+Version 0.197.059 RC2:
 	Adjust self level defaults
 	GUI - updates and bug fixes
 	Updated ESC bins
 	Server autobuild increments minor version
 	Added BLHeli_s C_H_50 ESC firmware to flash
 
-Version 0.197.059:
-	RC3
+Version 0.197.059 RC3:
 	Added arming structure data to error command to help diagnose non start issues
 	Integrated Spektrum's VTX setup into SmartAudio
 		You can change Channels and turn on your radio via a Spektrum TX
