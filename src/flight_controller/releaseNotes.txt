@@ -654,7 +654,7 @@ Version 0.197.059:
 		10. You can use your spektrum radio to set your VTX channel and band, or you can use console "sach x" where x is a channel number from 0 through 39 
 		11. enabling the VTXON mode will turn on the VTX, the VTX will not transmit until the flight mode is enabled at least momentarily
 	List of SmartAudio channels:
-		"set sach x" where x is the number coorisponding to the VTX power level listed below:
+		"sach x" where x is the number coorisponding to the VTX power level listed below:
 			VTX_CH_A1 = 0,
 			VTX_CH_A2 = 1,
 			VTX_CH_A3 = 2,
@@ -696,7 +696,7 @@ Version 0.197.059:
 			VTX_CH_R7 = 38,
 			VTX_CH_R8 = 39,
 	List of Smart Audio Power modes:
-		"set sapow x" where x is the number coorisponding to the VTX power level listed below:
+		"sapow x" where x is the number coorisponding to the VTX power level listed below:
 			VTX_POWER_025MW = 0,
 			VTX_POWER_200MW = 1,
 			VTX_POWER_500MW = 2,
