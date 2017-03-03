@@ -199,6 +199,27 @@ typedef struct {
 	const char *strDefault;
 } interface_table;
 
+enum
+{
+    IDLE=0,
+    CHANGING_SETTING=1,
+    SAVING=2,
+};
+
+typedef struct pidSpektrumTelem_t
+{
+    uint8_t status ;
+    uint32_t waitTime;
+    uint32_t currentTime;
+    int32_t row;
+    int32_t column;
+    int32_t columnAxis;
+    int32_t vStickStatus;
+    int32_t hStickStatus;
+} pidSpektrumTelem_t;
+
+extern pidSpektrumTelem_t pidSpektrumTelem;
+
 void InitSpektrumTelemetry(void);
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize);
 void sendSpektrumTelem(void);

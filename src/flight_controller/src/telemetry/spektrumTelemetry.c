@@ -16,10 +16,18 @@ uint8_t dma_count;
 TELEMETRY_STATE telemetryState = TELEM_START;
 UN_TELEMETRY sensorData;
 extern uint32_t progMode;
+pidSpektrumTelem_t pidSpektrumTelem;
 
 #define UINT16_ENDIAN(a)  (((a) >> 8) | ((a) << 8) )
 
+
+
+
 void InitSpektrumTelemetry(void) {
+	pidSpektrumTelem.row = 2;
+	pidSpektrumTelem.status = IDLE;
+
+
 	return;
 }
 
@@ -239,19 +247,11 @@ uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly)
 }
 
 
-int32_t row = 2;
-int32_t column;
-int32_t columnAxis;
-int32_t vStickStatus;
-int32_t hStickStatus;
-int32_t saved = 0;
+
 float dataInc;
+
 #define ROW_MAX 8
 #define COLUMN_MAX 1
-
-uint32_t toggleTime;
-uint32_t blinkTime;
-uint32_t currentTime;
 
 char stringArray[9][12];
 char axisTable[3][12] = { "Yaw", "Roll", "Pitch" };
@@ -268,159 +268,161 @@ char row9[12];
 
 void textMenuUpdate(void)
 {
+
 	{
-		currentTime = InlineMillis();
+		pidSpektrumTelem.currentTime = InlineMillis();
 
 		if (progMode != 0)
 		{
 			//vertical stick
-			if (rxData[2] > 1224 && vStickStatus != 1)
+			if (rxData[2] > 1224 && pidSpektrumTelem.vStickStatus != 1)
 			{
-				if (column == 0)
+				if (pidSpektrumTelem.column == 0)
 				{
-					row--;
+					pidSpektrumTelem.row--;
 				    //stringArray[row][0] = '>';
 				}
 				else
 					dataInc = 1;
 				//toggleTime = currentTime;
 
-				vStickStatus = 1;
+				pidSpektrumTelem.vStickStatus = 1;
 			}
-			else if (rxData[2] < 824 && vStickStatus != -1)
+			else if (rxData[2] < 824 && pidSpektrumTelem.vStickStatus != -1)
 			{
-				if (column == 0)
+				if (pidSpektrumTelem.column == 0)
 				{
-					row++;
+					pidSpektrumTelem.row++;
 					//stringArray[row][0] = '>';
 				}
 				else 
 					dataInc = -1;
 				//toggleTime = currentTime;
-				vStickStatus = -1;
+				pidSpektrumTelem.vStickStatus = -1;
 			}
 			else if (rxData[2] > 924 && rxData[2] < 1124)
 			{
-				vStickStatus = 0;
+				pidSpektrumTelem.vStickStatus = 0;
 			}
 
 			//horizontal stick
-			if (rxData[1] > 1224 && hStickStatus != 1)
+			if (rxData[1] > 1224 && pidSpektrumTelem.hStickStatus != 1)
 			{
-				column++;
+				pidSpektrumTelem.column++;
 				//toggleTime = currentTime;
 
-				hStickStatus = 1;
+				pidSpektrumTelem.hStickStatus = 1;
+				pidSpektrumTelem.status=CHANGING_SETTING;
 			}
-			else if (rxData[1] < 824 && hStickStatus != -1)
+			else if (rxData[1] < 824 && pidSpektrumTelem.hStickStatus != -1)
 			{
-				column--;
+				pidSpektrumTelem.column--;
 				//toggleTime = currentTime;
 
-				hStickStatus = -1;
+				pidSpektrumTelem.hStickStatus = -1;
+				pidSpektrumTelem.status=IDLE;
+
 			}	
 			else if (rxData[1] > 924 && rxData[1] < 1124)
 			{
-				hStickStatus = 0;
+				pidSpektrumTelem.hStickStatus = 0;
 			}
 		}
 		else
 		{
 			//have these initialized so nothing happens when entering prog mode for the first time
-			vStickStatus = -1;
-			hStickStatus = -1;
+			pidSpektrumTelem.vStickStatus = -1;
+			pidSpektrumTelem.hStickStatus = -1;
 		}
 						
 
-		if (row >= ROW_MAX)
-			row = ROW_MAX;
-		else if (row < 0)
-			row = 2;
+		if (pidSpektrumTelem.row >= ROW_MAX)
+			pidSpektrumTelem.row = ROW_MAX;
+		else if (pidSpektrumTelem.row < 0)
+			pidSpektrumTelem.row = 2;
 
-		if (column >= COLUMN_MAX)
-			column = COLUMN_MAX;
-		else if (column < 0 )
+		if (pidSpektrumTelem.column >= COLUMN_MAX)
+			pidSpektrumTelem.column = COLUMN_MAX;
+		else if (pidSpektrumTelem.column < 0 )
 		{
-			row = 2;
-			column = 0;
-			columnAxis = 0;
+			pidSpektrumTelem.row = 2;
+			pidSpektrumTelem.column = 0;
+			pidSpektrumTelem.columnAxis = 0;
 			progMode = 0;
 			InitPid(); //Set PID's with new config PID's
 		}
 			
 
+        switch(pidSpektrumTelem.status)
+        {
 
-		if (saved)
-		{
-		    strcpy(stringArray[0], " Saved");
-		    if (currentTime-blinkTime > 200)
-		    	saved=0;
-		}
-		else
-		{
-			strcpy(stringArray[0], " RF1 TUNING");
-			strcpy(stringArray[1], "------------");
-			strcpy(stringArray[2], " ");
-			strcpy(&stringArray[2][1], axisTable[columnAxis]);
-			strcpy(stringArray[3], " P: ");
-			strcpy(stringArray[4], " I: ");
-			strcpy(stringArray[5], " D: ");
-			strcpy(stringArray[6], " F: ");
-			strcpy(stringArray[7], " G: ");
-		    strcpy(stringArray[8], " Save");
-		}
+        	case (SAVING):
+				strcpy(stringArray[0], " Saved");
+				if (pidSpektrumTelem.currentTime-pidSpektrumTelem.waitTime > 200)
+					pidSpektrumTelem.status=IDLE;
+				break;
 
-		/*
-		if (row == 1 && dataInc)
-			SetCalibrate1();
-		if (row == 2 && dataInc)
+        	case (IDLE):
+				strcpy(stringArray[0], " RF1 Tuning");
+				strcpy(stringArray[1], "------------");
+				strcpy(stringArray[2], " ");
+				strcpy(&stringArray[2][1], axisTable[pidSpektrumTelem.columnAxis]);
+				strcpy(stringArray[3], " P: ");
+				strcpy(stringArray[4], " I: ");
+				strcpy(stringArray[5], " D: ");
+				strcpy(stringArray[6], " F: ");
+				strcpy(stringArray[7], " G: ");
+				strcpy(stringArray[8], " Save");
+
+				if (progMode)
+				{
+					stringArray[pidSpektrumTelem.row][0] = '>';
+				}
+
+				break;
+        	case (CHANGING_SETTING):
+				strcpy(&stringArray[2][1], axisTable[pidSpektrumTelem.columnAxis]);
+				stringArray[pidSpektrumTelem.row][0] = '*';
+        		break;
+        }
+
+		if (pidSpektrumTelem.row == 2)
 		{
-			if (SetCalibrate2())
-				SaveConfig(ADDRESS_CONFIG_START);
-		}
-*/
-		if (row == 2)
-		{
-			columnAxis += dataInc;
-			if (columnAxis > 2)
-				columnAxis = 2;
-			if (columnAxis < 0)
-				columnAxis = 0;
+			pidSpektrumTelem.columnAxis += dataInc;
+			if (pidSpektrumTelem.columnAxis > 2)
+				pidSpektrumTelem.columnAxis = 2;
+			if (pidSpektrumTelem.columnAxis < 0)
+				pidSpektrumTelem.columnAxis = 0;
 		}
 		
-		if (row == 3)
-			mainConfig.pidConfig[columnAxis].kp += dataInc * 10;
-		if (row == 4)
-			mainConfig.pidConfig[columnAxis].ki += dataInc * 10;
-		if (row == 5)
-			mainConfig.pidConfig[columnAxis].kd += dataInc * 50;
-		if (row == 6)
-			mainConfig.filterConfig[columnAxis].gyro.q += dataInc * 5;
-		if (row == 7)
-			mainConfig.pidConfig[columnAxis].ga += dataInc * 1;
-		if (row == 8 && column == 1)
+		if (pidSpektrumTelem.row < 2)
+			pidSpektrumTelem.row = 2;
+
+		if (pidSpektrumTelem.row == 3)
+			mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp += dataInc * 10;
+		if (pidSpektrumTelem.row == 4)
+			mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki += dataInc * 10;
+		if (pidSpektrumTelem.row == 5)
+			mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd += dataInc * 50;
+		if (pidSpektrumTelem.row == 6)
+			mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q += dataInc * 5;
+		if (pidSpektrumTelem.row == 7)
+			mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga += dataInc * 1;
+		if (pidSpektrumTelem.row == 8 && pidSpektrumTelem.column == 1)
 		{
 			SaveConfig(ADDRESS_CONFIG_START);
-			column = 0;
-			saved = 1;
-			blinkTime=currentTime;
+			pidSpektrumTelem.column = 0;
+			pidSpektrumTelem.status=SAVING;
+			pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
 		}
 
 		//itoa(mainConfig.version, &stringArray[3][5], 10);
-		itoa(mainConfig.pidConfig[columnAxis].kp, &stringArray[3][3], 10);
-		itoa(mainConfig.pidConfig[columnAxis].ki, &stringArray[4][3], 10);
-		itoa(mainConfig.pidConfig[columnAxis].kd, &stringArray[5][3], 10);
-		itoa(mainConfig.filterConfig[columnAxis].gyro.q, &stringArray[6][3], 10);
-		itoa(mainConfig.pidConfig[columnAxis].ga, &stringArray[7][3], 10);
-		if (progMode)
-		{
-			if (hStickStatus == 1)
-			{
-				stringArray[row][2] = '>';
-			}
-			else
-				stringArray[row][0] = '>';
-		}
+		itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp, &stringArray[3][3], 10);
+		itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki, &stringArray[4][3], 10);
+		itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd, &stringArray[5][3], 10);
+		itoa(mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q, &stringArray[6][3], 10);
+		itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga, &stringArray[7][3], 10);
+
 
 	}
 
