@@ -7,6 +7,7 @@
 #include "../flight_controller/inc/rf_math.h"
 #include "includes.h"
 
+
 board_type          board;
 GPIO_TypeDef       *ports[11];
 serial_type         usarts[6];
@@ -23,6 +24,9 @@ SPI_TypeDef        *spiInstance[6];
 ADC_TypeDef        *adcInstance[3];
 ADC_HandleTypeDef   adcHandle[3];
 
+uint32_t            boardSize;
+
+
 unsigned char serialRxBuffer[6][RXBUFFERSIZE];
 unsigned char serialTxBuffer[6][TXBUFFERSIZE];
 uint32_t motorOutputBuffer[8][1500];
@@ -31,13 +35,8 @@ uint32_t motorOutputBuffer[8][1500];
 volatile function_pointer callbackFunctionArray[IRQH_FP_TOT];
 
 
-int InitializeMCUSettings() {
-	//target_pinout pins;
-
-	//for (uint32_t x = 0;x<IRQH_FP_TOT;x++) {
-	//	callbackFunctionArray[x] = 0;
-	//}
-
+int InitializeMCUSettings(void)
+{
 
 	bzero(spiInstance, sizeof(spiInstance));
 	spiInstance[0] = SPI1;
@@ -176,7 +175,7 @@ int InitializeMCUSettings() {
 	return(1);
 }
 
-uint32_t boardSize;
+
 void GetBoardHardwareDefs(void)
 {
 

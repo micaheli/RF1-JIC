@@ -85,6 +85,12 @@ inline void TaskProcessArmingStructure(void)
 
 inline void TaskCheckDelayedArming(void)
 {
+	//TODO: Hack to make this lua crap work
+	if ( ( luaPacketPendingTime ) || ( (transmitDataBufferIdx > 0) && (transmitDataBufferSent <= (transmitDataBufferIdx - 1)) ) )
+	{
+		return;
+	}
+
 	//handles VTX enabling as well
 	if(armBoardAt)
 	{
@@ -112,6 +118,12 @@ inline void TaskCheckVtx(void)
 	static VTX_POWER vtxPower   = 0;
 	//static VTX_REGION vtxRegion = 0;
 	static VTX_PIT vtxPit       = 0;
+
+	//TODO: Hack to make this lua crap work
+	if ( ( luaPacketPendingTime ) || ( (transmitDataBufferIdx > 0) && (transmitDataBufferSent <= (transmitDataBufferIdx - 1)) ) )
+	{
+		return;
+	}
 
 	//don't do this task unless board is disarmed
 	if (boardArmed)
@@ -159,6 +171,11 @@ inline void TaskCheckVtx(void)
 
 inline void TaskAdc(void)
 {
+	//TODO: Hack to make this lua crap work
+	if ( ( luaPacketPendingTime ) || ( (transmitDataBufferIdx > 0) && (transmitDataBufferSent <= (transmitDataBufferIdx - 1)) ) )
+	{
+		return;
+	}
 	PollAdc();
 	CheckBatteryCellCount();
 }
@@ -209,6 +226,12 @@ inline void TaskHandlePcComm(void)
 inline void TaskLed(void)
 {
 	UpdateLeds(); //update status LEDs
+
+	//TODO: Hack to make this lua crap work
+	if ( ( luaPacketPendingTime ) || ( (transmitDataBufferIdx > 0) && (transmitDataBufferSent <= (transmitDataBufferIdx - 1)) ) )
+	{
+		return;
+	}
 	UpdateWs2812Leds();
 }
 

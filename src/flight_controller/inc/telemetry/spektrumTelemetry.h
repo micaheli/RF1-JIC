@@ -149,11 +149,11 @@ struct
 //VTX enums and struct
 typedef enum
 {
-	VTX_BAND_FATSHARK = 0,
-	VTX_BAND_RACEBAND = 1,
-	VTX_BAND_E        = 2,
-	VTX_BAND_B        = 3,
-	VTX_BAND_A        = 4,
+	SPEK_VTX_BAND_FATSHARK = 0,
+	SPEK_VTX_BAND_RACEBAND = 1,
+	SPEK_VTX_BAND_E        = 2,
+	SPEK_VTX_BAND_B        = 3,
+	SPEK_VTX_BAND_A        = 4,
 } VTX_BAND;
 
 typedef enum

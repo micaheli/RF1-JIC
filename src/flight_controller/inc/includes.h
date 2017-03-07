@@ -26,6 +26,7 @@
 #include "wizard.h"
 #include "watchdog.h"
 #include "scheduler.h"
+#include "newSoftSerial.h"
 #include "flight_logger.h"
 #include "rfbl_functions.h"
 

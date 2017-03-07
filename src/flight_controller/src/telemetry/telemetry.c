@@ -2,10 +2,12 @@
 
 
 volatile uint32_t sendSmartPortAt = 0;
+volatile uint32_t sendSmartPortLuaAt = 0;
 volatile uint32_t sendSpektrumTelemtryAt = 0;
 
 volatile uint32_t telemEnabled = 1;
 
+volatile uint32_t vtxRecord;
 
 void ProcessTelemtry(void)
 {
@@ -32,6 +34,12 @@ void ProcessTelemtry(void)
 			SendSmartPort();     //send the data. Blind of soft or hard s.port
 
 		}
+		else if ( (sendSmartPortLuaAt) && ( sendSmartPortLuaAt > Micros() ) )
+		{
+			sendSmartPortLuaAt = 0; //reset send time to 0 which disables it
+			SendSmartPortLua();     //send the data. Blind of soft or hard s.port
+
+		}
 		else
 		{
 			CheckIfSportReadyToSend(); //sets sendSmartPortAt if it needs to.
@@ -55,6 +63,13 @@ void InitMavlink(uint32_t serialPort)
 
 void InitTelemtry(void)
 {
+
+	vtxRecord.vtxDevice     = VTX_DEVICE_NONE;
+	vtxRecord.vtxBand       = 0;
+	vtxRecord.vtxChannel    = 0;
+	vtxRecord.vtxBandChannel= 0;
+	vtxRecord.vtxPower      = 0;
+	vtxRecord.vtxPit        = 0;
 
 	switch(mainConfig.telemConfig.telemSport)
 	{

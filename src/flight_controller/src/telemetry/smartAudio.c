@@ -1,15 +1,76 @@
 #include "includes.h"
 
-uint8_t smartAudioRxBuffer[12];
-uint8_t smartAudioTxBuffer[12];
 
-uint32_t smartAudioUsartSerialNumber = 999;
 
 smart_audio_vtx_structure smartAudioVtxStructure;
-uint32_t vtxEnabled = 0;
+uint8_t                   smartAudioRxBuffer[12];
+uint8_t                   smartAudioTxBuffer[12];
+uint32_t                  smartAudioUsartSerialNumber = 999;
+uint32_t                  vtxEnabled = 0;
+motor_type                smartAudioActuator;
+
 
 static uint32_t SmartAudioReceiveBlocking(uint32_t timeoutMs, uint32_t rxAmount);
-static uint8_t ShiftSmartAudioCommand(uint8_t data);
+static uint8_t  ShiftSmartAudioCommand(uint8_t data);
+static void     FillVtxRecord(void);
+
+
+static void FillVtxRecord(void)
+{
+
+	if (smartAudioVtxStructure.version == SM_VERSION_1)
+	{
+		vtxRecord.vtxDevice = VTX_DEVICE_SMARTV1;
+	}
+	else if (smartAudioVtxStructure.version == SM_VERSION_2)
+	{
+		vtxRecord.vtxDevice = VTX_DEVICE_SMARTV2;
+	}
+	else
+	{
+		vtxRecord.vtxDevice = VTX_DEVICE_NONE;
+	}
+
+	vtxRecord.vtxBandChannel = smartAudioVtxStructure.channel;
+	ChannelToBandAndChannel(vtxRecord.vtxBandChannel, &vtxRecord.vtxBand, &vtxRecord.vtxChannel)
+
+	vtxRecord.vtxPower = smartAudioVtxStructure.powerLevel;
+	if ( BITMASK_CHECK(smartAudioVtxStructure.opMode, SM_OPMODE_PM) )
+	{
+		vtxRecord.vtxPower = VTX_MODE_ACTIVE;
+	}
+	else
+	{
+		vtxRecord.vtxPit = VTX_MODE_PIT;
+	}
+
+}
+
+uint32_t InitSoftSmartAudio(void)
+{
+	//set RX callback to Send sbus data if
+	uint32_t actuatorNumOutput;
+	uint32_t outputNumber;
+
+	sPortTelemCount = 0;
+
+	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++)
+	{
+		outputNumber = mainConfig.mixerConfig.motorOutput[actuatorNumOutput];
+
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_SPORT)
+		{
+
+			if (!DoesDmaConflictWithActiveDmas(board.motors[outputNumber]))
+			{
+				sbusActuator = board.motors[outputNumber];
+				PutSportIntoReceiveState(sbusActuator, 1);
+			}
+
+		}
+
+	}
+}
 
 uint32_t InitSmartAudio(uint32_t usartNumber)
 {
@@ -48,7 +109,7 @@ uint32_t InitSmartAudio(uint32_t usartNumber)
 	board.serials[usartNumber].RXPort = board.serials[usartNumber].TXPort;
 
 	UsartDeInit(usartNumber); //deinits serial and associated pins and DMAs
-	UsartInit(usartNumber); //inits serial and associated pins and DMAs
+	UsartInit(usartNumber);   //inits serial and associated pins and DMAs
 
 	smartAudioUsartSerialNumber = usartNumber;
 
@@ -159,6 +220,18 @@ uint32_t SpektrumBandAndChannelToChannel(VTX_BAND vtxBand, uint8_t channel)
 	return(0);
 }
 
+void ChannelToBandAndChannel(uint32_t inChannel, uint32_t *vtxBand, uint32_t *channel)
+{
+
+	uint32_t bandMultiplier;
+
+	bandMultiplier = channel / 8;
+
+	(*vtxBand) = bandMultiplier;
+	(*channel) = inChannel - (bandMultiplier * 8) + 1;
+
+}
+
 void DeInitSmartAudio(void)
 {
 	if (smartAudioUsartSerialNumber != 999)
@@ -228,7 +301,7 @@ uint32_t SmartAudioSetOpModeBlocking(uint32_t mask)
 
 	if (smartAudioUsartSerialNumber == 999)
 	{
-		if (InitSmartAudio(ENUM_USART3))
+		if (InitSmartAudio(mainConfig.telemConfig.telemSmartAudio))
 			DelayMs(20);
 		else
 			return(0);
@@ -266,7 +339,7 @@ uint32_t SmartAudioGetSettingsBlocking(uint32_t timeoutMs)
 
 	if (smartAudioUsartSerialNumber == 999)
 	{
-		if (InitSmartAudio(ENUM_USART3))
+		if (InitSmartAudio(mainConfig.telemConfig.telemSmartAudio))
 			DelayMs(20);
 		else
 			return(0);
@@ -312,7 +385,7 @@ uint32_t SmartAudioSetPowerBlocking(uint32_t powerLevel)
 
 	if (smartAudioUsartSerialNumber == 999)
 	{
-		if (InitSmartAudio(ENUM_USART3))
+		if (InitSmartAudio(mainConfig.telemConfig.telemSmartAudio))
 			DelayMs(20);
 		else
 			return(0);
@@ -322,7 +395,7 @@ uint32_t SmartAudioSetPowerBlocking(uint32_t powerLevel)
 
 	switch(smartAudioVtxStructure.version)
 	{
-		case 0x01:
+		case SM_VERSION_1:
 			switch(powerLevel)
 			{
 				case VTX_POWER_025MW:
@@ -339,7 +412,7 @@ uint32_t SmartAudioSetPowerBlocking(uint32_t powerLevel)
 					break;
 			}
 			break;
-		case 0x09:
+		case SM_VERSION_2:
 			switch(powerLevel)
 			{
 				case VTX_POWER_025MW:
@@ -396,7 +469,7 @@ uint32_t SmartAudioSetChannelBlocking(uint32_t channel)
 
 	if (smartAudioUsartSerialNumber == 999)
 	{
-		if (InitSmartAudio(ENUM_USART3))
+		if (InitSmartAudio(mainConfig.telemConfig.telemSmartAudio))
 			DelayMs(20);
 		else
 			return(0);

@@ -1,6 +1,38 @@
 #pragma once
 
 
+#define REQUEST_ID     0x01
+#define REQUEST_PIDS   0x02
+#define REQUEST_RATES  0x03
+#define REQUEST_VRX    0x04
+#define REQUEST_MORE   0x05
+
+#define ID_ROLL_KP     0x01
+#define ID_ROLL_KI     0x02
+#define ID_ROLL_KD     0x03
+#define ID_PITCH_KP    0x04
+#define ID_PITCH_KI    0x05
+#define ID_PITCH_KD    0x06
+#define ID_YAW_KP      0x07
+#define ID_YAW_KI      0x08
+#define ID_YAW_KD      0x09
+#define ID_ROLL_RATE   0x0A
+#define ID_ROLL_EXPO   0x0B
+#define ID_ROLL_ACROP  0x0C
+#define ID_PITCH_RATE  0x0D
+#define ID_PITCH_EXPO  0x0E
+#define ID_PITCH_ACROP 0x0F
+#define ID_YAW_RATE    0x10
+#define ID_YAW_EXPO    0x11
+#define ID_YAW_ACROP   0x12
+
+#define ID_DEVICE      0x13
+#define ID_BAND        0x14
+#define ID_CHANNEL     0x15
+#define ID_POWER       0x16
+#define ID_PIT         0x17
+
+
 #define RSSI_ID                 0xf101
 #define ADC1_ID                 0xf102
 #define ADC2_ID                 0xf103
@@ -81,8 +113,14 @@
 #define SPORT_FRAME_HEADER		0x10
 #define BYTESTUFF				0x7d
 
+//TODO: Hack to make this lua crap work
+extern volatile uint32_t luaPacketPendingTime;
+extern volatile int32_t  luaOutPacketOne;
+extern uint32_t          transmitDataBufferIdx;
+extern uint32_t          transmitDataBufferSent;
 
 extern volatile uint8_t telemtryRxBuffer[];
+extern void SendSmartPortLua(void);
 extern void SendSmartPort(void);
 extern void CheckIfSportReadyToSend(void);
 extern void InitSport(uint32_t usartNumber);

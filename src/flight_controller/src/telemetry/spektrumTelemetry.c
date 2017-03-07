@@ -1,11 +1,9 @@
 #include "includes.h"
 
 
-//extern uartPort_t *spektrumUart;
-//#define SRXLTELEM_PACKET_LEN 21
+
 STR_SRXL_TELEM telemetry;
 STR_SRXL_BIND bind;
-
 uint8_t spektrumTxBuffer[20];
 
 extern STRU_TELE_LAPTIMER lap_timer;

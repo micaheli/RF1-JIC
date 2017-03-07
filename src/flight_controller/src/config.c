@@ -630,14 +630,12 @@ void OutputVarSet(uint32_t position)
 	case typeUINT:
 		sprintf(rf_custom_out_buffer, "set %s=%d", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
 		RfCustomReplyBuffer(rf_custom_out_buffer);
-		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeINT:
 		sprintf(rf_custom_out_buffer, "set %s=%d", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
 		RfCustomReplyBuffer(rf_custom_out_buffer);
-		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
 		break;
 
 
@@ -646,11 +644,9 @@ void OutputVarSet(uint32_t position)
 		StripSpaces(fString);
 		sprintf(rf_custom_out_buffer, "set %s=%s", valueTable[position].name, fString);
 		RfCustomReplyBuffer(rf_custom_out_buffer);
-		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%s", valueTable[position].name, fString);
 		break;
 	}
 
-	//RfCustomReply(rf_custom_out_buffer);
 }
 
 void OutputVar(uint32_t position)
@@ -771,8 +767,7 @@ void ProcessCommand(char *inString)
 			args[x] = 0;
 			break;
 		}
-		//if (startCleanup)
-		//	args[x] = 0;
+
 	}
 
 

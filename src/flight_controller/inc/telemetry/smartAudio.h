@@ -31,54 +31,8 @@ enum
 
 enum
 {
-	VTX_POWER_025MW       = 0x00,
-	VTX_POWER_200MW       = 0x01,
-	VTX_POWER_500MW       = 0x02,
-	VTX_POWER_800MW       = 0x03,
-};
-
-enum
-{
-	VTX_CH_A1 = 0,
-	VTX_CH_A2 = 1,
-	VTX_CH_A3 = 2,
-	VTX_CH_A4 = 3,
-	VTX_CH_A5 = 4,
-	VTX_CH_A6 = 5,
-	VTX_CH_A7 = 6,
-	VTX_CH_A8 = 7,
-	VTX_CH_B1 = 8,
-	VTX_CH_B2 = 9,
-	VTX_CH_B3 = 10,
-	VTX_CH_B4 = 11,
-	VTX_CH_B5 = 12,
-	VTX_CH_B6 = 13,
-	VTX_CH_B7 = 14,
-	VTX_CH_B8 = 15,
-	VTX_CH_E1 = 16,
-	VTX_CH_E2 = 17,
-	VTX_CH_E3 = 18,
-	VTX_CH_E4 = 19,
-	VTX_CH_E5 = 20,
-	VTX_CH_E6 = 21,
-	VTX_CH_E7 = 22,
-	VTX_CH_E8 = 23,
-	VTX_CH_F1 = 24,
-	VTX_CH_F2 = 25,
-	VTX_CH_F3 = 26,
-	VTX_CH_F4 = 27,
-	VTX_CH_F5 = 28,
-	VTX_CH_F6 = 29,
-	VTX_CH_F7 = 30,
-	VTX_CH_F8 = 31,
-	VTX_CH_R1 = 32,
-	VTX_CH_R2 = 33,
-	VTX_CH_R3 = 34,
-	VTX_CH_R4 = 35,
-	VTX_CH_R5 = 36,
-	VTX_CH_R6 = 37,
-	VTX_CH_R7 = 38,
-	VTX_CH_R8 = 39,
+	SM_VERSION_1 = 0x01,
+	SM_VERSION_2 = 0x09,
 };
 
 typedef struct
