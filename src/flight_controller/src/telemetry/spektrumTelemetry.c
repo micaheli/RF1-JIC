@@ -253,8 +253,8 @@ float dataInc;
 #define ROW_MAX 8
 #define COLUMN_MAX 1
 
-char stringArray[9][12];
-char axisTable[3][12] = { "Yaw", "Roll", "Pitch" };
+char stringArray[9][24];
+char axisTable[7][24] = { "Yaw PIDs", "Roll PIDs", "Pitch PIDs", "Yaw Rate", "Roll Rate", "Pitch Rate", "General Settings" };
 
 char row1[12];
 char row2[12];
@@ -364,14 +364,15 @@ void textMenuUpdate(void)
 
         	case (IDLE):
 				strcpy(stringArray[0], " RF1 Tuning");
-				strcpy(stringArray[1], "------------");
+				strcpy(stringArray[1], "------------------------ ");
 				strcpy(stringArray[2], " ");
 				strcpy(&stringArray[2][1], axisTable[pidSpektrumTelem.columnAxis]);
+
 				strcpy(stringArray[3], " P: ");
 				strcpy(stringArray[4], " I: ");
 				strcpy(stringArray[5], " D: ");
-				strcpy(stringArray[6], " F: ");
-				strcpy(stringArray[7], " G: ");
+				strcpy(stringArray[6], " Filter: ");
+				strcpy(stringArray[7], " GA: ");
 				strcpy(stringArray[8], " Save");
 
 				if (progMode)
@@ -386,43 +387,51 @@ void textMenuUpdate(void)
         		break;
         }
 
-		if (pidSpektrumTelem.row == 2)
+        if (pidSpektrumTelem.columnAxis <= 0)
+        {
+
+			if (pidSpektrumTelem.row == 2)
+			{
+				pidSpektrumTelem.columnAxis += dataInc;
+				if (pidSpektrumTelem.columnAxis > 2)
+					pidSpektrumTelem.columnAxis = 2;
+				if (pidSpektrumTelem.columnAxis < 0)
+					pidSpektrumTelem.columnAxis = 0;
+			}
+
+			if (pidSpektrumTelem.row < 2)
+				pidSpektrumTelem.row = 2;
+
+			if (pidSpektrumTelem.row == 3)
+				mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp += dataInc * 10;
+			if (pidSpektrumTelem.row == 4)
+				mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki += dataInc * 10;
+			if (pidSpektrumTelem.row == 5)
+				mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd += dataInc * 50;
+			if (pidSpektrumTelem.row == 6)
+				mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q += dataInc * 5;
+			if (pidSpektrumTelem.row == 7)
+				mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga += dataInc * 1;
+			if (pidSpektrumTelem.row == 8 && pidSpektrumTelem.column == 1)
+			{
+				SaveConfig(ADDRESS_CONFIG_START);
+				pidSpektrumTelem.column = 0;
+				pidSpektrumTelem.status=SAVING;
+				pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
+			}
+
+			//itoa(mainConfig.version, &stringArray[3][5], 10);
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp, &stringArray[3][3], 10);
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki, &stringArray[4][3], 10);
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd, &stringArray[5][3], 10);
+			itoa(mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q, &stringArray[6][8], 10);
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga, &stringArray[7][4], 10);
+        }
+        if (pidSpektrumTelem.columnAxis > 2 && pidSpektrumTelem.columnAxis < 6)
 		{
-			pidSpektrumTelem.columnAxis += dataInc;
-			if (pidSpektrumTelem.columnAxis > 2)
-				pidSpektrumTelem.columnAxis = 2;
-			if (pidSpektrumTelem.columnAxis < 0)
-				pidSpektrumTelem.columnAxis = 0;
+            //fill in with the rates
+
 		}
-		
-		if (pidSpektrumTelem.row < 2)
-			pidSpektrumTelem.row = 2;
-
-		if (pidSpektrumTelem.row == 3)
-			mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp += dataInc * 10;
-		if (pidSpektrumTelem.row == 4)
-			mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki += dataInc * 10;
-		if (pidSpektrumTelem.row == 5)
-			mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd += dataInc * 50;
-		if (pidSpektrumTelem.row == 6)
-			mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q += dataInc * 5;
-		if (pidSpektrumTelem.row == 7)
-			mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga += dataInc * 1;
-		if (pidSpektrumTelem.row == 8 && pidSpektrumTelem.column == 1)
-		{
-			SaveConfig(ADDRESS_CONFIG_START);
-			pidSpektrumTelem.column = 0;
-			pidSpektrumTelem.status=SAVING;
-			pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
-		}
-
-		//itoa(mainConfig.version, &stringArray[3][5], 10);
-		itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp, &stringArray[3][3], 10);
-		itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki, &stringArray[4][3], 10);
-		itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd, &stringArray[5][3], 10);
-		itoa(mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q, &stringArray[6][3], 10);
-		itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga, &stringArray[7][3], 10);
-
 
 	}
 
