@@ -248,7 +248,7 @@ uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly)
 
 
 
-float dataInc;
+float dataInc = 0;
 
 #define ROW_MAX 8
 #define COLUMN_MAX 1
@@ -470,7 +470,7 @@ void textMenuUpdate(void)
         	//
         	//set menu, Always have a space before
 			strcpy(stringArray[3], " LedCount:");
-			strcpy(stringArray[4], " Led Mode:");
+			strcpy(stringArray[4], " ");
 			strcpy(stringArray[5], " ");
 			strcpy(stringArray[6], "  ");
 			strcpy(stringArray[7], "  ");
