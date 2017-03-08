@@ -217,7 +217,7 @@ inline void TaskHandlePcComm(void)
 	if (tOutBuffer[0]==2)
 	{ //we have a usb report
 		ProcessCommand((char *)tOutBuffer);
-		for (x=0;x<(HID_EPIN_SIZE-1);x++)
+		for (x=0;x<(HID_EPOUT_SIZE-1);x++)
 			tOutBuffer[x] = 0;
 	}
 

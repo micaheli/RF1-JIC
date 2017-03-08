@@ -4,7 +4,7 @@
 #define CONFIG_VERSION_STR		"58"
 #define FIRMWARE_VERSION		"0.197.059 RC3"
 #define FIRMWARE_NAME			"RaceFlight One"
-#define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\0"
+#define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n"
 
 #define RF_BUFFER_SIZE HID_EPIN_SIZE-1
 #define FLIGHT_MODE_ARRAY_SIZE 96
@@ -47,7 +47,6 @@ typedef struct
 } string_comp_rec;
 
 extern char rf_custom_out_buffer[];
-extern volatile uint32_t disableSaving;
 
 extern char *StripSpaces(char *inString);
 extern char *CleanupString(char *inString);

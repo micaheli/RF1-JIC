@@ -17,7 +17,7 @@ static void     FillVtxRecord(void);
 
 static void FillVtxRecord(void)
 {
-
+/*
 	if (smartAudioVtxStructure.version == SM_VERSION_1)
 	{
 		vtxRecord.vtxDevice = VTX_DEVICE_SMARTV1;
@@ -43,11 +43,12 @@ static void FillVtxRecord(void)
 	{
 		vtxRecord.vtxPit = VTX_MODE_PIT;
 	}
-
+*/
 }
 
 uint32_t InitSoftSmartAudio(void)
 {
+	/*
 	//set RX callback to Send sbus data if
 	uint32_t actuatorNumOutput;
 	uint32_t outputNumber;
@@ -70,6 +71,7 @@ uint32_t InitSoftSmartAudio(void)
 		}
 
 	}
+	*/
 }
 
 uint32_t InitSmartAudio(uint32_t usartNumber)
@@ -201,19 +203,19 @@ uint32_t SpektrumBandAndChannelToChannel(VTX_BAND vtxBand, uint8_t channel)
 {
 	switch(vtxBand)
 	{
-		case VTX_BAND_A:
+		case SPEK_VTX_BAND_A:
 			return((uint32_t)channel);
 			break;
-		case VTX_BAND_B:
+		case SPEK_VTX_BAND_B:
 			return((uint32_t)channel+(uint32_t)7);
 			break;
-		case VTX_BAND_E:
+		case SPEK_VTX_BAND_E:
 			return((uint32_t)channel+(uint32_t)15);
 			break;
-		case VTX_BAND_FATSHARK:
+		case SPEK_VTX_BAND_FATSHARK:
 			return((uint32_t)channel+(uint32_t)23);
 			break;
-		case VTX_BAND_RACEBAND:
+		case SPEK_VTX_BAND_RACEBAND:
 			return((uint32_t)channel+(uint32_t)31);
 			break;
 	}
@@ -225,7 +227,7 @@ void ChannelToBandAndChannel(uint32_t inChannel, uint32_t *vtxBand, uint32_t *ch
 
 	uint32_t bandMultiplier;
 
-	bandMultiplier = channel / 8;
+	bandMultiplier = (*channel) / 8;
 
 	(*vtxBand) = bandMultiplier;
 	(*channel) = inChannel - (bandMultiplier * 8) + 1;

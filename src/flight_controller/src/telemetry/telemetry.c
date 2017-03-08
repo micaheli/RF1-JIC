@@ -64,13 +64,46 @@ void InitMavlink(uint32_t serialPort)
 void InitTelemtry(void)
 {
 
-	vtxRecord.vtxDevice     = VTX_DEVICE_NONE;
-	vtxRecord.vtxBand       = 0;
-	vtxRecord.vtxChannel    = 0;
-	vtxRecord.vtxBandChannel= 0;
-	vtxRecord.vtxPower      = 0;
-	vtxRecord.vtxPit        = 0;
+	uint32_t successNote;
 
+/*
+	vtxRecord.vtxDevice = VTX_DEVICE_NONE;
+
+	//init SA and fill vtxRecord if successful
+	switch(mainConfig.telemConfig.telemSmartAudio)
+	{
+		case TELEM_ACTUATOR1:
+		case TELEM_ACTUATOR2:
+		case TELEM_ACTUATOR3:
+		case TELEM_ACTUATOR4:
+		case TELEM_ACTUATOR5:
+		case TELEM_ACTUATOR6:
+		case TELEM_ACTUATOR7:
+		case TELEM_ACTUATOR8:
+			successNote = InitSoftSmartAudio();
+			break;
+		case TELEM_USART1:
+			successNote = InitSmartAudio(ENUM_USART1);
+			break;
+		case TELEM_USART2:
+			successNote = InitSmartAudio(ENUM_USART2);
+			break;
+		case TELEM_USART3:
+			successNote = InitSmartAudio(ENUM_USART3);
+			break;
+		case TELEM_USART4:
+			successNote = InitSmartAudio(ENUM_USART4);
+			break;
+		case TELEM_USART5:
+			successNote = InitSmartAudio(ENUM_USART5);
+			break;
+		case TELEM_USART6:
+			successNote = InitSmartAudio(ENUM_USART6);
+			break;
+		default:
+			break;
+	}
+*/
 	switch(mainConfig.telemConfig.telemSport)
 	{
 		case TELEM_ACTUATOR1:
