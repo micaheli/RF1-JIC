@@ -252,9 +252,10 @@ float dataInc;
 
 #define ROW_MAX 8
 #define COLUMN_MAX 1
+#define MAX_MENUS 6
 
-char stringArray[9][24];
-char axisTable[7][24] = { "Yaw PIDs", "Roll PIDs", "Pitch PIDs", "Yaw Rate", "Roll Rate", "Pitch Rate", "General Settings" };
+char stringArray[9][15];
+char axisTable[7][15] = { "Yaw PIDs", "Roll PIDs", "Pitch PIDs", "Yaw Rate", "Roll Rate", "Pitch Rate", "General" };
 
 char row1[12];
 char row2[12];
@@ -272,6 +273,7 @@ void textMenuUpdate(void)
 	{
 		pidSpektrumTelem.currentTime = InlineMillis();
 
+/*------------------------------------------checking sticks and moving column and row accordingly--------------------------------------------*/
 		if (progMode != 0)
 		{
 			//vertical stick
@@ -353,27 +355,172 @@ void textMenuUpdate(void)
 		}
 			
 
-        switch(pidSpektrumTelem.status)
+/*--------------------------------Main Logic-----------------------------------------------------------------------------------*/
+
+        if (pidSpektrumTelem.row == 2)
+        	{
+        	pidSpektrumTelem.columnAxis += dataInc;
+        	if (pidSpektrumTelem.columnAxis > MAX_MENUS)
+        		pidSpektrumTelem.columnAxis = MAX_MENUS;
+        	if (pidSpektrumTelem.columnAxis < 0)
+        		pidSpektrumTelem.columnAxis = 0;
+        	} //checks so that the user cant go out of bounds, happens every cycle
+
+
+
+        if (pidSpektrumTelem.columnAxis >= 0 && pidSpektrumTelem.columnAxis <= 2 )
         {
 
-        	case (SAVING):
+        	//set menu, Always have a space before
+			strcpy(stringArray[3], " P: ");
+			strcpy(stringArray[4], " I: ");
+			strcpy(stringArray[5], " D: ");
+			strcpy(stringArray[6], " Filter: ");
+			strcpy(stringArray[7], " GA: ");
+			strcpy(stringArray[8], " Save");
+
+			//checking each row, TODO:maybe make a switch case
+			switch(pidSpektrumTelem.row)
+			{
+				case (3):
+					mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp += dataInc * 10;
+				    break;
+				case (4):
+		            mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki += dataInc * 10;
+				    break;
+				case (5):
+		            mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd += dataInc * 50;
+				    break;
+				case (6):
+					mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q += dataInc * 5;
+				    break;
+				case (7):
+					mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga += dataInc * 1;
+				    break;
+				case (8):
+				    if (pidSpektrumTelem.column ==1)
+				    {
+				    	SaveConfig(ADDRESS_CONFIG_START);
+						pidSpektrumTelem.column = 0;
+						pidSpektrumTelem.status=SAVING;
+						pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
+				    }
+				    break;
+
+			}
+
+			//fills in the rows with the data
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp, &stringArray[3][3], 10);
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki, &stringArray[4][3], 10);
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd, &stringArray[5][3], 10);
+			itoa(mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q, &stringArray[6][8], 10);
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga, &stringArray[7][4], 10);
+        }
+
+        if (pidSpektrumTelem.columnAxis > 2 && pidSpektrumTelem.columnAxis < 6)
+		{
+        	//set menu, Always have a space before
+			strcpy(stringArray[3], " Rate:");
+			strcpy(stringArray[4], " Expo:");
+			strcpy(stringArray[5], " Acro:");
+			strcpy(stringArray[6], "  ");
+			strcpy(stringArray[7], "  ");
+			strcpy(stringArray[8], " Save");
+
+			//checking each row/changing config
+			switch(pidSpektrumTelem.row)
+			{
+				case (3):
+					mainConfig.rcControlsConfig.rates[pidSpektrumTelem.columnAxis-3] += dataInc * 10; // subtract three to make axis line up with enumeration
+				    break;
+				case (4):
+					mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3] += dataInc * 10;
+				    break;
+				case (5):
+			        mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3] += dataInc * 50;
+				    break;
+				case (8):
+		            if (pidSpektrumTelem.column ==1)
+					{
+					 	SaveConfig(ADDRESS_CONFIG_START);
+					 	pidSpektrumTelem.column = 0;
+						pidSpektrumTelem.status=SAVING;
+						pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
+					}
+
+				    break;
+
+			}
+
+        	//fills in the rows with the data
+			itoa(mainConfig.rcControlsConfig.rates[pidSpektrumTelem.columnAxis-3], &stringArray[3][6], 10);
+			itoa(mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3], &stringArray[4][6], 10);
+			itoa(mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3], &stringArray[5][6], 10);
+
+
+		}
+
+        if (pidSpektrumTelem.columnAxis == 6)
+		{
+        	//led modes
+        	//led count
+        	//
+        	//
+        	//
+        	//
+        	//set menu, Always have a space before
+			strcpy(stringArray[3], " LedCount:");
+			strcpy(stringArray[4], " Led Mode:");
+			strcpy(stringArray[5], " ");
+			strcpy(stringArray[6], "  ");
+			strcpy(stringArray[7], "  ");
+			strcpy(stringArray[8], " Save");
+
+			//checking each row/changing config
+        	switch(pidSpektrumTelem.row)
+					{
+						case (3):
+							mainConfig.ledConfig.ledCount += dataInc;
+							break;
+						case (4):
+							break;
+						case (5):
+							break;
+						case (8):
+							if (pidSpektrumTelem.column ==1)
+							{
+								SaveConfig(ADDRESS_CONFIG_START);
+								pidSpektrumTelem.column = 0;
+								pidSpektrumTelem.status=SAVING;
+								pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
+							}
+
+							break;
+
+					}
+
+					//fills in the rows with the data
+					itoa(mainConfig.ledConfig.ledCount, &stringArray[3][10], 10);
+
+		}
+/*------------------------------Switch for different status-----------------------------------------------------------------------*/
+		switch(pidSpektrumTelem.status)
+		{
+
+			case (SAVING):
 				strcpy(stringArray[0], " Saved");
-				if (pidSpektrumTelem.currentTime-pidSpektrumTelem.waitTime > 200)
+				if (pidSpektrumTelem.currentTime-pidSpektrumTelem.waitTime > 500)
 					pidSpektrumTelem.status=IDLE;
 				break;
 
-        	case (IDLE):
+			case (IDLE):
+				if (pidSpektrumTelem.row < 2)
+					pidSpektrumTelem.row = 2;
 				strcpy(stringArray[0], " RF1 Tuning");
 				strcpy(stringArray[1], "------------------------ ");
 				strcpy(stringArray[2], " ");
 				strcpy(&stringArray[2][1], axisTable[pidSpektrumTelem.columnAxis]);
 
-				strcpy(stringArray[3], " P: ");
-				strcpy(stringArray[4], " I: ");
-				strcpy(stringArray[5], " D: ");
-				strcpy(stringArray[6], " Filter: ");
-				strcpy(stringArray[7], " GA: ");
-				strcpy(stringArray[8], " Save");
 
 				if (progMode)
 				{
@@ -381,57 +528,12 @@ void textMenuUpdate(void)
 				}
 
 				break;
-        	case (CHANGING_SETTING):
+			case (CHANGING_SETTING):
 				strcpy(&stringArray[2][1], axisTable[pidSpektrumTelem.columnAxis]);
 				stringArray[pidSpektrumTelem.row][0] = '*';
-        		break;
-        }
-
-        if (pidSpektrumTelem.columnAxis <= 0)
-        {
-
-			if (pidSpektrumTelem.row == 2)
-			{
-				pidSpektrumTelem.columnAxis += dataInc;
-				if (pidSpektrumTelem.columnAxis > 2)
-					pidSpektrumTelem.columnAxis = 2;
-				if (pidSpektrumTelem.columnAxis < 0)
-					pidSpektrumTelem.columnAxis = 0;
-			}
-
-			if (pidSpektrumTelem.row < 2)
-				pidSpektrumTelem.row = 2;
-
-			if (pidSpektrumTelem.row == 3)
-				mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp += dataInc * 10;
-			if (pidSpektrumTelem.row == 4)
-				mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki += dataInc * 10;
-			if (pidSpektrumTelem.row == 5)
-				mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd += dataInc * 50;
-			if (pidSpektrumTelem.row == 6)
-				mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q += dataInc * 5;
-			if (pidSpektrumTelem.row == 7)
-				mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga += dataInc * 1;
-			if (pidSpektrumTelem.row == 8 && pidSpektrumTelem.column == 1)
-			{
-				SaveConfig(ADDRESS_CONFIG_START);
-				pidSpektrumTelem.column = 0;
-				pidSpektrumTelem.status=SAVING;
-				pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
-			}
-
-			//itoa(mainConfig.version, &stringArray[3][5], 10);
-			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp, &stringArray[3][3], 10);
-			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki, &stringArray[4][3], 10);
-			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd, &stringArray[5][3], 10);
-			itoa(mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q, &stringArray[6][8], 10);
-			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga, &stringArray[7][4], 10);
-        }
-        if (pidSpektrumTelem.columnAxis > 2 && pidSpektrumTelem.columnAxis < 6)
-		{
-            //fill in with the rates
-
+				break;
 		}
+
 
 	}
 
@@ -447,7 +549,16 @@ void textMenuUpdate(void)
 		xbus.textLine = 0;
 	}
 	dataInc = 0;
-}
+}//end textMenuUpdate()
+
+
+
+
+
+
+
+
+
 /*
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 {
