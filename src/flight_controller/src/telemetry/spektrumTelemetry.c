@@ -434,10 +434,10 @@ void textMenuUpdate(void)
 					mainConfig.rcControlsConfig.rates[pidSpektrumTelem.columnAxis-3] += dataInc * 10; // subtract three to make axis line up with enumeration
 				    break;
 				case (4):
-					mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3] += dataInc * 10;
+					mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3] += dataInc * 10;
 				    break;
 				case (5):
-			        mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3] += dataInc * 50;
+			        mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3] += dataInc * 10;
 				    break;
 				case (8):
 		            if (pidSpektrumTelem.column ==1)

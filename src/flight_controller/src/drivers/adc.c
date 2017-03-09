@@ -8,6 +8,7 @@
 float adcVoltage=0;
 uint32_t cellCount=0;
 float cellCutoff=3.65f;
+uint32_t lowVoltAlarm=0;
 float averageVoltage=0;
 float lowVoltage = 0;
 float runningVoltage = 0;
@@ -84,7 +85,7 @@ void CheckBatteryCellCount()
 		runningVoltage = (RUNNING_VOLTAGE * cellCount);
 		lowVoltage = (DEAD_VOLTAGE * cellCount);
 	}
-	if ( (averageVoltage<lowVoltage) && boardArmed && (averageVoltage > 2.0f) )
+	if ( (averageVoltage<lowVoltage) && boardArmed && (averageVoltage > 2.0f) && lowVoltAlarm )
 	{
 		//turn buzzer on
 		buzzerStatus.status = STATE_BUZZER_LOWBAT;

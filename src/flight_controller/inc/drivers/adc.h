@@ -10,3 +10,4 @@ extern float lowVoltage;
 extern float runningVoltage;
 extern float fullVoltage;
 extern float averageVoltage;
+extern float cellCutoff;
