@@ -190,6 +190,9 @@ void UpdateAttitudeFrameQuat(float gyroRollDiffRads, float gyroPitchDiffRads, fl
 	gyroPitchDiffRads = InlineDegreesToRadians( gyroPitchDiffRads ) * loopSpeed.gyrodT;
 	gyroYawDiffRads   = InlineDegreesToRadians( gyroYawDiffRads )   * loopSpeed.gyrodT;
 
+	if (isnan(gyroRollDiffRads) || isnan(gyroPitchDiffRads) || isnan(gyroYawDiffRads))
+		return;
+
 	attitudeFrameQuat.w += (-tempQuat.x * gyroRollDiffRads  - tempQuat.y * gyroPitchDiffRads - tempQuat.z * gyroYawDiffRads);
 	attitudeFrameQuat.x += (tempQuat.w  * gyroRollDiffRads  + tempQuat.y * gyroYawDiffRads   - tempQuat.z * gyroPitchDiffRads);
 	attitudeFrameQuat.y += (tempQuat.w  * gyroPitchDiffRads - tempQuat.x * gyroYawDiffRads   + tempQuat.z * gyroRollDiffRads);
@@ -253,7 +256,7 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 			}
 			else
 			{
-				accTrust  = 4000.3000f;
+				accTrust  = 111.3000f;
 			}
 
 			gyroRoll  += accTrust * accToGyroError[ACCX] + accTrustKiStorage[ACCX];
