@@ -83,7 +83,21 @@ enum {
 	FP_DMA2_S5   = 20,
 	FP_DMA2_S6   = 21,
 	FP_DMA2_S7   = 22,
-	IRQH_FP_TOT  = 23,
+	FP_TIM1      = 23,
+	FP_TIM2      = 24,
+	FP_TIM3      = 25,
+	FP_TIM4      = 26,
+	FP_TIM5      = 27,
+	FP_TIM6      = 28,
+	FP_TIM7      = 29,
+	FP_TIM8      = 30,
+	FP_TIM9      = 31,
+	FP_TIM10     = 32,
+	FP_TIM11     = 33,
+	FP_TIM12     = 34,
+	FP_TIM13     = 35,
+	FP_TIM14     = 36,
+	IRQH_FP_TOT  = 37,
 };
 
 enum {
@@ -193,6 +207,11 @@ enum {
 };
 
 enum {
+	ENUM_USART_TX_PIN = 0,
+	ENUM_USART_RX_PIN = 1,
+};
+
+enum {
 	ENUM_DMA1_STREAM_0 = 0,
 	ENUM_DMA1_STREAM_1 = 1,
 	ENUM_DMA1_STREAM_2 = 2,
@@ -236,6 +255,10 @@ typedef struct {
 	SPI_TypeDef				*port;
 } spi_type;
 
+typedef struct {
+	uint32_t				timer;
+	uint32_t				timerIRQn;
+} general_timer;
 
 typedef struct {
 	uint32_t				enabled;
@@ -434,6 +457,9 @@ typedef struct {
 	board_dma				dmasActive[16];
 
 	board_adc				boardADC[3];
+
+	general_timer			generalTimer[3];
+
 } board_type;
 
 

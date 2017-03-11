@@ -158,22 +158,22 @@ typedef enum
 
 typedef enum
 {
-	POWER_25MW  = 0,
-	POWER_250MW = 1,
-	POWER_500MW = 2,
+	SPEK_VTX_POWER_25MW  = 0,
+	SPEK_VTX_POWER_250MW = 1,
+	SPEK_VTX_POWER_500MW = 2,
 } VTX_POWER;
 
 typedef enum
 {
-	US = 0,
-	EU = 1,
+	SPEK_VTX_US = 0,
+	SPEK_VTX_EU = 1,
 } VTX_REGION;
 
 typedef enum
 {
 	
-	ACTIVE = 0,		//turn on power
-	PIT    = 1,		//low power mode while in pit
+	SPEK_VTX_ACTIVE = 0,		//turn on power
+	SPEK_VTX_PIT    = 1,		//low power mode while in pit
 } VTX_PIT;
 
 typedef struct
@@ -199,10 +199,10 @@ typedef struct {
 	const char *strDefault;
 } interface_table;
 
-void InitSpektrumTelemetry(void);
-void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize);
-void sendSpektrumTelem(void);
-void sendSpektrumBind(void);
-void textMenuUpdate(void);
-uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly);
-
+extern uint32_t VtxSpektrumBandAndChannelToVtxBandChannel(VTX_BAND vtxBand, uint8_t channel);
+extern void     InitSpektrumTelemetry(void);
+extern void     sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize);
+extern void     sendSpektrumTelem(void);
+extern void     sendSpektrumBind(void);
+extern void     textMenuUpdate(void);
+extern uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly);

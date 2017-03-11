@@ -20,10 +20,10 @@ uint32_t rxData[MAXCHANNELS];
 volatile float maxFlopRate[3];
 volatile float maxKissRate[3];
 
-uint32_t skipRxMap = 0;
-uint32_t progMode  = 0;
-uint32_t progTimer = 0;
-uint32_t ppmPin    = 99;
+uint32_t skipRxMap    = 0;
+uint32_t progMode     = 0;
+uint32_t progTimer    = 0;
+uint32_t ppmPin       = 99;
 volatile uint32_t armCheckLatch = 0;
 
 #define PPM_SYNC_MINIMUM_US 4000
@@ -260,15 +260,12 @@ void ProcessArmingStructure(void)
 			if ( ABS((int32_t)rxCalibrationRecords[YAW].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
 				mainConfig.rcControlsConfig.midRc[YAW] = rxCalibrationRecords[YAW].highestDataValue;
 
-			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && !vtxEnabled )
+			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && (vtxRecord.vtxDevice !=  VTX_DEVICE_NONE))
 			{
-				//smart audio is enabled, but no VTX mode is set, we send the on command during arming
-				armBoardAt = InlineMillis() + 400;
+				turnOnVtxNow = 1;
 			}
-			else
-			{
-				ArmBoard();
-			}
+
+			ArmBoard();
 
 		}
 		else if ( !ModeActive(M_ARMED) )
@@ -421,17 +418,36 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		//Check for vtx data
 		if (copiedBufferData[12] == 0xE0)
 		{
-			vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
-			vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
+			if (vtxRecord.vtxDevice != VTX_DEVICE_NONE)
+			{
+				vtxRequested.vtxBandChannel = VtxSpektrumBandAndChannelToVtxBandChannel( (copiedBufferData[13] >> 5) & 0x07, (copiedBufferData[13] & 0x0F) + 1);
+				VtxChannelToBandAndChannel(vtxRequested.vtxBandChannel, &vtxRequested.vtxBand, &vtxRequested.vtxChannel);
+				vtxRequested.vtxFrequency = VtxBandChannelToFrequency(vtxRequested.vtxBandChannel);
+				//vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
+				//vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
+			}
 
 		}
 
 			  //Check channel slot 7 for vtx power, pit, and region data
 		if (copiedBufferData[14] == 0xE0)
 		{
-			vtxData.vtxPower  = copiedBufferData[15] & 0x03;
-			vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
-			vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
+			if (vtxRecord.vtxDevice != VTX_DEVICE_NONE)
+			{
+				vtxRequested.vtxPower  = (uint32_t)(copiedBufferData[15] & 0x03);
+				vtxRequested.vtxRegion = (uint32_t)((copiedBufferData[15] >> 3) & 0x01);
+				vtxRequested.vtxPit    = (uint32_t)((copiedBufferData[15] >> 4) & 0x01);
+
+				if (vtxRequested.vtxPit == SPEK_VTX_ACTIVE)
+					vtxRequested.vtxPit = VTX_MODE_ACTIVE;
+				else
+					vtxRequested.vtxPit = VTX_MODE_PIT;
+
+				//vtxData.vtxPower  = copiedBufferData[15] & 0x03;
+				//vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
+				//vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
+			}
+
 		}
 
 		if (!spekPhase && mainConfig.telemConfig.telemSpek)

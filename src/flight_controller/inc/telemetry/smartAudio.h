@@ -35,28 +35,16 @@ enum
 	SM_VERSION_2 = 0x09,
 };
 
-typedef struct
-{
-    uint32_t version;
-    uint32_t channel;
-    uint32_t powerLevel;
-    uint32_t opMode;
-    uint32_t frequency;
-} smart_audio_vtx_structure;
+extern uint8_t  smartAudioRxBuffer[];
+extern uint8_t  smartAudioTxBuffer[];
 
-extern uint32_t vtxEnabled;
-extern smart_audio_vtx_structure smartAudioVtxStructure;
-extern uint8_t smartAudioRxBuffer[];
-extern uint8_t smartAudioTxBuffer[];
-
-extern uint32_t TurnOnVtx(void);
-extern uint32_t InitSmartAudio(uint32_t usartNumber);
+extern uint32_t SmartAudioVtxTurnOn(void);
+extern uint32_t SmartAudioVtxTurnPit(void);
+extern uint32_t InitSmartAudio(void);
 extern void     DeInitSmartAudio(void);
-extern uint32_t SmartAudioGetSettingsBlocking(uint32_t timeoutMs);
-extern uint32_t SmartAudioSetPowerBlocking(uint32_t powerLevel);
-extern uint32_t SmartAudioSetChannelBlocking(uint32_t channel);
-extern uint32_t SmartAudioSetOpModeBlocking(uint32_t mask);
-extern uint32_t SpektrumBandAndChannelToChannel(VTX_BAND vtxBand, uint8_t channel);
+extern uint32_t SmartAudioGetSettings(void);
+extern uint32_t SmartAudioVtxPower(uint32_t powerLevel);
+extern uint32_t SmartAudioVtxBandChannel(uint32_t bandChannel);
 
 /*
 extern volatile uint8_t rfVtxRxBuffer[];

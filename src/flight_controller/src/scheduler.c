@@ -6,6 +6,9 @@ volatile uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 uint32_t skipTaskHandlePcComm   = 0;
 volatile uint32_t errorMask              = 0;
 
+//scheduler timer
+TIM_HandleTypeDef schedulerTimer;
+
 //soft serial buffer handling. TODO: make a structure
 volatile uint32_t softSerialEnabled = 0;
 volatile uint32_t softSerialBuf[2][SOFT_SERIAL_BIT_TIME_ARRAY_SIZE];
@@ -13,6 +16,7 @@ volatile uint32_t softSerialInd[2];
 volatile uint32_t softSerialCurBuf;
 volatile uint32_t softSerialLastByteProcessedLocation;
 volatile uint32_t softSerialSwitchBuffer;
+volatile uint32_t turnOnVtxNow = 0;
 
 uint8_t    proccesedSoftSerial[25]; //25 byte buffer enough?
 uint32_t   proccesedSoftSerialIdx = 0;
@@ -29,6 +33,96 @@ static void TaskAdc(void);
 static void TaskCheckVtx(void);
 static void TaskCheckDelayedArming(void);
 static void TaskProcessArmingStructure(void);
+static void InitGeneralInterruptTimer(uint32_t pwmHz, uint32_t timerHz);
+static void DeInitGeneralInterruptTimer(void);
+
+
+static void DeInitGeneralInterruptTimer(void)
+{
+	HAL_TIM_Base_Stop_IT(&schedulerTimer);
+	callbackFunctionArray[GetTimerCallbackFromTimerEnum(board.generalTimer[0].timer)] = 0;
+}
+
+static void InitGeneralInterruptTimer(uint32_t pwmHz, uint32_t timerHz)
+{
+	uint16_t timerPrescaler = 0;
+
+	callbackFunctionArray[GetTimerCallbackFromTimerEnum(board.generalTimer[0].timer)] = GeneralInterruptTimerCallback;
+
+	timerPrescaler = (uint16_t)(SystemCoreClock / TimerPrescalerDivisor(board.generalTimer[0].timer) / timerHz) - 1;
+
+	// Initialize timer
+	schedulerTimer.Instance           = timers[board.generalTimer[0].timer];
+	schedulerTimer.Init.Prescaler     = timerPrescaler;
+	schedulerTimer.Init.CounterMode   = TIM_COUNTERMODE_UP;
+	schedulerTimer.Init.Period        = (timerHz / pwmHz) - 1;
+	schedulerTimer.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	HAL_TIM_Base_Init(&schedulerTimer);
+	HAL_TIM_Base_Start_IT(&schedulerTimer);
+
+    HAL_NVIC_SetPriority(board.generalTimer[0].timerIRQn, 2, 0);
+    HAL_NVIC_EnableIRQ(board.generalTimer[0].timerIRQn);
+}
+
+//TODO: Don't hardcode to timer 6, use a callback instead
+void GeneralInterruptTimerCallback(uint32_t callbackNumber)
+{
+
+	(void)(callbackNumber);
+
+    if (__HAL_TIM_GET_FLAG(&schedulerTimer, TIM_FLAG_UPDATE) != RESET)      //In case other interrupts are also running
+    {
+
+        if (__HAL_TIM_GET_ITSTATUS(&schedulerTimer, TIM_IT_UPDATE) != RESET)
+        {
+
+            __HAL_TIM_CLEAR_FLAG(&schedulerTimer, TIM_FLAG_UPDATE);
+
+            //triggers DMA read which will trigger flight code
+            GyroExtiCallback(0);
+
+        }
+
+    }
+
+}
+
+//DeInit the fake Gyro EXTI and attempt to reenable the actual EXTI, this checks that the gyro is interrupting and will init the fake EXTI if necessary.
+void DeInitFakeGyroExti(void)
+{
+	DeInitGeneralInterruptTimer();
+	InitGyroExti();
+	DelayMs(2);
+	gyroInterrupting = 0;
+	DelayMs(2);
+	if(!gyroInterrupting)
+	{
+		InitFakeGyroExti();
+	}
+}
+
+//Deinit the real gyro EXTI and Init the fake gyro EXTI
+void InitFakeGyroExti(void)
+{
+	//TODO: Don't just hardcode for 32KHz
+	DeInitGyroExti();
+	InitGeneralInterruptTimer(32000, 48000000);
+}
+
+void InitScheduler(void)
+{
+	//DeInit the fake Gyro EXTI and attempt to reenable the actual EXTI, this checks that the gyro is interrupting and will init the fake EXTI if necessary.
+	DelayMs(2);
+	gyroInterrupting = 0;
+	DelayMs(2);
+	if(!gyroInterrupting)
+	{
+		InitFakeGyroExti();
+	}
+	turnOnVtxNow = 0;
+
+	return;
+}
 
 inline void Scheduler(int32_t count)
 {
@@ -85,44 +179,31 @@ inline void TaskProcessArmingStructure(void)
 
 inline void TaskCheckDelayedArming(void)
 {
-	//TODO: Hack to make this lua crap work
-	if ( ( luaPacketPendingTime ) || ( (transmitDataBufferIdx > 0) && (transmitDataBufferSent <= (transmitDataBufferIdx - 1)) ) )
-	{
-		return;
-	}
 
-	//handles VTX enabling as well
-	if(armBoardAt)
-	{
-		//delayed arming window of 150 ms.
-		if ( (InlineMillis() > armBoardAt) && ((InlineMillis() - armBoardAt) < 150) )
-		{
-			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && !vtxEnabled )
-			{
-				//only try turning on the VTX once per arming
-				vtxEnabled = 1;
-				TurnOnVtx();
-			}
-			ArmBoard();
-			armBoardAt = 0;
-		}
-	}
-	if (!armBoardAt && !boardArmed && mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && vtxEnabled)
-		vtxEnabled = 0;
+	return;
+
 }
 
 inline void TaskCheckVtx(void)
 {
-	static uint8_t vtxChannel   = 0;
-	static VTX_BAND vtxBand     = 0;
-	static VTX_POWER vtxPower   = 0;
+
+
+	//static uint8_t vtxChannel   = 0;
+	//static VTX_BAND vtxBand     = 0;
+	//static VTX_POWER vtxPower   = 0;
 	//static VTX_REGION vtxRegion = 0;
-	static VTX_PIT vtxPit       = 0;
+	//static VTX_PIT vtxPit       = 0;
 
 	//TODO: Hack to make this lua crap work
 	if ( ( luaPacketPendingTime ) || ( (transmitDataBufferIdx > 0) && (transmitDataBufferSent <= (transmitDataBufferIdx - 1)) ) )
 	{
 		return;
+	}
+
+	if (turnOnVtxNow)
+	{
+		VtxTurnOn(); //blocking of scheduler during send and receive
+		turnOnVtxNow = 0;
 	}
 
 	//don't do this task unless board is disarmed
@@ -132,41 +213,56 @@ inline void TaskCheckVtx(void)
 	if (!mainConfig.telemConfig.telemSmartAudio)
 		return;
 
-	if (ModeSet(M_VTXON) && ModeActive(M_VTXON) && !vtxEnabled)
+	if (ModeSet(M_VTXON) && ModeActive(M_VTXON) && !vtxRecord.vtxPit == VTX_MODE_PIT)
 	{
 		//only try turning on the VTX once per mode enabling
-		vtxEnabled = 1;
-		TurnOnVtx();
-	}
-	else if (ModeSet(M_VTXON) && !ModeActive(M_VTXON) && vtxEnabled)
-	{
-		vtxEnabled = 0; //we can't turn off the VTX using smart audio, but we can reset the flag
+		VtxTurnOn();
 	}
 
+	if (vtxRequested.vtxBandChannel != vtxRecord.vtxBandChannel)
+	{
+		VtxBandChannel(vtxRequested.vtxBandChannel);
+	}
+
+	if (vtxRequested.vtxPit != vtxRecord.vtxPit)
+	{
+		//if (vtxRecord.vtxPit == VTX_MODE_ACTIVE)
+		//	VtxTurnOn();
+		//else
+		//	VtxTurnPit();
+	}
+
+	if (vtxRequested.vtxPower != vtxRecord.vtxPower)
+	{
+		VtxPower(vtxRequested.vtxPower);
+	}
+
+
+/*
 	if ( (vtxData.vtxBand != vtxBand) || (vtxData.vtxChannel != vtxChannel) )
 	{ //did vtxChannel change? If so, send change to SA VTX
 		SmartAudioSetChannelBlocking( SpektrumBandAndChannelToChannel(vtxData.vtxBand, vtxData.vtxChannel) );
-		if (vtxData.vtxPit == ACTIVE)
+		if (vtxRecord.vtxPit == VTX_MODE_PIT)
 		{
-			TurnOnVtx();
+			VtxTurnOn();
 			vtxPit = vtxData.vtxPit;
 		}
 		vtxBand    = vtxData.vtxBand;
 		vtxChannel = vtxData.vtxChannel;
 	}
 
-	if ( (vtxData.vtxPower != vtxPower) || (vtxData.vtxPit != vtxPit) )
+	if ( (vtxRecord.vtxPower != vtxPower) || (vtxData.vtxPit != vtxPit) )
 	{
 		SmartAudioSetPowerBlocking( vtxData.vtxPower );
-		if (vtxData.vtxPit == ACTIVE)
+		if (vtxData.vtxPit == VTX_MODE_PIT)
 		{
 			vtxPit = vtxData.vtxPit;
-			TurnOnVtx();
+			VtxTurnOn();
 		}
 		vtxPower = vtxData.vtxPower;
 		vtxPit   = vtxData.vtxPit;
 	}
-
+*/
 }
 
 inline void TaskAdc(void)
@@ -185,6 +281,7 @@ inline void TaskProcessSoftSerial(void)
 
 	 if (oneWireActive)
 		 FeedTheDog();
+
 }
 
 inline void TaskWizard(void) {

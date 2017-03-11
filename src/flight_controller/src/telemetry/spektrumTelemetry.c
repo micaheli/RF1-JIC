@@ -21,6 +21,29 @@ void InitSpektrumTelemetry(void) {
 	return;
 }
 
+uint32_t VtxSpektrumBandAndChannelToVtxBandChannel(VTX_BAND vtxBand, uint8_t channel)
+{
+	switch(vtxBand)
+	{
+		case SPEK_VTX_BAND_A:
+			return((uint32_t)channel-1);
+			break;
+		case SPEK_VTX_BAND_B:
+			return((uint32_t)channel+(uint32_t)7);
+			break;
+		case SPEK_VTX_BAND_E:
+			return((uint32_t)channel+(uint32_t)15);
+			break;
+		case SPEK_VTX_BAND_FATSHARK:
+			return((uint32_t)channel+(uint32_t)23);
+			break;
+		case SPEK_VTX_BAND_RACEBAND:
+			return((uint32_t)channel+(uint32_t)31);
+			break;
+	}
+	return(0);
+}
+
 void sendSpektrumTelem(void)
 {
 	if (telemetryState >= NUM_TELEM_STATES)

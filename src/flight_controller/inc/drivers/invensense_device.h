@@ -14,6 +14,7 @@ typedef struct {
 
 extern gyro_device_config gyroConfig;
 extern uint32_t deviceWhoAmI;
+extern volatile uint32_t gyroInterrupting;
 
 int AccGyroDeviceInit(loopCtrl_e gyroLoop);
 int AccGyroDeviceDetect(void);
@@ -24,3 +25,6 @@ void accgyroDeviceReadComplete(void);
 
 void accgyroDeviceCalibrate(int32_t *gyroData);
 void accgyroDeviceApplyCalibration(int32_t *gyroData);
+
+extern void DeInitGyroExti(void);
+extern void InitGyroExti(void);

@@ -204,6 +204,7 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 	gyroPitch = -gyroPitch;
 	gyroYaw   = -gyroYaw;
 
+
 	float accTrust;
 	float accTrustKi = 112.1000f;
 	float norm;

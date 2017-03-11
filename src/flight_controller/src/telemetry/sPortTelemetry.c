@@ -21,6 +21,7 @@ volatile uint32_t telemtryRxTimerBuffer[SPORT_SOFT_SERIAL_TIME_BUFFER_SIZE];
 volatile uint32_t telemtryRxBufferIdx;
 volatile uint32_t telemtryRxTimerBufferIdx;
 motor_type        sbusActuator;
+int32_t           smartPortExti = -1; //dirty hack, smart port really needs to start using the soft serial driver
 static uint32_t   sPortTelemCount;
 uint32_t          lastTimeSent = 0;
 volatile uint32_t luaPacketPendingTime = 0;
@@ -270,35 +271,35 @@ static void ProcessSportLuaStuff(void)
 		{
 			bzero(transmitDataBuffer, sizeof(transmitDataBuffer)); //new data request wanted, fill buffer and reset indexes
 
-			if ( InitSmartAudio(ENUM_USART3) )
-			{
-				ChannelToBandAndChannel(smartAudioVtxStructure.channel, &vtxData.vtxChannel, &vtxData.vtxBand);
-				vtxData.vtxPower   = smartAudioVtxStructure.powerLevel;
-			}
+			//if ( InitSmartAudio(ENUM_USART3) )
+			//{
+				//ChannelToBandAndChannel(smartAudioVtxRecord.channel, &vtxData.vtxChannel, &vtxData.vtxBand);
+				//vtxData.vtxPower   = smartAudioVtxRecord.powerLevel;
+			//}
 			transmitDataBuffer[0]  = 0xAC;
 			transmitDataBuffer[1]  = ID_DEVICE;
 			transmitDataBuffer[2]  = 0;
-			transmitDataBuffer[3]  = vtxData.vtxChannel;
+			transmitDataBuffer[3]  = vtxRecord.vtxDevice;
 
 			transmitDataBuffer[4]  = 0xAC;
 			transmitDataBuffer[5]  = ID_BAND;
 			transmitDataBuffer[6]  = 0;
-			transmitDataBuffer[7]  = vtxData.vtxBand;
+			transmitDataBuffer[7]  = vtxRecord.vtxBand;
 
 			transmitDataBuffer[8]  = 0xAC;
 			transmitDataBuffer[9]  = ID_CHANNEL;
 			transmitDataBuffer[10] = 0;
-			transmitDataBuffer[11] = vtxData.vtxChannel;
+			transmitDataBuffer[11] = vtxRecord.vtxChannel;
 
 			transmitDataBuffer[12] = 0xAC;
 			transmitDataBuffer[13] = ID_POWER;
 			transmitDataBuffer[14] = 0;
-			transmitDataBuffer[15] = vtxData.vtxPower;
+			transmitDataBuffer[15] = vtxRecord.vtxPower;
 
 			transmitDataBuffer[16] = 0xAC;
 			transmitDataBuffer[17] = ID_PIT;
 			transmitDataBuffer[18] = 0;
-			transmitDataBuffer[19] = vtxData.vtxPit;
+			transmitDataBuffer[19] = vtxRecord.vtxPit;
 
 			transmitDataBufferIdx  = 20;
 
@@ -344,7 +345,7 @@ void CheckIfSportReadyToSend(void)
 	if (IsSoftSerialLineIdle()) //soft serial?
 	{
 		//process timer buffer, s.port bit width is 17.35us and there are 10 bits in the byte including the start and stop frame
-		bytesReceived = NewProcessSoftSerialBits(telemtryRxTimerBuffer, &telemtryRxTimerBufferIdx, telemtryRxBuffer, &telemtryRxBufferIdx, 17.36, 10);
+		bytesReceived = NewProcessSoftSerialBits(telemtryRxTimerBuffer, &telemtryRxTimerBufferIdx, telemtryRxBuffer, &telemtryRxBufferIdx, 17.36, 10, TBS_HANDLING_OFF);
 		if(bytesReceived)
 		{
 			if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x1B) )
@@ -580,6 +581,7 @@ void InitSoftSport(void)
 
 			if (!DoesDmaConflictWithActiveDmas(board.motors[outputNumber]))
 			{
+				///todonow changesmartPortExti =
 				sbusActuator = board.motors[outputNumber];
 				PutSportIntoReceiveState(sbusActuator, 1);
 			}

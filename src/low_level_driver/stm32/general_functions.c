@@ -104,11 +104,22 @@ void VectorIrqInit(uint32_t address) {
 	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
+void DeInitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
+{
+	HAL_GPIO_DeInit(GPIOx, GPIO_Pin);
+}
+
 void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
 
     HAL_GPIO_DeInit(GPIOx, GPIO_Pin);
+
+    if (on) {
+    	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
+    } else {
+    	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
+    }
 
     GPIO_InitStructure.Pin   = GPIO_Pin;
     GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
@@ -116,11 +127,57 @@ void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on)
     GPIO_InitStructure.Pull  = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
 
-    if (on) {
-    	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
-    } else {
-    	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
-    }
+}
+
+inline uint32_t GetTimerCallbackFromTimerEnum(uint32_t timer)
+{
+	switch(timer)
+	{
+		case ENUM_TIM1:
+			return(FP_TIM1);
+			break;
+		case ENUM_TIM2:
+			return(FP_TIM2);
+			break;
+		case ENUM_TIM3:
+			return(FP_TIM3);
+			break;
+		case ENUM_TIM4:
+			return(FP_TIM4);
+			break;
+		case ENUM_TIM5:
+			return(FP_TIM5);
+			break;
+		case ENUM_TIM6:
+			return(FP_TIM6);
+			break;
+		case ENUM_TIM7:
+			return(FP_TIM7);
+			break;
+		case ENUM_TIM8:
+			return(FP_TIM8);
+			break;
+		case ENUM_TIM9:
+			return(FP_TIM9);
+			break;
+		case ENUM_TIM10:
+			return(FP_TIM10);
+			break;
+		case ENUM_TIM11:
+			return(FP_TIM11);
+			break;
+		case ENUM_TIM12:
+			return(FP_TIM12);
+			break;
+		case ENUM_TIM13:
+			return(FP_TIM13);
+			break;
+		case ENUM_TIM14:
+			return(FP_TIM14);
+			break;
+	}
+
+	return(0);
 }
 
 uint32_t GetExtinFromPin(uint16_t GPIO_Pin)

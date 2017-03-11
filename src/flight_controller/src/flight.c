@@ -887,6 +887,15 @@ static uint32_t IsUsbConnected(void)
 
 }
 
+void DeinitFlight(void)
+{
+	DisarmBoard();              //sets WD to 32S
+	AccGyroDeinit();            //takes about 200ms maybe to run, this will also stop the flight code from running so no reason to stop that.
+	DeInitBoardUsarts();        //deinit all the USARTs.
+	DeInitActuators();          //deinit all the Actuators.
+	DeInitAllowedSoftOutputs(); //deinit all the soft outputs
+}
+
 //init the board
 void InitFlight(void) {
 
@@ -918,6 +927,10 @@ void InitFlight(void) {
 		ErrorHandler(GYRO_INIT_FAILIURE);
 	}
 
+	//make sure gyro is interrupting and init scheduler
+	InitScheduler();
+
+	//init telemtry, if there's a gyro EXTI and soft serial collision then the fake EXTI will be used in place of the actual gyro EXTI
 	InitTelemtry();
 
 #ifndef SPMFC400

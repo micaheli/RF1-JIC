@@ -189,6 +189,11 @@ void GetBoardHardwareDefs(void)
 	board.fc_pllp = FC_PLLP;
 	board.fc_pllq = FC_PLLQ;
 
+	board.generalTimer[0].timer     = GENERAL_TIMER1;
+	board.generalTimer[0].timerIRQn = GENERAL_TIMER1_IRQN;
+	board.generalTimer[1].timer     = GENERAL_TIMER2;
+	board.generalTimer[1].timerIRQn = GENERAL_TIMER2_IRQN;
+
 	board.boardADC[0].enabled      = ADC0_TYPE;
 	board.boardADC[0].port         = ADC0_PORT;
 	board.boardADC[0].pin          = ADC0_PIN;

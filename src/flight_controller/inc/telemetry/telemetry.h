@@ -1,24 +1,35 @@
 #pragma once
 
-
 enum
 {
-	TELEM_OFF       = 0,
-	TELEM_USART1    = 1,
-	TELEM_USART2    = 2,
-	TELEM_USART3    = 3,
-	TELEM_USART4    = 4,
-	TELEM_USART5    = 5,
-	TELEM_USART6    = 6,
-	TELEM_ACTUATOR1 = 7,
-	TELEM_ACTUATOR2 = 8,
-	TELEM_ACTUATOR3 = 9,
-	TELEM_ACTUATOR4 = 10,
-	TELEM_ACTUATOR5 = 11,
-	TELEM_ACTUATOR6 = 12,
-	TELEM_ACTUATOR7 = 13,
-	TELEM_ACTUATOR8 = 14,
-	TELEM_NUM       = 15,
+	TELEM_OFF          = 0,
+	TELEM_USART1       = 1,
+	TELEM_USART2       = 2,
+	TELEM_USART3       = 3,
+	TELEM_USART4       = 4,
+	TELEM_USART5       = 5,
+	TELEM_USART6       = 6,
+	TELEM_ACTUATOR1    = 7,
+	TELEM_ACTUATOR2    = 8,
+	TELEM_ACTUATOR3    = 9,
+	TELEM_ACTUATOR4    = 10,
+	TELEM_ACTUATOR5    = 11,
+	TELEM_ACTUATOR6    = 12,
+	TELEM_ACTUATOR7    = 13,
+	TELEM_ACTUATOR8    = 14,
+	TELEM_SS1W_USART1R = 15,
+	TELEM_SS1W_USART2R = 16,
+	TELEM_SS1W_USART3R = 17,
+	TELEM_SS1W_USART4R = 18,
+	TELEM_SS1W_USART5R = 19,
+	TELEM_SS1W_USART6R = 20,
+	TELEM_SS1W_USART1T = 21,
+	TELEM_SS1W_USART2T = 22,
+	TELEM_SS1W_USART3T = 23,
+	TELEM_SS1W_USART4T = 24,
+	TELEM_SS1W_USART5T = 25,
+	TELEM_SS1W_USART6T = 26,
+	TELEM_NUM          = 27,
 };
 
 enum
@@ -49,8 +60,14 @@ enum
 
 enum
 {
-	VTX_MODE_PIT       = 0,
-	VTX_MODE_ACTIVE    = 1,
+	VTX_MODE_PIT      = 0,
+	VTX_MODE_ACTIVE   = 1,
+};
+
+enum
+{
+	VTX_REGION_US     = 0,
+	VTX_REGION_EU     = 1,
 };
 
 enum
@@ -106,7 +123,6 @@ typedef struct
     uint32_t telemMav;
 } telem_config;
 
-
 typedef struct
 {
 	uint32_t vtxDevice;
@@ -115,23 +131,30 @@ typedef struct
 	uint32_t vtxBandChannel;
 	uint32_t vtxPower;
 	uint32_t vtxPit;
+	uint32_t vtxRegion;
+	uint32_t vtxFrequency;
 }	vtx_record;
 
-extern volatile uint32_t vtxRecord;
-extern volatile uint32_t sendSmartPortAt;
-extern volatile uint32_t sendSmartPortLuaAt;
-extern volatile uint32_t sendSpektrumTelemtryAt;
+extern volatile vtx_record vtxRequested;
+extern volatile vtx_record vtxRecord;
+extern volatile uint32_t   sendSmartPortAt;
+extern volatile uint32_t   sendSmartPortLuaAt;
+extern volatile uint32_t   sendSpektrumTelemtryAt;
 
 extern volatile uint32_t telemEnabled;
 extern volatile uint32_t lastTimeSPort;
 extern volatile uint32_t okToSendSPort;
 extern volatile uint32_t sPortExtiSet;
 
-extern void InitTelemtry(void);
-extern void ProcessTelemtry(void);
-
-extern void TelemtryRxCallback(uint8_t serialBuffer[], uint32_t outputLength);
-extern void TelemtryTxCallback(uint8_t serialBuffer[], uint32_t outputLength);
-
-extern void SportSoftSerialExtiCallback(uint32_t callbackNumber);
-extern void SportSoftSerialDmaCallback(uint32_t callbackNumber);
+extern void     InitTelemtry(void);
+extern void     ProcessTelemtry(void);
+extern void     TelemtryRxCallback(uint8_t serialBuffer[], uint32_t outputLength);
+extern void     TelemtryTxCallback(uint8_t serialBuffer[], uint32_t outputLength);
+extern void     SportSoftSerialExtiCallback(uint32_t callbackNumber);
+extern void     SportSoftSerialDmaCallback(uint32_t callbackNumber);
+extern uint32_t VtxTurnOn(void);
+extern uint32_t VtxTurnPit(void);
+extern uint32_t VtxBandChannel(uint32_t bandChannel);
+extern uint32_t VtxPower(uint32_t power);
+extern uint32_t VtxBandChannelToFrequency(uint32_t bandChannel);
+extern void     VtxChannelToBandAndChannel(uint32_t inChannel, volatile uint32_t *vtxBand, volatile uint32_t *channel);

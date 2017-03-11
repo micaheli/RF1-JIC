@@ -1,7 +1,8 @@
 #include "includes.h"
 
 
-uint32_t skipGyro = 1;
+uint32_t skipGyro     = 1;
+volatile uint32_t gyroInterrupting = 0;
 
 
 static void SPI_Init(uint32_t baudRatePrescaler)
@@ -29,6 +30,16 @@ static void SPI_Init(uint32_t baudRatePrescaler)
     inlineDigitalHi(ports[board.gyros[0].csPort], board.gyros[0].csPin);
 }
 
+void DeInitGyroExti(void)
+{
+	EXTI_Deinit(ports[board.gyros[0].extiPort], board.gyros[0].extiPin, board.gyros[0].extiIRQn);
+}
+
+void InitGyroExti(void)
+{
+	EXTI_Init(ports[board.gyros[0].extiPort], board.gyros[0].extiPin, board.gyros[0].extiIRQn, 2, 0, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
+}
+
 void AccGyroDeinit(void) {
 
 	//reset the gyro if it's connected and talking to us.
@@ -47,8 +58,7 @@ void AccGyroDeinit(void) {
     HAL_SPI_DeInit(&spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle]); //TODO: Remove all HAL and place these functions in the stm32.c file so we can support other MCU families.
 
 	//Deinit the EXTI
-	EXTI_Deinit(ports[board.gyros[0].extiPort], board.gyros[0].extiPin, board.gyros[0].extiIRQn);
-
+    DeInitGyroExti();
 }
 
 uint32_t AccGyroInit(loopCtrl_e loopCtrl)
@@ -82,7 +92,7 @@ uint32_t AccGyroInit(loopCtrl_e loopCtrl)
 	SPI_Init(board.gyros[0].spiFastBaud);
 
     // after the gyro is started, start up the interrupt
-	EXTI_Init(ports[board.gyros[0].extiPort], board.gyros[0].extiPin, board.gyros[0].extiIRQn, 2, 0, GPIO_MODE_IT_RISING, GPIO_PULLDOWN);
+	InitGyroExti();
 
     skipGyro = 0;
 
@@ -96,6 +106,7 @@ void GyroExtiCallback(uint32_t callbackNumber)
 
 	(void)(callbackNumber);
 
+	gyroInterrupting = 1;
     if (!skipGyro)
     {
     	//update ACC after the rest of the flight code upon the proper denom
@@ -107,7 +118,6 @@ void GyroExtiCallback(uint32_t callbackNumber)
         }
     }
 }
-
 
 void GyroRxDmaCallback(uint32_t callbackNumber)
 {

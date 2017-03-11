@@ -18,9 +18,59 @@ static uint32_t ValidateConfig (uint32_t addresConfigStart);
 static void     SetValueOrString(uint32_t position, char *value);
 static void     SetValue(uint32_t position, char *value);
 static void     DlflStatusDump(void);
+static int32_t  GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray);
 
 static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+
+const string_comp_rec vtxStringCompTable[] = {
+		//telemetry.h.h
+		{"a1", VTX_CH_A1 },
+		{"a2", VTX_CH_A2 },
+		{"a3", VTX_CH_A3 },
+		{"a4", VTX_CH_A4 },
+		{"a5", VTX_CH_A5 },
+		{"a6", VTX_CH_A6 },
+		{"a7", VTX_CH_A7 },
+		{"a8", VTX_CH_A8 },
+
+		{"b1", VTX_CH_B1 },
+		{"b2", VTX_CH_B2 },
+		{"b3", VTX_CH_B3 },
+		{"b4", VTX_CH_B4 },
+		{"b5", VTX_CH_B5 },
+		{"b6", VTX_CH_B6 },
+		{"b7", VTX_CH_B7 },
+		{"b8", VTX_CH_B8 },
+
+		{"e1", VTX_CH_E1 },
+		{"e2", VTX_CH_E2 },
+		{"e3", VTX_CH_E3 },
+		{"e4", VTX_CH_E4 },
+		{"e5", VTX_CH_E5 },
+		{"e6", VTX_CH_E6 },
+		{"e7", VTX_CH_E7 },
+		{"e8", VTX_CH_E8 },
+
+		{"f1", VTX_CH_F1 },
+		{"f2", VTX_CH_F2 },
+		{"f3", VTX_CH_F3 },
+		{"f4", VTX_CH_F4 },
+		{"f5", VTX_CH_F5 },
+		{"f6", VTX_CH_F6 },
+		{"f7", VTX_CH_F7 },
+		{"f8", VTX_CH_F8 },
+
+		{"r1", VTX_CH_R1 },
+		{"r2", VTX_CH_R2 },
+		{"r3", VTX_CH_R3 },
+		{"r4", VTX_CH_R4 },
+		{"r5", VTX_CH_R5 },
+		{"r6", VTX_CH_R6 },
+		{"r7", VTX_CH_R7 },
+		{"r8", VTX_CH_R8 },
+
+};
 
 const string_comp_rec stringCompTable[] = {
 		//mixer.h
@@ -146,10 +196,10 @@ const config_variables_rec valueTable[] = {
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
 
-		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 08.0, "" },
+		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 05.0, "" },
 		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25.0, 00.1, "" },
-		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 75.0, 40.0, "" },
-		{ "sld", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.90, 0.05, "" },
+		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 75.0, 30.0, "" },
+		{ "sld", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.90, 0.03, "" },
 
 		{ "filter_mode0",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterMod, 				0, 10, 0, "" },
 		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
@@ -529,6 +579,22 @@ char *CleanupString(char *inString)
 	return (inString);
 }
 
+
+static int32_t GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray)
+{
+	uint32_t x;
+
+	//compare args with strings in stringCompTable
+	for (x=0;x<(sizeOfArray/sizeof(string_comp_rec));x++)
+	{
+		if (!strcmp(thisStringCompTable[x].valueString, string))
+		{
+			return(thisStringCompTable[x].valueInt);
+		}
+	}
+
+	return(-1);
+}
 
 void SetValueOrString(uint32_t position, char *value)
 {
@@ -1654,63 +1720,98 @@ void ProcessCommand(char *inString)
 
 			SaveAndSend();
 		}
-	else if (!strcmp("sainit", inString))
+	else if (!strcmp("vtxinfo", inString))
 		{
-			if ( InitSmartAudio(ENUM_USART1) )
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("vtxon", inString))
+		{
+
+			if (VtxTurnOn())
 			{
-				RfCustomReplyBuffer("#me Smart Audio Initialization Successful\n");
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.version: %lu\n",        smartAudioVtxStructure.version);                                 RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.channel: %lu\n",        smartAudioVtxStructure.channel);                                 RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.powerLevel: %lu\n",     smartAudioVtxStructure.powerLevel);                              RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.pitmodeInRange: %lu\n", (uint32_t)BITMASK_CHECK(smartAudioVtxStructure.opMode, SM_OPMODE_PMIR));   RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.pitmodeOutRange: %lu\n",(uint32_t)BITMASK_CHECK(smartAudioVtxStructure.opMode, SM_OPMODE_PMOR));   RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.pitmode: %lu\n",        (uint32_t)BITMASK_CHECK(smartAudioVtxStructure.opMode, SM_OPMODE_PM));     RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.locked: %lu\n",         (uint32_t)BITMASK_CHECK(smartAudioVtxStructure.opMode, SM_OPMODE_LOCKED)); RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.frequency: %lu\n",      smartAudioVtxStructure.frequency);                               RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 			else
 			{
-				RfCustomReplyBuffer("#me Smart Audio Initialization failed. Is there a Smart Audio VTX installed?\n");
+				RfCustomReplyBuffer("#me Error turning on VTX\n");
 			}
 
 		}
-	else if (!strcmp("sapit", inString))
+	else if (!strcmp("vtxpit", inString))
 		{
-			//smartAudioVtxStructure.opMode |= (SM_SET_OPMODE_PMOR);
-			//smartAudioVtxStructure.opMode |= (SM_SET_OPMODE_PM);
-			//smartAudioVtxStructure.opMode = SM_SET_OPMODE_PMOR;
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu\n", SmartAudioSetOpModeBlocking( SM_SET_OPMODE_PMOR ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			if (VtxTurnPit())
+			{
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			else
+			{
+				RfCustomReplyBuffer("#me Error putting VTX into pit mode\n");
+			}
+
+		}
+	else if (!strcmp("vtxbandchannel", inString))
+		{
+
+			if (VtxBandChannel( GetValueFromString(args, vtxStringCompTable, sizeof(vtxStringCompTable)) ))
+			{
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			else
+			{
+				RfCustomReplyBuffer("#me Error changing VTX channel\n");
+			}
+
 		}
 	else if (!strcmp("saunlock", inString))
 		{
-			smartAudioVtxStructure.opMode &= ~(SM_OPMODE_LOCKED);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu\n", SmartAudioSetOpModeBlocking( smartAudioVtxStructure.opMode ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-
+			//smartAudioVtxRecord.opMode &= ~(SM_OPMODE_LOCKED);
+			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu\n", SmartAudioSetOpModeBlocking( smartAudioVtxRecord.opMode ) );
+			//RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("salock", inString))
 		{
-			smartAudioVtxStructure.opMode |= (SM_OPMODE_LOCKED);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu\n", SmartAudioSetOpModeBlocking( smartAudioVtxStructure.opMode  ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-
-		}
-	else if (!strcmp("saon", inString))
-		{
-			//smartAudioVtxStructure.opMode = SM_SET_OPMODE_DIS_PMOR;
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA On Success: %lu\n", SmartAudioSetOpModeBlocking( SM_SET_OPMODE_DIS_PMOR ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			//smartAudioVtxRecord.opMode |= (SM_OPMODE_LOCKED);
+			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu\n", SmartAudioSetOpModeBlocking( smartAudioVtxRecord.opMode  ) );
+			//RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("sapow", inString))
 		{
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Power Success: %lu\n", SmartAudioSetPowerBlocking( atoi(args) ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Power Success: %lu\n", SmartAudioSetPowerBlocking( atoi(args) ) );
+			//RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("sach", inString))
 		{
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Channel Success: %lu\n", SmartAudioSetChannelBlocking( atoi(args) ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Channel Success: %lu\n", SmartAudioSetChannelBlocking( atoi(args) ) );
+			//RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("vtxbaud", inString))
 		{
@@ -1763,7 +1864,6 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("serial", inString))
 		{
-
 			DelayMs(100);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#serial: %lu%lu%lu\n", STM32_UUID[0], STM32_UUID[1], STM32_UUID[2] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);

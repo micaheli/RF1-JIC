@@ -30,8 +30,8 @@ enum {
 
 #define SOFT_SERIAL_BIT_TIME_ARRAY_SIZE	80
 
-extern volatile uint8_t tOutBuffer[];
-extern volatile uint8_t tInBuffer[];
+extern volatile uint8_t  tOutBuffer[];
+extern volatile uint8_t  tInBuffer[];
 extern volatile uint32_t errorMask;
 extern volatile uint32_t softSerialEnabled;
 extern volatile uint32_t softSerialBuf[][SOFT_SERIAL_BIT_TIME_ARRAY_SIZE];
@@ -39,7 +39,12 @@ extern volatile uint32_t softSerialInd[];
 extern volatile uint32_t softSerialCurBuf;
 extern volatile uint32_t softSerialLastByteProcessedLocation;
 extern volatile uint32_t softSerialSwitchBuffer;
+extern volatile uint32_t turnOnVtxNow;
 
+extern void InitScheduler(void);
 extern void ErrorHandler(uint32_t error);
 extern void Scheduler(int32_t count);
 extern void SoftSerialCallback(void);
+extern void DeInitFakeGyroExti(void);
+extern void InitFakeGyroExti(void);
+extern void GeneralInterruptTimerCallback(uint32_t callbackNumber);
