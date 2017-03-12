@@ -200,24 +200,24 @@ inline void TaskCheckVtx(void)
 		return;
 	}
 
+	//don't do this task unless board is disarmed
+	if (boardArmed)
+		return;
+
+	if (ModeSet(M_VTXON) && ModeActive(M_VTXON))
+	{
+		//only try turning on the VTX once per mode enabling
+		turnOnVtxNow = 1;
+	}
+
 	if (turnOnVtxNow)
 	{
 		VtxTurnOn(); //blocking of scheduler during send and receive
 		turnOnVtxNow = 0;
 	}
 
-	//don't do this task unless board is disarmed
-	if (boardArmed)
-		return;
-
 	if (!mainConfig.telemConfig.telemSmartAudio)
 		return;
-
-	if (ModeSet(M_VTXON) && ModeActive(M_VTXON) && !vtxRecord.vtxPit == VTX_MODE_PIT)
-	{
-		//only try turning on the VTX once per mode enabling
-		VtxTurnOn();
-	}
 
 	if (vtxRequested.vtxBandChannel != vtxRecord.vtxBandChannel)
 	{

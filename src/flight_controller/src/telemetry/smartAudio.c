@@ -121,6 +121,13 @@ uint32_t SmartAudioVtxTurnOn(void)
 	uint32_t rxBufferCount;
 	uint32_t tries;
 
+	//add retry
+	if (!vtxRecord.vtxDevice)
+	{
+		if (!SmartAudioGetSettings())
+			return(0);
+	}
+
 	//fill buffer
 	smartAudioTxRxBuffer[0] = SM_START_CODE1;
 	smartAudioTxRxBuffer[1] = SM_START_CODE2;
@@ -152,6 +159,12 @@ uint32_t SmartAudioVtxTurnPit(void)
 
 	uint32_t rxBufferCount;
 	uint32_t tries;
+
+	if (!vtxRecord.vtxDevice)
+	{
+		if (!SmartAudioGetSettings())
+			return(0);
+	}
 
 	//fill buffer
 	smartAudioTxRxBuffer[0] = SM_START_CODE1;
@@ -244,12 +257,7 @@ uint32_t SmartAudioGetSettings(void)
 
 			//not used right now, set frequency dependant from bands
 			//vtxRecord.vtxFrequency = ((smartAudioTxRxBuffer[8] << 8) | smartAudioTxRxBuffer[9]);
-			//old record
-			//smartAudioVtxRecord.version    = smartAudioTxRxBuffer[3];
-			//smartAudioVtxRecord.channel    = smartAudioTxRxBuffer[5];
-			//smartAudioVtxRecord.powerLevel = smartAudioTxRxBuffer[6];
-			//smartAudioVtxRecord.opMode     = smartAudioTxRxBuffer[7];
-			//smartAudioVtxRecord.frequency  = ((smartAudioTxRxBuffer[8] << 8) | smartAudioTxRxBuffer[9]);
+
 			return(1);
 		}
 	}
@@ -262,6 +270,12 @@ uint32_t SmartAudioVtxPower(uint32_t powerLevel)
 	uint32_t rxBufferCount;
 	uint32_t powerNumber;
 	uint32_t tries;
+
+	if (!vtxRecord.vtxDevice)
+	{
+		if (!SmartAudioGetSettings())
+			return(0);
+	}
 
 	powerNumber = 99;
 
@@ -340,6 +354,12 @@ uint32_t SmartAudioVtxBandChannel(uint32_t bandChannel)
 	uint32_t rxBufferCount;
 	uint32_t tries;
 
+	if (!vtxRecord.vtxDevice)
+	{
+		if (!SmartAudioGetSettings())
+			return(0);
+	}
+
 	//fill buffer
 	smartAudioTxRxBuffer[0] = SM_START_CODE1;
 	smartAudioTxRxBuffer[1] = SM_START_CODE2;
@@ -374,7 +394,7 @@ uint32_t SmartAudioVtxBandChannel(uint32_t bandChannel)
 	board.serials[usartNumber].enabled    = 1;
 	board.serials[usartNumber].Protocol   = USING_SMARTAUDIO;
 
-	board.serials[usartNumber].BaudRate   = 4900;//should be 4800bps 1 Start bit and 2 Stop bit, but the VTX drifts a lot
+	board.serials[usartNumber].BaudRate   = 4900;//should be 4800bpsï¿½1ï¿½Startï¿½bitï¿½andï¿½2ï¿½Stopï¿½bit, but the VTX drifts a lot
 	board.serials[usartNumber].WordLength = UART_WORDLENGTH_8B;
 	board.serials[usartNumber].StopBits   = UART_STOPBITS_2;
 	board.serials[usartNumber].Parity     = UART_PARITY_NONE;

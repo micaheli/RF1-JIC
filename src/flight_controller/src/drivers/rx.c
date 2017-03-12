@@ -282,9 +282,10 @@ void ProcessArmingStructure(void)
 		}
 	}
 
-	if (!boardArmed && rxData[0] > 1800 && rxData[1] < 200 && rxData[2] < 200 && rxData[3] < 200)
+
+	if ( (!boardArmed) && (trueRcCommandF[YAW] > 0.95f) && (trueRcCommandF[THROTTLE] < -0.95f) && (trueRcCommandF[PITCH] < -0.95f) && (trueRcCommandF[ROLL] < -0.95f) )
 	{
-		if (InlineMillis() - progTimer > 2000)
+		if ( (InlineMillis() - progTimer) > 2000 )
 			progMode = 1;
 	}
 	else

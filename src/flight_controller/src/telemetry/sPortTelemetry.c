@@ -337,6 +337,55 @@ uint32_t CheckSportCrc(volatile uint8_t telemtryRxBuffer[], volatile uint32_t by
 
 }
 
+void FillLuaPacket(void)
+{
+	static uint32_t counter=32;
+
+	uint32_t xx, yy, id, d1, d2, d3;
+	//x,y,id,data,data,data
+
+	switch(counter--)
+	{
+		case 31:
+			xx = 60;
+			yy = 60;
+			id = ID_ROLL_KP;
+			d1 = 0;
+			d2 = lrint(mainConfig.pidConfig[ROLL].kp) & 0xFF;
+			d3 = (lrint(mainConfig.pidConfig[ROLL].kp) >> 8) & 0xFF;
+			break;
+		case 30:
+			xx = 60;
+			yy = 100;
+			id = ID_ROLL_KI;
+			d1 = 0;
+			d2 = lrint(mainConfig.pidConfig[ROLL].ki) & 0xFF;
+			d3 = (lrint(mainConfig.pidConfig[ROLL].ki) >> 8) & 0xFF;
+			break;
+		case 29:
+			xx = 60;
+			yy = 140;
+			id = ID_ROLL_KD;
+			d1 = 0;
+			d2 = lrint(mainConfig.pidConfig[ROLL].kd) & 0xFF;
+			d3 = (lrint(mainConfig.pidConfig[ROLL].kd) >> 8) & 0xFF;
+			break;
+		case 28:
+			xx = 100;
+			yy = 60;
+			id = ID_PITCH_KP;
+			d1 = 0;
+			d2 = lrint(mainConfig.pidConfig[PITCH].kp) & 0xFF;
+			d3 = (lrint(mainConfig.pidConfig[PITCH].kp) >> 8) & 0xFF;
+			break;
+		default:
+			counter=32;
+			break;
+	}
+
+	luaOutPacketOne = ( (xx & 0xFF) | ((yy & 0xFF) << 8) );
+	luaOutPacketTwo = ( (id & 0xFF) | ((d1 & 0xFF) << 8) | ((d2 & 0xFF) << 16)  | ((d3 & 0xFF) << 24) );
+}
 
 void CheckIfSportReadyToSend(void)
 {
@@ -350,59 +399,18 @@ void CheckIfSportReadyToSend(void)
 		{
 			if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x1B) )
 			{
-				//We're allowed to send data when we get the sensor ID 0x1B
-				//We can either send telemetry or lua script data
-				if (InlineMillis() - luaPacketPendingTime > 500)
-				{
-					//100 ms timeout
-					luaOutPacketOne = 0;
-					luaOutPacketTwo = 0;
-					luaPacketPendingTime = 0;
-				}
-
-				if (luaPacketPendingTime)
-				{   //we have a pending out packet
-					sendSmartPortAt = 0;
-					sendSmartPortLuaAt = Micros() + 100;
-				}
-				else if ( (transmitDataBufferIdx > 0) && (transmitDataBufferSent <= (transmitDataBufferIdx - 1)) )
-				{   //data in buffer to send, put it into packet
-					//fill packets
-					ResetLuaBuffer();
-					luaOutPacketOne = ( (transmitDataBuffer[transmitDataBufferSent] & 0xFF) | ((transmitDataBuffer[transmitDataBufferSent+1] & 0xFF) << 8) );
-					luaOutPacketTwo = ( (transmitDataBuffer[transmitDataBufferSent+2]) | (transmitDataBuffer[transmitDataBufferSent+3] << 8) );
-					luaPacketPendingTime = InlineMillis();
-					transmitDataBufferSent += 4;
-					sendSmartPortAt = 0;
-					sendSmartPortLuaAt = Micros() + 100;
-				}
-				else
-				{   //we send normal telemetry
-					sendSmartPortAt = Micros() + 100;
-					sendSmartPortLuaAt = 0;
-				}
+				sendSmartPortAt = Micros() + 100;
 				PutSportIntoSendState(sbusActuator, 1);
 
 			}
-			else if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x0D) && (telemtryRxBuffer[2] == 0x30) )
+			else if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x0D) )
 			{
-				//sensor ID 0x0D is used by the LUA script.
-				if ( CheckSportCrc(telemtryRxBuffer, bytesReceived) )
-				{
-					//get data and decided how to set luaOutPacket
-					ProcessSportLuaStuff();
-				}
-				else
-				{
-					//bad data, set luaOutPacket to 0xAC011D00 which means bad CRC
-					//want to send AC 01 1D
-					// packet 1 is 0x000001AC
-					// packet 2 is 0x0000001D
-					//luaOutPacketOne = 0x000001AC;
-					//luaOutPacketTwo = 0x0000001D;
-					//luaPacketPendingTime = InlineMillis();
-					//ResetLuaBuffer(); //reset the buffer
-				}
+				FillLuaPacket();
+
+				luaOutPacketOne = 0x000001AC;
+				luaOutPacketTwo = 0x0000001D;
+				sendSmartPortLuaAt = Micros() + 100;
+				PutSportIntoSendState(sbusActuator, 1);
 			}
 		}
 	}
@@ -423,7 +431,7 @@ void SendSmartPortLua(void)
 {
 	uint32_t sentSerial = 0;
 
-	SmartPortCreatePacket(0x32, luaOutPacketOne, luaOutPacketTwo, sPortPacket );
+	SmartPortCreatePacket(0x99, luaOutPacketOne, luaOutPacketTwo, sPortPacket );
 
 	//send via hard serial if it's configured
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)

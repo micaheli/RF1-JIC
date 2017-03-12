@@ -196,7 +196,13 @@ void InitTelemtry(void)
 
 	vtxRecord.vtxDevice      = VTX_DEVICE_NONE;
 
+	//try twice to init smart audi if it's enabled
 	InitSmartAudio();
+    if(mainConfig.telemConfig.telemSmartAudio && !vtxRecord.vtxDevice)
+    {
+    	DelayMs(1000);
+    	InitSmartAudio();
+    }
 
 	if (vtxRecord.vtxDevice != VTX_DEVICE_NONE)
 	{

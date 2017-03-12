@@ -4,7 +4,6 @@
 #include <string.h>
 
 
-#include "../flight_controller/inc/rf_math.h"
 #include "includes.h"
 
 
@@ -23,6 +22,7 @@ SPI_HandleTypeDef   spiHandles[6];
 SPI_TypeDef        *spiInstance[6];
 ADC_TypeDef        *adcInstance[3];
 ADC_HandleTypeDef   adcHandle[3];
+
 
 uint32_t            boardSize;
 

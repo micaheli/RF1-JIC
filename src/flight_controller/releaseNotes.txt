@@ -613,7 +613,7 @@ Version 0.197.059 RC2:
 	Server autobuild increments minor version
 	Added BLHeli_s C_H_50 ESC firmware to flash
 
-Version 0.197.059 RC3:
+Version 0.197.059 BETA:
 	Added arming structure data to error command to help diagnose non start issues
 	Integrated Spektrum's VTX setup into SmartAudio
 		You can change Channels and turn on your radio via a Spektrum TX
@@ -699,6 +699,11 @@ Version 0.197.059 RC3:
 			VTX_POWER_500MW = 2,
 			VTX_POWER_800MW = 3,
 
+Version 0.198.059 RC3:
+	Rewrite of several drivers to better accomodate VTX telemetry
+	Added new soft serial driver
+	
+
 #Features in current development:
 #	MSP compatibility
 #	MAVlink compatibility
@@ -710,3 +715,146 @@ Version 0.197.059 RC3:
 #	Sonar input
 #	GPS input
 #	Unobtanium detector
+
+
+
+
+
+
+
+
+local rxPayload       = {}
+local timeRxReceived  = 0
+
+function ReceiveSport()
+
+	--look for data coming from FC
+	while true do
+		local sensorId, frameId, dataId, value = sportTelemetryPop()
+		if sensorId == 0x0D and frameId == 0x99 then
+
+			rxPayload = {}
+			rxPayload[0] = bit32.band(dataId,0xFF)
+			dataId = bit32.rshift(dataId,8)
+			rxPayload[1] = bit32.band(dataId,0xFF)
+
+			rxPayload[2] = bit32.band(value,0xFF)
+			value = bit32.rshift(value,8)
+			rxPayload[3] = bit32.band(value,0xFF)
+			value = bit32.rshift(value,8)
+			rxPayload[4] = bit32.band(value,0xFF)
+			value = bit32.rshift(value,8)
+			rxPayload[5] = bit32.band(value,0xFF)
+
+			return true
+
+		else
+			break
+		end
+	end
+
+	return false
+
+end
+
+
+
+local function run_ui(event)
+
+	if ReceiveSport() then
+		timeRxReceived = getTime()
+		ProcessSport()
+	end
+
+	-- navigation
+	if (event == EVT_MENU_LONG) then -- Taranis QX7 / X9
+		menuActive = 1
+		gState = MENU_DISP
+	elseif EVT_PAGEUP_FIRST and (event == EVT_ENTER_LONG) then -- Horus
+		menuActive = 1
+		killEnterBreak = 1
+		gState = MENU_DISP
+   -- menu is currently displayed
+	elseif gState == MENU_DISP then
+		if event == EVT_EXIT_BREAK then
+			gState = PAGE_DISPLAY
+		elseif event == EVT_PLUS_BREAK or event == EVT_ROT_LEFT then
+			incMenu(-1)
+		elseif event == EVT_MINUS_BREAK or event == EVT_ROT_RIGHT then
+			incMenu(1)
+		elseif event == EVT_ENTER_BREAK then
+			if killEnterBreak == 1 then
+				killEnterBreak = 0
+			else
+				gState = PAGE_DISPLAY
+				menuList[menuActive].f()
+			end
+		end
+	-- normal page viewing
+	elseif gState <= PAGE_DISPLAY then
+		if event == EVT_PAGEUP_FIRST then
+			incPage(-1)
+		elseif event == EVT_MENU_BREAK or event == EVT_PAGEDN_FIRST then
+			incPage(1)
+		elseif event == EVT_PLUS_BREAK or event == EVT_ROT_LEFT then
+			incLine(-1)
+		elseif event == EVT_MINUS_BREAK or event == EVT_ROT_RIGHT then
+			incLine(1)
+		elseif event == EVT_ENTER_BREAK then
+			local page = SetupPages[currentPage]
+			local field = page.fields[currentLine]
+			local idx = field.i or currentLine
+			if page.values and page.values[idx] and (field.ro ~= true) then
+				gState = EDITING
+			end
+		end
+	-- editing value
+	elseif gState == EDITING then
+		if (event == EVT_EXIT_BREAK) or (event == EVT_ENTER_BREAK) then
+			gState = PAGE_DISPLAY
+		elseif event == EVT_PLUS_FIRST or event == EVT_PLUS_REPT or event == EVT_ROT_RIGHT then
+			incValue(1)
+		elseif event == EVT_MINUS_FIRST or event == EVT_MINUS_REPT or event == EVT_ROT_LEFT then
+			incValue(-1)
+		end
+	end
+
+	local page = SetupPages[currentPage]
+	local page_locked = false
+
+	if not page.values then
+		-- request values
+		requestPage(page)
+		page_locked = true
+	end
+
+	-- draw screen
+	lcd.clear()
+	if TEXT_BGCOLOR then
+		lcd.drawFilledRectangle(0, 0, LCD_W, LCD_H, TEXT_BGCOLOR)
+	end
+	drawScreen(page,page_locked)
+   
+	-- do we have valid telemetry data?
+	if getValue("RSSI") == 0 then
+		-- No!
+		lcd.drawText(NoTelem[1],NoTelem[2],NoTelem[3],NoTelem[4])
+		invalidatePages()
+	end
+
+	if gState == MENU_DISP then
+		drawMenu()
+	elseif gState == PAGE_SAVING then
+		lcd.drawFilledRectangle(SaveBox.x,SaveBox.y,SaveBox.w,SaveBox.h,backgroundFill)
+		lcd.drawRectangle(SaveBox.x,SaveBox.y,SaveBox.w,SaveBox.h,SOLID)
+		lcd.drawText(SaveBox.x+SaveBox.x_offset,SaveBox.y+SaveBox.h_offset,"Saving...",DBLSIZE + BLINK + (globalTextOptions))
+	end
+
+   	HandleTransmissionState()
+
+	return 0
+end
+
+
+
+return run_ui
