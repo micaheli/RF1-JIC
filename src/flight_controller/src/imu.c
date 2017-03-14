@@ -252,11 +252,11 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 			//trust ACCs more when the quad is disamred.
 			if (boardArmed)
 			{
-				accTrust  = 11.13000f;
+				accTrust  = 41.13000f;
 			}
 			else
 			{
-				accTrust  = 111.3000f;
+				accTrust  = 4111.3000f;
 			}
 
 			gyroRoll  += accTrust * accToGyroError[ACCX] + accTrustKiStorage[ACCX];

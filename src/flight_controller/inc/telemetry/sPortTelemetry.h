@@ -7,6 +7,9 @@
 #define REQUEST_VRX    0x04
 #define REQUEST_MORE   0x05
 
+#define ID_CMD_PRINT   0x12
+#define ID_CMD_ERASE   0x13
+
 #define ID_ROLL_KP     0x01
 #define ID_ROLL_KI     0x02
 #define ID_ROLL_KD     0x03

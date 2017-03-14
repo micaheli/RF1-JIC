@@ -816,7 +816,14 @@ inline void InlineCollectRcCommand (void)
 
 static float GetKissMaxRates(float rcCommand, uint32_t axis)
 {
+	uint32_t negative = 0;
 	float kissSetpoint, kissRate, kissGRate, kissUseCurve, kissTempCurve, kissRpyUseRates, kissRxRaw, kissAngle;
+
+	if (rcCommand<0.0f)
+	{
+		rcCommand = -rcCommand;
+		negative  = 1;
+	}
 
 	kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
 	kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis]);
@@ -828,12 +835,22 @@ static float GetKissMaxRates(float rcCommand, uint32_t axis)
 	kissTempCurve   = (kissRxRaw * kissRxRaw / 1000000.0f);
 	kissSetpoint    = ((kissSetpoint * kissTempCurve) * kissUseCurve + kissSetpoint * (1.0f - kissUseCurve)) * (kissRate / 10.0f);
 	kissAngle       = ((2000.0f * (1.0f / kissRpyUseRates)) * kissSetpoint); //setpoint is calculated directly here
+
+	if (negative)
+		return(-kissAngle);
 	return(kissAngle);
 }
 
 static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 {
+	uint32_t negative = 0;
 	float flopSuperRate, flopRcRate, flopExpo, flopFactor, flopAngle;
+
+	if (rcCommand<0.0f)
+	{
+		rcCommand = -rcCommand;
+		negative  = 1;
+	}
 
 	flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
 	flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
@@ -852,6 +869,8 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 		flopFactor = 1.0f / (InlineConstrainf(1.0f - (ABS(rcCommand) * (flopSuperRate)), 0.01f, 1.00f));
 		flopAngle *= flopFactor; ; //setpoint is calculated directly here
 	}
+	if (negative)
+		return(-flopAngle);
 	return(flopAngle);
 }
 
@@ -859,6 +878,7 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, float expo, uint32_t axis)
 {
 
+	uint32_t negative = 0;
 	float maxOutput, maxOutputMod, returnValue;
 	float flopSuperRate, flopRcRate, flopExpo, flopFactor, flopAngle;
 	float kissSetpoint, kissRate, kissGRate, kissUseCurve, kissTempCurve, kissRpyUseRates, kissRxRaw, kissAngle;
@@ -877,6 +897,14 @@ inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, flo
 			return (returnValue);
 			break;
 		case BETAFLOP_EXPO:
+			if (rcCommand < 0)
+			{
+				rcCommand = -rcCommand;
+				negative  = 1;
+			}
+			if (rcCommand>0.99)
+				rcCommand = 0.99;
+
 			flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
 			flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
 			flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
@@ -895,6 +923,8 @@ inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, flo
 				flopAngle *= flopFactor; ; //setpoint is calculated directly here
 			}
 			returnValue = (flopAngle / maxFlopRate[axis]); //get curved stick position based on percentage of setpoint
+			if (negative)
+				return(-returnValue);
 			return(returnValue);
 			break;
 		case TARANIS_EXPO:
@@ -904,6 +934,14 @@ inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, flo
 			break;
 		case KISS_EXPO:
 		case KISS_EXPO2:
+			if (rcCommand < 0)
+			{
+				rcCommand = -rcCommand;
+				negative  = 1;
+			}
+			if (rcCommand>0.99)
+				rcCommand = 0.99;
+
 			kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
 			kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis]);
 			kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
@@ -914,7 +952,9 @@ inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, flo
 			kissTempCurve   = (kissRxRaw * kissRxRaw / 1000000.0f);
 			kissSetpoint    = ((kissSetpoint * kissTempCurve) * kissUseCurve + kissSetpoint * (1.0f - kissUseCurve)) * (kissRate / 10.0f);
 			kissAngle       = ((2000.0f * (1.0f / kissRpyUseRates)) * kissSetpoint); //setpoint is calculated directly here
-			returnValue = (kissAngle / maxKissRate[axis]); //get curved stick position based on percentage of setpoint
+			returnValue     = (kissAngle / maxKissRate[axis]); //get curved stick position based on percentage of setpoint
+			if (negative)
+				return(-returnValue);
 			return(returnValue);
 			break;
 		case NO_EXPO:

@@ -6,6 +6,7 @@
 #define SPORT_SOFT_SERIAL_BUFFER_SIZE 10
 #define SPORT_SOFT_SERIAL_TIME_BUFFER_SIZE 100
 
+uint8_t           charMatrix[24][6];
 uint8_t           sPortPacket[SPORT_PACKET_SIZE];
 uint8_t           receivedDataBuffer[SPORT_LUA_BUFFER_SIZE];
 uint8_t           transmitDataBuffer[SPORT_LUA_BUFFER_SIZE];
@@ -339,52 +340,156 @@ uint32_t CheckSportCrc(volatile uint8_t telemtryRxBuffer[], volatile uint32_t by
 
 void FillLuaPacket(void)
 {
-	static uint32_t counter=32;
-
-	uint32_t xx, yy, id, d1, d2, d3;
+	static uint32_t counter=0;
+	char outString[6] = {};
+	uint32_t cm, xx, yy, d1, d2, d3;
+	uint32_t line, column;
 	//x,y,id,data,data,data
 
+	static uint32_t currentX = 0, currentY = 0;
+	uint32_t x, y, z, currentOn;
+
+	//50 strings
+	charMatrix[0][1]  = 'R';
+	charMatrix[1][1]  = 'a';
+	charMatrix[2][1]  = 'c';
+	charMatrix[3][1]  = 'e';
+	charMatrix[4][1]  = 'F';
+	charMatrix[5][1]  = 'l';
+	charMatrix[6][1]  = 'i';
+	charMatrix[7][1]  = 'g';
+	charMatrix[8][1]  = 'h';
+	charMatrix[9][1]  = 't';
+	charMatrix[11][1] = 't';
+	charMatrix[12][1] = 'O';
+	charMatrix[13][1] = 'n';
+	charMatrix[14][1] = 'e';
+	charMatrix[15][1] = ' ';
+	charMatrix[16][1] = 'P';
+	charMatrix[17][1] = 'I';
+	charMatrix[18][1] = 'D';
+	charMatrix[19][1] = 's';
+
+	charMatrix[0][2]  = 'R';
+	charMatrix[1][2]  = 'a';
+	charMatrix[2][2]  = 'c';
+	charMatrix[3][2]  = 'e';
+	charMatrix[4][2]  = 'F';
+	charMatrix[5][2]  = 'l';
+	charMatrix[6][2]  = 'i';
+	charMatrix[7][2]  = 'g';
+	charMatrix[8][2]  = 'h';
+	charMatrix[9][2]  = 't';
+	charMatrix[11][2] = 't';
+	charMatrix[12][2] = 'O';
+	charMatrix[13][2] = 'n';
+	charMatrix[14][2] = 'e';
+	charMatrix[15][2] = ' ';
+	charMatrix[16][2] = 'P';
+	charMatrix[17][2] = 'I';
+	charMatrix[18][2] = 'D';
+	charMatrix[19][2] = '1';
+
+	charMatrix[0][3]  = 'R';
+	charMatrix[1][3]  = 'a';
+	charMatrix[2][3]  = 'c';
+	charMatrix[3][3]  = 'e';
+	charMatrix[4][3]  = 'F';
+	charMatrix[5][3]  = 'l';
+	charMatrix[6][3]  = 'i';
+	charMatrix[7][3]  = 'g';
+	charMatrix[8][3]  = 'h';
+	charMatrix[9][3]  = 't';
+	charMatrix[11][3] = 't';
+	charMatrix[12][3] = 'O';
+	charMatrix[13][3] = 'n';
+	charMatrix[14][3] = 'e';
+	charMatrix[15][3] = ' ';
+	charMatrix[16][3] = 'P';
+	charMatrix[17][3] = 'I';
+	charMatrix[18][3] = 'D';
+	charMatrix[19][3] = '2';
+
+	outString[0] = ID_CMD_PRINT;
+	outString[1] = counter;
+
+	line   = (counter / 24);
+	column = (counter - (line * 24));
+	outString[2] = charMatrix[column+0][line];
+	outString[3] = charMatrix[column+1][line];
+	outString[4] = charMatrix[column+2][line];
+	outString[5] = charMatrix[column+3][line];
+
+	counter += 4;
+	if (counter >= (24*6))
+		counter = 0;
+
+	luaOutPacketOne = ( (outString[0] & 0xFF) | ((outString[1] & 0xFF) << 8) );
+	luaOutPacketTwo = ( (outString[2] & 0xFF) | ((outString[3] & 0xFF) << 8) | ((outString[4] & 0xFF) << 16)  | ((outString[5] & 0xFF) << 24) );
+	return;
 	switch(counter--)
 	{
 		case 31:
-			xx = 60;
-			yy = 60;
-			id = ID_ROLL_KP;
-			d1 = 0;
-			d2 = lrint(mainConfig.pidConfig[ROLL].kp) & 0xFF;
-			d3 = (lrint(mainConfig.pidConfig[ROLL].kp) >> 8) & 0xFF;
+			cm = ID_CMD_PRINT;
+			xx = 1;
+			yy = 1;
+			d1 = '>';
+			d2 = 'K';
+			d3 = 'p';
+			//d2 = lrint(mainConfig.pidConfig[ROLL].kp) & 0xFF;
+			//d3 = (lrint(mainConfig.pidConfig[ROLL].kp) >> 8) & 0xFF;
 			break;
 		case 30:
-			xx = 60;
-			yy = 100;
-			id = ID_ROLL_KI;
-			d1 = 0;
-			d2 = lrint(mainConfig.pidConfig[ROLL].ki) & 0xFF;
-			d3 = (lrint(mainConfig.pidConfig[ROLL].ki) >> 8) & 0xFF;
+			cm = ID_CMD_PRINT;
+			xx = 1;
+			yy = 2;
+			d1 = ' ';
+			d2 = 'K';
+			d3 = 'i';
+			//d1 = 0;
+			//d2 = lrint(mainConfig.pidConfig[ROLL].ki) & 0xFF;
+			//d3 = (lrint(mainConfig.pidConfig[ROLL].ki) >> 8) & 0xFF;
 			break;
 		case 29:
-			xx = 60;
-			yy = 140;
-			id = ID_ROLL_KD;
-			d1 = 0;
-			d2 = lrint(mainConfig.pidConfig[ROLL].kd) & 0xFF;
-			d3 = (lrint(mainConfig.pidConfig[ROLL].kd) >> 8) & 0xFF;
+			cm = ID_CMD_PRINT;
+			xx = 1;
+			yy = 3;
+			d1 = ' ';
+			d2 = 'K';
+			d3 = 'd';
+			//d1 = 0;
+			//d2 = lrint(mainConfig.pidConfig[ROLL].kd) & 0xFF;
+			//d3 = (lrint(mainConfig.pidConfig[ROLL].kd) >> 8) & 0xFF;
 			break;
 		case 28:
-			xx = 100;
-			yy = 60;
-			id = ID_PITCH_KP;
-			d1 = 0;
-			d2 = lrint(mainConfig.pidConfig[PITCH].kp) & 0xFF;
-			d3 = (lrint(mainConfig.pidConfig[PITCH].kp) >> 8) & 0xFF;
+			cm = ID_CMD_PRINT;
+			xx = 5;
+			yy = 1;
+			d1 = ' ';
+			d2 = 'K';
+			d3 = 'p';
+			//d1 = 0;
+			//d2 = lrint(mainConfig.pidConfig[PITCH].kp) & 0xFF;
+			//d3 = (lrint(mainConfig.pidConfig[PITCH].kp) >> 8) & 0xFF;
 			break;
+		case 27:
 		default:
-			counter=32;
+			counter=31;
+			//cm = ID_CMD_ERASE;
+			cm = ID_CMD_PRINT;
+			xx = 5;
+			yy = 2;
+			d1 = ' ';
+			d2 = 'K';
+			d3 = 'i';
+			//d1 = 0;
+			//d2 = lrint(mainConfig.pidConfig[PITCH].ki) & 0xFF;
+			//d3 = (lrint(mainConfig.pidConfig[PITCH].ki) >> 8) & 0xFF;
 			break;
 	}
 
-	luaOutPacketOne = ( (xx & 0xFF) | ((yy & 0xFF) << 8) );
-	luaOutPacketTwo = ( (id & 0xFF) | ((d1 & 0xFF) << 8) | ((d2 & 0xFF) << 16)  | ((d3 & 0xFF) << 24) );
+	luaOutPacketOne = ( (cm & 0xFF) | ((xx & 0xFF) << 8) );
+	luaOutPacketTwo = ( (yy & 0xFF) | ((d1 & 0xFF) << 8) | ((d2 & 0xFF) << 16)  | ((d3 & 0xFF) << 24) );
 }
 
 void CheckIfSportReadyToSend(void)
@@ -399,28 +504,25 @@ void CheckIfSportReadyToSend(void)
 		{
 			if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x1B) )
 			{
-				sendSmartPortAt = Micros() + 100;
+				sendSmartPortAt = Micros() + 1000;
 				PutSportIntoSendState(sbusActuator, 1);
 
 			}
 			else if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x0D) )
 			{
 				FillLuaPacket();
-
-				luaOutPacketOne = 0x000001AC;
-				luaOutPacketTwo = 0x0000001D;
-				sendSmartPortLuaAt = Micros() + 100;
+				sendSmartPortLuaAt = Micros() + 1000;
 				PutSportIntoSendState(sbusActuator, 1);
 			}
 		}
 	}
 	else if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x1B) ) //normal serial?
 	{
-		sendSmartPortAt = Micros() + 100; //send telemetry reply in 1.5 ms
+		sendSmartPortAt = Micros() + 1000; //send telemetry reply in 1.5 ms
 	}
-	else if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x0D) && (telemtryRxBuffer[2] == 0x30) )
+	else if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x0D) )
 	{
-		ProcessSportLuaStuff(); //get reply ready
+		sendSmartPortLuaAt = Micros() + 1000; //send telemetry reply in 1.5 ms
 	}
 	telemtryRxBuffer[0] = 0;
 	telemtryRxBuffer[1] = 0;
@@ -431,7 +533,7 @@ void SendSmartPortLua(void)
 {
 	uint32_t sentSerial = 0;
 
-	SmartPortCreatePacket(0x99, luaOutPacketOne, luaOutPacketTwo, sPortPacket );
+	SmartPortCreatePacket(0x32, luaOutPacketOne, luaOutPacketTwo, sPortPacket );
 
 	//send via hard serial if it's configured
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
@@ -522,6 +624,8 @@ void SendSmartPort(void)
 void InitSport(uint32_t usartNumber)
 {
 	sPortTelemCount = 0;
+
+	bzero(charMatrix,sizeof(charMatrix));
 
 	//use manual protocol to setup s.port.
 	board.serials[usartNumber].enabled   = 1;
