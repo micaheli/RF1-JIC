@@ -126,7 +126,7 @@ void InitAdc(void)
 	/*##-2- Configure ADC regular channel ######################################*/
 	sConfig.Channel      = board.boardADC[1].adcChannel;
 	sConfig.Rank         = 1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
 	sConfig.Offset       = 0;
 
 	if (HAL_ADC_ConfigChannel(&adcHandle[board.boardADC[1].adcHandle], &sConfig) != HAL_OK)

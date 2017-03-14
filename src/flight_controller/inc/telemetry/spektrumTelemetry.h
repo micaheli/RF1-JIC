@@ -149,31 +149,31 @@ struct
 //VTX enums and struct
 typedef enum
 {
-	VTX_BAND_FATSHARK = 0,
-	VTX_BAND_RACEBAND = 1,
-	VTX_BAND_E        = 2,
-	VTX_BAND_B        = 3,
-	VTX_BAND_A        = 4,
+	SPEK_VTX_BAND_FATSHARK = 0,
+	SPEK_VTX_BAND_RACEBAND = 1,
+	SPEK_VTX_BAND_E        = 2,
+	SPEK_VTX_BAND_B        = 3,
+	SPEK_VTX_BAND_A        = 4,
 } VTX_BAND;
 
 typedef enum
 {
-	POWER_25MW  = 0,
-	POWER_250MW = 1,
-	POWER_500MW = 2,
+	SPEK_VTX_POWER_25MW  = 0,
+	SPEK_VTX_POWER_250MW = 1,
+	SPEK_VTX_POWER_500MW = 2,
 } VTX_POWER;
 
 typedef enum
 {
-	US = 0,
-	EU = 1,
+	SPEK_VTX_US = 0,
+	SPEK_VTX_EU = 1,
 } VTX_REGION;
 
 typedef enum
 {
 	
-	ACTIVE = 0,		//turn on power
-	PIT    = 1,		//low power mode while in pit
+	SPEK_VTX_ACTIVE = 0,		//turn on power
+	SPEK_VTX_PIT    = 1,		//low power mode while in pit
 } VTX_PIT;
 
 typedef struct
@@ -226,4 +226,4 @@ void sendSpektrumTelem(void);
 void sendSpektrumBind(void);
 void textMenuUpdate(void);
 uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly);
-
+

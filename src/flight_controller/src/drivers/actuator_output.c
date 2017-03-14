@@ -31,7 +31,7 @@ void DeInitActuators(void)  {
 void InitActuators(void) {
 
 	float disarmUs;    // shortest pulse width (disarmed)
-	float disarmUs3d;    // shortest pulse width (disarmed)
+	float disarmUs3d;  // shortest pulse width (disarmed)
 	float calibrateUs; // shortest pulse width (calibrate)
 	float walledUs;    // longest pulse width (full throttle)
 	float idleUs;      // idle pulse width (armed, zero throttle)
@@ -39,7 +39,7 @@ void InitActuators(void) {
 	uint32_t outputNumber;
 
 	// timerHz *must* be a proper divisor of the timer frequency
-	//     REVOLT - 48 MHz (overclocked from 42 MHz)
+	// REVOLT - 48 MHz (overclocked from 42 MHz)
 	uint32_t timerHz; // frequency of the timer
 	uint32_t pwmHz;   // max update frequency for protocol
 	uint32_t walledPulseValue;

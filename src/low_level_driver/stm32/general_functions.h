@@ -4,36 +4,38 @@
 typedef void (*pFunction)(void);
 
 
-extern volatile uint32_t systemUsTicks;
-extern volatile uint32_t usbStarted;
+extern volatile  uint32_t systemUsTicks;
+extern volatile  uint32_t usbStarted;
 extern pFunction JumpToApplication;
-extern uint32_t InlineMillis(void);
-extern uint32_t Micros(void);
+extern uint32_t  InlineMillis(void);
+extern uint32_t  Micros(void);
 
-extern void     DelayMs(uint32_t mSec);
-extern void     delayUs(uint32_t uSec);
-extern uint32_t RtcReadBackupRegister(uint32_t BackupRegister);
-extern void     RtcWriteBackupRegister(uint32_t BackupRegister, uint32_t data);
+extern void      DelayMs(uint32_t mSec);
+extern void      delayUs(uint32_t uSec);
+extern uint32_t  RtcReadBackupRegister(uint32_t BackupRegister);
+extern void      RtcWriteBackupRegister(uint32_t BackupRegister, uint32_t data);
 
-extern void InitUsb(void);
+extern void      InitUsb(void);
 
-extern void inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-extern void inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-extern int inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern void      inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern void      inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern int       inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
-extern void InlineUpdateMillisClock (void);
+extern void      InlineUpdateMillisClock (void);
 
-extern void VectorIrqInit(uint32_t address);
+extern void      VectorIrqInit(uint32_t address);
 
-extern void SystemReset(void);
-extern void SystemResetToDfuBootloader(void);
+extern void      SystemReset(void);
+extern void      SystemResetToDfuBootloader(void);
 
-extern uint32_t GetExtinFromPin(uint16_t GPIO_Pin);
-extern uint32_t GetExtiCallbackFromPin(uint16_t GPIO_Pin);
-extern uint32_t GetDmaCallbackFromDmaStream(uint32_t dmaEnum);
-extern void InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on);
-extern void InitializeGpioInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-extern void BootToAddress(uint32_t address);
+extern uint32_t  GetTimerCallbackFromTimerEnum(uint32_t timer);
+extern uint32_t  GetExtinFromPin(uint16_t GPIO_Pin);
+extern uint32_t  GetExtiCallbackFromPin(uint16_t GPIO_Pin);
+extern uint32_t  GetDmaCallbackFromDmaStream(uint32_t dmaEnum);
+extern void      DeInitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern void      InitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint32_t on);
+extern void      InitializeGpioInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+extern void      BootToAddress(uint32_t address);
 
 
 

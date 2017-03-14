@@ -267,6 +267,12 @@
 #define USART6_RXDMA_CHANNEL			0
 //END USART defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+//General Timer Config
+#define GENERAL_TIMER1					ENUM_TIM6
+#define GENERAL_TIMER1_IRQN				TIM6_DAC_IRQn
+#define GENERAL_TIMER2					ENUM_TIM7
+#define GENERAL_TIMER2_IRQN				TIM7_IRQn
+
 //Motor defines
 #define ACTUATOR1_TYPE					ENUM_ACTUATOR_TYPE_MOTOR
 #define ACTUATOR1_TIM					ENUM_TIM3

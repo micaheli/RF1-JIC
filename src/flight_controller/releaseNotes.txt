@@ -613,7 +613,7 @@ Version 0.197.059 RC2:
 	Server autobuild increments minor version
 	Added BLHeli_s C_H_50 ESC firmware to flash
 
-Version 0.197.059 RC3:
+Version 0.197.059 BETA:
 	Added arming structure data to error command to help diagnose non start issues
 	Integrated Spektrum's VTX setup into SmartAudio
 		You can change Channels and turn on your radio via a Spektrum TX
@@ -698,6 +698,13 @@ Version 0.197.059 RC3:
 			VTX_POWER_200MW = 1,
 			VTX_POWER_500MW = 2,
 			VTX_POWER_800MW = 3,
+
+Version 0.198.059 RC3:
+	Rewrite of several drivers to better accomodate VTX telemetry
+	Added new soft serial driver
+	Added support for taranis pid and vtx tuning
+	Fixed bug in betafloght and kiss rates
+	
 
 #Features in current development:
 #	MSP compatibility

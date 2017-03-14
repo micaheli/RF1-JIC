@@ -288,13 +288,7 @@ uint32_t OneWireInit(void)
 
 	oneWireOngoing = 1;
 	//need to deinit RX, Gyro, Flash... basically anything that uses DMA. Should make a skip for USART if it's being used for communication
-	//need to reinit all this crap at the end.
-	DisarmBoard();              //sets WD to 32S
-	AccGyroDeinit();            //takes about 200ms maybe to run, this will also stop the flight code from running so no reason to stop that.
-	DeInitBoardUsarts();        //deinit all the USARTs.
-	DeInitActuators();          //deinit all the Actuators.
-
-	DeInitAllowedSoftOutputs(); //deinit all the soft outputs
+	DeinitFlight();
 
 	DelayMs(500);
 

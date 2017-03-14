@@ -8,20 +8,69 @@ uint32_t rfCustomReplyBufferPointerSent = 0;
 
 #define LARGE_RF_BUFFER_SIZE 4096
 main_config mainConfig;
-volatile uint32_t disableSaving=0;
-uint32_t sendReturn = 0;
 uint32_t resetBoard = 0;
 char rf_custom_out_buffer[RF_BUFFER_SIZE];
 char rfCustomSendBufferAdder[RF_BUFFER_SIZE];
 char rfCustomSendBuffer[LARGE_RF_BUFFER_SIZE];
+unsigned char rfReplyBuffer[HID_EPIN_SIZE];
 
 static uint32_t ValidateConfig (uint32_t addresConfigStart);
 static void     SetValueOrString(uint32_t position, char *value);
 static void     SetValue(uint32_t position, char *value);
 static void     DlflStatusDump(void);
+static int32_t  GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray);
 
 static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+
+const string_comp_rec vtxStringCompTable[] = {
+		//telemetry.h.h
+		{"a1", VTX_CH_A1 },
+		{"a2", VTX_CH_A2 },
+		{"a3", VTX_CH_A3 },
+		{"a4", VTX_CH_A4 },
+		{"a5", VTX_CH_A5 },
+		{"a6", VTX_CH_A6 },
+		{"a7", VTX_CH_A7 },
+		{"a8", VTX_CH_A8 },
+
+		{"b1", VTX_CH_B1 },
+		{"b2", VTX_CH_B2 },
+		{"b3", VTX_CH_B3 },
+		{"b4", VTX_CH_B4 },
+		{"b5", VTX_CH_B5 },
+		{"b6", VTX_CH_B6 },
+		{"b7", VTX_CH_B7 },
+		{"b8", VTX_CH_B8 },
+
+		{"e1", VTX_CH_E1 },
+		{"e2", VTX_CH_E2 },
+		{"e3", VTX_CH_E3 },
+		{"e4", VTX_CH_E4 },
+		{"e5", VTX_CH_E5 },
+		{"e6", VTX_CH_E6 },
+		{"e7", VTX_CH_E7 },
+		{"e8", VTX_CH_E8 },
+
+		{"f1", VTX_CH_F1 },
+		{"f2", VTX_CH_F2 },
+		{"f3", VTX_CH_F3 },
+		{"f4", VTX_CH_F4 },
+		{"f5", VTX_CH_F5 },
+		{"f6", VTX_CH_F6 },
+		{"f7", VTX_CH_F7 },
+		{"f8", VTX_CH_F8 },
+
+		{"r1", VTX_CH_R1 },
+		{"r2", VTX_CH_R2 },
+		{"r3", VTX_CH_R3 },
+		{"r4", VTX_CH_R4 },
+		{"r5", VTX_CH_R5 },
+		{"r6", VTX_CH_R6 },
+		{"r7", VTX_CH_R7 },
+		{"r8", VTX_CH_R8 },
+
+};
 
 const string_comp_rec stringCompTable[] = {
 		//mixer.h
@@ -147,10 +196,10 @@ const config_variables_rec valueTable[] = {
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
 
-		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 08.0, "" },
+		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 05.0, "" },
 		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25.0, 00.1, "" },
-		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 75.0, 40.0, "" },
-		{ "sld", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.90, 0.05, "" },
+		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 75.0, 30.0, "" },
+		{ "sld", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.90, 0.03, "" },
 
 		{ "filter_mode0",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterMod, 				0, 10, 0, "" },
 		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
@@ -531,6 +580,22 @@ char *CleanupString(char *inString)
 }
 
 
+static int32_t GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray)
+{
+	uint32_t x;
+
+	//compare args with strings in stringCompTable
+	for (x=0;x<(sizeOfArray/sizeof(string_comp_rec));x++)
+	{
+		if (!strcmp(thisStringCompTable[x].valueString, string))
+		{
+			return(thisStringCompTable[x].valueInt);
+		}
+	}
+
+	return(-1);
+}
+
 void SetValueOrString(uint32_t position, char *value)
 {
 	uint32_t x;
@@ -573,7 +638,7 @@ void SetValue(uint32_t position, char *value)
 
 void SendStatusReport(char *inString)
 {
-	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ss %s", inString);
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ss %s\n", inString);
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
 
@@ -609,7 +674,7 @@ int32_t SetVariable(char *inString)
 			{
 				resetBoard=1;
 			}
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me %s=%s", inString, args);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me %s=%s\n", inString, args);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			return (1);
 		}
@@ -628,29 +693,25 @@ void OutputVarSet(uint32_t position)
 	switch (valueTable[position].type) {
 
 	case typeUINT:
-		sprintf(rf_custom_out_buffer, "set %s=%d", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+		sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
 		RfCustomReplyBuffer(rf_custom_out_buffer);
-		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeINT:
-		sprintf(rf_custom_out_buffer, "set %s=%d", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+		sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
 		RfCustomReplyBuffer(rf_custom_out_buffer);
-		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeFLOAT:
 		ftoa(*(float *)valueTable[position].ptr, fString);
 		StripSpaces(fString);
-		sprintf(rf_custom_out_buffer, "set %s=%s", valueTable[position].name, fString);
+		sprintf(rf_custom_out_buffer, "set %s=%s\n", valueTable[position].name, fString);
 		RfCustomReplyBuffer(rf_custom_out_buffer);
-		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%s", valueTable[position].name, fString);
 		break;
 	}
 
-	//RfCustomReply(rf_custom_out_buffer);
 }
 
 void OutputVar(uint32_t position)
@@ -660,19 +721,19 @@ void OutputVar(uint32_t position)
 	switch (valueTable[position].type) {
 
 	case typeUINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
 		break;
 
 
 	case typeFLOAT:
 		ftoa(*(float *)valueTable[position].ptr, fString);
 		StripSpaces(fString);
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%s", valueTable[position].name, fString);
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%s\n", valueTable[position].name, fString);
 		break;
 	}
 
@@ -684,20 +745,11 @@ void OutputVar(uint32_t position)
 int RfCustomReply(char *rf_custom_out_buffer)
 {
 
-	if (disableSaving)
-		return(0);
-
-	if (sendReturn)
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s\n", rf_custom_out_buffer);
-
-	unsigned char rfReplyBuffer[RF_BUFFER_SIZE];
-
 	bzero((rfReplyBuffer+1), (sizeof(rfReplyBuffer)-1));
-
 	rfReplyBuffer[0]=1;
 	memcpy((char *)(rfReplyBuffer+1), rf_custom_out_buffer, RF_BUFFER_SIZE);
 
-	USBD_HID_SendReport (&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
+	USBD_HID_SendReport(&hUsbDeviceFS, rfReplyBuffer, HID_EPIN_SIZE);
 	return(0);
 
 }
@@ -722,8 +774,8 @@ void ProcessCommand(char *inString)
 
 	if (rfCustomReplyBufferPointerSent < rfCustomReplyBufferPointer)
 	{
-		//one second more timeout
-		if (Micros() - lastTimeMore < 1000000)
+		//four second more timeout
+		if (Micros() - lastTimeMore < 4000000)
 		{
 			SendRfCustomReplyBuffer();
 			return;
@@ -771,8 +823,7 @@ void ProcessCommand(char *inString)
 			args[x] = 0;
 			break;
 		}
-		//if (startCleanup)
-		//	args[x] = 0;
+
 	}
 
 
@@ -787,12 +838,12 @@ void ProcessCommand(char *inString)
 
 	if (!strcmp("more", inString))
 		{
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#nomore" );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#nomore\n" );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("polladc", inString))
 		{
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ADC: %lu", (uint32_t)adcVoltage );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ADC: %lu\n", (uint32_t)adcVoltage );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("idle", inString))
@@ -801,7 +852,7 @@ void ProcessCommand(char *inString)
 			DisarmBoard();
 			SKIP_GYRO=1;
 
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Spinning Motor %lu", motorToSpin );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Spinning Motor %lu\n", motorToSpin );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			DelayMs(10);
@@ -827,7 +878,7 @@ void ProcessCommand(char *inString)
 			trueRcCommandF[6] =  0.75f;
 			trueRcCommandF[7] =  1.00f;
 
-			RfCustomReplyBuffer("#me RX Data has been faked");
+			RfCustomReplyBuffer("#me RX Data has been faked\n");
 
 		}
 	else if (!strcmp("idlestop", inString))
@@ -835,24 +886,24 @@ void ProcessCommand(char *inString)
 			DisarmBoard();
 			ZeroActuators( 1000 );
 			SKIP_GYRO=0;
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "idlestop" );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me idlestop\n" );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("error", inString))
 		{
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu %lu %lu", deviceWhoAmI, errorMask, failsafeHappend);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ba:%lu", armingStructure.boardArmed);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "lfa:%lu", armingStructure.latchFirstArm);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ams:%lu", armingStructure.armModeSet);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "amm:%lu", armingStructure.armModeActive);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "rcc:%lu", armingStructure.rcCalibrated);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "bc:%lu", armingStructure.boardCalibrated);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "pm:%lu", armingStructure.progMode);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "tis:%lu", armingStructure.throttleIsSafe);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "rxt:%lu", armingStructure.rxTimeout);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "fh:%lu", armingStructure.failsafeHappend);RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "af:%lu", armingStructure.activeFailsafe);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu %lu %lu\n", deviceWhoAmI, errorMask, failsafeHappend);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ba:%lu\n", armingStructure.boardArmed);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "lfa:%lu\n", armingStructure.latchFirstArm);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ams:%lu\n", armingStructure.armModeSet);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "amm:%lu\n", armingStructure.armModeActive);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "rcc:%lu\n", armingStructure.rcCalibrated);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "bc:%lu\n", armingStructure.boardCalibrated);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "pm:%lu\n", armingStructure.progMode);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "tis:%lu\n", armingStructure.throttleIsSafe);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "rxt:%lu\n", armingStructure.rxTimeout);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "fh:%lu\n", armingStructure.failsafeHappend);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "af:%lu\n", armingStructure.activeFailsafe);RfCustomReplyBuffer(rf_custom_out_buffer);
 
 		}
 	else if (!strcmp("fakeflash", inString))
@@ -861,7 +912,7 @@ void ProcessCommand(char *inString)
 			//flashInfo.currentWriteAddress = atoi(args);
 			flashCountdownFake = 100;
 
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me It's a FAAAAKE" );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me It's a FAAAAKE\n" );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 		}
@@ -869,7 +920,7 @@ void ProcessCommand(char *inString)
 		{
 			if (!SetVariable(args))
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Setting Not Found:%s", inString);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Setting Not Found:%s\n", inString);
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -877,7 +928,7 @@ void ProcessCommand(char *inString)
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rw %u=%u", (volatile unsigned int)xx+1, (volatile unsigned int)(rxDataRaw[xx]));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rw %u=%u\n", (volatile unsigned int)xx+1, (volatile unsigned int)(rxDataRaw[xx]));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -885,7 +936,7 @@ void ProcessCommand(char *inString)
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rx %u=%u", (volatile unsigned int)xx+1, (volatile unsigned int)(rxData[xx]));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rx %u=%u\n", (volatile unsigned int)xx+1, (volatile unsigned int)(rxData[xx]));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -893,7 +944,7 @@ void ProcessCommand(char *inString)
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rc %d=%d", (volatile int)xx+1, (volatile int)(trueRcCommandF[xx]*1000));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rc %d=%d\n", (volatile int)xx+1, (volatile int)(trueRcCommandF[xx]*1000));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -901,7 +952,7 @@ void ProcessCommand(char *inString)
 		{
 			for (uint32_t xx = 0; xx < MAXCHANNELS;xx++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rb %u=%u:%d", (volatile unsigned int)(xx+1), (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#rb %u=%u:%d\n", (volatile unsigned int)(xx+1), (volatile unsigned int)(rxData[xx]), (volatile int)(trueRcCommandF[xx]*1000));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -954,13 +1005,13 @@ void ProcessCommand(char *inString)
 			StripSpaces(qz);
 
 			//todo: make a way to combine strings
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm pitch=%s\n#tm roll=%s\n#tm heading=%s", pitchString,rollString,yawString);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm pitch=%s\n#tm roll=%s\n#tm heading=%s\n", pitchString,rollString,yawString);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm ax=%s\n#tm ay=%s\n#tm az=%s", ax,ay,az);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm ax=%s\n#tm ay=%s\n#tm az=%s\n", ax,ay,az);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm gx=%s\n#tm gy=%s\n#tm gz=%s", gx,gy,gz);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm gx=%s\n#tm gy=%s\n#tm gz=%s\n", gx,gy,gz);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm qx=%s\n#tm qy=%s\n#tm qz=%s\n#tm qw=%s", qx,qy,qz,qw);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm qx=%s\n#tm qy=%s\n#tm qz=%s\n#tm qw=%s\n", qx,qy,qz,qw);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 		}
@@ -978,7 +1029,7 @@ void ProcessCommand(char *inString)
 					protocol = USING_SBUS_R;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1003,7 +1054,7 @@ void ProcessCommand(char *inString)
 					usart = ENUM_USART6;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1013,7 +1064,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SBUS Defaults");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SBUS Defaults\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
@@ -1033,7 +1084,7 @@ void ProcessCommand(char *inString)
 					protocol = USING_SUMD_R;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1058,7 +1109,7 @@ void ProcessCommand(char *inString)
 					usart = ENUM_USART6;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1068,7 +1119,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SUMD Defaults");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SUMD Defaults\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
@@ -1089,7 +1140,7 @@ void ProcessCommand(char *inString)
 					protocol = USING_IBUS_R;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1114,7 +1165,7 @@ void ProcessCommand(char *inString)
 					usart = ENUM_USART6;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1124,7 +1175,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me IBUS Defaults");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me IBUS Defaults\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
@@ -1143,7 +1194,7 @@ void ProcessCommand(char *inString)
 					protocol = USING_CPPM_R;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1168,7 +1219,7 @@ void ProcessCommand(char *inString)
 					usart = ENUM_USART6;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1178,7 +1229,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
-			RfCustomReplyBuffer("#me CPPM Defaults");
+			RfCustomReplyBuffer("#me CPPM Defaults\n");
 
 			SaveAndSend();
 		}
@@ -1208,7 +1259,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			RfCustomReplyBuffer("#me Nyfluffy mode engaged");
+			RfCustomReplyBuffer("#me Nyfluffy mode engaged\n");
 
 			SaveAndSend();
 
@@ -1243,7 +1294,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			RfCustomReplyBuffer("#me Nyfluffy mode engaged");
+			RfCustomReplyBuffer("#me Nyfluffy mode engaged\n");
 
 			SaveAndSend();
 
@@ -1303,7 +1354,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			RfCustomReplyBuffer("#me Willard mode engaged");
+			RfCustomReplyBuffer("#me Willard mode engaged\n");
 
 			SaveAndSend();
 
@@ -1343,7 +1394,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			RfCustomReplyBuffer("#me RS2K mode engaged");
+			RfCustomReplyBuffer("#me RS2K mode engaged\n");
 
 			SaveAndSend();
 
@@ -1402,6 +1453,17 @@ void ProcessCommand(char *inString)
 
 			SetMode(M_ARMED, 4, 50, 100);
 
+			mainConfig.pidConfig[YAW].kp     = 135.00;
+			mainConfig.pidConfig[ROLL].kp    = 115.00;
+			mainConfig.pidConfig[PITCH].kp   = 120.00;
+
+			mainConfig.pidConfig[YAW].ki     = 1000.00;
+			mainConfig.pidConfig[ROLL].ki    = 900.00;
+			mainConfig.pidConfig[PITCH].ki   = 1000.00;
+
+			mainConfig.pidConfig[YAW].kd     = 1200.00;
+			mainConfig.pidConfig[ROLL].kd    = 1000.00;
+			mainConfig.pidConfig[PITCH].kd   = 1200.00;
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
@@ -1412,8 +1474,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.useCurve[AUX3]       = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX4]       = NO_EXPO;
 
-			mainConfig.rcControlsConfig.rates[PITCH]         = 320;
-			mainConfig.rcControlsConfig.rates[ROLL]          = 300;
+			mainConfig.rcControlsConfig.rates[PITCH]         = 300;
+			mainConfig.rcControlsConfig.rates[ROLL]          = 320;
 			mainConfig.rcControlsConfig.rates[YAW]           = 280;
 
 			mainConfig.rcControlsConfig.curveExpo[PITCH]     = 60;
@@ -1429,7 +1491,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			RfCustomReplyBuffer("#me Braindrain mode engaged");
+			RfCustomReplyBuffer("#me Braindrain mode engaged\n");
 
 			SaveAndSend();
 
@@ -1445,8 +1507,8 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.useCurve[AUX3]       = NO_EXPO;
 			mainConfig.rcControlsConfig.useCurve[AUX4]       = NO_EXPO;
 
-			mainConfig.rcControlsConfig.rates[PITCH]         = 320;
-			mainConfig.rcControlsConfig.rates[ROLL]          = 300;
+			mainConfig.rcControlsConfig.rates[PITCH]         = 300;
+			mainConfig.rcControlsConfig.rates[ROLL]          = 320;
 			mainConfig.rcControlsConfig.rates[YAW]           = 280;
 
 			mainConfig.rcControlsConfig.curveExpo[PITCH]     = 60;
@@ -1459,7 +1521,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			RfCustomReplyBuffer("#me Braindrain mode engaged");
+			RfCustomReplyBuffer("#me Braindrain mode engaged\n");
 
 			SaveAndSend();
 
@@ -1502,7 +1564,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			RfCustomReplyBuffer("#me Default PIDs");
+			RfCustomReplyBuffer("#me Default PIDs\n");
 
 			SaveAndSend();
 
@@ -1545,7 +1607,7 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RS2K PIDs");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RS2K PIDs\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
@@ -1564,7 +1626,7 @@ void ProcessCommand(char *inString)
 					protocol = USING_SPEK_R;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1589,7 +1651,7 @@ void ProcessCommand(char *inString)
 					usart = ENUM_USART6;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1599,7 +1661,7 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SPEK Defaults");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SPEK Defaults\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
@@ -1618,7 +1680,7 @@ void ProcessCommand(char *inString)
 					protocol = USING_DSM2_R;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1643,7 +1705,7 @@ void ProcessCommand(char *inString)
 					usart = ENUM_USART6;
 					break;
 				default:
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					break;
 			}
@@ -1653,68 +1715,103 @@ void ProcessCommand(char *inString)
 			resetBoard = 1;
 			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me DSM2 Defaults");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me DSM2 Defaults\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
 		}
-	else if (!strcmp("sainit", inString))
+	else if (!strcmp("vtxinfo", inString))
 		{
-			if ( InitSmartAudio(ENUM_USART3) )
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("vtxon", inString))
+		{
+
+			if (VtxTurnOn())
 			{
-				RfCustomReplyBuffer("#me Smart Audio Initialization Successful.");
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.version: %lu",        smartAudioVtxStructure.version);                                 RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.channel: %lu",        smartAudioVtxStructure.channel);                                 RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.powerLevel: %lu",     smartAudioVtxStructure.powerLevel);                              RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.pitmodeInRange: %lu", (uint32_t)BITMASK_CHECK(smartAudioVtxStructure.opMode, SM_OPMODE_PMIR));   RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.pitmodeOutRange: %lu",(uint32_t)BITMASK_CHECK(smartAudioVtxStructure.opMode, SM_OPMODE_PMOR));   RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.pitmode: %lu",        (uint32_t)BITMASK_CHECK(smartAudioVtxStructure.opMode, SM_OPMODE_PM));     RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.locked: %lu",         (uint32_t)BITMASK_CHECK(smartAudioVtxStructure.opMode, SM_OPMODE_LOCKED)); RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA.frequency: %lu",      smartAudioVtxStructure.frequency);                               RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 			else
 			{
-				RfCustomReplyBuffer("#me Smart Audio Initialization failed. Is there a Smart Audio VTX installed?");
+				RfCustomReplyBuffer("#me Error turning on VTX\n");
 			}
 
 		}
-	else if (!strcmp("sapit", inString))
+	else if (!strcmp("vtxpit", inString))
 		{
-			//smartAudioVtxStructure.opMode |= (SM_SET_OPMODE_PMOR);
-			//smartAudioVtxStructure.opMode |= (SM_SET_OPMODE_PM);
-			//smartAudioVtxStructure.opMode = SM_SET_OPMODE_PMOR;
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu", SmartAudioSetOpModeBlocking( SM_SET_OPMODE_PMOR ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			if (VtxTurnPit())
+			{
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			else
+			{
+				RfCustomReplyBuffer("#me Error putting VTX into pit mode\n");
+			}
+
+		}
+	else if (!strcmp("vtxbandchannel", inString))
+		{
+
+			if (VtxBandChannel( GetValueFromString(args, vtxStringCompTable, sizeof(vtxStringCompTable)) ))
+			{
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			else
+			{
+				RfCustomReplyBuffer("#me Error changing VTX channel\n");
+			}
+
 		}
 	else if (!strcmp("saunlock", inString))
 		{
-			smartAudioVtxStructure.opMode &= ~(SM_OPMODE_LOCKED);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu", SmartAudioSetOpModeBlocking( smartAudioVtxStructure.opMode ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-
+			//smartAudioVtxRecord.opMode &= ~(SM_OPMODE_LOCKED);
+			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu\n", SmartAudioSetOpModeBlocking( smartAudioVtxRecord.opMode ) );
+			//RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("salock", inString))
 		{
-			smartAudioVtxStructure.opMode |= (SM_OPMODE_LOCKED);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu", SmartAudioSetOpModeBlocking( smartAudioVtxStructure.opMode  ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-
-		}
-	else if (!strcmp("saon", inString))
-		{
-			//smartAudioVtxStructure.opMode = SM_SET_OPMODE_DIS_PMOR;
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA On Success: %lu", SmartAudioSetOpModeBlocking( SM_SET_OPMODE_DIS_PMOR ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			//smartAudioVtxRecord.opMode |= (SM_OPMODE_LOCKED);
+			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu\n", SmartAudioSetOpModeBlocking( smartAudioVtxRecord.opMode  ) );
+			//RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("sapow", inString))
 		{
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Power Success: %lu", SmartAudioSetPowerBlocking( atoi(args) ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Power Success: %lu\n", SmartAudioSetPowerBlocking( atoi(args) ) );
+			//RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("sach", inString))
 		{
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Channel Success: %lu", SmartAudioSetChannelBlocking( atoi(args) ) );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Channel Success: %lu\n", SmartAudioSetChannelBlocking( atoi(args) ) );
+			//RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("vtxbaud", inString))
 		{
@@ -1723,7 +1820,7 @@ void ProcessCommand(char *inString)
 
 			uint32_t returnValueThis = RfVtxBaud();
 			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("vtxoff", inString))
@@ -1733,7 +1830,7 @@ void ProcessCommand(char *inString)
 
 			uint32_t returnValueThis = RfVtxOff();
 			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 		}
@@ -1741,35 +1838,34 @@ void ProcessCommand(char *inString)
 		{
 			uint32_t returnValueThis = RfVtxOn25();
 			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("vtx200", inString))
 		{
 			uint32_t returnValueThis = RfVtxOn200();
 			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("vtxb", inString))
 		{
 			uint32_t returnValueThis = RfVtxBand(atoi(args));
 			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("vtxc", inString))
 		{
 			uint32_t returnValueThis = RfVtxChannel(atoi(args));
 			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("serial", inString))
 		{
-
 			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#serial: %lu%lu%lu", STM32_UUID[0], STM32_UUID[1], STM32_UUID[2] );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#serial: %lu%lu%lu\n", STM32_UUID[0], STM32_UUID[1], STM32_UUID[2] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("dump", inString))
@@ -1796,7 +1892,7 @@ void ProcessCommand(char *inString)
 			else
 			{
 
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s\n", FULL_VERSION_STRING);
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
@@ -1811,7 +1907,7 @@ void ProcessCommand(char *inString)
 
 			if (argsOutputted == 0)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me No Arguments Found For:%s", args);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me No Arguments Found For:%s\n", args);
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			}
@@ -1825,24 +1921,24 @@ void ProcessCommand(char *inString)
 			if (flashInfo.enabled)
 			{
 
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Erasing Flash");
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Erasing Flash\n");
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 
 				if (MassEraseDataFlash(1))
 				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 				}
 				else
 				{
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Failed");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Failed\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 				}
 
 			}
 			else
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected");
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected\n");
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 
@@ -1851,24 +1947,24 @@ void ProcessCommand(char *inString)
 		{
 			if (flashInfo.enabled)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Erasing Flash");
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Erasing Flash\n");
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 
 				if (((float)(flashInfo.currentWriteAddress) / (float)flashInfo.totalSize) > 0.85) {
 					if (MassEraseDataFlash(1))
 					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete");
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete\n");
 						RfCustomReplyBuffer(rf_custom_out_buffer);
 					}
 					else
 					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Failed");
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Failed\n");
 						RfCustomReplyBuffer(rf_custom_out_buffer);
 					}
 				} else {
 					if (MassEraseDataFlashByPage(1))
 					{
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete");
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete\n");
 						RfCustomReplyBuffer(rf_custom_out_buffer);
 					}
 				}
@@ -1876,7 +1972,7 @@ void ProcessCommand(char *inString)
 			}
 			else
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected");
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected\n");
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
@@ -1886,26 +1982,25 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("quadwall", inString))
 		{
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\");
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " \\ /\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, " / \\\n");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "x   x\n");
 		}
 	else if (!strcmp("readflash", inString))
 		{
-			uint32_t smallerPointer;
 
 			if (flashInfo.enabled) {
 
@@ -1915,20 +2010,18 @@ void ProcessCommand(char *inString)
 				{
 
 					bzero(rf_custom_out_buffer,sizeof(rf_custom_out_buffer));
-					sendReturn = 0;
 					for (uint32_t x=0;x<RF_BUFFER_SIZE;x++)
 					{
-						rf_custom_out_buffer[smallerPointer++] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
+						rf_custom_out_buffer[x] = flashInfo.buffer[0].rxBuffer[FLASH_CHIP_BUFFER_READ_DATA_START+x];
 					}
 					RfCustomReply(rf_custom_out_buffer);
-					sendReturn = 1;
 					return;
 
 				}
 				else
 				{
 
-					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Read Failed");
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Read Failed\n");
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 
 				}
@@ -1937,7 +2030,7 @@ void ProcessCommand(char *inString)
 			else
 			{
 
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected");
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Chip Not Detected\n");
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			}
@@ -1945,7 +2038,7 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("version", inString))
 		{
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s\n", FULL_VERSION_STRING);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("wiz", inString))
@@ -1964,13 +2057,13 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("reboot", inString) || !strcmp("reset", inString))
 		{
-			RfCustomReply("#me Rebooting");
+			RfCustomReply("#me Rebooting\n");
 			SystemReset();
 			return;
 		}
 	else if (!strcmp("resetdfu", inString)  || !strcmp("rebootdfu", inString))
 		{
-			RfCustomReply("#me Rebooting Into DFU");
+			RfCustomReply("#me Rebooting Into DFU\n");
 			SystemResetToDfuBootloader();
 			return;
 		}
@@ -1979,11 +2072,11 @@ void ProcessCommand(char *inString)
 
 			resetBoard = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Resetting Config");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Resetting Config\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			GenerateConfig();
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Config Reset");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Config Reset\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			SaveAndSend();
 
@@ -1991,7 +2084,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("binds", inString))
 		{
 			sendSpektrumBind();
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding Serial");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding Serial\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if ( (!strcmp("bind9", inString)) || (!strcmp("bind", inString)) )
@@ -2000,7 +2093,7 @@ void ProcessCommand(char *inString)
 			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
 			RtcWriteBackupRegister(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 9");
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Binding 9\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("bind5", inString))
@@ -2009,7 +2102,7 @@ void ProcessCommand(char *inString)
 			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
 			RtcWriteBackupRegister(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
-			RfCustomReplyBuffer("#me Binding 5");
+			RfCustomReplyBuffer("#me Binding 5\n");
 		}
 	else if (!strcmp("bind3", inString))
 		{
@@ -2017,12 +2110,12 @@ void ProcessCommand(char *inString)
 			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_SPEKTRUM9);
 			RtcWriteBackupRegister(FC_STATUS_REG,BOOT_TO_SPEKTRUM9);
 			SaveAndSend();
-			RfCustomReplyBuffer("#me Binding 3");
+			RfCustomReplyBuffer("#me Binding 3\n");
 		}
 	else if (!strcmp("rebootrfbl", inString) || !strcmp("resetrfbl", inString))
 		{
 			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RFBL_COMMAND);
-			RfCustomReply("#me Rebooting Into RFBL");
+			RfCustomReply("#me Rebooting Into RFBL\n");
 			DelayMs(100);
 			SystemReset();
 			return;
@@ -2030,7 +2123,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("rebootrecovery", inString) || !strcmp("resetrecovery", inString))
 		{
 			RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_RECOVERY_COMMAND);
-			RfCustomReply("#me Rebooting Into Recovery");
+			RfCustomReply("#me Rebooting Into Recovery\n");
 			DelayMs(100);
 			SystemReset();
 			return;
@@ -2042,7 +2135,7 @@ void ProcessCommand(char *inString)
 		}
 	else
 		{
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Unknown Command:%s", args);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Unknown Command:%s\n", inString);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 
@@ -2053,31 +2146,36 @@ void ProcessCommand(char *inString)
 
 void SaveAndSend(void)
 {
-	if (disableSaving)
-		return;
-
-	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Saving");
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Saving\n");
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 	SaveConfig(ADDRESS_CONFIG_START);
-	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Save Complete");
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#ms Save Complete\n");
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
 
 void DlflStatusDump(void)
 {
-	sprintf(rf_custom_out_buffer, "#fl size=%u\n#fl total=%u", (unsigned int)(flashInfo.currentWriteAddress), (unsigned int)(flashInfo.totalSize));
+	sprintf(rf_custom_out_buffer, "#fl size=%u\n#fl total=%u\n", (unsigned int)(flashInfo.currentWriteAddress), (unsigned int)(flashInfo.totalSize));
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
-
 
 
 int RfCustomReplyBuffer(char *rfCustomSendBufferAdder)
 {
 
-	//add rfCustomSendBufferAdder to rfCustomSendBuffer and add a \n to the end
-	snprintf(rfCustomSendBuffer+rfCustomReplyBufferPointer, LARGE_RF_BUFFER_SIZE-rfCustomReplyBufferPointer, "%s\n", rfCustomSendBufferAdder);
+	uint32_t stringLength = strlen(rfCustomSendBufferAdder);
 
-	rfCustomReplyBufferPointer += strlen(rfCustomSendBufferAdder) + 1; //adding a \n
+	if ( (stringLength+1+rfCustomReplyBufferPointer) <= LARGE_RF_BUFFER_SIZE)
+	{
+		memcpy(rfCustomSendBuffer+rfCustomReplyBufferPointer, rfCustomSendBufferAdder, stringLength);
+		rfCustomReplyBufferPointer += stringLength;
+		rfCustomSendBuffer[rfCustomReplyBufferPointer] = 0;
+	}
+
+	//add rfCustomSendBufferAdder to rfCustomSendBuffer and add a \n to the end
+	//snprintf(rfCustomSendBuffer+rfCustomReplyBufferPointer, LARGE_RF_BUFFER_SIZE-rfCustomReplyBufferPointer, "%s", rfCustomSendBufferAdder);
+
+//	rfCustomReplyBufferPointer += strlen(rfCustomSendBufferAdder) + 1; //adding a \n
 
 	return(0);
 
@@ -2086,16 +2184,24 @@ int RfCustomReplyBuffer(char *rfCustomSendBufferAdder)
 int SendRfCustomReplyBuffer(void)
 {
 
-	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE+1, "%s", rfCustomSendBuffer+rfCustomReplyBufferPointerSent);
-	RfCustomReply(rf_custom_out_buffer);
-	rfCustomReplyBufferPointerSent +=RF_BUFFER_SIZE;
+	if(rfCustomReplyBufferPointer > 0)
+	{
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE+1, "%s", rfCustomSendBuffer+rfCustomReplyBufferPointerSent);
+		RfCustomReply(rf_custom_out_buffer);
+		rfCustomReplyBufferPointerSent +=RF_BUFFER_SIZE;
+	}
+	else
+	{
+		rfCustomReplyBufferPointerSent=0;
+		rfCustomReplyBufferPointer    =0;
+	}
 
 	if (rfCustomReplyBufferPointerSent >= rfCustomReplyBufferPointer)
 	{
 		rfCustomReplyBufferPointerSent=0;
-		rfCustomReplyBufferPointer=0;
+		rfCustomReplyBufferPointer    =0;
 	}
 
-
 	return(0);
+
 }
