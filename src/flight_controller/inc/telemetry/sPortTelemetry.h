@@ -128,3 +128,5 @@ extern void SendSmartPort(void);
 extern void CheckIfSportReadyToSend(void);
 extern void InitSport(uint32_t usartNumber);
 extern void InitSoftSport(void);
+extern void InitAllSport(void);
+extern void DeInitSoftSport(void);

@@ -45,7 +45,8 @@
 extern uint8_t  BitReverse8(uint8_t byteToConvert);
 extern uint8_t  SmCrc8(const uint8_t * ptr, uint8_t len);
 extern uint32_t BigToLittleEndian32(uint32_t numberIn);
-extern float InlineConstrainf(float amt, float low, float high);
+extern float    InlineConstrainf(float amt, float low, float high);
+extern uint32_t InlineConstrainui(uint32_t amt, uint32_t low, uint32_t high);
 extern float Powerf(float base, uint32_t exp);
 extern float InlineChangeRangef(float oldValue, float oldMax, float oldMin, float newMax, float newMin);
 extern float CalculateSD(float data[]);

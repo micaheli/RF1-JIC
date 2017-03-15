@@ -713,6 +713,7 @@ Version 0.198.059 RC3:
 #	Current input
 
 #Features for future development:
+#   allow 30 degrees
 #	transponder output
 #	Sonar input
 #	GPS input

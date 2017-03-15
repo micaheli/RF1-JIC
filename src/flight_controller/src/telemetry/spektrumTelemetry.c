@@ -13,7 +13,6 @@ DMA_InitTypeDef DMA_InitStructure;
 uint8_t dma_count;
 TELEMETRY_STATE telemetryState = TELEM_START;
 UN_TELEMETRY sensorData;
-extern uint32_t progMode;
 pidSpektrumTelem_t pidSpektrumTelem;
 
 #define UINT16_ENDIAN(a)  (((a) >> 8) | ((a) << 8) )

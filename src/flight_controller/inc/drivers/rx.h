@@ -122,6 +122,7 @@ extern volatile float maxFlopRate[];
 extern volatile float maxKissRate[];
 extern volatile uint32_t armBoardAt;
 
+extern volatile uint32_t progMode;
 extern volatile SPM_VTX_DATA vtxData;
 extern volatile uint32_t rx_timeout;
 extern float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position

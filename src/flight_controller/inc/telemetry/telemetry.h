@@ -38,15 +38,18 @@ enum
 	VTX_POWER_200MW = 0x01,
 	VTX_POWER_500MW = 0x02,
 	VTX_POWER_800MW = 0x03,
+	VTX_POWER_END = 4,
+
 };
 
 enum
 {
-	VTX_BAND_A = 0,
-	VTX_BAND_B = 1,
-	VTX_BAND_E = 2,
-	VTX_BAND_F = 3,
-	VTX_BAND_R = 4,
+	VTX_BAND_A   = 0,
+	VTX_BAND_B   = 1,
+	VTX_BAND_E   = 2,
+	VTX_BAND_F   = 3,
+	VTX_BAND_R   = 4,
+	VTX_BAND_END = 5,
 };
 
 enum
@@ -158,3 +161,4 @@ extern uint32_t VtxBandChannel(uint32_t bandChannel);
 extern uint32_t VtxPower(uint32_t power);
 extern uint32_t VtxBandChannelToFrequency(uint32_t bandChannel);
 extern void     VtxChannelToBandAndChannel(uint32_t inChannel, volatile uint32_t *vtxBand, volatile uint32_t *channel);
+extern uint32_t VtxBandAndChannelToBandChannel(volatile uint32_t vtxBand, volatile uint32_t channel);

@@ -21,9 +21,9 @@ volatile float maxFlopRate[3];
 volatile float maxKissRate[3];
 
 uint32_t skipRxMap    = 0;
-uint32_t progMode     = 0;
 uint32_t progTimer    = 0;
 uint32_t ppmPin       = 99;
+volatile uint32_t progMode      = 0;
 volatile uint32_t armCheckLatch = 0;
 
 #define PPM_SYNC_MINIMUM_US 4000
@@ -830,7 +830,7 @@ static float GetKissMaxRates(float rcCommand, uint32_t axis)
 	kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
 	kissSetpoint = rcCommand;
 
-	kissRpyUseRates = 1.0f - abs(rcCommand) * kissGRate;
+	kissRpyUseRates = 1.0f - ABS(rcCommand) * kissGRate;
 	kissRxRaw       = rcCommand * 1000.0f;
 	kissTempCurve   = (kissRxRaw * kissRxRaw / 1000000.0f);
 	kissSetpoint    = ((kissSetpoint * kissTempCurve) * kissUseCurve + kissSetpoint * (1.0f - kissUseCurve)) * (kissRate / 10.0f);
@@ -875,13 +875,13 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 }
 
 //return curved RC command as a percentage of max rate (-1.0 to 1.0)
-inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, float expo, uint32_t axis)
+ float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, float expo, uint32_t axis)
 {
 
 	uint32_t negative = 0;
 	float maxOutput, maxOutputMod, returnValue;
 	float flopSuperRate, flopRcRate, flopExpo, flopFactor, flopAngle;
-	float kissSetpoint, kissRate, kissGRate, kissUseCurve, kissTempCurve, kissRpyUseRates, kissRxRaw, kissAngle;
+	volatile float kissSetpoint, kissRate, kissGRate, kissUseCurve, kissTempCurve, kissRpyUseRates, kissRxRaw, kissAngle;
 
 	maxOutput    = 1.0f;
 	maxOutputMod = 0.01f;
@@ -934,27 +934,20 @@ inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, flo
 			break;
 		case KISS_EXPO:
 		case KISS_EXPO2:
-			if (rcCommand < 0)
-			{
-				rcCommand = -rcCommand;
-				negative  = 1;
-			}
-			if (rcCommand>0.99)
-				rcCommand = 0.99;
+			if (rcCommand>0.999)
+				rcCommand = 0.999;
 
 			kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
 			kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis]);
 			kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
 			kissSetpoint = rcCommand;
 
-			kissRpyUseRates = 1.0f - abs(rcCommand) * kissGRate;
+			kissRpyUseRates = 1.0f - ABS(rcCommand) * kissGRate;
 			kissRxRaw       = rcCommand * 1000.0f;
 			kissTempCurve   = (kissRxRaw * kissRxRaw / 1000000.0f);
 			kissSetpoint    = ((kissSetpoint * kissTempCurve) * kissUseCurve + kissSetpoint * (1.0f - kissUseCurve)) * (kissRate / 10.0f);
 			kissAngle       = ((2000.0f * (1.0f / kissRpyUseRates)) * kissSetpoint); //setpoint is calculated directly here
 			returnValue     = (kissAngle / maxKissRate[axis]); //get curved stick position based on percentage of setpoint
-			if (negative)
-				return(-returnValue);
 			return(returnValue);
 			break;
 		case NO_EXPO:

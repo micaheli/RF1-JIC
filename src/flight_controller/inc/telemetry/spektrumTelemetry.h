@@ -220,10 +220,10 @@ typedef struct pidSpektrumTelem_t
 
 extern pidSpektrumTelem_t pidSpektrumTelem;
 
-void InitSpektrumTelemetry(void);
-void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize);
-void sendSpektrumTelem(void);
-void sendSpektrumBind(void);
-void textMenuUpdate(void);
-uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly);
-
+extern uint32_t VtxSpektrumBandAndChannelToVtxBandChannel(VTX_BAND vtxBand, uint8_t channel);
+extern void     InitSpektrumTelemetry(void);
+extern void     sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize);
+extern void     sendSpektrumTelem(void);
+extern void     sendSpektrumBind(void);
+extern void     textMenuUpdate(void);
+extern uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly);

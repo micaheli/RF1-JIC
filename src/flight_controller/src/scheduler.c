@@ -219,9 +219,17 @@ inline void TaskCheckVtx(void)
 	if (!mainConfig.telemConfig.telemSmartAudio)
 		return;
 
+	//don't change channel until prog mode is done
+	if (progMode)
+		return;
+
 	if (vtxRequested.vtxBandChannel != vtxRecord.vtxBandChannel)
 	{
+		DeInitSoftSport();
+		InitSmartAudio();
 		VtxBandChannel(vtxRequested.vtxBandChannel);
+		InitAllSport();
+		SystemReset();
 	}
 
 	if (vtxRequested.vtxPit != vtxRecord.vtxPit)
@@ -234,7 +242,11 @@ inline void TaskCheckVtx(void)
 
 	if (vtxRequested.vtxPower != vtxRecord.vtxPower)
 	{
+		DeInitSoftSport();
+		InitSmartAudio();
 		VtxPower(vtxRequested.vtxPower);
+		InitAllSport();
+		SystemReset();
 	}
 
 

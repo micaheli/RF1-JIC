@@ -87,6 +87,14 @@ void VtxChannelToBandAndChannel(uint32_t inChannel, volatile uint32_t *vtxBand, 
 
 }
 
+uint32_t VtxBandAndChannelToBandChannel(volatile uint32_t vtxBand, volatile uint32_t channel)
+{
+
+	return (channel + (8 * vtxBand));
+
+}
+
+
 uint32_t VtxTurnOn(void)
 {
 	uint32_t returnValue;
@@ -216,39 +224,7 @@ void InitTelemtry(void)
 		vtxRequested.vtxFrequency   = vtxRecord.vtxFrequency;
 	}
 
-	switch(mainConfig.telemConfig.telemSport)
-	{
-		case TELEM_ACTUATOR1:
-		case TELEM_ACTUATOR2:
-		case TELEM_ACTUATOR3:
-		case TELEM_ACTUATOR4:
-		case TELEM_ACTUATOR5:
-		case TELEM_ACTUATOR6:
-		case TELEM_ACTUATOR7:
-		case TELEM_ACTUATOR8:
-			InitSoftSport();
-			break;
-		case TELEM_USART1:
-			InitSport(ENUM_USART1);
-			break;
-		case TELEM_USART2:
-			InitSport(ENUM_USART2);
-			break;
-		case TELEM_USART3:
-			InitSport(ENUM_USART3);
-			break;
-		case TELEM_USART4:
-			InitSport(ENUM_USART4);
-			break;
-		case TELEM_USART5:
-			InitSport(ENUM_USART5);
-			break;
-		case TELEM_USART6:
-			InitSport(ENUM_USART6);
-			break;
-		default:
-			break;
-	}
+	InitAllSport();
 
 	switch(mainConfig.telemConfig.telemMsp)
 	{
