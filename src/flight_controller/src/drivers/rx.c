@@ -20,10 +20,10 @@ uint32_t rxData[MAXCHANNELS];
 volatile float maxFlopRate[3];
 volatile float maxKissRate[3];
 
-uint32_t skipRxMap = 0;
-uint32_t progMode  = 0;
-uint32_t progTimer = 0;
-uint32_t ppmPin    = 99;
+uint32_t skipRxMap    = 0;
+uint32_t progTimer    = 0;
+uint32_t ppmPin       = 99;
+volatile uint32_t progMode      = 0;
 volatile uint32_t armCheckLatch = 0;
 
 #define PPM_SYNC_MINIMUM_US 4000
@@ -169,12 +169,12 @@ inline void CheckFailsafe(void)
 
 	FeedTheDog(); //resets IWDG time to 0. This tells the timer the board is running.
 
-	if (( (rx_timeout > 500) || (ModeActive(M_FAILSAFE)) ))
+	if (( (rx_timeout > loopSpeed.fsCount) || (ModeActive(M_FAILSAFE)) ))
 		activeFailsafe = 1;
 	else
 		activeFailsafe = 0;
 
-	if ((boardArmed) && ( (rx_timeout > 500) || (ModeActive(M_FAILSAFE)) ) )
+	if ((boardArmed) && ( (rx_timeout > loopSpeed.fsCount) || (ModeActive(M_FAILSAFE)) ) )
 	{
 		failsafeHappend = 1;
 		buzzerStatus.status = STATE_BUZZER_FAILSAFE;
@@ -214,7 +214,7 @@ void ProcessArmingStructure(void)
 
 }
 
- void RxUpdate(void) // hook for when rx updates
+inline void RxUpdate(void) // hook for when rx updates
 {
 
 	 //get current flight modes
@@ -240,11 +240,21 @@ void ProcessArmingStructure(void)
 			PreArmFilterCheck = 1;
 			buzzerStatus.status = STATE_BUZZER_ARMING;
 			ResetGyroCalibration();
+
+			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && (vtxRecord.vtxDevice !=  VTX_DEVICE_NONE))
+			{
+				turnOnVtxNow = 1;
+			}
+
 		}
 		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!boardArmed) && (ModeActive(M_ARMED)) && (mainConfig.gyroConfig.boardCalibrated) && throttleIsSafe && !progMode)
 		{ //TODO: make uncalibrated board buzz
 
-			latchFirstArm = 1; //1 is double single single single, 0 is double double double double
+			if (mainConfig.rcControlsConfig.armMethod == ARM_DOUBLE_SINGLE)
+				latchFirstArm = 1; //1 is double single single single, 0 is double double double double
+			else if (mainConfig.rcControlsConfig.armMethod == ARM_DOUBLE_DOUBLE)
+				latchFirstArm = 0; //1 is double single single single, 0 is double double double double
+
 			disarmCount   = 0;
 
 			if ( !(RtcReadBackupRegister(FC_STATUS_REG) == FC_STATUS_INFLIGHT) ) {
@@ -260,15 +270,12 @@ void ProcessArmingStructure(void)
 			if ( ABS((int32_t)rxCalibrationRecords[YAW].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
 				mainConfig.rcControlsConfig.midRc[YAW] = rxCalibrationRecords[YAW].highestDataValue;
 
-			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && !vtxEnabled )
+			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && (vtxRecord.vtxDevice !=  VTX_DEVICE_NONE))
 			{
-				//smart audio is enabled, but no VTX mode is set, we send the on command during arming
-				armBoardAt = InlineMillis() + 400;
+				turnOnVtxNow = 1;
 			}
-			else
-			{
-				ArmBoard();
-			}
+
+			ArmBoard();
 
 		}
 		else if ( !ModeActive(M_ARMED) )
@@ -285,9 +292,10 @@ void ProcessArmingStructure(void)
 		}
 	}
 
-	if (!boardArmed && rxData[0] > 1800 && rxData[1] < 200 && rxData[2] < 200 && rxData[3] < 200)
+
+	if ( (!boardArmed) && (trueRcCommandF[YAW] > 0.95f) && (trueRcCommandF[THROTTLE] < -0.95f) && (trueRcCommandF[PITCH] < -0.95f) && (trueRcCommandF[ROLL] < -0.95f) )
 	{
-		if (InlineMillis() - progTimer > 2000)
+		if ( (InlineMillis() - progTimer) > 2000 )
 			progMode = 1;
 	}
 	else
@@ -421,17 +429,36 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		//Check for vtx data
 		if (copiedBufferData[12] == 0xE0)
 		{
-			vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
-			vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
+			if (vtxRecord.vtxDevice != VTX_DEVICE_NONE)
+			{
+				vtxRequested.vtxBandChannel = VtxSpektrumBandAndChannelToVtxBandChannel( (copiedBufferData[13] >> 5) & 0x07, (copiedBufferData[13] & 0x0F) + 1);
+				VtxChannelToBandAndChannel(vtxRequested.vtxBandChannel, &vtxRequested.vtxBand, &vtxRequested.vtxChannel);
+				vtxRequested.vtxFrequency = VtxBandChannelToFrequency(vtxRequested.vtxBandChannel);
+				//vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
+				//vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
+			}
 
 		}
 
 			  //Check channel slot 7 for vtx power, pit, and region data
 		if (copiedBufferData[14] == 0xE0)
 		{
-			vtxData.vtxPower  = copiedBufferData[15] & 0x03;
-			vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
-			vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
+			if (vtxRecord.vtxDevice != VTX_DEVICE_NONE)
+			{
+				vtxRequested.vtxPower  = (uint32_t)(copiedBufferData[15] & 0x03);
+				vtxRequested.vtxRegion = (uint32_t)((copiedBufferData[15] >> 3) & 0x01);
+				vtxRequested.vtxPit    = (uint32_t)((copiedBufferData[15] >> 4) & 0x01);
+
+				if (vtxRequested.vtxPit == SPEK_VTX_ACTIVE)
+					vtxRequested.vtxPit = VTX_MODE_ACTIVE;
+				else
+					vtxRequested.vtxPit = VTX_MODE_PIT;
+
+				//vtxData.vtxPower  = copiedBufferData[15] & 0x03;
+				//vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
+				//vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
+			}
+
 		}
 
 		if (!spekPhase && mainConfig.telemConfig.telemSpek)
@@ -470,10 +497,11 @@ void ProcessSbusPacket(uint32_t serialNumber)
 	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SBUS_FRAME_SIZE);
 
 	// do we need to hook these into rxData[ChannelMap(i)] ?
-	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) )
+	//if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) )
+	if (frame->syncByte == SBUS_STARTBYTE)
 	{
-		if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
-		{
+		//if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
+		//{
 
 			rx_timeout = 0;
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -511,7 +539,7 @@ void ProcessSbusPacket(uint32_t serialNumber)
 			packetTime = 9;
 			InlineCollectRcCommand();
 			RxUpdate();
-		}
+		//}
 	} else {
 		outOfSync++;
 	}
@@ -799,24 +827,41 @@ inline void InlineCollectRcCommand (void)
 
 static float GetKissMaxRates(float rcCommand, uint32_t axis)
 {
+	uint32_t negative = 0;
 	float kissSetpoint, kissRate, kissGRate, kissUseCurve, kissTempCurve, kissRpyUseRates, kissRxRaw, kissAngle;
+
+	if (rcCommand<0.0f)
+	{
+		rcCommand = -rcCommand;
+		negative  = 1;
+	}
 
 	kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
 	kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis]);
 	kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
 	kissSetpoint = rcCommand;
 
-	kissRpyUseRates = 1.0f - abs(rcCommand) * kissGRate;
+	kissRpyUseRates = 1.0f - ABS(rcCommand) * kissGRate;
 	kissRxRaw       = rcCommand * 1000.0f;
 	kissTempCurve   = (kissRxRaw * kissRxRaw / 1000000.0f);
 	kissSetpoint    = ((kissSetpoint * kissTempCurve) * kissUseCurve + kissSetpoint * (1.0f - kissUseCurve)) * (kissRate / 10.0f);
 	kissAngle       = ((2000.0f * (1.0f / kissRpyUseRates)) * kissSetpoint); //setpoint is calculated directly here
+
+	if (negative)
+		return(-kissAngle);
 	return(kissAngle);
 }
 
 static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 {
+	uint32_t negative = 0;
 	float flopSuperRate, flopRcRate, flopExpo, flopFactor, flopAngle;
+
+	if (rcCommand<0.0f)
+	{
+		rcCommand = -rcCommand;
+		negative  = 1;
+	}
 
 	flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
 	flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
@@ -835,16 +880,19 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 		flopFactor = 1.0f / (InlineConstrainf(1.0f - (ABS(rcCommand) * (flopSuperRate)), 0.01f, 1.00f));
 		flopAngle *= flopFactor; ; //setpoint is calculated directly here
 	}
+	if (negative)
+		return(-flopAngle);
 	return(flopAngle);
 }
 
 //return curved RC command as a percentage of max rate (-1.0 to 1.0)
-inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, float expo, uint32_t axis)
+ float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, float expo, uint32_t axis)
 {
 
+	uint32_t negative = 0;
 	float maxOutput, maxOutputMod, returnValue;
 	float flopSuperRate, flopRcRate, flopExpo, flopFactor, flopAngle;
-	float kissSetpoint, kissRate, kissGRate, kissUseCurve, kissTempCurve, kissRpyUseRates, kissRxRaw, kissAngle;
+	volatile float kissSetpoint, kissRate, kissGRate, kissUseCurve, kissTempCurve, kissRpyUseRates, kissRxRaw, kissAngle;
 
 	maxOutput    = 1.0f;
 	maxOutputMod = 0.01f;
@@ -860,6 +908,14 @@ inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, flo
 			return (returnValue);
 			break;
 		case BETAFLOP_EXPO:
+			if (rcCommand < 0)
+			{
+				rcCommand = -rcCommand;
+				negative  = 1;
+			}
+			if (rcCommand>0.99)
+				rcCommand = 0.99;
+
 			flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
 			flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
 			flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
@@ -878,6 +934,8 @@ inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, flo
 				flopAngle *= flopFactor; ; //setpoint is calculated directly here
 			}
 			returnValue = (flopAngle / maxFlopRate[axis]); //get curved stick position based on percentage of setpoint
+			if (negative)
+				return(-returnValue);
 			return(returnValue);
 			break;
 		case TARANIS_EXPO:
@@ -887,17 +945,20 @@ inline float InlineApplyRcCommandCurve(float rcCommand, uint32_t curveToUse, flo
 			break;
 		case KISS_EXPO:
 		case KISS_EXPO2:
+			if (rcCommand>0.999)
+				rcCommand = 0.999;
+
 			kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
 			kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis]);
 			kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
 			kissSetpoint = rcCommand;
 
-			kissRpyUseRates = 1.0f - abs(rcCommand) * kissGRate;
+			kissRpyUseRates = 1.0f - ABS(rcCommand) * kissGRate;
 			kissRxRaw       = rcCommand * 1000.0f;
 			kissTempCurve   = (kissRxRaw * kissRxRaw / 1000000.0f);
 			kissSetpoint    = ((kissSetpoint * kissTempCurve) * kissUseCurve + kissSetpoint * (1.0f - kissUseCurve)) * (kissRate / 10.0f);
 			kissAngle       = ((2000.0f * (1.0f / kissRpyUseRates)) * kissSetpoint); //setpoint is calculated directly here
-			returnValue = (kissAngle / maxKissRate[axis]); //get curved stick position based on percentage of setpoint
+			returnValue     = (kissAngle / maxKissRate[axis]); //get curved stick position based on percentage of setpoint
 			return(returnValue);
 			break;
 		case NO_EXPO:

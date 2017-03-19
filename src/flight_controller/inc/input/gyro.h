@@ -52,6 +52,9 @@ typedef enum {
     LOOP_UH8,
     LOOP_UH16,
     LOOP_UH32,
+	LOOP_UH_500,
+	LOOP_UH_250,
+	LOOP_UH_062,
 } loopCtrl_e;
 
 void ResetGyroCalibration(void);

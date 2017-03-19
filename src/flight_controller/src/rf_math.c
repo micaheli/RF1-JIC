@@ -96,6 +96,17 @@ inline float InlineConstrainf(float amt, float low, float high)
         return amt;
 }
 
+inline uint32_t InlineConstrainui(uint32_t amt, uint32_t low, uint32_t high)
+{
+    if (amt < low)
+        return low;
+    else if (amt > high)
+        return high;
+    else
+        return amt;
+}
+
+
 inline float Powerf(float base, uint32_t exp)
 {
     float result;

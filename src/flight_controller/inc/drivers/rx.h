@@ -23,6 +23,7 @@ typedef struct {
     uint32_t rxInvertPort;
     uint32_t rxInvertDirection;
     uint32_t bind;
+    uint32_t armMethod;
 } rc_control_config;
 
 typedef struct
@@ -55,6 +56,11 @@ typedef struct
 	rx_calibraation_record rxCalibrationRecord[RX_CHECK_AMOUNT];
 	uint32_t highestDataValue;
 } rx_calibration_records;
+
+enum {
+	ARM_DOUBLE_SINGLE = 0,
+	ARM_DOUBLE_DOUBLE = 1,
+};
 
 //Enumerate the different channels in code. The TX map is not affected by this. This is for internal code only.
 enum {
@@ -107,10 +113,10 @@ enum
 #define USING_SUMD_T           6
 #define USING_IBUS_R           7
 #define USING_IBUS_T           8
-#define USING_CPPM_R           9
-#define USING_CPPM_T           10
-#define USING_DSM2_R           11
-#define USING_DSM2_T           12
+#define USING_DSM2_R           9
+#define USING_DSM2_T           10
+#define USING_CPPM_R           11
+#define USING_CPPM_T           12
 #define USING_SPORT            13
 #define USING_MSP              14
 #define USING_RFVTX            15
@@ -122,6 +128,7 @@ extern volatile float maxFlopRate[];
 extern volatile float maxKissRate[];
 extern volatile uint32_t armBoardAt;
 
+extern volatile uint32_t progMode;
 extern volatile SPM_VTX_DATA vtxData;
 extern volatile uint32_t rx_timeout;
 extern float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position

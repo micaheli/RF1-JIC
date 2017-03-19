@@ -9,15 +9,16 @@ uint32_t setModes;
 
 //also modify the enumeration in modes.h
 string_modes_rec stringModes[] = {
-		{"ARMED",    0,  M_ARMED },
-		{"ATTITUDE", 1,  M_ATTITUDE },
-		{"FAILSAFE", 2,  M_FAILSAFE },
-		{"LOGGING",  3,  M_LOGGING },
-		{"BUZZER",   4,  M_BUZZER },
-		{"LEDMODE",  5,  M_LEDMODE },
-		{"LEDCOLOR", 6,  M_LEDCOLOR },
-		{"DIRECT",   7,  M_DIRECT },
-		{"VTXON",    8,  M_VTXON },
+		{"ARMED",     0,  M_ARMED },
+		{"LEVEL",     1,  M_ATTITUDE },
+		{"ACROLEVEL", 2,  M_HORIZON },
+		{"FAILSAFE",  3,  M_FAILSAFE },
+		{"LOGGING",   4,  M_LOGGING },
+		{"BUZZER",    5,  M_BUZZER },
+		{"LEDMODE",   6,  M_LEDMODE },
+		{"LEDCOLOR",  7,  M_LEDCOLOR },
+		{"DIRECT",    8,  M_DIRECT },
+		{"VTXON",     9,  M_VTXON },
 };
 
 
@@ -89,7 +90,7 @@ void PrintModes(void)
 	uint32_t channel;
 
 
-	sprintf(rf_custom_out_buffer, "#me modes active: %lu", activeModes );
+	sprintf(rf_custom_out_buffer, "#me modes active: %lu\n", activeModes );
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 	for (x=0;x<(sizeof(stringModes)/sizeof(string_modes_rec));x++)
 	{
@@ -101,7 +102,7 @@ void PrintModes(void)
 		else
 			channel += 1;
 
-		sprintf(rf_custom_out_buffer, "modes %s=%lu=%i=%i", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+		sprintf(rf_custom_out_buffer, "modes %s=%lu=%i=%i\n", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
 		RfCustomReplyBuffer(rf_custom_out_buffer);
 		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "modes %s=%d=%d=%d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
 		//RfCustomReply(rf_custom_out_buffer);
@@ -152,7 +153,7 @@ void SetMode(uint32_t modeMask, uint16_t channel, int16_t minRc, int16_t maxRc)
 			else
 				channel += 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d\n", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	}
@@ -273,7 +274,7 @@ void SetupModes(char *modString)
 					channel += 1;
 
 				bzero(rf_custom_out_buffer,RF_BUFFER_SIZE);
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s set to channel %d and range %d to %d\n", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}

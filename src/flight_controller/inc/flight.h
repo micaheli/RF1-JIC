@@ -11,6 +11,7 @@ typedef struct {
 	volatile uint32_t uhohNumber;
 	volatile uint32_t khzDivider;
 	volatile uint32_t gyroDivider;
+	volatile uint32_t fsCount;
 } loop_speed_record;
 
 extern volatile loop_speed_record loopSpeed;
@@ -24,6 +25,7 @@ extern float filteredAccData[];
 
 enum { CALIBRATE_BOARD_FAILED = 0, CALIBRATE_BOARD_UPRIGHT = 1, CALIBRATE_BOARD_INVERTED = 2, };
 
+extern void DeinitFlight(void);
 extern void InitFlight(void);
 extern void ArmBoard(void);
 extern void DisarmBoard(void);

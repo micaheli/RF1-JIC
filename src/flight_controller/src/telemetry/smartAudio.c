@@ -1,171 +1,195 @@
 #include "includes.h"
 
-uint8_t smartAudioRxBuffer[12];
-uint8_t smartAudioTxBuffer[12];
+#define SMART_AUDIO_BUFFER_SIZE 12
 
+uint8_t  smartAudioTxRxBuffer[SMART_AUDIO_BUFFER_SIZE];
 uint32_t smartAudioUsartSerialNumber = 999;
 
-smart_audio_vtx_structure smartAudioVtxStructure;
-uint32_t vtxEnabled = 0;
 
-static uint32_t SmartAudioReceiveBlocking(uint32_t timeoutMs, uint32_t rxAmount);
-static uint8_t ShiftSmartAudioCommand(uint8_t data);
+static uint8_t  ShiftSmartAudioCommand(uint8_t data);
 
-uint32_t InitSmartAudio(uint32_t usartNumber)
+
+uint32_t InitSmartAudio(void)
 {
 
-	uint32_t x;
-
-	if (!mainConfig.telemConfig.telemSmartAudio)
-		return(0);
+	uint32_t usartNumber   = 0;
+	uint32_t usartPinType  = 0;
 
 	if (boardArmed)
 		return(0);
 
-	for (x=0;x<4;x++)
-		rfVtxRxBuffer[x]=0;
-
-	//use manual protocol to setup s.port.
-	board.serials[usartNumber].enabled    = 1;
-	board.serials[usartNumber].Protocol   = USING_SMARTAUDIO;
-
-	board.serials[usartNumber].BaudRate   = 4900;//should be 4800bps 1 Start bit and 2 Stop bit, but the VTX drifts a lot
-	board.serials[usartNumber].WordLength = UART_WORDLENGTH_8B;
-	board.serials[usartNumber].StopBits   = UART_STOPBITS_2;
-	board.serials[usartNumber].Parity     = UART_PARITY_NONE;
-	board.serials[usartNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
-	board.serials[usartNumber].Mode       = UART_MODE_TX_RX;
-
-	board.serials[usartNumber].serialTxInverted = 0;
-	board.serials[usartNumber].serialRxInverted = 0;
-	board.serials[usartNumber].FrameSize = 4;
-	board.serials[usartNumber].Pull = GPIO_PULLDOWN;
-
-	board.dmasSerial[board.serials[usartNumber].TXDma].enabled  = 0;
-	board.dmasSerial[board.serials[usartNumber].RXDma].enabled  = 0;
-
-	board.serials[usartNumber].RXPin  = board.serials[usartNumber].TXPin;
-	board.serials[usartNumber].RXPort = board.serials[usartNumber].TXPort;
-
-	UsartDeInit(usartNumber); //deinits serial and associated pins and DMAs
-	UsartInit(usartNumber); //inits serial and associated pins and DMAs
-
-	smartAudioUsartSerialNumber = usartNumber;
-
-	SmartAudioGetSettingsBlocking(150); //always get settings when initializing
-	DelayMs(20);
-	bzero(&smartAudioVtxStructure, sizeof(smart_audio_vtx_structure));
-	return(SmartAudioGetSettingsBlocking(150)); //always get settings when initializing, do it twice since the first time the VTX talks isn't usually good data.
-
-}
-
-uint32_t TurnOnVtx(void)
-{
-	if (!mainConfig.telemConfig.telemSmartAudio)
-		return(0);
-
-	if (smartAudioUsartSerialNumber == 999)
+	switch(mainConfig.telemConfig.telemSmartAudio)
 	{
-		InitSmartAudio(ENUM_USART3);
-		DelayMs(20);
-		if (SmartAudioSetOpModeBlocking( SM_SET_OPMODE_DIS_PMOR ))
-		{
-			DeInitSmartAudio();
-			return(1);
-		}
-		else
-		{
-			DeInitSmartAudio();
+		case TELEM_SS1W_USART1R:
+			usartNumber  = ENUM_USART1;
+			usartPinType = ENUM_USART_RX_PIN;
+			break;
+		case TELEM_SS1W_USART2R:
+			usartNumber  = ENUM_USART2;
+			usartPinType = ENUM_USART_RX_PIN;
+			break;
+		case TELEM_SS1W_USART3R:
+			usartNumber  = ENUM_USART3;
+			usartPinType = ENUM_USART_RX_PIN;
+			break;
+		case TELEM_SS1W_USART4R:
+			usartNumber  = ENUM_USART4;
+			usartPinType = ENUM_USART_RX_PIN;
+			break;
+		case TELEM_SS1W_USART5R:
+			usartNumber  = ENUM_USART5;
+			usartPinType = ENUM_USART_RX_PIN;
+			break;
+		case TELEM_SS1W_USART6R:
+			usartNumber  = ENUM_USART6;
+			usartPinType = ENUM_USART_RX_PIN;
+			break;
+		case TELEM_SS1W_USART1T:
+			usartNumber  = ENUM_USART1;
+			usartPinType = ENUM_USART_TX_PIN;
+			break;
+		case TELEM_SS1W_USART2T:
+			usartNumber  = ENUM_USART2;
+			usartPinType = ENUM_USART_TX_PIN;
+			break;
+		case TELEM_SS1W_USART3T:
+			usartNumber  = ENUM_USART3;
+			usartPinType = ENUM_USART_TX_PIN;
+			break;
+		case TELEM_SS1W_USART4T:
+			usartNumber  = ENUM_USART4;
+			usartPinType = ENUM_USART_TX_PIN;
+			break;
+		case TELEM_SS1W_USART5T:
+			usartNumber  = ENUM_USART5;
+			usartPinType = ENUM_USART_TX_PIN;
+			break;
+		case TELEM_SS1W_USART6T:
+			usartNumber  = ENUM_USART6;
+			usartPinType = ENUM_USART_TX_PIN;
+			break;
+		default:
 			return(0);
-		}
+			break;
 	}
+
+	if (usartPinType == ENUM_USART_RX_PIN)
+		InitBlockingSoftSerialPort( 4950, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].RXPort, board.serials[usartNumber].RXPin, SERIAL_LSB, TBS_HANDLING_ON );
 	else
-	{
-		if (SmartAudioSetOpModeBlocking( SM_SET_OPMODE_DIS_PMOR ))
-		{
-			DeInitSmartAudio();
-			return(1);
-		}
-		else
-		{
-			DeInitSmartAudio();
-			return(0);
-		}
-	}
-}
+		InitBlockingSoftSerialPort( 4950, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].TXPort, board.serials[usartNumber].TXPin, SERIAL_LSB, TBS_HANDLING_ON );
 
-/*
-  	VTX_CH_A1 = 0,
-	VTX_CH_A2 = 1,
-	VTX_CH_A3 = 2,
-	VTX_CH_A4 = 3,
-	VTX_CH_A5 = 4,
-	VTX_CH_A6 = 5,
-	VTX_CH_A7 = 6,
-	VTX_CH_A8 = 7,
-	VTX_CH_B1 = 8,
-	VTX_CH_B2 = 9,
-	VTX_CH_B3 = 10,
-	VTX_CH_B4 = 11,
-	VTX_CH_B5 = 12,
-	VTX_CH_B6 = 13,
-	VTX_CH_B7 = 14,
-	VTX_CH_B8 = 15,
-	VTX_CH_E1 = 16,
-	VTX_CH_E2 = 17,
-	VTX_CH_E3 = 18,
-	VTX_CH_E4 = 19,
-	VTX_CH_E5 = 20,
-	VTX_CH_E6 = 21,
-	VTX_CH_E7 = 22,
-	VTX_CH_E8 = 23,
-	VTX_CH_F1 = 24,
-	VTX_CH_F2 = 25,
-	VTX_CH_F3 = 26,
-	VTX_CH_F4 = 27,
-	VTX_CH_F5 = 28,
-	VTX_CH_F6 = 29,
-	VTX_CH_F7 = 30,
-	VTX_CH_F8 = 31,
-	VTX_CH_R1 = 32,
-	VTX_CH_R2 = 33,
-	VTX_CH_R3 = 34,
-	VTX_CH_R4 = 35,
-	VTX_CH_R5 = 36,
-	VTX_CH_R6 = 37,
-	VTX_CH_R7 = 38,
-	VTX_CH_R8 = 39,
- */
-uint32_t SpektrumBandAndChannelToChannel(VTX_BAND vtxBand, uint8_t channel)
-{
-	switch(vtxBand)
-	{
-		case VTX_BAND_A:
-			return((uint32_t)channel);
-			break;
-		case VTX_BAND_B:
-			return((uint32_t)channel+(uint32_t)7);
-			break;
-		case VTX_BAND_E:
-			return((uint32_t)channel+(uint32_t)15);
-			break;
-		case VTX_BAND_FATSHARK:
-			return((uint32_t)channel+(uint32_t)23);
-			break;
-		case VTX_BAND_RACEBAND:
-			return((uint32_t)channel+(uint32_t)31);
-			break;
-	}
-	return(0);
+	return( SmartAudioGetSettings() );
 }
 
 void DeInitSmartAudio(void)
 {
-	if (smartAudioUsartSerialNumber != 999)
+	DeInitBlockingSoftSerialPort();
+}
+
+uint32_t CheckSmartAudioRxCrc(uint8_t buffer[], uint32_t bufferSize)
+{
+	uint32_t returnLength;
+	uint32_t crcReturned;
+
+	if(bufferSize)
 	{
-		UsartDeInit(smartAudioUsartSerialNumber);
-		smartAudioUsartSerialNumber = 999;
+		if (bufferSize > 3)
+			returnLength = buffer[3];
+		else
+			return(0);
+
+		if (bufferSize > (3+returnLength))
+			crcReturned = buffer[3+returnLength];
+		else
+			return(0);
+
 	}
+	else
+	{
+		return(0);
+	}
+
+	if ( SmCrc8(&buffer[2], 1+returnLength) == crcReturned )
+		return(1);
+	else
+		return(0);
+}
+
+uint32_t SmartAudioVtxTurnOn(void)
+{
+
+	uint32_t rxBufferCount;
+	uint32_t tries;
+
+	//add retry
+	if (!vtxRecord.vtxDevice)
+	{
+		if (!SmartAudioGetSettings())
+			return(0);
+	}
+
+	//fill buffer
+	smartAudioTxRxBuffer[0] = SM_START_CODE1;
+	smartAudioTxRxBuffer[1] = SM_START_CODE2;
+	smartAudioTxRxBuffer[2] = ShiftSmartAudioCommand(SM_SET_OPERATION_MODE);
+	smartAudioTxRxBuffer[3] = 0x01;
+	smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_DIS_PMOR;
+	smartAudioTxRxBuffer[5] = SmCrc8(smartAudioTxRxBuffer, 5);
+
+	//warning blocking code
+	for (tries=3;tries>0;tries--)
+	{
+		SendSoftSerialBlocking(smartAudioTxRxBuffer, 6, 50);
+		DelayMs(2); //important
+		rxBufferCount = 0;
+		rxBufferCount = ReceiveSoftSerialBlocking(smartAudioTxRxBuffer, &rxBufferCount, 150);
+
+		if ( CheckSmartAudioRxCrc(smartAudioTxRxBuffer, rxBufferCount) )
+		{
+			vtxRecord.vtxPit = VTX_MODE_ACTIVE;
+			return(1);
+		}
+	}
+
+	return(0);
+}
+
+uint32_t SmartAudioVtxTurnPit(void)
+{
+
+	uint32_t rxBufferCount;
+	uint32_t tries;
+
+	if (!vtxRecord.vtxDevice)
+	{
+		if (!SmartAudioGetSettings())
+			return(0);
+	}
+
+	//fill buffer
+	smartAudioTxRxBuffer[0] = SM_START_CODE1;
+	smartAudioTxRxBuffer[1] = SM_START_CODE2;
+	smartAudioTxRxBuffer[2] = ShiftSmartAudioCommand(SM_SET_OPERATION_MODE);
+	smartAudioTxRxBuffer[3] = 0x01;
+	smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_PMOR;
+	smartAudioTxRxBuffer[5] = SmCrc8(smartAudioTxRxBuffer, 5);
+
+	//warning blocking code
+	for (tries=3;tries>0;tries--)
+	{
+		SendSoftSerialBlocking(smartAudioTxRxBuffer, 6, 50);
+		DelayMs(2); //important
+		rxBufferCount = 0;
+		rxBufferCount = ReceiveSoftSerialBlocking(smartAudioTxRxBuffer, &rxBufferCount, 150);
+
+		if ( CheckSmartAudioRxCrc(smartAudioTxRxBuffer, rxBufferCount) )
+		{
+			vtxRecord.vtxPit = VTX_MODE_ACTIVE;
+			return(1);
+		}
+	}
+
+	return(0);
 }
 
 static uint8_t ShiftSmartAudioCommand(uint8_t data)
@@ -173,156 +197,91 @@ static uint8_t ShiftSmartAudioCommand(uint8_t data)
 	return( ((data) << 1) | 1 );
 }
 
-static uint32_t SmartAudioReceiveBlocking(uint32_t timeoutMs, uint32_t rxAmount)
+
+uint32_t SmartAudioGetSettings(void)
 {
-	uint8_t crcCheck;
-	uint8_t crcReturned;
-	uint8_t returnLength;
+
+	uint32_t rxBufferCount;
+	uint32_t tries;
 
 	if (boardArmed)
 		return(0);
 
-	bzero(smartAudioRxBuffer, sizeof(smartAudioRxBuffer));
 
-	if(HAL_UART_Receive(&uartHandles[board.serials[smartAudioUsartSerialNumber].usartHandle], (uint8_t *)smartAudioRxBuffer, rxAmount, timeoutMs) != HAL_OK)
+	//fill buffer
+	rxBufferCount = 5;
+	smartAudioTxRxBuffer[0] = SM_START_CODE1;
+	smartAudioTxRxBuffer[1] = SM_START_CODE2;
+	smartAudioTxRxBuffer[2] = ShiftSmartAudioCommand(SM_GET_SETTINGS);
+	smartAudioTxRxBuffer[3] = 0x00;
+	smartAudioTxRxBuffer[4] = SmCrc8(smartAudioTxRxBuffer, 4);
+
+	SendSoftSerialBlocking(smartAudioTxRxBuffer, rxBufferCount, 50);
+	DelayMs(2);
+	rxBufferCount = 0;
+	rxBufferCount = ReceiveSoftSerialBlocking(smartAudioTxRxBuffer, &rxBufferCount, 150);
+
+	for (tries=4;tries>0;tries--)
 	{
-		returnLength = smartAudioRxBuffer[4];
-
-		if ( (returnLength > 0) && (returnLength < 7) )
+		if ( CheckSmartAudioRxCrc(smartAudioTxRxBuffer, rxBufferCount) )
 		{
-			crcReturned = smartAudioRxBuffer[4+returnLength];
+			if (smartAudioTxRxBuffer[2] == SM_VERSION_1)
+			{
+				vtxRecord.vtxDevice = VTX_DEVICE_SMARTV1;
+			}
+			else if (smartAudioTxRxBuffer[2] == SM_VERSION_2)
+			{
+				vtxRecord.vtxDevice = VTX_DEVICE_SMARTV2;
+			}
+
+			//set vtxBandChannel (0 through 39)
+			vtxRecord.vtxBandChannel = smartAudioTxRxBuffer[4];
+			//set vtxBand and vtxChannel (A,1 through R,8)
+			VtxChannelToBandAndChannel(vtxRecord.vtxBandChannel, &vtxRecord.vtxBand, &vtxRecord.vtxChannel);
+			//set vtxFreqency from band and channel
+			vtxRecord.vtxFrequency = VtxBandChannelToFrequency(vtxRecord.vtxBandChannel);
+			//set vtx power
+			vtxRecord.vtxPower    = smartAudioTxRxBuffer[5];
+			//no region info, assume US:
+			vtxRecord.vtxRegion   = VTX_REGION_US;
+
+			//VTX in pit mode or active?
+			if ( BITMASK_CHECK(smartAudioTxRxBuffer[6], SM_OPMODE_PM) )
+			{
+				vtxRecord.vtxPit = VTX_MODE_ACTIVE;
+			}
+			else
+			{
+				vtxRecord.vtxPit = VTX_MODE_PIT;
+			}
+
+			//not used right now, set frequency dependant from bands
+			//vtxRecord.vtxFrequency = ((smartAudioTxRxBuffer[8] << 8) | smartAudioTxRxBuffer[9]);
+
+			return(1);
 		}
-		else
-		{
-			return(0);
-		}
-
-	}
-	else
-	{
-		returnLength = smartAudioRxBuffer[4];
-
-		if ( (returnLength > 0) && (returnLength < 7) )
-		{
-			crcReturned = smartAudioRxBuffer[4+returnLength];
-		}
-	}
-
-	crcCheck = SmCrc8(&smartAudioRxBuffer[3], 1+returnLength);
-
-	if (crcCheck == crcReturned)
-	{
-		return(1);
 	}
 
 	return(0);
 }
 
-uint32_t SmartAudioSetOpModeBlocking(uint32_t mask)
+uint32_t SmartAudioVtxPower(uint32_t powerLevel)
 {
+	uint32_t rxBufferCount;
+	uint32_t powerNumber;
+	uint32_t tries;
 
-	uint32_t timeoutMs = 150;
-
-	if (boardArmed)
-		return(0);
-
-	if (smartAudioUsartSerialNumber == 999)
+	if (!vtxRecord.vtxDevice)
 	{
-		if (InitSmartAudio(ENUM_USART3))
-			DelayMs(20);
-		else
-			return(0);
-	}
-
-	smartAudioTxBuffer[0] = 0x00;
-	smartAudioTxBuffer[1] = SM_START_CODE1;
-	smartAudioTxBuffer[2] = SM_START_CODE2;
-	smartAudioTxBuffer[3] = ShiftSmartAudioCommand(SM_SET_OPERATION_MODE);
-	smartAudioTxBuffer[4] = 0x01;
-	smartAudioTxBuffer[5] = (uint8_t)mask;
-	smartAudioTxBuffer[6] = SmCrc8(&smartAudioTxBuffer[1], 5);
-
-	if(HAL_UART_Transmit(&uartHandles[board.serials[smartAudioUsartSerialNumber].usartHandle], (uint8_t*)smartAudioTxBuffer, 7, timeoutMs)!= HAL_OK)
-	{
-		return(0);
-	}
-
-	DelayMs(20);
-
-	if ( SmartAudioReceiveBlocking(timeoutMs, 8) )
-	{
-		smartAudioVtxStructure.opMode = (uint8_t)mask;
-		return(1);
-	}
-
-	return(0);
-}
-
-uint32_t SmartAudioGetSettingsBlocking(uint32_t timeoutMs)
-{
-
-	if (boardArmed)
-		return(0);
-
-	if (smartAudioUsartSerialNumber == 999)
-	{
-		if (InitSmartAudio(ENUM_USART3))
-			DelayMs(20);
-		else
-			return(0);
-	}
-
-	smartAudioTxBuffer[0] = 0x00;
-	smartAudioTxBuffer[1] = SM_START_CODE1;
-	smartAudioTxBuffer[2] = SM_START_CODE2;
-	smartAudioTxBuffer[3] = ShiftSmartAudioCommand(SM_GET_SETTINGS);
-	smartAudioTxBuffer[4] = 0x00;
-	smartAudioTxBuffer[5] = SmCrc8(&smartAudioTxBuffer[1], 4);
-
-	if(HAL_UART_Transmit(&uartHandles[board.serials[smartAudioUsartSerialNumber].usartHandle], (uint8_t*)smartAudioTxBuffer, 6, timeoutMs)!= HAL_OK)
-	{
-		return(0);
-	}
-
-	DelayMs(20);
-
-	if ( SmartAudioReceiveBlocking(timeoutMs, 11) )
-	{
-		smartAudioVtxStructure.version    = smartAudioRxBuffer[3];
-		smartAudioVtxStructure.channel    = smartAudioRxBuffer[5];
-		smartAudioVtxStructure.powerLevel = smartAudioRxBuffer[6];
-		smartAudioVtxStructure.opMode     = smartAudioRxBuffer[7];
-		smartAudioVtxStructure.frequency  = ((smartAudioRxBuffer[8] << 8) | smartAudioRxBuffer[9]);
-		return(1);
-	}
-
-	return(0);
-
-}
-
-uint32_t SmartAudioSetPowerBlocking(uint32_t powerLevel)
-{
-
-	uint32_t timeoutMs = 150;
-	uint8_t powerNumber;
-
-
-	if (boardArmed)
-		return(0);
-
-	if (smartAudioUsartSerialNumber == 999)
-	{
-		if (InitSmartAudio(ENUM_USART3))
-			DelayMs(20);
-		else
+		if (!SmartAudioGetSettings())
 			return(0);
 	}
 
 	powerNumber = 99;
 
-	switch(smartAudioVtxStructure.version)
+	switch(vtxRecord.vtxDevice)
 	{
-		case 0x01:
+		case VTX_DEVICE_SMARTV1:
 			switch(powerLevel)
 			{
 				case VTX_POWER_025MW:
@@ -339,7 +298,7 @@ uint32_t SmartAudioSetPowerBlocking(uint32_t powerLevel)
 					break;
 			}
 			break;
-		case 0x09:
+		case VTX_DEVICE_SMARTV2:
 			switch(powerLevel)
 			{
 				case VTX_POWER_025MW:
@@ -358,194 +317,101 @@ uint32_t SmartAudioSetPowerBlocking(uint32_t powerLevel)
 			break;
 	}
 
-	if (powerNumber != 99)
+	if (powerNumber == 99)
 	{
-		smartAudioTxBuffer[0] = 0x00;
-		smartAudioTxBuffer[1] = SM_START_CODE1;
-		smartAudioTxBuffer[2] = SM_START_CODE2;
-		smartAudioTxBuffer[3] = ShiftSmartAudioCommand(SM_SET_POWER);
-		smartAudioTxBuffer[4] = 0x01;
-		smartAudioTxBuffer[5] = (uint8_t)powerNumber;
-		smartAudioTxBuffer[6] = SmCrc8(&smartAudioTxBuffer[1], 5);
+		return(0);
+	}
 
-		if(HAL_UART_Transmit(&uartHandles[board.serials[smartAudioUsartSerialNumber].usartHandle], (uint8_t*)smartAudioTxBuffer, 7, timeoutMs)!= HAL_OK)
+	//fill buffer
+	smartAudioTxRxBuffer[0] = SM_START_CODE1;
+	smartAudioTxRxBuffer[1] = SM_START_CODE2;
+	smartAudioTxRxBuffer[2] = ShiftSmartAudioCommand(SM_SET_POWER);
+	smartAudioTxRxBuffer[3] = 0x01;
+	smartAudioTxRxBuffer[4] = (uint8_t)powerNumber;
+	smartAudioTxRxBuffer[5] = SmCrc8(smartAudioTxRxBuffer, 5);
+
+	//warning blocking code
+	for (tries=4;tries>0;tries--)
+	{
+		SendSoftSerialBlocking(smartAudioTxRxBuffer, 6, 50);
+		DelayMs(2); //important
+		rxBufferCount = 0;
+		rxBufferCount = ReceiveSoftSerialBlocking(smartAudioTxRxBuffer, &rxBufferCount, 150);
+
+		if ( CheckSmartAudioRxCrc(smartAudioTxRxBuffer, rxBufferCount) )
 		{
-			return(0);
-		}
-
-		DelayMs(20);
-
-		if ( SmartAudioReceiveBlocking(timeoutMs, 8) )
-		{
-			smartAudioVtxStructure.powerLevel = (uint8_t)powerNumber;
+			vtxRecord.vtxPower = powerLevel;
 			return(1);
 		}
-
 	}
-
 	return(0);
+
 }
 
-uint32_t SmartAudioSetChannelBlocking(uint32_t channel)
+uint32_t SmartAudioVtxBandChannel(uint32_t bandChannel)
 {
 
-	uint32_t timeoutMs = 150;
+	uint32_t rxBufferCount;
+	uint32_t tries;
 
-	if (boardArmed)
-		return(0);
-
-	if (smartAudioUsartSerialNumber == 999)
+	if (!vtxRecord.vtxDevice)
 	{
-		if (InitSmartAudio(ENUM_USART3))
-			DelayMs(20);
-		else
+		if (!SmartAudioGetSettings())
 			return(0);
 	}
 
-	smartAudioTxBuffer[0] = 0x00;
-	smartAudioTxBuffer[1] = SM_START_CODE1;
-	smartAudioTxBuffer[2] = SM_START_CODE2;
-	smartAudioTxBuffer[3] = ShiftSmartAudioCommand(SM_SET_CHANNEL);
-	smartAudioTxBuffer[4] = 0x01;
-	smartAudioTxBuffer[5] = (uint8_t)channel;
-	smartAudioTxBuffer[6] = SmCrc8(&smartAudioTxBuffer[1], 5);
+	//fill buffer
+	smartAudioTxRxBuffer[0] = SM_START_CODE1;
+	smartAudioTxRxBuffer[1] = SM_START_CODE2;
+	smartAudioTxRxBuffer[2] = ShiftSmartAudioCommand(SM_SET_CHANNEL);
+	smartAudioTxRxBuffer[3] = 0x01;
+	smartAudioTxRxBuffer[4] = (uint8_t)bandChannel;
+	smartAudioTxRxBuffer[5] = SmCrc8(smartAudioTxRxBuffer, 5);
 
-	if(HAL_UART_Transmit(&uartHandles[board.serials[smartAudioUsartSerialNumber].usartHandle], (uint8_t*)smartAudioTxBuffer, 7, timeoutMs)!= HAL_OK)
+	//warning blocking code
+	for (tries=4;tries>0;tries--)
 	{
-		return(0);
-	}
+		SendSoftSerialBlocking(smartAudioTxRxBuffer, 6, 50);
+		DelayMs(2); //important
+		rxBufferCount = 0;
+		rxBufferCount = ReceiveSoftSerialBlocking(smartAudioTxRxBuffer, &rxBufferCount, 150);
 
-	DelayMs(20);
-
-	if ( SmartAudioReceiveBlocking(timeoutMs, 8) )
-	{
-		smartAudioVtxStructure.channel = (uint8_t)channel;
-		return(1);
+		if ( CheckSmartAudioRxCrc(smartAudioTxRxBuffer, rxBufferCount) )
+		{
+			vtxRecord.vtxBandChannel = bandChannel;
+			VtxChannelToBandAndChannel(vtxRecord.vtxBandChannel, &vtxRecord.vtxBand, &vtxRecord.vtxChannel);
+			vtxRecord.vtxFrequency = VtxBandChannelToFrequency(vtxRecord.vtxBandChannel);
+			return(1);
+		}
 	}
 
 	return(0);
+
 }
 
 /*
-uint32_t RfVtxOff(void)
-{
-	vtxOutPacket[0] = 0x55;
-	vtxOutPacket[1] = 0xAA;
-	vtxOutPacket[2] = 0x03;
-	vtxOutPacket[3] = 0x00;
-	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
-	{
-		if ( board.serials[serialNumber].enabled )
-		{
-			if (board.serials[serialNumber].Protocol == USING_RFVTX)
-			{
-				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)vtxOutPacket, 4);
-				return(1);
-			}
-		}
-	}
-	return(0);
-}
+	//use manual protocol to setup s.port.
+	board.serials[usartNumber].enabled    = 1;
+	board.serials[usartNumber].Protocol   = USING_SMARTAUDIO;
 
-uint32_t RfVtxBaud(void)
-{
-	vtxOutPacket[0] = 0x55;
-	vtxOutPacket[1] = 0xAA;
-	vtxOutPacket[2] = 0x04;
-	vtxOutPacket[3] = 0x01;
-	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
-	{
-		if ( board.serials[serialNumber].enabled )
-		{
-			if (board.serials[serialNumber].Protocol == USING_RFVTX)
-			{
-				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)vtxOutPacket, 4);
-				return(1);
-			}
-		}
-	}
-	return(0);
-}
+	board.serials[usartNumber].BaudRate   = 4900;//should be 4800bpsï¿½1ï¿½Startï¿½bitï¿½andï¿½2ï¿½Stopï¿½bit, but the VTX drifts a lot
+	board.serials[usartNumber].WordLength = UART_WORDLENGTH_8B;
+	board.serials[usartNumber].StopBits   = UART_STOPBITS_2;
+	board.serials[usartNumber].Parity     = UART_PARITY_NONE;
+	board.serials[usartNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
+	board.serials[usartNumber].Mode       = UART_MODE_TX_RX;
 
+	board.serials[usartNumber].serialTxInverted = 0;
+	board.serials[usartNumber].serialRxInverted = 0;
+	board.serials[usartNumber].FrameSize = 4;
+	board.serials[usartNumber].Pull = GPIO_PULLDOWN;
 
-uint32_t RfVtxOn25(void)
-{
-	vtxOutPacket[0] = 0x55;
-	vtxOutPacket[1] = 0xAA;
-	vtxOutPacket[2] = 0x03;
-	vtxOutPacket[3] = 0x01;
-	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
-	{
-		if ( board.serials[serialNumber].enabled )
-		{
-			if (board.serials[serialNumber].Protocol == USING_RFVTX)
-			{
-				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)vtxOutPacket, 4);
-				return(1);
-			}
-		}
-	}
-	return(0);
-}
+	board.dmasSerial[board.serials[usartNumber].TXDma].enabled  = 0;
+	board.dmasSerial[board.serials[usartNumber].RXDma].enabled  = 0;
 
-uint32_t RfVtxOn200(void)
-{
-	vtxOutPacket[0] = 0x55;
-	vtxOutPacket[1] = 0xAA;
-	vtxOutPacket[2] = 0x03;
-	vtxOutPacket[3] = 0x02;
-	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
-	{
-		if ( board.serials[serialNumber].enabled )
-		{
-			if (board.serials[serialNumber].Protocol == USING_RFVTX)
-			{
-				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)vtxOutPacket, 4);
-				return(1);
-			}
-		}
-	}
-	return(0);
-}
+	board.serials[usartNumber].RXPin  = board.serials[usartNumber].TXPin;
+	board.serials[usartNumber].RXPort = board.serials[usartNumber].TXPort;
 
-
-uint32_t RfVtxBand(uint32_t band)
-{
-	vtxOutPacket[0] = 0x55;
-	vtxOutPacket[1] = 0xAA;
-	vtxOutPacket[2] = 0x01;
-	vtxOutPacket[3] = (uint8_t)band;
-	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
-	{
-		if ( board.serials[serialNumber].enabled )
-		{
-			if (board.serials[serialNumber].Protocol == USING_RFVTX)
-			{
-				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)vtxOutPacket, 4);
-				return(1);
-			}
-		}
-	}
-	return(0);
-}
-
-uint32_t RfVtxChannel(uint32_t channel)
-{
-	vtxOutPacket[0] = 0x55;
-	vtxOutPacket[1] = 0xAA;
-	vtxOutPacket[2] = 0x02;
-	vtxOutPacket[3] = (uint8_t)channel;
-	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
-	{
-		if ( board.serials[serialNumber].enabled )
-		{
-			if (board.serials[serialNumber].Protocol == USING_RFVTX)
-			{
-				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)vtxOutPacket, 4);
-				return(1);
-			}
-		}
-	}
-	return(0);
-}
+	UsartDeInit(usartNumber); //deinits serial and associated pins and DMAs
+	UsartInit(usartNumber);   //inits serial and associated pins and DMAs
 */

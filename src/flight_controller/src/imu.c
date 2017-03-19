@@ -190,6 +190,9 @@ void UpdateAttitudeFrameQuat(float gyroRollDiffRads, float gyroPitchDiffRads, fl
 	gyroPitchDiffRads = InlineDegreesToRadians( gyroPitchDiffRads ) * loopSpeed.gyrodT;
 	gyroYawDiffRads   = InlineDegreesToRadians( gyroYawDiffRads )   * loopSpeed.gyrodT;
 
+	if (isnan(gyroRollDiffRads) || isnan(gyroPitchDiffRads) || isnan(gyroYawDiffRads))
+		return;
+
 	attitudeFrameQuat.w += (-tempQuat.x * gyroRollDiffRads  - tempQuat.y * gyroPitchDiffRads - tempQuat.z * gyroYawDiffRads);
 	attitudeFrameQuat.x += (tempQuat.w  * gyroRollDiffRads  + tempQuat.y * gyroYawDiffRads   - tempQuat.z * gyroPitchDiffRads);
 	attitudeFrameQuat.y += (tempQuat.w  * gyroPitchDiffRads - tempQuat.x * gyroYawDiffRads   + tempQuat.z * gyroRollDiffRads);
@@ -203,6 +206,7 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 
 	gyroPitch = -gyroPitch;
 	gyroYaw   = -gyroYaw;
+
 
 	float accTrust;
 	float accTrustKi = 112.1000f;
@@ -234,31 +238,31 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 			accY *= norm;
 			accZ *= norm;
 
-			accToGyroError[ACCX] += (accY * rotationalMatrix[2][2] - accZ * rotationalMatrix[2][1]);
-			accToGyroError[ACCY] += (accZ * rotationalMatrix[2][0] - accX * rotationalMatrix[2][2]);
-			accToGyroError[ACCZ] += (accX * rotationalMatrix[2][1] - accY * rotationalMatrix[2][0]);
+			//if (currentSpinRate < MAX_SPIN_RATE_RAD)
+			//{
+				accToGyroError[ACCX] += (accY * rotationalMatrix[2][2] - accZ * rotationalMatrix[2][1]);
+				accToGyroError[ACCY] += (accZ * rotationalMatrix[2][0] - accX * rotationalMatrix[2][2]);
+				accToGyroError[ACCZ] += (accX * rotationalMatrix[2][1] - accY * rotationalMatrix[2][0]);
 
-			if (currentSpinRate < MAX_SPIN_RATE_RAD)
-			{
-				accTrustKiStorage[ACCX] += accTrustKi * accToGyroError[ACCX] * loopSpeed.gyrodT;
-				accTrustKiStorage[ACCY] += accTrustKi * accToGyroError[ACCY] * loopSpeed.gyrodT;
-				accTrustKiStorage[ACCZ] += accTrustKi * accToGyroError[ACCZ] * loopSpeed.gyrodT;
-			}
+				//accTrustKiStorage[ACCX] += accTrustKi * accToGyroError[ACCX] * loopSpeed.gyrodT;
+				//accTrustKiStorage[ACCY] += accTrustKi * accToGyroError[ACCY] * loopSpeed.gyrodT;
+				//accTrustKiStorage[ACCZ] += accTrustKi * accToGyroError[ACCZ] * loopSpeed.gyrodT;
 
-			//trust ACCs more when the quad is disamred.
-			if (boardArmed)
-			{
-				accTrust  = 11.13000f;
-			}
-			else
-			{
-				accTrust  = 4000.3000f;
-			}
+				//trust ACCs more when the quad is disamred.
+				if (boardArmed)
+				{
+					accTrust  = 40.13000f;
+				}
+				else
+				{
+					accTrust  = 8111.3000f;
+				}
 
-			gyroRoll  += accTrust * accToGyroError[ACCX] + accTrustKiStorage[ACCX];
-			gyroPitch += accTrust * accToGyroError[ACCY] + accTrustKiStorage[ACCY];
-			gyroYaw   += accTrust * accToGyroError[ACCZ] + accTrustKiStorage[ACCZ];
+				gyroRoll  += accTrust * accToGyroError[ACCX] + accTrustKiStorage[ACCX];
+				gyroPitch += accTrust * accToGyroError[ACCY] + accTrustKiStorage[ACCY];
+				gyroYaw   += accTrust * accToGyroError[ACCZ] + accTrustKiStorage[ACCZ];
 
+			//}
 		}
 
 	}

@@ -31,7 +31,7 @@ void DeInitActuators(void)  {
 void InitActuators(void) {
 
 	float disarmUs;    // shortest pulse width (disarmed)
-	float disarmUs3d;    // shortest pulse width (disarmed)
+	float disarmUs3d;  // shortest pulse width (disarmed)
 	float calibrateUs; // shortest pulse width (calibrate)
 	float walledUs;    // longest pulse width (full throttle)
 	float idleUs;      // idle pulse width (armed, zero throttle)
@@ -39,12 +39,12 @@ void InitActuators(void) {
 	uint32_t outputNumber;
 
 	// timerHz *must* be a proper divisor of the timer frequency
-	//     REVOLT - 48 MHz (overclocked from 42 MHz)
+	// REVOLT - 48 MHz (overclocked from 42 MHz)
 	uint32_t timerHz; // frequency of the timer
 	uint32_t pwmHz;   // max update frequency for protocol
 	uint32_t walledPulseValue;
 
-	switch (mainConfig.mixerConfig.escProtcol) {
+	switch (mainConfig.mixerConfig.escProtocol) {
 		case ESC_PWM:
 			disarmUs3d  = 1500;
 			disarmUs    = 990;
@@ -71,6 +71,7 @@ void InitActuators(void) {
 		case ESC_DSHOT150:
 		case ESC_DSHOT300:
 		case ESC_DSHOT600:
+		case ESC_DSHOT1200:
 			disarmUs    = 0;
 			calibrateUs = 0;
 			walledUs    = 2000;
@@ -81,7 +82,7 @@ void InitActuators(void) {
 			idlePulseValue   = 48;
 			walledPulseValue = 2048;
 			pulseValueRange  = 2000;
-			InitDshotOutputOnMotors(mainConfig.mixerConfig.escProtcol);
+			InitDshotOutputOnMotors(mainConfig.mixerConfig.escProtocol);
 			return;
 			break;
 		case ESC_MULTISHOT25:
@@ -301,7 +302,7 @@ void ZeroActuators(uint32_t delayUs)
 	uint32_t outputNumber;
 	uint8_t serialOutBuffer[2];
 
-	if ( (mainConfig.mixerConfig.escProtcol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT150) )
+	if ( (mainConfig.mixerConfig.escProtocol != ESC_DSHOT1200) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT150) )
 		__disable_irq();
 
 	for (uint32_t motorNum=0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
@@ -309,7 +310,7 @@ void ZeroActuators(uint32_t delayUs)
 		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
 		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 		{
-			if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) )
+			if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) )
 			{
 				ThrottleToDshot(serialOutBuffer, 0, 0);
 				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
@@ -327,7 +328,7 @@ void ZeroActuators(uint32_t delayUs)
 	if (delayUs)
 		simpleDelay_ASM(delayUs);
 
-	if ( (mainConfig.mixerConfig.escProtcol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtcol != ESC_DSHOT150) )
+	if ( (mainConfig.mixerConfig.escProtocol != ESC_DSHOT1200) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT150) )
 		__enable_irq();
 
 }

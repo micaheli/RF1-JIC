@@ -1,11 +1,9 @@
 #include "includes.h"
 
 
-//extern uartPort_t *spektrumUart;
-//#define SRXLTELEM_PACKET_LEN 21
+
 STR_SRXL_TELEM telemetry;
 STR_SRXL_BIND bind;
-
 uint8_t spektrumTxBuffer[20];
 
 extern STRU_TELE_LAPTIMER lap_timer;
@@ -15,12 +13,42 @@ DMA_InitTypeDef DMA_InitStructure;
 uint8_t dma_count;
 TELEMETRY_STATE telemetryState = TELEM_START;
 UN_TELEMETRY sensorData;
-extern uint32_t progMode;
+pidSpektrumTelem_t pidSpektrumTelem;
 
 #define UINT16_ENDIAN(a)  (((a) >> 8) | ((a) << 8) )
 
+
+
+
 void InitSpektrumTelemetry(void) {
+	pidSpektrumTelem.row = 2;
+	pidSpektrumTelem.status = IDLE;
+
+
 	return;
+}
+
+uint32_t VtxSpektrumBandAndChannelToVtxBandChannel(VTX_BAND vtxBand, uint8_t channel)
+{
+	switch(vtxBand)
+	{
+		case SPEK_VTX_BAND_A:
+			return((uint32_t)channel-1);
+			break;
+		case SPEK_VTX_BAND_B:
+			return((uint32_t)channel+(uint32_t)7);
+			break;
+		case SPEK_VTX_BAND_E:
+			return((uint32_t)channel+(uint32_t)15);
+			break;
+		case SPEK_VTX_BAND_FATSHARK:
+			return((uint32_t)channel+(uint32_t)23);
+			break;
+		case SPEK_VTX_BAND_RACEBAND:
+			return((uint32_t)channel+(uint32_t)31);
+			break;
+	}
+	return(0);
 }
 
 void sendSpektrumTelem(void)
@@ -84,16 +112,16 @@ void sendSpektrumTelem(void)
 				{
 				case 0:
 					{
-					/*
+
 						sensorData.fpMAH.identifier = TELE_DEVICE_FP_MAH;
 						sensorData.fpMAH.sID = 0;
-						sensorData.fpMAH.current_A = amperage / 10;
-						sensorData.fpMAH.chargeUsed_A = mAhDrawn;
+						sensorData.fpMAH.current_A = (uint16_t)(adcCurrent / 10);
+						sensorData.fpMAH.chargeUsed_A = (uint16_t)adcMAh;
 						sensorData.fpMAH.temp_A = 0x7FFF;
 						sensorData.fpMAH.current_B = 0x7FFF;
 						sensorData.fpMAH.chargeUsed_B = 0x7FFF;
 						sensorData.fpMAH.temp_B = 0x7FFF;
-						*/
+
 						break;
 					}
 				case 1:
@@ -239,21 +267,15 @@ uint16_t srxlCrc16(uint16_t crc, uint8_t data, uint16_t poly)
 }
 
 
-int32_t row;
-int32_t column;
-int32_t columnAxis;
-int32_t vStickStatus;
-int32_t hStickStatus;
-float dataInc;
+
+float dataInc = 0;
+
 #define ROW_MAX 8
 #define COLUMN_MAX 1
+#define MAX_MENUS 6
 
-uint32_t toggleTime;
-uint32_t blinkTime;
-uint32_t currentTime;
-
-char stringArray[9][12];
-char axisTable[3][12] = { "Yaw", "Roll", "Pitch" };
+char stringArray[9][15];
+char axisTable[7][15] = { "Yaw PIDs", "Roll PIDs", "Pitch PIDs", "Yaw Rate", "Roll Rate", "Pitch Rate", "General" };
 
 char row1[12];
 char row2[12];
@@ -267,144 +289,274 @@ char row9[12];
 
 void textMenuUpdate(void)
 {
-	{
-		currentTime = InlineMillis();
 
+	{
+		pidSpektrumTelem.currentTime = InlineMillis();
+
+/*------------------------------------------checking sticks and moving column and row accordingly--------------------------------------------*/
 		if (progMode != 0)
 		{
 			//vertical stick
-			if (rxData[2] > 1224 && vStickStatus != 1)
+			if (rxData[2] > 1224 && pidSpektrumTelem.vStickStatus != 1)
 			{
-				if (column == 0)
-					row--;
+				if (pidSpektrumTelem.column == 0)
+				{
+					pidSpektrumTelem.row--;
+				    //stringArray[row][0] = '>';
+				}
 				else
 					dataInc = 1;
 				//toggleTime = currentTime;
 
-				vStickStatus = 1;
+				pidSpektrumTelem.vStickStatus = 1;
 			}
-			else if (rxData[2] < 824 && vStickStatus != -1)
+			else if (rxData[2] < 824 && pidSpektrumTelem.vStickStatus != -1)
 			{
-				if (column == 0)
-					row++;
+				if (pidSpektrumTelem.column == 0)
+				{
+					pidSpektrumTelem.row++;
+					//stringArray[row][0] = '>';
+				}
 				else 
 					dataInc = -1;
 				//toggleTime = currentTime;
-				vStickStatus = -1;
+				pidSpektrumTelem.vStickStatus = -1;
 			}
 			else if (rxData[2] > 924 && rxData[2] < 1124)
 			{
-				vStickStatus = 0;
+				pidSpektrumTelem.vStickStatus = 0;
 			}
 
 			//horizontal stick
-			if (rxData[1] > 1224 && hStickStatus != 1)
+			if (rxData[1] > 1224 && pidSpektrumTelem.hStickStatus != 1)
 			{
-				column++;
+				pidSpektrumTelem.column++;
 				//toggleTime = currentTime;
 
-				hStickStatus = 1;
+				pidSpektrumTelem.hStickStatus = 1;
+				pidSpektrumTelem.status=CHANGING_SETTING;
 			}
-			else if (rxData[1] < 824 && hStickStatus != -1)
+			else if (rxData[1] < 824 && pidSpektrumTelem.hStickStatus != -1)
 			{
-				column--;
+				pidSpektrumTelem.column--;
 				//toggleTime = currentTime;
 
-				hStickStatus = -1;
+				pidSpektrumTelem.hStickStatus = -1;
+				pidSpektrumTelem.status=IDLE;
+
 			}	
 			else if (rxData[1] > 924 && rxData[1] < 1124)
 			{
-				hStickStatus = 0;
+				pidSpektrumTelem.hStickStatus = 0;
 			}
 		}
 		else
 		{
 			//have these initialized so nothing happens when entering prog mode for the first time
-			vStickStatus = -1;
-			hStickStatus = -1;
+			pidSpektrumTelem.vStickStatus = -1;
+			pidSpektrumTelem.hStickStatus = -1;
 		}
 						
 
-		if (row >= ROW_MAX)
-			row = ROW_MAX;
-		else if (row < 0)
-			row = 0;
+		if (pidSpektrumTelem.row >= ROW_MAX)
+			pidSpektrumTelem.row = ROW_MAX;
+		else if (pidSpektrumTelem.row < 0)
+			pidSpektrumTelem.row = 2;
 
-		if (column >= COLUMN_MAX)
-			column = COLUMN_MAX;
-		else if (column < 0 )
+		if (pidSpektrumTelem.column >= COLUMN_MAX)
+			pidSpektrumTelem.column = COLUMN_MAX;
+		else if (pidSpektrumTelem.column < 0 )
 		{
-			row = 0;
-			column = 0;
-			columnAxis = 0;
+			pidSpektrumTelem.row = 2;
+			pidSpektrumTelem.column = 0;
+			pidSpektrumTelem.columnAxis = 0;
 			progMode = 0;
 			InitPid(); //Set PID's with new config PID's
 		}
 			
 
-		strcpy(stringArray[0], "PID TUNING");
-		strcpy(stringArray[1], "Calibrate 1");
-		strcpy(stringArray[2], "Calibrate 2");
-		strcpy(stringArray[3], axisTable[columnAxis]);
-		strcpy(stringArray[4], "P: ");
-		strcpy(stringArray[5], "I: ");
-		strcpy(stringArray[6], "D: ");
-		strcpy(stringArray[7], "C: ");
-		strcpy(stringArray[8], "SAVE");
+/*--------------------------------Main Logic-----------------------------------------------------------------------------------*/
 
-		if (row == 1 && dataInc)
-			SetCalibrate1();
-		if (row == 2 && dataInc)
+        if (pidSpektrumTelem.row == 2)
+        	{
+        	pidSpektrumTelem.columnAxis += dataInc;
+        	if (pidSpektrumTelem.columnAxis > MAX_MENUS)
+        		pidSpektrumTelem.columnAxis = MAX_MENUS;
+        	if (pidSpektrumTelem.columnAxis < 0)
+        		pidSpektrumTelem.columnAxis = 0;
+        	} //checks so that the user cant go out of bounds, happens every cycle
+
+
+
+        if (pidSpektrumTelem.columnAxis >= 0 && pidSpektrumTelem.columnAxis <= 2 )
+        {
+
+        	//set menu, Always have a space before
+			strcpy(stringArray[3], " P: ");
+			strcpy(stringArray[4], " I: ");
+			strcpy(stringArray[5], " D: ");
+			strcpy(stringArray[6], " Filter: ");
+			strcpy(stringArray[7], " GA: ");
+			strcpy(stringArray[8], " Save");
+
+			//checking each row, TODO:maybe make a switch case
+			switch(pidSpektrumTelem.row)
+			{
+				case (3):
+					mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp += dataInc * 10;
+				    break;
+				case (4):
+		            mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki += dataInc * 10;
+				    break;
+				case (5):
+		            mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd += dataInc * 50;
+				    break;
+				case (6):
+					mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q += dataInc * 5;
+				    break;
+				case (7):
+					mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga += dataInc * 1;
+				    break;
+				case (8):
+				    if (pidSpektrumTelem.column ==1)
+				    {
+				    	SaveConfig(ADDRESS_CONFIG_START);
+						pidSpektrumTelem.column = 0;
+						pidSpektrumTelem.status=SAVING;
+						pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
+				    }
+				    break;
+
+			}
+
+			//fills in the rows with the data
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp, &stringArray[3][3], 10);
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki, &stringArray[4][3], 10);
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd, &stringArray[5][3], 10);
+			itoa(mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q, &stringArray[6][8], 10);
+			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga, &stringArray[7][4], 10);
+        }
+
+        if (pidSpektrumTelem.columnAxis > 2 && pidSpektrumTelem.columnAxis < 6)
 		{
-			if (SetCalibrate2())
-				SaveConfig(ADDRESS_CONFIG_START);
+        	//set menu, Always have a space before
+			strcpy(stringArray[3], " Rate:");
+			strcpy(stringArray[4], " Expo:");
+			strcpy(stringArray[5], " Acro:");
+			strcpy(stringArray[6], "  ");
+			strcpy(stringArray[7], "  ");
+			strcpy(stringArray[8], " Save");
+
+			//checking each row/changing config
+			switch(pidSpektrumTelem.row)
+			{
+				case (3):
+					mainConfig.rcControlsConfig.rates[pidSpektrumTelem.columnAxis-3] += dataInc * 10; // subtract three to make axis line up with enumeration
+				    break;
+				case (4):
+					mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3] += dataInc * 10;
+				    break;
+				case (5):
+			        mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3] += dataInc * 10;
+				    break;
+				case (8):
+		            if (pidSpektrumTelem.column ==1)
+					{
+					 	SaveConfig(ADDRESS_CONFIG_START);
+					 	pidSpektrumTelem.column = 0;
+						pidSpektrumTelem.status=SAVING;
+						pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
+					}
+
+				    break;
+
+			}
+
+        	//fills in the rows with the data
+			itoa(mainConfig.rcControlsConfig.rates[pidSpektrumTelem.columnAxis-3], &stringArray[3][6], 10);
+			itoa(mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3], &stringArray[4][6], 10);
+			itoa(mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3], &stringArray[5][6], 10);
+
+
 		}
 
-		if (row == 3)
+        if (pidSpektrumTelem.columnAxis == 6)
 		{
-			columnAxis += dataInc;
-			if (columnAxis > 2)
-				columnAxis = 2;
-			if (columnAxis < 0)
-				columnAxis = 0;
+        	//led modes
+        	//led count
+        	//
+        	//
+        	//
+        	//
+        	//set menu, Always have a space before
+			strcpy(stringArray[3], " LedCount:");
+			strcpy(stringArray[4], " ");
+			strcpy(stringArray[5], " ");
+			strcpy(stringArray[6], "  ");
+			strcpy(stringArray[7], "  ");
+			strcpy(stringArray[8], " Save");
+
+			//checking each row/changing config
+        	switch(pidSpektrumTelem.row)
+					{
+						case (3):
+							mainConfig.ledConfig.ledCount += dataInc;
+							break;
+						case (4):
+							break;
+						case (5):
+							break;
+						case (8):
+							if (pidSpektrumTelem.column ==1)
+							{
+								SaveConfig(ADDRESS_CONFIG_START);
+								pidSpektrumTelem.column = 0;
+								pidSpektrumTelem.status=SAVING;
+								pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
+							}
+
+							break;
+
+					}
+
+					//fills in the rows with the data
+					itoa(mainConfig.ledConfig.ledCount, &stringArray[3][10], 10);
+
 		}
-		
-		if (row == 4)
-			mainConfig.pidConfig[columnAxis].kp += dataInc * 10;
-		if (row == 5)
-			mainConfig.pidConfig[columnAxis].ki += dataInc * 10;
-		if (row == 6)
-			mainConfig.pidConfig[columnAxis].kd += dataInc * 10;
-		if (row == 7)
-			mainConfig.filterConfig[columnAxis].gyro.r += dataInc * 1;
-		if (row == 8 && column == 1)
+/*------------------------------Switch for different status-----------------------------------------------------------------------*/
+		switch(pidSpektrumTelem.status)
 		{
-			SaveConfig(ADDRESS_CONFIG_START);
-			column = 0;
+
+			case (SAVING):
+				strcpy(stringArray[0], " Saved");
+				if (pidSpektrumTelem.currentTime-pidSpektrumTelem.waitTime > 500)
+					pidSpektrumTelem.status=IDLE;
+				break;
+
+			case (IDLE):
+				if (pidSpektrumTelem.row < 2)
+					pidSpektrumTelem.row = 2;
+				strcpy(stringArray[0], " RF1 Tuning");
+				strcpy(stringArray[1], "------------------------ ");
+				strcpy(stringArray[2], " ");
+				strcpy(&stringArray[2][1], axisTable[pidSpektrumTelem.columnAxis]);
+
+
+				if (progMode)
+				{
+					stringArray[pidSpektrumTelem.row][0] = '>';
+				}
+
+				break;
+			case (CHANGING_SETTING):
+				strcpy(&stringArray[2][1], axisTable[pidSpektrumTelem.columnAxis]);
+				stringArray[pidSpektrumTelem.row][0] = '*';
+				break;
 		}
 
-		//itoa(mainConfig.version, &stringArray[3][5], 10);
-		itoa(mainConfig.pidConfig[columnAxis].kp, &stringArray[4][3], 10);
-		itoa(mainConfig.pidConfig[columnAxis].ki, &stringArray[5][3], 10);
-		itoa(mainConfig.pidConfig[columnAxis].kd, &stringArray[6][3], 10);
-		itoa(mainConfig.filterConfig[columnAxis].gyro.r, &stringArray[7][3], 10);
 
-		//char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", row5, "ROLL", row7, row8, row9 };
-		if (currentTime - blinkTime > 100)
-		{	
-			blinkTime = currentTime;
-		}
-		else if (currentTime - blinkTime > 50)
-		{
-			if (column == 0)
-				strcpy(stringArray[row], "");
-			else if (column == 1)
-				strcpy(&stringArray[row][3], "");
-		}
-		//blank++;
-		//blank = blank % 20;
 	}
-	//char *tempString[9] = { "SPEKTRUM", "MIGUELS FC", "RACEFLIGHT", "ONE", "TWO", "THREE", "FOUR", "TEST", "TEST" };
+
 	//xbus.textLine = row;
 	sensorData.user_text.identifier = TELE_DEVICE_TEXTGEN;
 	sensorData.user_text.sID = 0x00;
@@ -417,7 +569,16 @@ void textMenuUpdate(void)
 		xbus.textLine = 0;
 	}
 	dataInc = 0;
-}
+}//end textMenuUpdate()
+
+
+
+
+
+
+
+
+
 /*
 void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 {

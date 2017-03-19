@@ -76,14 +76,14 @@
 #define ADC0_TYPE					ADC_CURRENT
 #define ADC0_PORT					ENUM_PORTC
 #define ADC0_PIN					GPIO_PIN_0
-#define ADC0_INSTANCE				ENUM_ADC1
+#define ADC0_INSTANCE				ENUM_ADC3
 #define ADC0_CHANNEL				ADC_CHANNEL_10
 
 #define ADC1_TYPE					ADC_VOLTAGE
 #define ADC1_PORT					ENUM_PORTC
-#define ADC1_PIN					GPIO_PIN_1
-#define ADC1_INSTANCE				ENUM_ADC2
-#define ADC1_CHANNEL				ADC_CHANNEL_11
+#define ADC1_PIN					GPIO_PIN_2
+#define ADC1_INSTANCE				ENUM_ADC3
+#define ADC1_CHANNEL				ADC_CHANNEL_12
 
 #define ADC2_TYPE					ADC_DISABLED
 #define ADC2_PORT					0
@@ -266,6 +266,12 @@
 #define USART6_RXDMA_IRQN				0
 #define USART6_RXDMA_CHANNEL			0
 //END USART defines------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//General Timer Config
+#define GENERAL_TIMER1					ENUM_TIM6
+#define GENERAL_TIMER1_IRQN				TIM6_DAC_IRQn
+#define GENERAL_TIMER2					ENUM_TIM7
+#define GENERAL_TIMER2_IRQN				TIM7_IRQn
 
 //Motor defines
 #define ACTUATOR1_TYPE					ENUM_ACTUATOR_TYPE_MOTOR
