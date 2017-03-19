@@ -549,7 +549,7 @@ void HandleWizRx(void)
 	 */
 	uint32_t x, y, z = 0;
 
-	for (x=1;x<USING_RX_END;x++)
+	for (x=1;x<USING_CPPM_R;x++)
 	{
 		for (y=0;y<MAX_USARTS;y++)
 		{
@@ -1160,14 +1160,23 @@ void OneWire(char *inString) {
 						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Upgrading %lu...\n", motorNumber);
 						RfCustomReplyBuffer(rf_custom_out_buffer);
 						somethingHappened=1;
-						if ( BuiltInUpgradeSiLabsBLHeli(board.motors[outputNumber], escHexLocation) )
+
+						if ( (escHexLocation.version > escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version) )
 						{
-							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu upgrade complete.\n", motorNumber);
-							RfCustomReplyBuffer(rf_custom_out_buffer);
+							if ( BuiltInUpgradeSiLabsBLHeli(board.motors[outputNumber], escHexLocation) )
+							{
+								snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu upgrade complete.\n", motorNumber);
+								RfCustomReplyBuffer(rf_custom_out_buffer);
+							}
+							else
+							{
+								snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu not upgraded.\n", motorNumber);
+								RfCustomReplyBuffer(rf_custom_out_buffer);
+							}
 						}
 						else
 						{
-							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu not upgraded.\n", motorNumber);
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ESC %lu version up to date.\n", motorNumber);
 							RfCustomReplyBuffer(rf_custom_out_buffer);
 						}
 					}

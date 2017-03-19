@@ -34,10 +34,10 @@ static void     PutSportIntoSendState(motor_type actuator, uint32_t inverted);
 static uint32_t IsSoftSerialLineIdle();
 
 enum {
-	PROG_STAT_MENU_ROLL_PID  = 0,
-	PROG_STAT_MENU_PITCH_PID = 1,
-	PROG_STAT_MENU_YAW_PID   = 2,
-	PROG_STAT_MENU_VTX       = 3,
+	PROG_STAT_MENU_VTX       = 0,
+	PROG_STAT_MENU_ROLL_PID  = 1,
+	PROG_STAT_MENU_PITCH_PID = 2,
+	PROG_STAT_MENU_YAW_PID   = 3,
 	PROG_STAT_MENU_EXIT      = 4,
 	PROG_STAT_MENU_MAX       = 5,
 };
@@ -57,6 +57,9 @@ enum {
 
 typedef struct {
 	int32_t  menu;
+	int32_t  lastMenu;
+	int32_t  menuCountdown;
+	int32_t  menuChgTime;
 	uint32_t line;
 	uint32_t lineActive;
 	uint32_t updateTime;
@@ -138,6 +141,8 @@ void FillLuaPacket(void)
 	volatile uint32_t line, column;
 	//x,y,id,data,data,data
 
+	//default is to send a print command
+	outString[0] = ID_CMD_PRINT;
 	bzero(charMatrix, sizeof(charMatrix));
 	if (!progMode)
 	{
@@ -158,10 +163,25 @@ void FillLuaPacket(void)
 			vtxRequested.vtxPit         = vtxRecord.vtxPit;
 			vtxRequested.vtxPower       = vtxRecord.vtxPower;
 			programStatus.updateTime    = InlineMillis();
-			programStatus.menu          = 0;
+			programStatus.menu          = PROG_STAT_MENU_VTX;
+			programStatus.lastMenu      = PROG_STAT_MENU_VTX;
+			programStatus.menuCountdown = 5;
+			programStatus.menuChgTime   = InlineMillis();
 		}
 
-		if (InlineMillis() - programStatus.updateTime > 1000) //500 ms wait time between RX checks
+		if (programStatus.menu != programStatus.lastMenu)
+		{
+			programStatus.lastMenu = programStatus.menu;
+			programStatus.menuCountdown = 5;
+			programStatus.menuChgTime   = InlineMillis();
+		}
+
+		if (programStatus.menuCountdown > 0)
+		{
+			programStatus.menuCountdown--;
+			outString[0] = ID_CMD_ERASE; //send a clear command several times to make sure the radio gets it
+		}
+		else if (InlineMillis() - programStatus.updateTime > 250) //500 ms wait time between RX checks
 		{
 			if ( (programStatus.lineActive == PROG_STAT_LINE_INACTIVE) && (trueRcCommandF[PITCH] > 0.95) )
 			{
@@ -192,7 +212,7 @@ void FillLuaPacket(void)
 							break;
 						case 2: //band
 							vtxRequested.vtxChannel += 1;
-							if (vtxRequested.vtxChannel > 7)
+							if (vtxRequested.vtxChannel >= VTX_CHANNEL_END)
 							{
 								vtxRequested.vtxChannel = 0;
 							}
@@ -214,7 +234,10 @@ void FillLuaPacket(void)
 				else
 				{
 					//value up
-					(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) + ( (*programStatus.value[programStatus.line-1]) * 0.1f );
+					if ( (*programStatus.value[programStatus.line-1]) < 400 )
+						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) + 10.0f;
+					else
+						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) + 50.0f;
 					programStatus.updateTime = InlineMillis();
 				}
 			}
@@ -236,7 +259,7 @@ void FillLuaPacket(void)
 						case 2: //band
 							if (vtxRequested.vtxChannel == 0)
 							{ //roll around
-								vtxRequested.vtxChannel = 8;
+								vtxRequested.vtxChannel = VTX_CHANNEL_END;
 							}
 							vtxRequested.vtxChannel -= 1;
 							vtxRequested.vtxBandChannel = VtxBandAndChannelToBandChannel(vtxRequested.vtxBand, vtxRequested.vtxChannel);
@@ -257,7 +280,10 @@ void FillLuaPacket(void)
 				else
 				{
 					//value down
-					(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) - ( (*programStatus.value[programStatus.line-1]) * 0.1f );
+					if ( (*programStatus.value[programStatus.line-1]) < 400 )
+						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) - 10.0f;
+					else
+						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) - 50.0f;
 					programStatus.updateTime = InlineMillis();
 				}
 			}
@@ -290,7 +316,8 @@ void FillLuaPacket(void)
 				else if (programStatus.line == 4) //save
 				{
 					//
-					programStatus.saveAt = InlineMillis() + 3000;
+					programStatus.saveAt = InlineMillis() + 4500;
+					programStatus.lastMenu = programStatus.menu+1; //force a screen clear
 				}
 				else
 				{
@@ -344,15 +371,11 @@ void FillLuaPacket(void)
 			{
 				SaveConfig(ADDRESS_CONFIG_START);
 				programStatus.saveAt = 0;
+				programStatus.lastMenu = programStatus.menu+1; //force a screen clear
 			}
 			else
 			{
-				strcpy(charMatrix[0], "Saving         ");
-				strcpy(charMatrix[1], "Saving         ");
-				strcpy(charMatrix[2], "Saving         ");
-				strcpy(charMatrix[3], "Saving         ");
-				strcpy(charMatrix[4], "Saving         ");
-				strcpy(charMatrix[5], "Saving         ");
+				strcpy(charMatrix[5], "Saving");
 				programStatus.lineActive = PROG_STAT_LINE_INACTIVE;
 				programStatus.line = 0;
 			}
@@ -365,15 +388,15 @@ void FillLuaPacket(void)
 				case PROG_STAT_MENU_ROLL_PID:
 					//fill roll pids
 					strcpy(charMatrix[0], "RaceFlight One PIDs");
-					strcpy(charMatrix[1], "    Roll");
-					strcpy(charMatrix[2], "    Kp 120");
-					strcpy(charMatrix[3], "    Ki 800");
-					strcpy(charMatrix[4], "    Kd 1000");
-					strcpy(charMatrix[5], "    Save");
-					charMatrix[programStatus.line+1][3] = cursor;
-					itoa(lrint(mainConfig.pidConfig[ROLL].kp), &charMatrix[2][7], 10);
-					itoa(lrint(mainConfig.pidConfig[ROLL].ki), &charMatrix[3][7], 10);
-					itoa(lrint(mainConfig.pidConfig[ROLL].kd), &charMatrix[4][7], 10);
+					strcpy(charMatrix[1], " Roll");
+					strcpy(charMatrix[2], " Kp");
+					strcpy(charMatrix[3], " Ki");
+					strcpy(charMatrix[4], " Kd");
+					strcpy(charMatrix[5], " Save");
+					charMatrix[programStatus.line+1][0] = cursor;
+					itoa(lrint(mainConfig.pidConfig[ROLL].kp), &charMatrix[2][4], 10);
+					itoa(lrint(mainConfig.pidConfig[ROLL].ki), &charMatrix[3][4], 10);
+					itoa(lrint(mainConfig.pidConfig[ROLL].kd), &charMatrix[4][4], 10);
 					programStatus.value[0] = &mainConfig.pidConfig[ROLL].kp;
 					programStatus.value[1] = &mainConfig.pidConfig[ROLL].ki;
 					programStatus.value[2] = &mainConfig.pidConfig[ROLL].kd;
@@ -381,15 +404,15 @@ void FillLuaPacket(void)
 				case PROG_STAT_MENU_PITCH_PID:
 					//fill pitch pids
 					strcpy(charMatrix[0], "RaceFlight One PIDs");
-					strcpy(charMatrix[1], "    Pitch");
-					strcpy(charMatrix[2], "    Kp");
-					strcpy(charMatrix[3], "    Ki");
-					strcpy(charMatrix[4], "    Kd");
-					strcpy(charMatrix[5], "    Save");
-					charMatrix[programStatus.line+1][3] = cursor;
-					itoa(lrint(mainConfig.pidConfig[PITCH].kp), &charMatrix[2][7], 10);
-					itoa(lrint(mainConfig.pidConfig[PITCH].ki), &charMatrix[3][7], 10);
-					itoa(lrint(mainConfig.pidConfig[PITCH].kd), &charMatrix[4][7], 10);
+					strcpy(charMatrix[1], " Pitch");
+					strcpy(charMatrix[2], " Kp");
+					strcpy(charMatrix[3], " Ki");
+					strcpy(charMatrix[4], " Kd");
+					strcpy(charMatrix[5], " Save");
+					charMatrix[programStatus.line+1][0] = cursor;
+					itoa(lrint(mainConfig.pidConfig[PITCH].kp), &charMatrix[2][4], 10);
+					itoa(lrint(mainConfig.pidConfig[PITCH].ki), &charMatrix[3][4], 10);
+					itoa(lrint(mainConfig.pidConfig[PITCH].kd), &charMatrix[4][4], 10);
 					programStatus.value[0] = &mainConfig.pidConfig[PITCH].kp;
 					programStatus.value[1] = &mainConfig.pidConfig[PITCH].ki;
 					programStatus.value[2] = &mainConfig.pidConfig[PITCH].kd;
@@ -397,15 +420,15 @@ void FillLuaPacket(void)
 				case PROG_STAT_MENU_YAW_PID:
 					//fill yaw pids
 					strcpy(charMatrix[0], "RaceFlight One PIDs");
-					strcpy(charMatrix[1], "    Yaw");
-					strcpy(charMatrix[2], "    Kp 120");
-					strcpy(charMatrix[3], "    Ki 800");
-					strcpy(charMatrix[4], "    Kd 1000");
-					strcpy(charMatrix[5], "    Save");
-					charMatrix[programStatus.line+1][3] = cursor;
-					itoa(lrint(mainConfig.pidConfig[YAW].kp), &charMatrix[2][7], 10);
-					itoa(lrint(mainConfig.pidConfig[YAW].ki), &charMatrix[3][7], 10);
-					itoa(lrint(mainConfig.pidConfig[YAW].kd), &charMatrix[4][7], 10);
+					strcpy(charMatrix[1], " Yaw");
+					strcpy(charMatrix[2], " Kp");
+					strcpy(charMatrix[3], " Ki");
+					strcpy(charMatrix[4], " Kd");
+					strcpy(charMatrix[5], " Save");
+					charMatrix[programStatus.line+1][0] = cursor;
+					itoa(lrint(mainConfig.pidConfig[YAW].kp), &charMatrix[2][4], 10);
+					itoa(lrint(mainConfig.pidConfig[YAW].ki), &charMatrix[3][4], 10);
+					itoa(lrint(mainConfig.pidConfig[YAW].kd), &charMatrix[4][4], 10);
 					programStatus.value[0] = &mainConfig.pidConfig[YAW].kp;
 					programStatus.value[1] = &mainConfig.pidConfig[YAW].ki;
 					programStatus.value[2] = &mainConfig.pidConfig[YAW].kd;
@@ -414,82 +437,117 @@ void FillLuaPacket(void)
 					if (vtxRecord.vtxDevice)
 					{
 						strcpy(charMatrix[0], "RaceFlight One VTX");
-						strcpy(charMatrix[1], "    VTX");
-						strcpy(charMatrix[2], "    Band");
-						strcpy(charMatrix[3], "    Channel");
-						strcpy(charMatrix[4], "    Power");
-						strcpy(charMatrix[5], "    Set and Exit");
+						strcpy(charMatrix[1], " VTX");
+						strcpy(charMatrix[2], " Band");
+						strcpy(charMatrix[3], " Channel");
+						strcpy(charMatrix[4], " Power");
+						strcpy(charMatrix[5], " Set and Exit");
 						switch(vtxRequested.vtxBand)
 						{
 							case 0:
-								strcpy(charMatrix[2], "    Band A");
+								strcpy(charMatrix[2], " Band A");
 								break;
 							case 1:
-								strcpy(charMatrix[2], "    Band B");
+								strcpy(charMatrix[2], " Band B");
 								break;
 							case 2:
-								strcpy(charMatrix[2], "    Band E");
+								strcpy(charMatrix[2], " Band E");
 								break;
 							case 3:
-								strcpy(charMatrix[2], "    Band FatShark");
+								strcpy(charMatrix[2], " Band FatShark");
 								break;
 							case 4:
-								strcpy(charMatrix[2], "    Band Race");
+								strcpy(charMatrix[2], " Band Race");
 								break;
 							default:
-								strcpy(charMatrix[2], "    Band Unknown");
+								strcpy(charMatrix[2], " Band Unknown");
 								break;
 						}
-						itoa(vtxRequested.vtxChannel, &charMatrix[3][12], 10);
+						itoa(vtxRequested.vtxChannel, &charMatrix[3][9], 10);
 						switch(vtxRequested.vtxPower)
 						{
 							case 0:
-								strcpy(charMatrix[4], "    Power 25mw");
+								strcpy(charMatrix[4], " Power 25mw");
 								break;
 							case 1:
-								strcpy(charMatrix[4], "    Power 200mw");
+								strcpy(charMatrix[4], " Power 200mw");
 								break;
 							case 2:
-								strcpy(charMatrix[4], "    Power 500mw");
+								strcpy(charMatrix[4], " Power 500mw");
 								break;
 							case 3:
-								strcpy(charMatrix[4], "    Power 800mw");
+								strcpy(charMatrix[4], " Power 800mw");
 								break;
 							default:
-								strcpy(charMatrix[4], "    Power Unknown");
+								strcpy(charMatrix[4], " Power Unknown");
 								break;
 						}
-						charMatrix[programStatus.line+1][3] = cursor;
+						charMatrix[programStatus.line+1][0] = cursor;
 					}
 					else
 					{
 						strcpy(charMatrix[0], "RaceFlight One VTX");
-						strcpy(charMatrix[1], "    VTX");
-						strcpy(charMatrix[2], "    No VTX detected :(");
-						charMatrix[programStatus.line+1][3] = cursor;
+						strcpy(charMatrix[1], " VTX");
+						strcpy(charMatrix[2], " No VTX detected :(");
+						programStatus.line = InlineConstrainui(programStatus.line, 0, 0);
+						charMatrix[programStatus.line+1][0] = cursor;
 					}
 					break;
 				case PROG_STAT_MENU_EXIT:
 					strcpy(charMatrix[0], "RaceFlight One Menu");
-					strcpy(charMatrix[1], "    Mode");
-					strcpy(charMatrix[2], "    Exit Prog Mode :|");
-					strcpy(charMatrix[3], "    Exit Prog Mode :)");
-					strcpy(charMatrix[4], "    Exit Prog Mode :D");
-					charMatrix[programStatus.line+1][3] = cursor;
+					strcpy(charMatrix[1], " Mode");
+					strcpy(charMatrix[2], " Exit Prog Mode :D");
+					strcpy(charMatrix[3], "");
+					strcpy(charMatrix[4], "");
+					programStatus.line = InlineConstrainui(programStatus.line, 0, 1);
+					charMatrix[programStatus.line+1][0] = cursor;
 					break;
 			}
 		}
 	}
 
-	outString[0] = ID_CMD_PRINT;
-	outString[1] = counter;
+
+	for (uint32_t x=0;x<10;x++)
+	{
+		if (!progMode)
+			break;
+
+		//skip title at 4 seconds
+		if ( (InlineMillis() - programStatus.menuChgTime) > 4000)
+		{
+			if (counter < 24)
+			{
+				counter = 24;
+			}
+		}
+
+		line   = (counter / 24);
+		column = (counter - (line * 24));
+		//skip blank strings
+		if ( strlen(charMatrix[line]+column) < 1)
+		{
+			counter += 4;
+		}
+		line   = (counter / 24);
+		column = (counter - (line * 24));
+		if ( !strcmp("    ", charMatrix[line]+column) )
+		{
+			counter += 4;
+		}
+		if (counter >= (24*6))
+			counter = 0;//first line is the title bar
+	}
 
 	line   = (counter / 24);
 	column = (counter - (line * 24));
+
+	//outstring 0 is set above
+	outString[1] = counter;
 	outString[2] = charMatrix[line][column+0];
 	outString[3] = charMatrix[line][column+1];
 	outString[4] = charMatrix[line][column+2];
 	outString[5] = charMatrix[line][column+3];
+
 
 	counter += 4;
 	if (counter >= (24*6))
@@ -550,7 +608,7 @@ void CheckIfSportReadyToSend(void)
 			else if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x0D) )
 			{
 				//25 ms limit to sending
-				if (InlineMillis() - timeLastSent > 25)
+				if (InlineMillis() - timeLastSent > 1)
 				{
 					timeLastSent = InlineMillis();
 					FillLuaPacket();
@@ -632,9 +690,14 @@ void SendSmartPort(void)
 			break;
 		case 6:
 			SmartPortCreatePacket(SPORT_FRAME_HEADER, VFAS_FIRST_ID, (int32_t)(averageVoltage * 100), sPortPacket );
-			sPortTelemCount = 0;
 			break;
 		case 7:
+			SmartPortCreatePacket(SPORT_FRAME_HEADER, CURR_FIRST_ID, (int32_t)(adcCurrent * 100), sPortPacket );
+			break;
+		case 8:
+			SmartPortCreatePacket(SPORT_FRAME_HEADER, FUEL_FIRST_ID, (int32_t)(adcMAh), sPortPacket );
+			sPortTelemCount = 0;
+			break;
 		default:
 			sPortTelemCount = 0;
 			return;

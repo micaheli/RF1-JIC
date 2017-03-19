@@ -20,7 +20,7 @@ typedef struct {
     float    foreAftMixerFixer;
     uint32_t mixerType;
     uint32_t mixerStyle;
-    uint32_t escProtcol;
+    uint32_t escProtocol;
     uint32_t escUpdateFrequency;
     float    idlePercent;
     float    idlePercentInverted;
@@ -49,7 +49,8 @@ enum {
 	ESC_DSHOT150=4,
 	ESC_DSHOT300=5,
 	ESC_DSHOT600=6,
-	ESC_SPOOKY_ACTION_AT_A_DISTANCE=7,
+	ESC_DSHOT1200=7,
+	//ESC_SPOOKY_ACTION_AT_A_DISTANCE=7,
 	ESC_MULTISHOT25=8,
 	ESC_MULTISHOT125=9,
 	ESC_PROTOCOL_END=10,

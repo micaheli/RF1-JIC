@@ -9,15 +9,16 @@ uint32_t setModes;
 
 //also modify the enumeration in modes.h
 string_modes_rec stringModes[] = {
-		{"ARMED",    0,  M_ARMED },
-		{"ATTITUDE", 1,  M_ATTITUDE },
-		{"FAILSAFE", 2,  M_FAILSAFE },
-		{"LOGGING",  3,  M_LOGGING },
-		{"BUZZER",   4,  M_BUZZER },
-		{"LEDMODE",  5,  M_LEDMODE },
-		{"LEDCOLOR", 6,  M_LEDCOLOR },
-		{"DIRECT",   7,  M_DIRECT },
-		{"VTXON",    8,  M_VTXON },
+		{"ARMED",     0,  M_ARMED },
+		{"LEVEL",     1,  M_ATTITUDE },
+		{"ACROLEVEL", 2,  M_HORIZON },
+		{"FAILSAFE",  3,  M_FAILSAFE },
+		{"LOGGING",   4,  M_LOGGING },
+		{"BUZZER",    5,  M_BUZZER },
+		{"LEDMODE",   6,  M_LEDMODE },
+		{"LEDCOLOR",  7,  M_LEDCOLOR },
+		{"DIRECT",    8,  M_DIRECT },
+		{"VTXON",     9,  M_VTXON },
 };
 
 

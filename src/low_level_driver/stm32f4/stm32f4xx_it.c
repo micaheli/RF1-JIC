@@ -397,5 +397,6 @@ void EXTI15_10_IRQHandler(void)
 
 void ADC_IRQHandler(void)
 {
-  //HAL_ADC_IRQHandler(&adcHandleT);
+	//only need to use one ADC handle for now
+	HAL_ADC_IRQHandler(&adcHandle[board.boardADC[1].adcHandle]);
 }

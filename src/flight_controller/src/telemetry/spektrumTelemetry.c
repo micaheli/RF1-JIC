@@ -112,16 +112,16 @@ void sendSpektrumTelem(void)
 				{
 				case 0:
 					{
-					/*
+
 						sensorData.fpMAH.identifier = TELE_DEVICE_FP_MAH;
 						sensorData.fpMAH.sID = 0;
-						sensorData.fpMAH.current_A = amperage / 10;
-						sensorData.fpMAH.chargeUsed_A = mAhDrawn;
+						sensorData.fpMAH.current_A = (uint16_t)(adcCurrent / 10);
+						sensorData.fpMAH.chargeUsed_A = (uint16_t)adcMAh;
 						sensorData.fpMAH.temp_A = 0x7FFF;
 						sensorData.fpMAH.current_B = 0x7FFF;
 						sensorData.fpMAH.chargeUsed_B = 0x7FFF;
 						sensorData.fpMAH.temp_B = 0x7FFF;
-						*/
+
 						break;
 					}
 				case 1:

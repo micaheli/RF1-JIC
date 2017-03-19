@@ -381,13 +381,13 @@ void UpdateLeds(void)
 			DoLed(2, 1);
 			break;
 		case LEDS_SLOW_BLINK:
-			HandleCoolLeds(3000, 1500);
-			break;
-		case LEDS_MED_BLINK:
 			HandleCoolLeds(2000, 1000);
 			break;
+		case LEDS_MED_BLINK:
+			HandleCoolLeds(1500, 500);
+			break;
 		case LEDS_FAST_BLINK:
-			HandleCoolLeds(1000, 500);
+			HandleCoolLeds(1000, 250);
 			break;
 		case LEDS_FASTER_BLINK:
 			HandleCoolLeds(300, 150);

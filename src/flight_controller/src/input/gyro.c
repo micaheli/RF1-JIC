@@ -65,8 +65,8 @@ inline void InlineUpdateGyro(int32_t rawGyro[], float scale)
     InlineApplyGyroAccRotationAndScale(rawGyro, swapArray, scale);
 
     dpsGyroArray[PITCH] = -swapArray[Y];
-    dpsGyroArray[ROLL] = swapArray[X];
-    dpsGyroArray[YAW] = -swapArray[Z];
+    dpsGyroArray[ROLL]  =  swapArray[X];
+    dpsGyroArray[YAW]   = -swapArray[Z];
     //x, y, z: to yaw, roll, pitch. need to swap 0 and 2
 
     InlineFlightCode(dpsGyroArray);
@@ -120,9 +120,20 @@ void BuildRotationMatrix(uint32_t x, uint32_t y, uint32_t z)
     {
 
 		case CW0:
-			dataArray[X] = ((float)rawData[X] * scale);
-			dataArray[Y] = ((float)rawData[Y] * scale);
-			dataArray[Z] = ((float)rawData[Z] * scale);
+	    	if (mainConfig.gyroConfig.minorBoardRotation[X] || mainConfig.gyroConfig.minorBoardRotation[Y] || mainConfig.gyroConfig.minorBoardRotation[Z])
+	    	{
+				if (matrixFormed != CW0) {
+					matrixFormed = CW0;
+					BuildRotationMatrix(mainConfig.gyroConfig.minorBoardRotation[X],mainConfig.gyroConfig.minorBoardRotation[Y],mainConfig.gyroConfig.minorBoardRotation[Z]); //x, y, z, pitch, roll, yaw
+				}
+				nonNinety = 1;
+	    	}
+	    	else
+	    	{
+				dataArray[X] = ((float)rawData[X] * scale);
+				dataArray[Y] = ((float)rawData[Y] * scale);
+				dataArray[Z] = ((float)rawData[Z] * scale);
+	    	}
 			break;
         case CW90:
         	dataArray[X] = ((float)rawData[Y] * scale);
@@ -223,4 +234,5 @@ void BuildRotationMatrix(uint32_t x, uint32_t y, uint32_t z)
 		dataArray[Y] = (rotationMatrix[0][Y] * (float)rawData[X] * scale + rotationMatrix[1][Y] * (float)rawData[Y] * scale + rotationMatrix[2][Y] * (float)rawData[Z] * scale);
 		dataArray[Z] = (rotationMatrix[0][Z] * (float)rawData[X] * scale + rotationMatrix[1][Z] * (float)rawData[Y] * scale + rotationMatrix[2][Z] * (float)rawData[Z] * scale);
     }
+
 }

@@ -147,7 +147,7 @@ const config_variables_rec valueTable[] = {
 
 		{ "famx", 				typeFLOAT, "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0.9, 1.1, 1, "" },
 		{ "mixer_style", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerStyle,					0, 1, 0, "" },
-		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtcol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
+		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtocol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 5, "" },
 		{ "idle_percent_inv",	typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercentInverted,			0, 15.0, 8, "" },
@@ -161,7 +161,7 @@ const config_variables_rec valueTable[] = {
 		{ "mout7", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[6],				0, 7, 6, "" },
 		{ "mout8", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[7],				0, 7, 7, "" },
 
-		{ "led_count",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledCount,						0, WS2812_MAX_LEDS, 16, "" },
+		{ "led_count",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledCount,						2, WS2812_MAX_LEDS, 16, "" },
 		{ "led_red",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledRed,						0, 255, 10, "" },
 		{ "led_green",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledGreen,						0, 255, 0, "" },
 		{ "led_blue",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledBlue,						0, 255, 0, "" },
@@ -172,12 +172,13 @@ const config_variables_rec valueTable[] = {
 		{ "telem_spek",	 		typeUINT,  "telm", &mainConfig.telemConfig.telemSpek,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "telem_msp",	 		typeUINT,  "telm", &mainConfig.telemConfig.telemMsp,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "telem_mavlink", 		typeUINT,  "telm", &mainConfig.telemConfig.telemMav,					0, TELEM_NUM-1, TELEM_OFF, "" },
+		{ "adc_current_factor", typeFLOAT, "telm", &mainConfig.telemConfig.adcCurrFactor,				0, 50.0, 0, "" },
 
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, CW315_INV, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1,  0, "" },
-		{ "sml_board_rot_x", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],		0, 10, 0, "" },
-		{ "sml_board_rot_y", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Y],		0, 10, 0, "" },
-		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		0, 10, 0, "" },
+		{ "sml_board_rot_x", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],		-180, 180, 0, "" },
+		{ "sml_board_rot_y", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Y],		-180, 180, 0, "" },
+		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
 		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 130.00, "" },
@@ -192,7 +193,7 @@ const config_variables_rec valueTable[] = {
 		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 800.00, "" },
 		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1000.00, "" },
 
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 12, "" },
+		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 4, "" },
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
 
@@ -205,21 +206,21 @@ const config_variables_rec valueTable[] = {
 		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
 		{ "filter_mode2",		typeUINT,  "filt", &mainConfig.filterConfig[2].filterMod, 				0, 10, 2, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 10.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 30.000, "" },
 #ifdef STM32F446xx	//TODO remove target specific ifdefs
 		{ "yaw_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r,				0, 200, 1, "" },
 #else
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 200, 88.000, "" },
 #endif
 
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 25.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 60.000, "" },
 #ifdef STM32F446xx	//TODO remove target specific ifdefs
 		{ "roll_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r,				0, 200, 1, "" },
 #else
 		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 200, 88.000, "" },
 #endif
 
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 25.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 60.000, "" },
 #ifdef STM32F446xx	//TODO remove target specific ifdefs
 		{ "pitch_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r,				0, 200, 1, "" },
 #else
@@ -246,6 +247,7 @@ const config_variables_rec valueTable[] = {
 		{ "rx_usart", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxUsart, 				0, MAX_USARTS-1, ENUM_USART1, "" },
 #endif
 
+		{ "arm_method", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.armMethod,				0, 1, 1, "" },
 		{ "rx_inv_direction", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxInvertDirection,		0, 2, 0, "" },
 
 		{ "pitch_deadband", 	typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[PITCH], 		0, 0.1, 0.004, "" },
@@ -843,7 +845,7 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("polladc", inString))
 		{
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me ADC: %lu\n", (uint32_t)adcVoltage );
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Voltage: %lu, Current: %lu, mAh: %lu\n", (uint32_t)(adcVoltage*100) , (uint32_t)(adcCurrent*100), (uint32_t)(adcMAh));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("idle", inString))
@@ -1542,7 +1544,7 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].kd    = 800.00;
 			mainConfig.pidConfig[PITCH].kd   = 1000.00;
 
-			mainConfig.pidConfig[YAW].ga     = 12;
+			mainConfig.pidConfig[YAW].ga     = 4;
 			mainConfig.pidConfig[ROLL].ga    = 0;
 			mainConfig.pidConfig[PITCH].ga   = 0;
 
@@ -1550,9 +1552,9 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
 			mainConfig.filterConfig[PITCH].gyro.r = 88.00;
 
-			mainConfig.filterConfig[YAW].gyro.q   = 10.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 25.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 25.000;
+			mainConfig.filterConfig[YAW].gyro.q   = 30.000;
+			mainConfig.filterConfig[ROLL].gyro.q  = 60.000;
+			mainConfig.filterConfig[PITCH].gyro.q = 60.000;
 
 			mainConfig.filterConfig[0].filterMod  = 0;
 			mainConfig.filterConfig[1].filterMod  = 0;
@@ -1585,7 +1587,7 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].kd    = 800.00;
 			mainConfig.pidConfig[PITCH].kd   = 1000.00;
 
-			mainConfig.pidConfig[YAW].ga     = 12;
+			mainConfig.pidConfig[YAW].ga     = 4;
 			mainConfig.pidConfig[ROLL].ga    = 0;
 			mainConfig.pidConfig[PITCH].ga   = 0;
 
@@ -1593,9 +1595,9 @@ void ProcessCommand(char *inString)
 			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
 			mainConfig.filterConfig[PITCH].gyro.r = 88.00;
 
-			mainConfig.filterConfig[YAW].gyro.q   = 10.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 25.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 25.000;
+			mainConfig.filterConfig[YAW].gyro.q   = 30.000;
+			mainConfig.filterConfig[ROLL].gyro.q  = 60.000;
+			mainConfig.filterConfig[PITCH].gyro.q = 60.000;
 
 			mainConfig.filterConfig[0].filterMod  = 0;
 			mainConfig.filterConfig[1].filterMod  = 0;

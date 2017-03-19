@@ -606,7 +606,7 @@ Version 0.195.058 RC1:
 	LEDs now Breathe
 	Preliminary Smart Audio Support - Not yet enabled
 
-Version 0.197.059 RC2:
+Version 0.197.059 BETA:
 	Adjust self level defaults
 	GUI - updates and bug fixes
 	Updated ESC bins
@@ -699,21 +699,91 @@ Version 0.197.059 BETA:
 			VTX_POWER_500MW = 2,
 			VTX_POWER_800MW = 3,
 
-Version 0.198.059 RC3:
+Version 0.198.059 BETA:
 	Rewrite of several drivers to better accomodate VTX telemetry
 	Added new soft serial driver
 	Added support for taranis pid and vtx tuning
 	Fixed bug in betafloght and kiss rates
-	
+	Changed VTX commands
+		vtxinfo will print vtx info to the console
+		vtxon will turn on the VTX
+		vtxpit will send the VTX pit mode command (Warning: TBS VTX will not enter pit mode once it is on until you power cycle the VTX)
+		vtxbandchannel will set the band channel using strings
+			Example: "vtxbandchannel r1" will set the VTX to raceband 1 and "vtxbandchannel f4" will set the VTX to fatshark 4
+		
+
+Version 0.199.059 BETA:
+	Fix bug in channel incrementing on smart audio
+	Added abilitty to position board in 1 degree increments
+		Example on how to set board by 31 degrees left
+			Skip first FC wizard and run these console commands
+				set gyro_rotation=0
+				set board_calibrated=1
+				set sml_board_rot_x=0
+				set sml_board_rot_y=0
+				set sml_board_rot_z=-31
+				save
+
+Version 0.200.060 BETA:
+	Added Double-Double arm method and made it default
+		set arm_method=1
+		Double-Single arm method is set arm_method=0
+	Made s.port lua functions smarter and faster
+
+Version 0.201.060 BETA:
+	Sped up LED breathing effect a bit
+	Made s.port lua functions a bit faster
+	List of "set telem_smartaudio" acceptable inputs
+		SMART_AUDIO_OFF = 0
+		USART1RX = 15
+	    USART2RX = 16
+	    USART3RX = 17
+	    USART4RX = 18
+	    USART5RX = 19
+	    USART6RX = 20
+	    USART1TX = 21
+	    USART2TX = 22
+	    USART3TX = 23
+	    USART4TX = 24
+	    USART5TX = 25
+	    USART6TX = 26
+
+Version 0.202.061 BETA:
+	Added horizon mode
+	Fix Sbus bug
+	Increment config to allow horizon mode
+
+Version 0.203.062 BETA:
+	Changed ESC 1wire auto slightly
+	Attitude mode is now Level Mode
+	Horizon mode is nor Acro Level Mode
+	Made Acro Level Mode more stable
+	Changed defaults filters to low
+	Added ESC frequency and loop time sanity checking and correction
+	Added support for lower update frequencies (62 through 1000 Hz) for servo support
+	Enabled dshot 1200 support
+	Added current support
+		set adc_current_factor = xxx
+			(where adc_current_factor is the current multiplier for your current sensor ( current factor is defined as the one divided by the volts per amp output of yout current sensor ) )
+				EXAMPLE: Ottopilot 50V/180A current sensor has an output of 18.30mV / Amp, which is 0.0183 volts per amp. (1 / 0.0183 = 54.6448), so the adc_current_factor is 54.6448
+			0 turns off current ADC
+
+Version 0.204.062 BETA:
+	Added mAh consumed
+	Added current output and mAh consumed to s.port telemtry
+	Added current output and mAh consumed to spektrum telemtry
+	Fixed voltage and current positioning
+
+Version 0.205.062 BETA:
+	Adjusted Acro Level Mode settings
+	Changed VTX to enable on first arm switch if there's no vtx on mode setup
+	 
 
 #Features in current development:
-#	MSP compatibility
+#	MSP OSD compatibility
 #	MAVlink compatibility
-#	RFVTX
-#	Current input
 
 #Features for future development:
-#   allow 30 degrees
 #	transponder output
 #	Sonar input
 #	GPS input

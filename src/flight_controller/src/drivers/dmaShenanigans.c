@@ -269,7 +269,7 @@ void InitDmaInputOnMotors(motor_type actuator) {
 }
 
 uint32_t IsDshotEnabled() {
-	if ( (mainConfig.mixerConfig.escProtcol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtcol == ESC_DSHOT150) ) {
+	if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) ) {
 		return(1);
 	}
 	return(0);
@@ -544,7 +544,19 @@ void InitDshotOutputOnMotors(uint32_t usedFor)
 	uint32_t inverted;
 	uint32_t outputNumber;
 
-	if (usedFor == ESC_DSHOT600)
+	if (usedFor == ESC_DSHOT1200)
+	{
+
+		timerHz     = 48000000;
+		pwmHz       = 600000;
+		normalPulse = 15;
+		alonePulse  = 15;
+		endPulse    = 15;
+		loPulse     = 30;
+		inverted    = 1;
+
+	}
+	else if (usedFor == ESC_DSHOT600)
 	{
 
 		timerHz     = 24000000;

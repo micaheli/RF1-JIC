@@ -11,6 +11,7 @@ typedef struct {
 	volatile uint32_t uhohNumber;
 	volatile uint32_t khzDivider;
 	volatile uint32_t gyroDivider;
+	volatile uint32_t fsCount;
 } loop_speed_record;
 
 extern volatile loop_speed_record loopSpeed;

@@ -83,14 +83,14 @@ void VtxChannelToBandAndChannel(uint32_t inChannel, volatile uint32_t *vtxBand, 
 	bandMultiplier = (inChannel) / 8;
 
 	(*vtxBand) = bandMultiplier;
-	(*channel) = inChannel - (bandMultiplier * 8) + 1;
+	(*channel) = inChannel - (bandMultiplier * 8);
 
 }
 
 uint32_t VtxBandAndChannelToBandChannel(volatile uint32_t vtxBand, volatile uint32_t channel)
 {
 
-	return (channel + (8 * vtxBand));
+	return ( (channel + (8 * vtxBand)) );
 
 }
 

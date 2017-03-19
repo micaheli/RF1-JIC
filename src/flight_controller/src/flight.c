@@ -6,7 +6,7 @@ pid_output   flightPids[AXIS_NUMBER];
 biquad_state lpfFilterState[AXIS_NUMBER];
 biquad_state lpfFilterStateKd[AXIS_NUMBER];
 biquad_state lpfFilterStateAcc[AXIS_NUMBER];
-biquad_state lpfFilterStateNoise[6];
+//biquad_state lpfFilterStateNoise[6];
 biquad_state hpfFilterStateAcc[6];
 
 #define GYRO_STD_DEVIATION_SAMPLE_SIZE 100
@@ -228,7 +228,7 @@ void InitFlightCode(void)
 	kdFiltUsed[ROLL]  = mainConfig.filterConfig[ROLL].kd.r;
 	kdFiltUsed[PITCH] = mainConfig.filterConfig[PITCH].kd.r;
 
-	bzero(lpfFilterStateNoise,sizeof(lpfFilterStateNoise));
+	//bzero(lpfFilterStateNoise,sizeof(lpfFilterStateNoise));
 	bzero(lpfFilterState,sizeof(lpfFilterState));
 	bzero(lpfFilterStateKd,sizeof(lpfFilterStateKd));
 	bzero(averagedGyroData,sizeof(averagedGyroData));
@@ -252,6 +252,117 @@ void InitFlightCode(void)
 	usedGa[1] = mainConfig.pidConfig[1].ga;
 	usedGa[2] = mainConfig.pidConfig[2].ga;
 
+	//Sanity Check!: make sure ESC Frequency, protocol and looptime gel:
+	if (mainConfig.mixerConfig.escUpdateFrequency >= 32000)
+	{
+		mainConfig.mixerConfig.escUpdateFrequency = 32000;
+		mainConfig.gyroConfig.loopCtrl = LOOP_UH32;
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		{
+			//valid
+		}
+		else
+		{
+			if (mainConfig.mixerConfig.escUpdateFrequency >= 16000)
+			{
+				mainConfig.mixerConfig.escUpdateFrequency = 16000;
+				mainConfig.gyroConfig.loopCtrl = LOOP_UH16;
+				if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+				{
+					//valid
+				}
+				else
+				{
+					if (mainConfig.mixerConfig.escUpdateFrequency >= 8000)
+					{
+						mainConfig.mixerConfig.escUpdateFrequency = 8000;
+						mainConfig.gyroConfig.loopCtrl = LOOP_UH8;
+						if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+						{
+							//valid
+						}
+						else
+						{
+							if (mainConfig.mixerConfig.escUpdateFrequency >= 4000)
+							{
+								mainConfig.mixerConfig.escUpdateFrequency = 4000;
+								mainConfig.gyroConfig.loopCtrl = LOOP_UH4;
+								if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+								{
+									//valid
+								}
+								else
+								{
+									if (mainConfig.mixerConfig.escUpdateFrequency >= 2000)
+									{
+										mainConfig.mixerConfig.escUpdateFrequency = 2000;
+										mainConfig.gyroConfig.loopCtrl = LOOP_UH2;
+										if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+										{
+											//valid
+										}
+										else
+										{
+											if (mainConfig.mixerConfig.escUpdateFrequency >= 1000)
+											{
+												mainConfig.mixerConfig.escUpdateFrequency = 1000;
+												mainConfig.gyroConfig.loopCtrl = LOOP_UH1;
+												if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+												{
+													//valid
+												}
+												else
+												{
+													if (mainConfig.mixerConfig.escUpdateFrequency >= 500)
+													{
+														mainConfig.mixerConfig.escUpdateFrequency = 500;
+														mainConfig.gyroConfig.loopCtrl = LOOP_UH_500;
+														if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+														{
+															//valid
+														}
+														else
+														{
+															if (mainConfig.mixerConfig.escUpdateFrequency >= 250)
+															{
+																mainConfig.mixerConfig.escUpdateFrequency = 250;
+																mainConfig.gyroConfig.loopCtrl = LOOP_UH_250;
+																if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+																{
+																	//valid
+																}
+																else
+																{
+																	if (mainConfig.mixerConfig.escUpdateFrequency >= 62)
+																	{
+																		mainConfig.mixerConfig.escUpdateFrequency = 62;
+																		mainConfig.gyroConfig.loopCtrl = LOOP_UH_062;
+																		if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+																		{
+																			//valid
+																		}
+																		else
+																		{
+
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	switch (mainConfig.gyroConfig.loopCtrl) {
 		case LOOP_UH32:
 		case LOOP_H32:
@@ -261,6 +372,7 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 32;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH16:
 		case LOOP_H16:
@@ -270,6 +382,7 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 2;
 			loopSpeed.khzDivider  = 16;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH8:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -278,6 +391,7 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 4;
 			loopSpeed.khzDivider  = 8;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_H8:
 		case LOOP_M8:
@@ -287,6 +401,7 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 8;
 			loopSpeed.gyroAccDiv  = 2;
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH4:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -295,6 +410,7 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 8;
 			loopSpeed.khzDivider  = 4;
 			loopSpeed.gyroAccDiv  = 8;
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_H4:
 		case LOOP_M4:
@@ -304,6 +420,7 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 2;
 			loopSpeed.khzDivider  = 4;
 			loopSpeed.gyroAccDiv  = 2;
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH2:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -312,6 +429,7 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 16;
 			loopSpeed.khzDivider  = 2;
 			loopSpeed.gyroAccDiv  = 8;
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 		case LOOP_H2:
 		case LOOP_M2:
 			loopSpeed.gyrodT      = 0.00012500;
@@ -320,6 +438,7 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 4;
 			loopSpeed.khzDivider  = 2;
 			loopSpeed.gyroAccDiv  = 2;
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH1:
 			loopSpeed.gyrodT      = 0.00003125;
@@ -328,6 +447,34 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 32;
 			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 8;
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
+			break;
+		case LOOP_UH_500:
+			loopSpeed.gyrodT      = 0.00003125;
+			loopSpeed.dT          = 0.00200000;
+			loopSpeed.uhohNumber  = 375;
+			loopSpeed.gyroDivider = 64;
+			loopSpeed.khzDivider  = 1;
+			loopSpeed.gyroAccDiv  = 8;
+			loopSpeed.fsCount     = 250; //failsafe count for khzdivider
+			break;
+		case LOOP_UH_250:
+			loopSpeed.gyrodT      = 0.00003125;
+			loopSpeed.dT          = 0.00400000;
+			loopSpeed.uhohNumber  = 187;
+			loopSpeed.gyroDivider = 128;
+			loopSpeed.khzDivider  = 1;
+			loopSpeed.gyroAccDiv  = 8;
+			loopSpeed.fsCount     = 125; //failsafe count for khzdivider
+			break;
+		case LOOP_UH_062:
+			loopSpeed.gyrodT      = 0.00003125;
+			loopSpeed.dT          = 0.01600000;
+			loopSpeed.uhohNumber  = 94;
+			loopSpeed.gyroDivider = 512;
+			loopSpeed.khzDivider  = 1;
+			loopSpeed.gyroAccDiv  = 8;
+			loopSpeed.fsCount     = 62; //failsafe count for khzdivider
 			break;
 		case LOOP_H1:
 		case LOOP_M1:
@@ -337,6 +484,7 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 8;
 			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 2;
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_L1:
 		default:
@@ -346,14 +494,15 @@ void InitFlightCode(void)
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 1;
+			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 	}
 
 	//TODO: gyroConfig.accDenom is not set until after gyro is running.
 	//loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
-	loopSpeed.halfGyrodT       = loopSpeed.gyrodT * 0.5f;
-	loopSpeed.accdT            = loopSpeed.gyrodT * (float)loopSpeed.gyroAccDiv;
-	loopSpeed.InversedT        = (1/loopSpeed.dT);
+	loopSpeed.halfGyrodT = loopSpeed.gyrodT * 0.5f;
+	loopSpeed.accdT      = loopSpeed.gyrodT * (float)loopSpeed.gyroAccDiv;
+	loopSpeed.InversedT  = (1/loopSpeed.dT);
 
 
 
@@ -407,12 +556,12 @@ inline void InlineInitKdFilters(void)
 inline void InlineInitSpectrumNoiseFilter(void)
 {
 
-	InitBiquad(075, &lpfFilterStateNoise[0], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[0], 0.33333333333f);
-	InitBiquad(125, &lpfFilterStateNoise[1], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[1], 0.20000000000f);
-	InitBiquad(175, &lpfFilterStateNoise[2], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[2], 0.14285714292f);
-	InitBiquad(225, &lpfFilterStateNoise[3], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[3], 0.11111111111f);
-	InitBiquad(275, &lpfFilterStateNoise[4], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[4], 0.09090909091f);
-	InitBiquad(325, &lpfFilterStateNoise[5], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[5], 0.07692307692f);
+	//InitBiquad(075, &lpfFilterStateNoise[0], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[0], 0.33333333333f);
+	//InitBiquad(125, &lpfFilterStateNoise[1], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[1], 0.20000000000f);
+	//InitBiquad(175, &lpfFilterStateNoise[2], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[2], 0.14285714292f);
+	//InitBiquad(225, &lpfFilterStateNoise[3], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[3], 0.11111111111f);
+	//InitBiquad(275, &lpfFilterStateNoise[4], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[4], 0.09090909091f);
+	//InitBiquad(325, &lpfFilterStateNoise[5], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[5], 0.07692307692f);
 
 }
 
@@ -448,46 +597,19 @@ inline void InlineUpdateAttitude(float geeForceAccArray[])
 	filteredAccData[ACCY] = BiquadUpdate(geeForceAccArray[ACCY], &lpfFilterStateAcc[ACCY]);
 	filteredAccData[ACCZ] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateAcc[ACCZ]);
 
-	accNoise[0] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[0]);
-	accNoise[1] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[1]);
-	accNoise[2] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[2]);
-	accNoise[3] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[3]);
-	accNoise[4] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[4]);
-	accNoise[5] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[5]);
+	//accNoise[0] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[0]);
+	//accNoise[1] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[1]);
+	//accNoise[2] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[2]);
+	//accNoise[3] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[3]);
+	//accNoise[4] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[4]);
+	//accNoise[5] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateNoise[5]);
 
 }
 
 
-void ComplementaryFilterUpdateAttitude(void)
+inline void ComplementaryFilterUpdateAttitude(void)
 {
-
 	UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], filteredGyroData[PITCH], filteredGyroData[YAW]);
-	return;
-/*
-
-    // Integrate the gyroscope data
-	pitchAttitude += (filteredGyroData[PITCH] * loopSpeed.dT);
-	rollAttitude  += (filteredGyroData[ROLL] * loopSpeed.dT);
-	yawAttitude   += (filteredGyroData[YAW] * loopSpeed.dT);
-
-	if (yawAttitude > 180)
-		yawAttitude = (yawAttitude - 360);
-	else if (yawAttitude < -180)
-		yawAttitude = (yawAttitude + 360);
-
-    float forceMagnitudeApprox = ABS(filteredAccData[ACCX]) + ABS(filteredAccData[ACCY]) + ABS(filteredAccData[ACCZ]);
-
-    if (forceMagnitudeApprox > .45 && forceMagnitudeApprox < 2.1) //only look at ACC data if it's within .45 and 2.1 Gees
-    {
-    	// Turning around the X axis results in a vector on the Y-axis
-    	pitchAcc = (atan2f( (float)filteredAccData[ACCX], (float)filteredAccData[ACCZ]) + PIf) * (180.0 * IPIf) - 180.0; //multiplying by the inverse of Pi is faster than dividing by Pi
-    	pitchAttitude = pitchAttitude * accCompGyroTrust + pitchAcc * accCompAccTrust;
-
-    	// Turning around the Y axis results in a vector on the X-axis
-        rollAcc = (atan2f((float)filteredAccData[ACCY], (float)filteredAccData[ACCZ]) + PIf) * (180.0 * IPIf) - 180.0;
-        rollAttitude = rollAttitude * accCompGyroTrust + rollAcc * accCompAccTrust;
-    }
-*/
 }
 
 inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
@@ -558,6 +680,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 	}
 
+	//update PIDs, mixer, outputs at gyro divider speed
 	if (gyroLoopCounter-- == 0)
 	{
 
@@ -566,26 +689,22 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		//smooth the rx data between rx signals
 		InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
 
-		//get setpoint for PIDC
-		if (!ModeActive(M_ATTITUDE)) //if rateMode
+		//1st, find request rates regardless of modes
+		if (ModeActive(M_DIRECT))
 		{
-			if (timeSinceSelfLevelActivated)
-				timeSinceSelfLevelActivated = 0;
-
-			if (ModeActive(M_DIRECT))
-			{
-				flightSetPoints[YAW]   = InlineGetSetPoint(curvedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
-				flightSetPoints[ROLL]  = InlineGetSetPoint(curvedRcCommandF[ROLL], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01, ROLL);
-				flightSetPoints[PITCH] = -InlineGetSetPoint(curvedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01, PITCH);
-			}
-			else
-			{
-				flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
-				flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01, ROLL);
-				flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01, PITCH);
-			}
+			flightSetPoints[YAW]   = InlineGetSetPoint(curvedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
+			flightSetPoints[ROLL]  = InlineGetSetPoint(curvedRcCommandF[ROLL], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01, ROLL);
+			flightSetPoints[PITCH] = -InlineGetSetPoint(curvedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01, PITCH);
 		}
-		else //if angleMode
+		else
+		{
+			flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
+			flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01, ROLL);
+			flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01, PITCH);
+		}
+
+		//get setpoint for PIDC
+		if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON)) //no auto level modes active, we're in rate mode
 		{
 			if (!timeSinceSelfLevelActivated)
 				timeSinceSelfLevelActivated = InlineMillis();
@@ -605,18 +724,37 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				sldUsed = mainConfig.pidConfig[PITCH].sld;
 			}
 
-			flightSetPoints[YAW]     = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
-			rollAttitudeError        = ( (trueRcCommandF[ROLL] * mainConfig.pidConfig[PITCH].sla) - rollAttitude );
+			rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.pidConfig[PITCH].sla) - rollAttitude  );
 			pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla) - pitchAttitude );
-			rollAttitudeErrorKi      = (rollAttitudeErrorKi + rollAttitudeError * sliUsed * loopSpeed.dT);
+
+			rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.dT);
 			pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.dT);
-			rollAttitudeErrorKdelta  = -(rollAttitudeError - lastRollAttitudeError);
+
+			rollAttitudeErrorKdelta  = -(rollAttitudeError  - lastRollAttitudeError);
 			lastRollAttitudeError    = rollAttitudeError;
 			pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
 			lastPitchAttitudeError   = pitchAttitudeError;
 
-			flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
-			flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
+			if (ModeActive(M_ATTITUDE)) //if M_ATTITUDE mode
+			{
+				//roll and pitch are set directly from self level mode
+				flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
+				flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
+
+			}
+			else if (ModeActive(M_HORIZON)) //if M_HORIZON mode
+			{
+				//roll and pitch and modified by stick angle proportionally to stick angle
+				if ( (ABS(trueRcCommandF[PITCH]) < 0.8) && (ABS(trueRcCommandF[ROLL]) < 0.8) && ABS(pitchAttitude) < 70 ) //prevent gimbal lock since PIDc uses euler angles
+					flightSetPoints[ROLL]    += InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0) * (1.0f - ABS(trueRcCommandF[ROLL]) );
+				if ( (ABS(trueRcCommandF[PITCH]) < 0.8)  && (ABS(trueRcCommandF[ROLL]) < 0.8) )
+					flightSetPoints[PITCH]   += InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0) * (1.0f - ABS(trueRcCommandF[PITCH]) );
+			}
+		}
+		else //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
+		{
+			if (timeSinceSelfLevelActivated)
+				timeSinceSelfLevelActivated = 0;
 		}
 
 		//Run PIDC
@@ -759,10 +897,9 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 		ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
-
-		//MAX_KD
 		if (khzLoopCounter-- == 0)
 		{
+			//runs at 1KHz or loopspeed, whatever is slower
 			khzLoopCounter=loopSpeed.khzDivider;
 
 			CheckFailsafe();
@@ -815,6 +952,10 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 		}
 
+	}
+	else
+	{
+		ComplementaryFilterUpdateAttitude(); //we update this in the main loop after stabilization but before logging. Outside of the divider we only update this
 	}
 
 }

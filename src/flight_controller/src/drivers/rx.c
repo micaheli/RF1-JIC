@@ -169,12 +169,12 @@ inline void CheckFailsafe(void)
 
 	FeedTheDog(); //resets IWDG time to 0. This tells the timer the board is running.
 
-	if (( (rx_timeout > 500) || (ModeActive(M_FAILSAFE)) ))
+	if (( (rx_timeout > loopSpeed.fsCount) || (ModeActive(M_FAILSAFE)) ))
 		activeFailsafe = 1;
 	else
 		activeFailsafe = 0;
 
-	if ((boardArmed) && ( (rx_timeout > 500) || (ModeActive(M_FAILSAFE)) ) )
+	if ((boardArmed) && ( (rx_timeout > loopSpeed.fsCount) || (ModeActive(M_FAILSAFE)) ) )
 	{
 		failsafeHappend = 1;
 		buzzerStatus.status = STATE_BUZZER_FAILSAFE;
@@ -214,7 +214,7 @@ void ProcessArmingStructure(void)
 
 }
 
- void RxUpdate(void) // hook for when rx updates
+inline void RxUpdate(void) // hook for when rx updates
 {
 
 	 //get current flight modes
@@ -240,11 +240,21 @@ void ProcessArmingStructure(void)
 			PreArmFilterCheck = 1;
 			buzzerStatus.status = STATE_BUZZER_ARMING;
 			ResetGyroCalibration();
+
+			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && (vtxRecord.vtxDevice !=  VTX_DEVICE_NONE))
+			{
+				turnOnVtxNow = 1;
+			}
+
 		}
 		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!boardArmed) && (ModeActive(M_ARMED)) && (mainConfig.gyroConfig.boardCalibrated) && throttleIsSafe && !progMode)
 		{ //TODO: make uncalibrated board buzz
 
-			latchFirstArm = 1; //1 is double single single single, 0 is double double double double
+			if (mainConfig.rcControlsConfig.armMethod == ARM_DOUBLE_SINGLE)
+				latchFirstArm = 1; //1 is double single single single, 0 is double double double double
+			else if (mainConfig.rcControlsConfig.armMethod == ARM_DOUBLE_DOUBLE)
+				latchFirstArm = 0; //1 is double single single single, 0 is double double double double
+
 			disarmCount   = 0;
 
 			if ( !(RtcReadBackupRegister(FC_STATUS_REG) == FC_STATUS_INFLIGHT) ) {
@@ -487,10 +497,11 @@ void ProcessSbusPacket(uint32_t serialNumber)
 	memcpy(copiedBufferData, serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], SBUS_FRAME_SIZE);
 
 	// do we need to hook these into rxData[ChannelMap(i)] ?
-	if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) )
+	//if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) )
+	if (frame->syncByte == SBUS_STARTBYTE)
 	{
-		if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
-		{
+		//if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
+		//{
 
 			rx_timeout = 0;
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -528,7 +539,7 @@ void ProcessSbusPacket(uint32_t serialNumber)
 			packetTime = 9;
 			InlineCollectRcCommand();
 			RxUpdate();
-		}
+		//}
 	} else {
 		outOfSync++;
 	}
