@@ -788,11 +788,11 @@ Version 0.207.062 RC2.1:
 	Fixed second arming throttle check
 	Increment firmware type to RC2.1
 
-Version 0.208.062 RC2.2:
+Version 0.208.062 RC3:
 	Fix Taranis failsafe
 	Fix double arm windup issue
 	Fixed SPMFC400 build
-	Increment firmware type to RC2.2
+	Increment firmware type to RC3
 
 
 

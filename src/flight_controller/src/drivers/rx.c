@@ -326,18 +326,19 @@ inline void RxUpdate(void) // hook for when rx updates
 void SpektrumBind (uint32_t bindNumber)
 {
 
+	uint32_t i, serialNumber;
+
 	if (!bindNumber)
 		return;
 
-	uint32_t i;
-
-	//todo: init all RX ports and ping each one as a spektrum port, maybe check each one to see if it allows spektrum binding
-	InitializeGpio(GPIOA, GPIO_PIN_9, 1);
-	InitializeGpio(GPIOA, GPIO_PIN_10, 1);
-
-	InitializeGpio(GPIOB, GPIO_PIN_10, 1);
-	InitializeGpio(GPIOB, GPIO_PIN_11, 1);
-
+	for (serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++)
+	{
+		if (board.serials[serialNumber].enabled)
+		{
+			InitializeGpio(ports[board.serials[serialNumber].TXPort], board.serials[serialNumber].TXPin, 1);
+			InitializeGpio(ports[board.serials[serialNumber].RXPort], board.serials[serialNumber].RXPin, 1);
+		}
+	}
 
 	DelayMs(2);
 
@@ -346,25 +347,35 @@ void SpektrumBind (uint32_t bindNumber)
 
 	for (i=0; i < bindNumber; i++) {
 
-		inlineDigitalLo(GPIOA, GPIO_PIN_9);
-		inlineDigitalLo(GPIOA, GPIO_PIN_10);
-		inlineDigitalLo(GPIOB, GPIO_PIN_10);
-		inlineDigitalLo(GPIOB, GPIO_PIN_11);
+		for (serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++)
+		{
+			if (board.serials[serialNumber].enabled)
+			{
+				inlineDigitalLo(ports[board.serials[serialNumber].TXPort], board.serials[serialNumber].TXPin);
+				inlineDigitalLo(ports[board.serials[serialNumber].RXPort], board.serials[serialNumber].RXPin);
+			}
+		}
 		DelayMs(2);
 
-		inlineDigitalHi(GPIOA, GPIO_PIN_9);
-		inlineDigitalHi(GPIOA, GPIO_PIN_10);
-		inlineDigitalHi(GPIOB, GPIO_PIN_10);
-		inlineDigitalHi(GPIOB, GPIO_PIN_11);
+		for (serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++)
+		{
+			if (board.serials[serialNumber].enabled)
+			{
+				inlineDigitalHi(ports[board.serials[serialNumber].TXPort], board.serials[serialNumber].TXPin);
+				inlineDigitalHi(ports[board.serials[serialNumber].RXPort], board.serials[serialNumber].RXPin);
+			}
+		}
 		DelayMs(2);
 
 	}
+
 
     if (mainConfig.rcControlsConfig.bind)
     {
     	mainConfig.rcControlsConfig.bind = 0;
     	SaveConfig(ADDRESS_CONFIG_START);
     }
+
 
 }
 
