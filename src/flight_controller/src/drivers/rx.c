@@ -214,30 +214,45 @@ void ProcessArmingStructure(void)
 
 }
 
+inline void CheckThrottleSafe(void)
+{
+	if ( (!threeDeeMode) && (trueRcCommandF[THROTTLE] < -0.85) )
+	{
+		throttleIsSafe = 1;
+	}
+	else if ( (threeDeeMode) && (trueRcCommandF[THROTTLE] > -0.10) && (trueRcCommandF[THROTTLE] < 0.10) )
+	{
+		throttleIsSafe = 1;
+	}
+	else
+	{
+		throttleIsSafe = 0;
+	}
+}
+
 inline void RxUpdate(void) // hook for when rx updates
 {
+
+	//very first arm
+	static uint32_t veryFirstArm = 0;
 
 	 //get current flight modes
 	CheckRxToModes();
 
-	throttleIsSafe = 0;
-
-	if ( (!threeDeeMode) && (trueRcCommandF[THROTTLE] < -0.85) )
-		throttleIsSafe = 1;
-	else if ( (threeDeeMode) && (trueRcCommandF[THROTTLE] > -0.10) && (trueRcCommandF[THROTTLE] < 0.10) )
-		throttleIsSafe = 1;
+	CheckThrottleSafe();
 
 	//throttle must be low and board must be set to not armed before we allow an arming
 	if (!ModeActive(M_ARMED) &&  throttleIsSafe)
 		armCheckLatch = 1;
 
-	if (!latchFirstArm)
+	if (!veryFirstArm)
 		checkRxPreArmCalibration(); //collect rx data if not armed yet
 
 	if (armCheckLatch)
 	{
 		if ( (latchFirstArm == 0) && (!boardArmed) && (ModeActive(M_ARMED)) )
 		{
+			veryFirstArm  = 1;
 			latchFirstArm = 1;
 			PreArmFilterCheck = 1;
 			buzzerStatus.status = STATE_BUZZER_ARMING;
@@ -311,18 +326,19 @@ inline void RxUpdate(void) // hook for when rx updates
 void SpektrumBind (uint32_t bindNumber)
 {
 
+	uint32_t i, serialNumber;
+
 	if (!bindNumber)
 		return;
 
-	uint32_t i;
-
-	//todo: init all RX ports and ping each one as a spektrum port, maybe check each one to see if it allows spektrum binding
-	InitializeGpio(GPIOA, GPIO_PIN_9, 1);
-	InitializeGpio(GPIOA, GPIO_PIN_10, 1);
-
-	InitializeGpio(GPIOB, GPIO_PIN_10, 1);
-	InitializeGpio(GPIOB, GPIO_PIN_11, 1);
-
+	for (serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++)
+	{
+		if (board.serials[serialNumber].enabled)
+		{
+			InitializeGpio(ports[board.serials[serialNumber].TXPort], board.serials[serialNumber].TXPin, 1);
+			InitializeGpio(ports[board.serials[serialNumber].RXPort], board.serials[serialNumber].RXPin, 1);
+		}
+	}
 
 	DelayMs(2);
 
@@ -331,25 +347,35 @@ void SpektrumBind (uint32_t bindNumber)
 
 	for (i=0; i < bindNumber; i++) {
 
-		inlineDigitalLo(GPIOA, GPIO_PIN_9);
-		inlineDigitalLo(GPIOA, GPIO_PIN_10);
-		inlineDigitalLo(GPIOB, GPIO_PIN_10);
-		inlineDigitalLo(GPIOB, GPIO_PIN_11);
+		for (serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++)
+		{
+			if (board.serials[serialNumber].enabled)
+			{
+				inlineDigitalLo(ports[board.serials[serialNumber].TXPort], board.serials[serialNumber].TXPin);
+				inlineDigitalLo(ports[board.serials[serialNumber].RXPort], board.serials[serialNumber].RXPin);
+			}
+		}
 		DelayMs(2);
 
-		inlineDigitalHi(GPIOA, GPIO_PIN_9);
-		inlineDigitalHi(GPIOA, GPIO_PIN_10);
-		inlineDigitalHi(GPIOB, GPIO_PIN_10);
-		inlineDigitalHi(GPIOB, GPIO_PIN_11);
+		for (serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++)
+		{
+			if (board.serials[serialNumber].enabled)
+			{
+				inlineDigitalHi(ports[board.serials[serialNumber].TXPort], board.serials[serialNumber].TXPin);
+				inlineDigitalHi(ports[board.serials[serialNumber].RXPort], board.serials[serialNumber].RXPin);
+			}
+		}
 		DelayMs(2);
 
 	}
+
 
     if (mainConfig.rcControlsConfig.bind)
     {
     	mainConfig.rcControlsConfig.bind = 0;
     	SaveConfig(ADDRESS_CONFIG_START);
     }
+
 
 }
 
@@ -502,8 +528,8 @@ void ProcessSbusPacket(uint32_t serialNumber)
 	//if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) )
 	if (frame->syncByte == SBUS_STARTBYTE)
 	{
-		//if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
-		//{
+		if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
+		{
 
 			rx_timeout = 0;
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -541,7 +567,7 @@ void ProcessSbusPacket(uint32_t serialNumber)
 			packetTime = 9;
 			InlineCollectRcCommand();
 			RxUpdate();
-		//}
+		}
 	} else {
 		outOfSync++;
 	}

@@ -235,7 +235,7 @@ void FillLuaPacket(void)
 				{
 					//value up
 					if ( (*programStatus.value[programStatus.line-1]) < 400 )
-						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) + 10.0f;
+						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) + 5.0f;
 					else
 						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) + 50.0f;
 					programStatus.updateTime = InlineMillis();
