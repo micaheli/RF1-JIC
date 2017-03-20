@@ -837,7 +837,7 @@ static float GetKissMaxRates(float rcCommand, uint32_t axis)
 	}
 
 	kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
-	kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis]);
+	kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis] * 1.1f);
 	kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
 	kissSetpoint = rcCommand;
 
@@ -949,7 +949,7 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 				rcCommand = 0.999;
 
 			kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
-			kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis]);
+			kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis] * 1.1f);
 			kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
 			kissSetpoint = rcCommand;
 

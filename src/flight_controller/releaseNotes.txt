@@ -778,6 +778,12 @@ Version 0.205.062 BETA:
 	Adjusted Acro Level Mode settings
 	Changed VTX to enable on first arm switch if there's no vtx on mode setup
 	 
+Version 0.206.062 RC2:
+	Minor default changes
+	Increment firmware type to RC2
+	Adjust kiss rates slightly
+	Made self level code more robust, faster, and more accurate
+
 
 #Features in current development:
 #	MSP OSD compatibility

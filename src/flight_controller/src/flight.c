@@ -224,6 +224,8 @@ int SetCalibrate2(void)
 void InitFlightCode(void)
 {
 
+	uint32_t validLoopConfig = 0;
+
 	kdFiltUsed[YAW]   = mainConfig.filterConfig[YAW].kd.r;
 	kdFiltUsed[ROLL]  = mainConfig.filterConfig[ROLL].kd.r;
 	kdFiltUsed[PITCH] = mainConfig.filterConfig[PITCH].kd.r;
@@ -253,113 +255,85 @@ void InitFlightCode(void)
 	usedGa[2] = mainConfig.pidConfig[2].ga;
 
 	//Sanity Check!: make sure ESC Frequency, protocol and looptime gel:
-	if (mainConfig.mixerConfig.escUpdateFrequency >= 32000)
+	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 32000) )
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 32000;
 		mainConfig.gyroConfig.loopCtrl = LOOP_UH32;
 		if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
-			//valid
+			validLoopConfig = 1;
 		}
-		else
+	}
+	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 16000) )
+	{
+		mainConfig.mixerConfig.escUpdateFrequency = 16000;
+		mainConfig.gyroConfig.loopCtrl = LOOP_UH16;
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
-			if (mainConfig.mixerConfig.escUpdateFrequency >= 16000)
-			{
-				mainConfig.mixerConfig.escUpdateFrequency = 16000;
-				mainConfig.gyroConfig.loopCtrl = LOOP_UH16;
-				if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-				{
-					//valid
-				}
-				else
-				{
-					if (mainConfig.mixerConfig.escUpdateFrequency >= 8000)
-					{
-						mainConfig.mixerConfig.escUpdateFrequency = 8000;
-						mainConfig.gyroConfig.loopCtrl = LOOP_UH8;
-						if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-						{
-							//valid
-						}
-						else
-						{
-							if (mainConfig.mixerConfig.escUpdateFrequency >= 4000)
-							{
-								mainConfig.mixerConfig.escUpdateFrequency = 4000;
-								mainConfig.gyroConfig.loopCtrl = LOOP_UH4;
-								if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-								{
-									//valid
-								}
-								else
-								{
-									if (mainConfig.mixerConfig.escUpdateFrequency >= 2000)
-									{
-										mainConfig.mixerConfig.escUpdateFrequency = 2000;
-										mainConfig.gyroConfig.loopCtrl = LOOP_UH2;
-										if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-										{
-											//valid
-										}
-										else
-										{
-											if (mainConfig.mixerConfig.escUpdateFrequency >= 1000)
-											{
-												mainConfig.mixerConfig.escUpdateFrequency = 1000;
-												mainConfig.gyroConfig.loopCtrl = LOOP_UH1;
-												if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-												{
-													//valid
-												}
-												else
-												{
-													if (mainConfig.mixerConfig.escUpdateFrequency >= 500)
-													{
-														mainConfig.mixerConfig.escUpdateFrequency = 500;
-														mainConfig.gyroConfig.loopCtrl = LOOP_UH_500;
-														if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-														{
-															//valid
-														}
-														else
-														{
-															if (mainConfig.mixerConfig.escUpdateFrequency >= 250)
-															{
-																mainConfig.mixerConfig.escUpdateFrequency = 250;
-																mainConfig.gyroConfig.loopCtrl = LOOP_UH_250;
-																if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-																{
-																	//valid
-																}
-																else
-																{
-																	if (mainConfig.mixerConfig.escUpdateFrequency >= 62)
-																	{
-																		mainConfig.mixerConfig.escUpdateFrequency = 62;
-																		mainConfig.gyroConfig.loopCtrl = LOOP_UH_062;
-																		if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-																		{
-																			//valid
-																		}
-																		else
-																		{
-
-																		}
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 8000) )
+	{
+		mainConfig.mixerConfig.escUpdateFrequency = 8000;
+		mainConfig.gyroConfig.loopCtrl = LOOP_UH8;
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 4000) )
+	{
+		mainConfig.mixerConfig.escUpdateFrequency = 4000;
+		mainConfig.gyroConfig.loopCtrl = LOOP_UH4;
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 2000) )
+	{
+		mainConfig.mixerConfig.escUpdateFrequency = 2000;
+		mainConfig.gyroConfig.loopCtrl = LOOP_UH2;
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 1000) )
+	{
+		mainConfig.mixerConfig.escUpdateFrequency = 1000;
+		mainConfig.gyroConfig.loopCtrl = LOOP_UH1;
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 500) )
+	{
+		mainConfig.mixerConfig.escUpdateFrequency = 500;
+		mainConfig.gyroConfig.loopCtrl = LOOP_UH_500;
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 250) )
+	{
+		mainConfig.mixerConfig.escUpdateFrequency = 250;
+		mainConfig.gyroConfig.loopCtrl = LOOP_UH_250;
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 62) )
+	{
+		mainConfig.mixerConfig.escUpdateFrequency = 62;
+		mainConfig.gyroConfig.loopCtrl = LOOP_UH_062;
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
 		}
 	}
 
@@ -724,8 +698,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				sldUsed = mainConfig.pidConfig[PITCH].sld;
 			}
 
-			rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.pidConfig[PITCH].sla) - rollAttitude  );
-			pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla) - pitchAttitude );
+			rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.pidConfig[PITCH].sla ) - rollAttitude  );
+			pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla ) - pitchAttitude );
 
 			rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.dT);
 			pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.dT);
@@ -745,9 +719,11 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			else if (ModeActive(M_HORIZON)) //if M_HORIZON mode
 			{
 				//roll and pitch and modified by stick angle proportionally to stick angle
-				if ( (ABS(trueRcCommandF[PITCH]) < 0.8) && (ABS(trueRcCommandF[ROLL]) < 0.8) && ABS(pitchAttitude) < 70 ) //prevent gimbal lock since PIDc uses euler angles
+				if ( (ABS(trueRcCommandF[PITCH]) < 0.75) && (ABS(trueRcCommandF[ROLL]) < 0.75) && ABS(pitchAttitude) < 75 ) //prevent gimbal lock since PIDc uses euler angles
+				{
 					flightSetPoints[ROLL]    += InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0) * (1.0f - ABS(trueRcCommandF[ROLL]) );
-				if ( (ABS(trueRcCommandF[PITCH]) < 0.8)  && (ABS(trueRcCommandF[ROLL]) < 0.8) )
+				}
+				if ( (ABS(trueRcCommandF[PITCH]) < 0.75)  && (ABS(trueRcCommandF[ROLL]) < 0.75) )
 					flightSetPoints[PITCH]   += InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0) * (1.0f - ABS(trueRcCommandF[PITCH]) );
 			}
 		}
