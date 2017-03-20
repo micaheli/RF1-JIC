@@ -781,8 +781,12 @@ Version 0.205.062 BETA:
 Version 0.206.062 RC2:
 	Minor default changes
 	Increment firmware type to RC2
-	Adjust kiss rates slightly
+	Adjust kiss and betafloght rates slightly
 	Made self level code more robust, faster, and more accurate
+
+Version 0.207.062 RC2.1:
+	Fixed second arming throttle check
+	Increment firmware type to RC2.1
 
 
 #Features in current development:
