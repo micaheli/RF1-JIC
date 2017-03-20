@@ -220,6 +220,8 @@ inline void RxUpdate(void) // hook for when rx updates
 	 //get current flight modes
 	CheckRxToModes();
 
+	throttleIsSafe = 0;
+
 	if ( (!threeDeeMode) && (trueRcCommandF[THROTTLE] < -0.85) )
 		throttleIsSafe = 1;
 	else if ( (threeDeeMode) && (trueRcCommandF[THROTTLE] > -0.10) && (trueRcCommandF[THROTTLE] < 0.10) )
