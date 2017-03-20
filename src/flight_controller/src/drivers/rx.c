@@ -214,30 +214,45 @@ void ProcessArmingStructure(void)
 
 }
 
+inline void CheckThrottleSafe(void)
+{
+	if ( (!threeDeeMode) && (trueRcCommandF[THROTTLE] < -0.85) )
+	{
+		throttleIsSafe = 1;
+	}
+	else if ( (threeDeeMode) && (trueRcCommandF[THROTTLE] > -0.10) && (trueRcCommandF[THROTTLE] < 0.10) )
+	{
+		throttleIsSafe = 1;
+	}
+	else
+	{
+		throttleIsSafe = 0;
+	}
+}
+
 inline void RxUpdate(void) // hook for when rx updates
 {
+
+	//very first arm
+	static uint32_t veryFirstArm = 0;
 
 	 //get current flight modes
 	CheckRxToModes();
 
-	throttleIsSafe = 0;
-
-	if ( (!threeDeeMode) && (trueRcCommandF[THROTTLE] < -0.85) )
-		throttleIsSafe = 1;
-	else if ( (threeDeeMode) && (trueRcCommandF[THROTTLE] > -0.10) && (trueRcCommandF[THROTTLE] < 0.10) )
-		throttleIsSafe = 1;
+	CheckThrottleSafe();
 
 	//throttle must be low and board must be set to not armed before we allow an arming
 	if (!ModeActive(M_ARMED) &&  throttleIsSafe)
 		armCheckLatch = 1;
 
-	if (!latchFirstArm)
+	if (!veryFirstArm)
 		checkRxPreArmCalibration(); //collect rx data if not armed yet
 
 	if (armCheckLatch)
 	{
 		if ( (latchFirstArm == 0) && (!boardArmed) && (ModeActive(M_ARMED)) )
 		{
+			veryFirstArm  = 1;
 			latchFirstArm = 1;
 			PreArmFilterCheck = 1;
 			buzzerStatus.status = STATE_BUZZER_ARMING;
@@ -502,8 +517,8 @@ void ProcessSbusPacket(uint32_t serialNumber)
 	//if ( (frame->syncByte == SBUS_STARTBYTE) && (frame->endByte == SBUS_ENDBYTE) )
 	if (frame->syncByte == SBUS_STARTBYTE)
 	{
-		//if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
-		//{
+		if ( !(frame->flags & (SBUS_FAILSAFE_FLAG) ) )
+		{
 
 			rx_timeout = 0;
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -541,7 +556,7 @@ void ProcessSbusPacket(uint32_t serialNumber)
 			packetTime = 9;
 			InlineCollectRcCommand();
 			RxUpdate();
-		//}
+		}
 	} else {
 		outOfSync++;
 	}

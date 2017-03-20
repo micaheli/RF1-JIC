@@ -142,6 +142,8 @@ extern uint32_t PreArmFilterCheck;
 extern uint32_t activeFailsafe;
 extern uint32_t failsafeHappend;
 
+
+extern void CheckThrottleSafe(void);
 extern void SpektrumBind (uint32_t bindNumber);
 
 extern void InitRcData(void);
