@@ -139,11 +139,7 @@ const string_comp_rec stringCompTable[] = {
 
 const config_variables_rec valueTable[] = {
 
-#ifdef STM32F446xx	//TODO remove target specific ifdefs
-		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,					0, MIXER_END, MIXER_X4213, "" },
-#else
 		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,					0, MIXER_END, MIXER_X1234, "" },
-#endif
 
 		{ "famx", 				typeFLOAT, "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0.9, 1.1, 1, "" },
 		{ "mixer_style", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerStyle,					0, 1, 0, "" },
@@ -240,7 +236,7 @@ const config_variables_rec valueTable[] = {
 		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 025.00, "" },
 
 #ifdef STM32F446xx	//TODO remove target specific ifdefs
-		{ "rx_protocol",		typeUINT, "rccf", &mainConfig.rcControlsConfig.rxProtcol,				0, USING_RX_END - 1, USING_SPEK_R, "" },
+		{ "rx_protocol",		typeUINT, "rccf", &mainConfig.rcControlsConfig.rxProtcol,				0, USING_RX_END - 1, USING_SPEK_T, "" },
 		{ "rx_usart",			typeUINT, "rccf", &mainConfig.rcControlsConfig.rxUsart,					0, MAX_USARTS - 1, ENUM_USART5, "" },
 #else
 		{ "rx_protocol", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rxProtcol, 				0, USING_RX_END-1, USING_SPEK_T, "" },

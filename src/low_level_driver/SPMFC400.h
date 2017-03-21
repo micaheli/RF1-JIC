@@ -241,8 +241,8 @@
 #define USART5_TXDMA_IRQN				DMA1_Stream7_IRQn
 #define USART5_TXDMA_CHANNEL			DMA_CHANNEL_4
 #define USART5_RXALT					GPIO_AF8_UART5
-#define USART5_RXPIN					GPIO_PIN_12
-#define USART5_RXPORT					ENUM_PORTC
+#define USART5_RXPIN					GPIO_PIN_2		//Rx pin isn't actually broken out. Just defined for autodetect to work.
+#define USART5_RXPORT					ENUM_PORTD
 #define USART5_RXDMA					ENUM_DMA1_STREAM_0
 #define USART5_RXDMA_IRQN				DMA1_Stream0_IRQn
 #define USART5_RXDMA_CHANNEL			DMA_CHANNEL_4
