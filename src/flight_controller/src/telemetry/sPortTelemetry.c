@@ -439,7 +439,7 @@ void FillLuaPacket(void)
 						strcpy(charMatrix[0], "RaceFlight One VTX");
 						strcpy(charMatrix[1], " VTX");
 						strcpy(charMatrix[2], " Band");
-						strcpy(charMatrix[3], " Channel");
+						strcpy(charMatrix[3], " Channel ");
 						strcpy(charMatrix[4], " Power");
 						strcpy(charMatrix[5], " Set and Exit");
 						switch(vtxRequested.vtxBand)
@@ -555,36 +555,6 @@ void FillLuaPacket(void)
 
 	luaOutPacketOne = ( (outString[0] & 0xFF) | ((outString[1] & 0xFF) << 8) );
 	luaOutPacketTwo = ( (outString[2] & 0xFF) | ((outString[3] & 0xFF) << 8) | ((outString[4] & 0xFF) << 16)  | ((outString[5] & 0xFF) << 24) );
-	return;
-	switch(counter--)
-	{
-		case 31:
-			//d2 = lrint(mainConfig.pidConfig[ROLL].kp) & 0xFF;
-			//d3 = (lrint(mainConfig.pidConfig[ROLL].kp) >> 8) & 0xFF;
-			break;
-		case 30:
-			//d1 = 0;
-			//d2 = lrint(mainConfig.pidConfig[ROLL].ki) & 0xFF;
-			//d3 = (lrint(mainConfig.pidConfig[ROLL].ki) >> 8) & 0xFF;
-			break;
-		case 29:
-			//d1 = 0;
-			//d2 = lrint(mainConfig.pidConfig[ROLL].kd) & 0xFF;
-			//d3 = (lrint(mainConfig.pidConfig[ROLL].kd) >> 8) & 0xFF;
-			break;
-		case 28:
-			//d1 = 0;
-			//d2 = lrint(mainConfig.pidConfig[PITCH].kp) & 0xFF;
-			//d3 = (lrint(mainConfig.pidConfig[PITCH].kp) >> 8) & 0xFF;
-			break;
-		case 27:
-		default:
-			//cm = ID_CMD_ERASE;
-			//d1 = 0;
-			//d2 = lrint(mainConfig.pidConfig[PITCH].ki) & 0xFF;
-			//d3 = (lrint(mainConfig.pidConfig[PITCH].ki) >> 8) & 0xFF;
-			break;
-	}
 
 }
 
@@ -703,7 +673,6 @@ void SendSmartPort(void)
 			return;
 			break;
 	}
-
 
 	//send via hard serial if it's configured
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
@@ -833,6 +802,7 @@ void InitAllSport(void)
 		default:
 			break;
 	}
+	telemtryRxTimerBufferIdx = 0;
 }
 ///////////////////////////// SOFT SPORT
 void InitSoftSport(void)
@@ -872,7 +842,13 @@ static uint32_t IsSoftSerialLineIdle()
 	{
 		if (telemtryRxTimerBufferIdx > 1)
 			return(1);
+		else if ( (!progMode && (timeNow - (float)telemtryRxTimerBuffer[telemtryRxTimerBufferIdx-1]) > (200)) )
+		{
+			PutSportIntoReceiveState(sbusActuator, 1);
+			return(0);
+		}
 	}
+
 	return(0);
 }
 
@@ -887,8 +863,13 @@ void SportSoftSerialExtiCallback(uint32_t callbackNumber)
 		if (telemtryRxTimerBufferIdx == SPORT_SOFT_SERIAL_TIME_BUFFER_SIZE)
 		{
 			telemtryRxTimerBufferIdx = 0;
+			EXTI_Deinit(ports[sbusActuator.port], sbusActuator.pin, sbusActuator.EXTIn);
 		}
 		__HAL_GPIO_EXTI_CLEAR_IT(sbusActuator.pin);
+	}
+	else
+	{
+		EXTI_Deinit(ports[sbusActuator.port], sbusActuator.pin, sbusActuator.EXTIn);
 	}
 }
 

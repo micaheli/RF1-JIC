@@ -208,7 +208,7 @@ void InitTelemtry(void)
 	InitSmartAudio();
     if(mainConfig.telemConfig.telemSmartAudio && !vtxRecord.vtxDevice)
     {
-    	DelayMs(1000);
+    	DelayMs(1500);
     	InitSmartAudio();
     }
 

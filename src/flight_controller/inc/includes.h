@@ -1,5 +1,7 @@
 #pragma once
 
+//#define LOG32
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>

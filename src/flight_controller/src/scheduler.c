@@ -180,35 +180,38 @@ inline void TaskProcessArmingStructure(void)
 inline void TaskCheckDelayedArming(void)
 {
 
-	return;
-
+ 	//handles VTX enabling as well
+ 	if(armBoardAt)
+ 	{
+ 		//delayed arming window of 150 ms.
+ 		if ( (InlineMillis() > armBoardAt) && ((InlineMillis() - armBoardAt) < 250) )
+ 		{
+ 			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) )
+ 			{
+ 				//only try turning on the VTX once per arming
+ 				turnOnVtxNow = 0;
+ 				if (mainConfig.telemConfig.telemSport)
+					DeInitSoftSport();
+ 				InitSmartAudio();
+ 				VtxTurnOn();
+ 				DeInitSmartAudio();
+ 				if (mainConfig.telemConfig.telemSport)
+					InitAllSport();
+ 			}
+ 			armBoardAt = 0;
+ 			ArmBoard();
+ 		}
+ 	}
 }
 
 inline void TaskCheckVtx(void)
 {
 
-
-	//static uint8_t vtxChannel   = 0;
-	//static VTX_BAND vtxBand     = 0;
-	//static VTX_POWER vtxPower   = 0;
-	//static VTX_REGION vtxRegion = 0;
-	//static VTX_PIT vtxPit       = 0;
+	static uint32_t modeLatch = 0;
 
 	//don't do this task unless board is disarmed
 	if (boardArmed)
 		return;
-
-	if (ModeSet(M_VTXON) && ModeActive(M_VTXON))
-	{
-		//only try turning on the VTX once per mode enabling
-		turnOnVtxNow = 1;
-	}
-
-	if (turnOnVtxNow)
-	{
-		VtxTurnOn(); //blocking of scheduler during send and receive
-		turnOnVtxNow = 0;
-	}
 
 	if (!mainConfig.telemConfig.telemSmartAudio)
 		return;
@@ -217,13 +220,38 @@ inline void TaskCheckVtx(void)
 	if (progMode)
 		return;
 
+	if (ModeSet(M_VTXON) && ModeActive(M_VTXON) && !modeLatch)
+	{
+		//only try turning on the VTX once per mode enabling
+		turnOnVtxNow = 1;
+		modeLatch = 1;
+	}
+	else if (ModeSet(M_VTXON) && !ModeActive(M_VTXON))
+	{
+		modeLatch = 0;
+	}
+
+	if (turnOnVtxNow)
+	{
+		turnOnVtxNow = 0;
+		if (mainConfig.telemConfig.telemSport)
+			DeInitSoftSport();
+		InitSmartAudio();
+		VtxTurnOn(); //blocking of scheduler during send and receive
+		DeInitSmartAudio();
+		if (mainConfig.telemConfig.telemSport)
+			InitAllSport();
+	}
+
 	if (vtxRequested.vtxBandChannel != vtxRecord.vtxBandChannel)
 	{
-		DeInitSoftSport();
+		if (mainConfig.telemConfig.telemSport)
+			DeInitSoftSport();
 		InitSmartAudio();
 		VtxBandChannel(vtxRequested.vtxBandChannel);
-		InitAllSport();
-		SystemReset();
+		DeInitSmartAudio();
+		if (mainConfig.telemConfig.telemSport)
+			InitAllSport();
 	}
 
 	if (vtxRequested.vtxPit != vtxRecord.vtxPit)
@@ -236,11 +264,13 @@ inline void TaskCheckVtx(void)
 
 	if (vtxRequested.vtxPower != vtxRecord.vtxPower)
 	{
-		DeInitSoftSport();
+		if (mainConfig.telemConfig.telemSport)
+			DeInitSoftSport();
 		InitSmartAudio();
 		VtxPower(vtxRequested.vtxPower);
-		InitAllSport();
-		SystemReset();
+		DeInitSmartAudio();
+		if (mainConfig.telemConfig.telemSport)
+			InitAllSport();
 	}
 
 
@@ -273,11 +303,8 @@ inline void TaskCheckVtx(void)
 
 inline void TaskAdc(void)
 {
-	//TODO: Hack to make this lua crap work
-	if ( progMode )
-	{
+	if (progMode)
 		return;
-	}
 	PollAdc();
 	CheckBatteryCellCount();
 }
