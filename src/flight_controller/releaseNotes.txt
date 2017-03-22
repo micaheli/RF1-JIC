@@ -794,7 +794,18 @@ Version 0.208.062 RC3:
 	Fixed SPMFC400 build
 	Increment firmware type to RC3
 
+Version 0.209.062 BETA:
+	Make SmartAudio more robust
+	Make SmartAudio work better with S.port
 
+Version 0.210.062 BETA:
+	Fix Ki windup issue caused by double arming
+
+Version 0.211.062 RC4:
+	Adjusted throttle positioning
+
+Version 0.212.062 RC5:
+	Smart Audio changes
 
 #Features in current development:
 #	MSP OSD compatibility

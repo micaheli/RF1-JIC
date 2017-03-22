@@ -234,7 +234,7 @@ inline void RxUpdate(void) // hook for when rx updates
 {
 
 	//very first arm
-	static uint32_t veryFirstArm = 0;
+	static uint32_t veryFirstArm = 1;
 
 	 //get current flight modes
 	CheckRxToModes();
@@ -245,18 +245,22 @@ inline void RxUpdate(void) // hook for when rx updates
 	if (!ModeActive(M_ARMED) &&  throttleIsSafe)
 		armCheckLatch = 1;
 
-	if (!veryFirstArm)
+	if (veryFirstArm)
 		checkRxPreArmCalibration(); //collect rx data if not armed yet
 
 	if (armCheckLatch)
 	{
 		if ( (latchFirstArm == 0) && (!boardArmed) && (ModeActive(M_ARMED)) )
 		{
-			veryFirstArm  = 1;
+			if (veryFirstArm)
+			{
+				PreArmFilterCheck = 1;
+				ResetGyroCalibration();
+			}
+
+			veryFirstArm  = 0;
 			latchFirstArm = 1;
-			PreArmFilterCheck = 1;
 			buzzerStatus.status = STATE_BUZZER_ARMING;
-			ResetGyroCalibration();
 
 			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && (vtxRecord.vtxDevice !=  VTX_DEVICE_NONE))
 			{
@@ -287,12 +291,14 @@ inline void RxUpdate(void) // hook for when rx updates
 			if ( ABS((int32_t)rxCalibrationRecords[YAW].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
 				mainConfig.rcControlsConfig.midRc[YAW] = rxCalibrationRecords[YAW].highestDataValue;
 
-			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) && (vtxRecord.vtxDevice !=  VTX_DEVICE_NONE))
+			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) )
 			{
-				turnOnVtxNow = 1;
+				armBoardAt = InlineMillis();
 			}
-
-			ArmBoard();
+			else
+			{
+				ArmBoard();
+			}
 
 		}
 		else if ( !ModeActive(M_ARMED) )
@@ -832,9 +838,10 @@ inline void InlineCollectRcCommand (void)
 
 		if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
 			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.0f + mainConfig.rcControlsConfig.deadBand[axis], -1.0f); //-1 to 0
+		else if (axis == THROTTLE) //add 5% deadband to top of throttle
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.05f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1.05
 		else
 			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.0f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
-
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
 		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis])
