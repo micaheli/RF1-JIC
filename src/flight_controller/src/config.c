@@ -1836,6 +1836,16 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("vtxinfo", inString))
 		{
+
+			if (mainConfig.telemConfig.telemSport)
+				DeInitSoftSport();
+
+			InitSmartAudio();
+			DeInitSmartAudio();
+
+			if (mainConfig.telemConfig.telemSport)
+				InitAllSport();
+
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -1847,6 +1857,12 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("vtxon", inString))
 		{
+
+			if (mainConfig.telemConfig.telemSport)
+				DeInitSoftSport();
+
+			InitSmartAudio();
+			DeInitSmartAudio();
 
 			if (VtxTurnOn())
 			{
@@ -1863,10 +1879,17 @@ void ProcessCommand(char *inString)
 			{
 				RfCustomReplyBuffer("#me Error turning on VTX\n");
 			}
+			if (mainConfig.telemConfig.telemSport)
+				InitAllSport();
 
 		}
 	else if (!strcmp("vtxpit", inString))
 		{
+			if (mainConfig.telemConfig.telemSport)
+				DeInitSoftSport();
+
+			InitSmartAudio();
+			DeInitSmartAudio();
 
 			if (VtxTurnPit())
 			{
@@ -1884,9 +1907,18 @@ void ProcessCommand(char *inString)
 				RfCustomReplyBuffer("#me Error putting VTX into pit mode\n");
 			}
 
+			if (mainConfig.telemConfig.telemSport)
+				InitAllSport();
+
 		}
 	else if (!strcmp("vtxbandchannel", inString))
 		{
+
+			if (mainConfig.telemConfig.telemSport)
+				DeInitSoftSport();
+
+			InitSmartAudio();
+			DeInitSmartAudio();
 
 			if (VtxBandChannel( GetValueFromString(args, vtxStringCompTable, sizeof(vtxStringCompTable)) ))
 			{
@@ -1903,6 +1935,9 @@ void ProcessCommand(char *inString)
 			{
 				RfCustomReplyBuffer("#me Error changing VTX channel\n");
 			}
+
+			if (mainConfig.telemConfig.telemSport)
+				InitAllSport();
 
 		}
 	else if (!strcmp("saunlock", inString))

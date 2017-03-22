@@ -635,7 +635,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
-	if (SKIP_GYRO)
+	if (SKIP_GYRO || (!boardArmed && progMode))
 	{
 		FeedTheDog();
 		ledStatus.status = LEDS_FAST_BLINK;
@@ -745,8 +745,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			else if (gyroStdDeviationPointer < GYRO_STD_DEVIATION_SAMPLE_SIZE)
 			{
 				//gather cycles during board calibration
-				gyroStdDeviationSamples[YAW][gyroStdDeviationPointer] = dpsGyroArray[YAW];
-				gyroStdDeviationSamples[ROLL][gyroStdDeviationPointer] = dpsGyroArray[ROLL];
+				gyroStdDeviationSamples[YAW][gyroStdDeviationPointer]    = dpsGyroArray[YAW];
+				gyroStdDeviationSamples[ROLL][gyroStdDeviationPointer]    = dpsGyroArray[ROLL];
 				gyroStdDeviationSamples[PITCH][gyroStdDeviationPointer++] = dpsGyroArray[PITCH];
 
 				if (gyroStdDeviationPointer == GYRO_STD_DEVIATION_SAMPLE_SIZE)
@@ -754,13 +754,13 @@ inline void InlineFlightCode(float dpsGyroArray[])
 					gyroStdDeviationPointer = 0;
 					if (gyroStdDeviationTotalsPointer < GYRO_STD_DEVIATION_SAMPLE_SIZE)
 					{
-						gyroStdDeviationTotals[YAW][gyroStdDeviationTotalsPointer] = CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE);
-						gyroStdDeviationTotals[ROLL][gyroStdDeviationTotalsPointer] = CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE);
+						gyroStdDeviationTotals[YAW][gyroStdDeviationTotalsPointer]     = CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE);
+						gyroStdDeviationTotals[ROLL][gyroStdDeviationTotalsPointer]    = CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE);
 						gyroStdDeviationTotals[PITCH][gyroStdDeviationTotalsPointer++] = CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE);
 					}
 					else
 					{
-						gyroStdDeviationPointer = GYRO_STD_DEVIATION_SAMPLE_SIZE;
+						gyroStdDeviationPointer       = GYRO_STD_DEVIATION_SAMPLE_SIZE;
 						gyroStdDeviationTotalsPointer = GYRO_STD_DEVIATION_SAMPLE_SIZE;
 					}
 
@@ -782,16 +782,6 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			}
 			else if (!gyroStdDeviationLatch)
 			{
-				//DelayMs(50);
-				//gyroStdDeviationPointer = 0;
-				//gyroStdDeviationTotalsPointer = 0;
-				//uint32_t cat = (uint32_t)(yy[YAW] * 100);
-				//uint32_t dog = (uint32_t)(yy[ROLL] * 100);
-				//uint32_t rat = (uint32_t)(yy[PITCH] * 100);
-				//uint8_t  reportOut[50];
-				//sprintf((char *)reportOut, "%lu,%lu,%lu\n", cat, dog, rat);
-				//SendStatusReport((char *)reportOut);
-				//PreArmFilterCheck
 
 				gyroStdDeviationLatch = 1;
 				PreArmFilterCheck = 0;
@@ -803,17 +793,6 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				if (mainConfig.filterConfig[PITCH].gyro.r == 1)
 					pafGyroStates[PITCH]   = InitPaf( mainConfig.filterConfig[PITCH].gyro.q, yy[PITCH] * 100, 0.0f, filteredGyroData[PITCH]);
 
-		//		gyroStdDeviationLatch = 1;
-		//		mainConfig.filterConfig[YAW].gyro.r = 86;//CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE)     * 100;
-		//		mainConfig.filterConfig[ROLL].gyro.r = 86;//CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE)   * 100;
-		//		mainConfig.filterConfig[PITCH].gyro.r = 86;//CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100;
-		//		pafGyroStates[YAW]    = InitPaf( mainConfig.filterConfig[YAW].gyro.q, mainConfig.filterConfig[YAW].gyro.r    , 0, 0);
-		//		pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q, mainConfig.filterConfig[ROLL].gyro.r  , 0, 0);
-		//		pafGyroStates[PITCH]  = InitPaf( mainConfig.filterConfig[PITCH].gyro.q, mainConfig.filterConfig[PITCH].gyro.r, 0, 0);
-				//pafGyroStates[YAW]    = InitPaf( mainConfig.filterConfig[YAW].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
-				//pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
-				//pafGyroStates[PITCH]  = InitPaf( mainConfig.filterConfig[PITCH].gyro.q * 0.01, CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE) * 100, 0, 0);
-				//set filters
 			}
 
 			if (threeDeeMode)
@@ -861,7 +840,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			flightPids[PITCH].ki = 0;
 			rollAttitudeErrorKi  = 0;
 			pitchAttitudeErrorKi = 0;
-			fullKiLatched        = 1;
+			fullKiLatched        = 0;
 		}
 
 		//output to actuators. This is the end of the flight code for this iteration.
@@ -873,6 +852,11 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 		ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
+#ifdef LOG32
+			//update blackbox here
+			UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, filteredAccData);
+#endif
+
 		if (khzLoopCounter-- == 0)
 		{
 			//runs at 1KHz or loopspeed, whatever is slower
@@ -880,35 +864,10 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 			CheckFailsafe();
 
-			/*
-			//every 32 cycles we check if the filter needs an update.
-			if (
-					(currentGyroFilterConfig[YAW]   != mainConfig.filterConfig[YAW].gyro.r) ||
-					(currentGyroFilterConfig[ROLL]  != mainConfig.filterConfig[ROLL].gyro.r) ||
-					(currentGyroFilterConfig[PITCH] != mainConfig.filterConfig[PITCH].gyro.r)
-			) {
-				//InlineInitGyroFilters();
-			}
-
-			if (
-					(currentKdFilterConfig[YAW]   != kdFiltUsed[YAW]) ||
-					(currentKdFilterConfig[ROLL]  != kdFiltUsed[ROLL]) ||
-					(currentKdFilterConfig[PITCH] != kdFiltUsed[PITCH])
-			) {
-				InlineInitKdFilters();
-			}
-
-			if (
-					(currentAccFilterConfig[ACCX] != mainConfig.filterConfig[ACCX].acc.r) ||
-					(currentAccFilterConfig[ACCY] != mainConfig.filterConfig[ACCY].acc.r) ||
-					(currentAccFilterConfig[ACCZ] != mainConfig.filterConfig[ACCZ].acc.r)
-			) {
-				InlineInitAccFilters();
-			}
-			 */
-
-			//update blackbox here   //void UpdateBlackbox(pid_output *flightPids)
+#ifndef LOG32
+			//update blackbox here
 			UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, filteredAccData);
+#endif
 
 			//check for fullKiLatched here
 			if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) )

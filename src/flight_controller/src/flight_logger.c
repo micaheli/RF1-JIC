@@ -1,6 +1,5 @@
 #include "includes.h"
 
-
 #define UPDATE_BB_CHAR_STRING_SIZE 10 //good for 100 days of logging
 #define UPDATE_BB_TOTAL_HEADER_SIZE 256 //good for 100 days of logging
 #define UPDATE_BB_DATA_SIZE 32 //good for 100 days of logging
@@ -9,42 +8,7 @@
 	"VER=002\n"     \
 	"STYLE=RAT\n\0" \
 
-/*
-static const char blackboxHeader[] =
-    "H Product:Blackbox flight recorder\n"
-    "H Data version:2\n"
-    "H I interval:1\n"
-	"H Field I name:loopIteration,time," //2
-	"axisP[2],axisI[2],axisD[2]," //5
-	"axisP[0],axisI[0],axisD[0]," //8
-	"axisP[1],axisI[1],axisD[1]," //11
-	"rcCommand[0],rcCommand[1],rcCommand[2],rcCommand[3]," //15
-	"debug[2],debug[0],debug[1]," //18
-	"gyroADC[2],gyroADC[0],gyroADC[1]," //21
-	"ugyroADC[2],ugyroADC[0],ugyroADC[1]," //24
-	"accSmooth[2],accSmooth[0],accSmooth[1]," //27
-	"motor[0],motor[1],motor[2],motor[3]\n" //31
 
-	"H Field I signed:"    "0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1\n"
-	"H Field I predictor:" "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
-	"H Field I encoding:"  "1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
-	"H Field P predictor:" "6,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1\n"
-	"H Field P encoding:"  "9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
-	"H Field S name:flightModeFlags,stateFlags,failsafePhase,rxSignalReceived,rxFlightChannelsValid\n"
-	"H Field S signed:0,0,0,0,0\n"
-	"H Field S predictor:0,0,0,0,0\n"
-	"H Field S encoding:1,1,7,7,7\n"
-	"H Firmware type:Raceflight\n"
-	"H Firmware revision:One\n"
-	"H Firmware date:Oct 31 2015 22:44:00\n"
-	"P interval:1/1\n"
-	"H rcRate:100\n"
-	"H minthrottle:1100\n"
-	"H maxthrottle:2000\n"
-	"H gyro.scale:0x41600000\n"
-	"H acc_1G:1\n"
-;
-*/
 uint32_t LoggingEnabled;
 uint32_t firstLogging;
 uint32_t flashAlign;
@@ -120,7 +84,7 @@ inline void InlineWrite16To8 (int16_t data)
 	WriteByteToFlash(  (uint8_t)(data & 0xff) );
 }
 
- void WriteByteToFlash (uint8_t data)
+inline void WriteByteToFlash (uint8_t data)
  {
 
 	buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
@@ -187,16 +151,22 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 {
 
 	uint32_t        finishX;
+	uint32_t        recordJunkData = 0;
 	static uint32_t loggingStartedLatch = 0;
 	static int32_t  disarmLast = 0;
-	uint32_t        recordJunkData = 0;
 
+#ifndef LOG32
 	pid_output currFlightPids[AXIS_NUMBER];
 	float      currFlightSetPoints[AXIS_NUMBER];
 	float      currFilteredGyroData[AXIS_NUMBER];
 	float      currDpsGyroArray[AXIS_NUMBER];
 	float      currFilteredAccData[AXIS_NUMBER];
 	float      currMotorOutput[4];
+#else
+	(void)(flightPids);
+	(void)(flightSetPoints);
+	(void)(filteredAccData);
+#endif
 
 	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (ModeActive(M_LOGGING)) && (flashInfo.enabled == FLASH_ENABLED) )
 	{
@@ -275,35 +245,30 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 		else
 		{
 
-			
 			if(logItterationCounter < 1)
 			{
 				logItterationCounter = 1;	//TODO make this configurable value. Capture rate = 1khz/value
 
+#ifndef LOG32
 				//average all values
 				for (finishX = 0; finishX < AXIS_NUMBER; finishX++)
 				{
 					currFlightPids[finishX].kp    = ( (flightPids[finishX].kp + lastFlightPids[finishX].kp) * 0.5);
 					currFlightPids[finishX].ki    = ( (flightPids[finishX].ki + lastFlightPids[finishX].ki) * 0.5);
 					currFlightPids[finishX].kd    = ( (flightPids[finishX].kd + lastFlightPids[finishX].kd) * 0.5);
-
 					currFlightSetPoints[finishX]  = ( (flightSetPoints[finishX] + lastFlightSetPoints[finishX]) * 0.5);
-
 					currFilteredGyroData[finishX] = ( (filteredGyroData[finishX] + lastFilteredGyroData[finishX]) * 0.5);
-
 					currDpsGyroArray[finishX]     = ( (dpsGyroArray[finishX] + lastDpsGyroArray[finishX]) * 0.5);
-
 					currFilteredAccData[finishX]  = ( (filteredAccData[finishX] + lastFilteredAccData[finishX]) * 0.5);
 				}
 
-				currMotorOutput[0]      = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5);
-				currMotorOutput[1]      = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5);
-				currMotorOutput[2]      = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5);
-				currMotorOutput[3]      = ( (motorOutput[3] + lastMotorOutput[3]) * 0.5);
+				currMotorOutput[0] = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5);
+				currMotorOutput[1] = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5);
+				currMotorOutput[2] = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5);
+				currMotorOutput[3] = ( (motorOutput[3] + lastMotorOutput[3]) * 0.5);
 
 				//copy current value to last values.
 				memcpy(lastFlightPids, flightPids, sizeof(pid_output));
-
 				memcpy(lastFlightSetPoints, flightSetPoints, sizeof(lastFlightSetPoints));
 				memcpy(lastFilteredGyroData, filteredGyroData, sizeof(lastFilteredGyroData));
 				memcpy(lastDpsGyroArray, dpsGyroArray, sizeof(lastDpsGyroArray));
@@ -313,6 +278,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				lastMotorOutput[1] = motorOutput[1];
 				lastMotorOutput[2] = motorOutput[2];
 				lastMotorOutput[3] = motorOutput[3];
+#endif
 
 				//write iframe
 				WriteByteToFlash( 'I' );
@@ -320,16 +286,16 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				BlackboxWriteUnsignedVB(logItteration);
 				BlackboxWriteUnsignedVB(logStartMicros + (logItteration * logRateTime) );
 
+#ifndef LOG32
+
 				if (recordJunkData)
 				{
 					BlackboxWriteSignedVB( (int32_t)(999) );
 					BlackboxWriteSignedVB( (int32_t)(999) );
 					BlackboxWriteSignedVB( (int32_t)(999) );
-
 					BlackboxWriteSignedVB( (int32_t)(rx_timeout)   );
 					BlackboxWriteSignedVB( (int32_t)(deviceWhoAmI) );
 					BlackboxWriteSignedVB( (int32_t)(errorMask)    );
-
 					BlackboxWriteSignedVB( (int32_t)(failsafeHappend) );
 					BlackboxWriteSignedVB( (int32_t)(activeModes)     );
 					BlackboxWriteSignedVB( (int32_t)(activeModes)     );
@@ -339,11 +305,9 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 					BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].kp           * 1000) );
 					BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].ki           * 1000) );
 					BlackboxWriteSignedVB( (int32_t)(currFlightPids[YAW].kd           * 1000) );
-
 					BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].kp          * 1000) );
 					BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].ki          * 1000) );
 					BlackboxWriteSignedVB( (int32_t)(currFlightPids[ROLL].kd          * 1000) );
-
 					BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].kp         * 1000) );
 					BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].ki         * 1000) );
 					BlackboxWriteSignedVB( (int32_t)(currFlightPids[PITCH].kd         * 1000) );
@@ -353,6 +317,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				BlackboxWriteSignedVB( (int32_t)( ((smoothedRcCommandF[YAW])      * 500)) ); //20
 				BlackboxWriteSignedVB( (int32_t)( ((smoothedRcCommandF[ROLL])     * 500)) ); //22
 				BlackboxWriteSignedVB( (int32_t)( ((smoothedRcCommandF[PITCH])    * 500)) ); //24
+
 				//-1 to 1 to 1000 to 2000
 				BlackboxWriteSignedVB( (int32_t)( ((smoothedRcCommandF[THROTTLE] + 1) * 500) + 1000) ); //26
 
@@ -365,6 +330,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				//BlackboxWriteSignedVB( (int32_t)(currDpsGyroArray[YAW]       * 16.4) ); //34
 				//BlackboxWriteSignedVB( (int32_t)(currDpsGyroArray[ROLL]      * 16.4) ); //36
 				//BlackboxWriteSignedVB( (int32_t)(currDpsGyroArray[PITCH]     * 16.4) ); //38
+
 				(void)(dpsGyroArray);
 				(void)(currDpsGyroArray);
 
@@ -383,61 +349,17 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[1] + 1)   * 1000) ); //54
 				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[2] + 1)   * 1000) ); //56
 				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[3] + 1)   * 1000) ); //58
+
+#else
+				(void)(recordJunkData);
+				BlackboxWriteSignedVB( (int32_t)((float)(filteredGyroData[YAW])   * 16.4) );
+				BlackboxWriteSignedVB( (int32_t)((float)(dpsGyroArray[YAW])       * 16.4) );
+#endif
+
 			}
 
 			logItterationCounter--;
 
-/*
-			//pages are aligned with data at all times if we keep this at 256
-			InlineWrite16To8(  (int16_t)(flightPids[YAW].kp           * 10000) ); //2
-			InlineWrite16To8(  (int16_t)(flightPids[YAW].ki           * 10000) ); //4
-			InlineWrite16To8(  (int16_t)(flightPids[YAW].kd           * 10000) ); //6
-
-			InlineWrite16To8(  (int16_t)(flightPids[ROLL].kp          * 10000) ); //8
-			InlineWrite16To8(  (int16_t)(flightPids[ROLL].ki          * 10000) ); //10
-			InlineWrite16To8(  (int16_t)(flightPids[ROLL].kd          * 10000) ); //12
-
-			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kp         * 10000) ); //14
-			InlineWrite16To8(  (int16_t)(flightPids[PITCH].ki         * 10000) ); //16
-			InlineWrite16To8(  (int16_t)(flightPids[PITCH].kd         * 10000) ); //18
-
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[YAW]      * 10000) ); //20
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[ROLL]     * 10000) ); //22
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[PITCH]    * 10000) ); //24
-			InlineWrite16To8(  (int16_t)(smoothedRcCommandF[THROTTLE] * 10000) ); //26
-
-			//-2000.0 to 2000.0 DPS
-			InlineWrite16To8(  (int16_t)(flightSetPoints[YAW]    * 10) ); //28
-			InlineWrite16To8(  (int16_t)(flightSetPoints[ROLL]   * 10) ); //30
-			InlineWrite16To8(  (int16_t)(flightSetPoints[PITCH]  * 10) ); //32
-
-			//-2000.0 to 2000.0 DPS
-			InlineWrite16To8(  (int16_t)(dpsGyroArray[YAW]       * 10) ); //34
-			InlineWrite16To8(  (int16_t)(dpsGyroArray[ROLL]      * 10) ); //36
-			InlineWrite16To8(  (int16_t)(dpsGyroArray[PITCH]     * 10) ); //38
-
-			//-2000.0 to 2000.0 DPS
-			InlineWrite16To8(  (int16_t)(filteredGyroData[YAW]   * 10) ); //40
-			InlineWrite16To8(  (int16_t)(filteredGyroData[ROLL]  * 10) ); //42
-			InlineWrite16To8(  (int16_t)(filteredGyroData[PITCH] * 10) ); //44
-
-			//-16 to 16 DPS
-			InlineWrite16To8(  (int16_t)(filteredAccData[ACCX]   * 1000) ); //46
-			InlineWrite16To8(  (int16_t)(filteredAccData[ACCY]   * 1000) ); //48
-			InlineWrite16To8(  (int16_t)(filteredAccData[ACCZ]   * 1000) ); //50
-
-			//0 TO 1
-			InlineWrite16To8(  (int16_t)(motorOutput[0]          * 10000) ); //52
-			InlineWrite16To8(  (int16_t)(motorOutput[1]          * 10000) ); //54
-			InlineWrite16To8(  (int16_t)(motorOutput[2]          * 10000) ); //56
-			InlineWrite16To8(  (int16_t)(motorOutput[3]          * 10000) ); //58
-
-			InlineWrite16To8(  (int16_t)(accNoise[2]             * 1000) ); //60
-			InlineWrite16To8(  (int16_t)(accNoise[3]             * 1000) ); //62
-			InlineWrite16To8(  (int16_t)(accNoise[4]             * 1000) ); //64
-
-			FinishBlock(64);
-*/
 		}
 
 	}
