@@ -807,6 +807,9 @@ Version 0.211.062 RC4:
 Version 0.212.062 RC5:
 	Smart Audio changes
 
+Version 0.213.062 RC6:
+	Increment s.port displayed smart audio channel by one
+
 #Features in current development:
 #	MSP OSD compatibility
 #	MAVlink compatibility

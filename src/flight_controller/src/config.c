@@ -890,7 +890,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("error", inString))
 		{
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu %lu %lu\n", deviceWhoAmI, errorMask, failsafeHappend);RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%li %lu %lu\n", deviceWhoAmI, errorMask, failsafeHappend);RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ba:%lu\n", armingStructure.boardArmed);RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "lfa:%lu\n", armingStructure.latchFirstArm);RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "ams:%lu\n", armingStructure.armModeSet);RfCustomReplyBuffer(rf_custom_out_buffer);

@@ -46,7 +46,7 @@ typedef struct __attribute__((__packed__)) {
 
 static gyroFrame_t gyroRxFrame;
 static gyroFrame_t gyroTxFrame;
-uint32_t deviceWhoAmI = 0;
+int32_t deviceWhoAmI = 0;
 
 
 // TODO: check what the acc actually updates at when sample rate divider != 0
@@ -179,7 +179,7 @@ int AccGyroDeviceDetect(void)
 			case MPU9250_WHO_AM_I:
             case ICM20689_WHO_AM_I:
             case ICM20608G_WHO_AM_I:
-				return 0;
+				return -1;
 				break;
 			case MPU6500_WHO_AM_I:
 #ifdef SPMFC400
@@ -187,7 +187,7 @@ int AccGyroDeviceDetect(void)
                 return data;
 				break;
 #else
-				return 0;
+				return -2;
 				break;
 #endif
             case ICM20602_WHO_AM_I:
@@ -196,7 +196,7 @@ int AccGyroDeviceDetect(void)
                 return data;
                 break;
 #else
-				return 0;
+				return -3;
 				break;
 #endif
         }
