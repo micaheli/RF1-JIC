@@ -635,7 +635,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
-	if (SKIP_GYRO || (!boardArmed && progMode))
+	if (SKIP_GYRO)
 	{
 		FeedTheDog();
 		ledStatus.status = LEDS_FAST_BLINK;
