@@ -258,6 +258,19 @@ uint32_t SmartAudioGetSettings(void)
 			//not used right now, set frequency dependant from bands
 			//vtxRecord.vtxFrequency = ((smartAudioTxRxBuffer[8] << 8) | smartAudioTxRxBuffer[9]);
 
+			//only set first time
+			if (vtxRequested.vtxDevice == VTX_DEVICE_NONE)
+			{
+				vtxRequested.vtxDevice      = vtxRecord.vtxDevice;
+				vtxRequested.vtxBand        = vtxRecord.vtxBand;
+				vtxRequested.vtxChannel     = vtxRecord.vtxChannel;
+				vtxRequested.vtxBandChannel = vtxRecord.vtxBandChannel;
+				vtxRequested.vtxPower       = vtxRecord.vtxPower;
+				vtxRequested.vtxPit         = vtxRecord.vtxPit;
+				vtxRequested.vtxRegion      = vtxRecord.vtxRegion;
+				vtxRequested.vtxFrequency   = vtxRecord.vtxFrequency;
+			}
+
 			return(1);
 		}
 	}

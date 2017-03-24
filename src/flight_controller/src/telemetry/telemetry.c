@@ -203,6 +203,7 @@ void InitTelemtry(void)
 {
 
 	vtxRecord.vtxDevice      = VTX_DEVICE_NONE;
+	vtxRequested.vtxDevice   = VTX_DEVICE_NONE;
 
 	//try twice to init smart audi if it's enabled
 	InitSmartAudio();
@@ -211,18 +212,6 @@ void InitTelemtry(void)
     	DelayMs(1500);
     	InitSmartAudio();
     }
-
-	if (vtxRecord.vtxDevice != VTX_DEVICE_NONE)
-	{
-		vtxRequested.vtxDevice      = vtxRecord.vtxDevice;
-		vtxRequested.vtxBand        = vtxRecord.vtxBand;
-		vtxRequested.vtxChannel     = vtxRecord.vtxChannel;
-		vtxRequested.vtxBandChannel = vtxRecord.vtxBandChannel;
-		vtxRequested.vtxPower       = vtxRecord.vtxPower;
-		vtxRequested.vtxPit         = vtxRecord.vtxPit;
-		vtxRequested.vtxRegion      = vtxRecord.vtxRegion;
-		vtxRequested.vtxFrequency   = vtxRecord.vtxFrequency;
-	}
 
 	InitAllSport();
 

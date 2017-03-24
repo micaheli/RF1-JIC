@@ -463,7 +463,7 @@ void FillLuaPacket(void)
 								strcpy(charMatrix[2], " Band Unknown");
 								break;
 						}
-						itoa(vtxRequested.vtxChannel, &charMatrix[3][9], 10);
+						itoa(vtxRequested.vtxChannel+1, &charMatrix[3][9], 10);
 						switch(vtxRequested.vtxPower)
 						{
 							case 0:
