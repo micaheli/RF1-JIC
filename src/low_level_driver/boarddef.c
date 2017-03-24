@@ -377,6 +377,32 @@ void GetBoardHardwareDefs(void)
 	board.dmasMotor[3].dmaIRQn        = board.motors[3].dmaIRQn;     //motor out
 
 
+	board.motors[5].actuatorArrayNum  = 5;
+	board.motors[5].enabled           = ACTUATOR6_TYPE;
+	board.motors[5].timer             = ACTUATOR6_TIM;
+	board.motors[5].pin               = ACTUATOR6_PIN;
+	board.motors[5].port              = ACTUATOR6_GPIO;
+	board.motors[5].AF                = ACTUATOR6_ALTERNATE;
+	board.motors[5].timChannel        = ACTUATOR6_TIM_CH;
+	board.motors[5].activeTim	      = ACTUATOR6_ACTIVE_TIM;
+	board.motors[5].timCCR            = ACTUATOR6_TIM_CCR;
+	board.motors[5].polarity          = ACTUATOR6_POLARITY;
+	board.motors[5].Dma               = ACTUATOR6_DMA;
+	board.motors[5].dmaIRQn           = ACTUATOR6_DMA_IRQN;
+	board.motors[5].dmaChannel        = ACTUATOR6_DMA_CHANNEL;
+	board.motors[5].CcDmaHandle       = ACTUATOR6_DMA_HANDLE;
+	board.motors[5].timerIRQn         = ACTUATOR6_IRQN;
+	board.motors[5].EXTIn             = ACTUATOR6_EXTIN; //used for input
+	board.motors[5].EXTICallback      = ACTUATOR6_EXTICALLBACK; //used for input
+	board.motors[5].DmaCallback       = ACTUATOR6_DMACALLBACK; //used for input
+	board.motors[5].dmaEnabled        = ACTUATOR6_DMA_ENABLED;
+	//Motor Specific DMA settings
+	board.dmasMotor[5].enabled        = board.motors[5].dmaEnabled;
+	board.dmasMotor[5].dmaStream      = board.motors[5].Dma;
+	board.dmasMotor[5].dmaHandle      = board.motors[5].Dma;
+	board.dmasMotor[5].dmaChannel     = board.motors[5].dmaChannel;
+	board.dmasMotor[5].dmaIRQn        = board.motors[5].dmaIRQn;
+
 
 	board.motors[6].actuatorArrayNum  = 6;
 	board.motors[6].enabled           = ACTUATOR7_TYPE;

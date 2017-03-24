@@ -1048,7 +1048,7 @@ void InitFlight(void)
 
 	//init telemtry, if there's a gyro EXTI and soft serial collision then the fake EXTI will be used in place of the actual gyro EXTI
 	InitTelemtry();
-
+	laptimerInit();
 
 	if ( (!mainConfig.ledConfig.ledOnWithUsb) && (!IsUsbConnected()) )
 	{
