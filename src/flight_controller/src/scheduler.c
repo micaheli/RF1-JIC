@@ -359,9 +359,8 @@ inline void TaskLed(void)
 
 	//TODO: Hack to make this lua crap work
 	if ( progMode )
-	{
 		return;
-	}
+
 	UpdateWs2812Leds();
 }
 

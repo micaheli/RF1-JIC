@@ -46,13 +46,17 @@ float accCompAccTrust, accCompGyroTrust;
 uint32_t khzLoopCounter = 0;
 uint32_t gyroLoopCounter = 0;
 volatile uint32_t SKIP_GYRO = 0;
+volatile float yawAttitudeError = 0;
 volatile float rollAttitudeError = 0;
 volatile float pitchAttitudeError = 0;
+volatile float yawAttitudeErrorKi = 0;
 volatile float rollAttitudeErrorKi = 0;
 volatile float pitchAttitudeErrorKi = 0;
 
-volatile float rollAttitudeErrorKdelta = 0;
-volatile float lastRollAttitudeError   = 0;
+volatile float yawAttitudeErrorKdelta   = 0;
+volatile float lastYawAttitudeError     = 0;
+volatile float rollAttitudeErrorKdelta  = 0;
+volatile float lastRollAttitudeError    = 0;
 volatile float pitchAttitudeErrorKdelta = 0;
 volatile float lastPitchAttitudeError   = 0;
 
@@ -635,11 +639,16 @@ inline void InlineFlightCode(float dpsGyroArray[])
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
-	if (SKIP_GYRO || (!boardArmed && progMode))
+	if (SKIP_GYRO || (!boardArmed && progMode && 0))
 	{
 		FeedTheDog();
 		ledStatus.status = LEDS_FAST_BLINK;
 		return;
+	}
+
+	if (!ModeActive(M_GLUE) || !boardArmed) //if not M_GLUE mode or armed we reset the requesteds values.
+	{
+		ImuResetCommandQuat();
 	}
 
 	//update gyro filter, every time there's an interrupt
@@ -678,7 +687,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		}
 
 		//get setpoint for PIDC
-		if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON)) //no auto level modes active, we're in rate mode
+		if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || ModeActive(M_GLUE)) //no auto level modes active, we're in rate mode
 		{
 			if (!timeSinceSelfLevelActivated)
 				timeSinceSelfLevelActivated = InlineMillis();
@@ -698,23 +707,53 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				sldUsed = mainConfig.pidConfig[PITCH].sld;
 			}
 
-			rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.pidConfig[PITCH].sla ) - rollAttitude  );
-			pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla ) - pitchAttitude );
+			if (!ModeActive(M_GLUE)) //if M_GLUE mode
+			{
+				rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.pidConfig[PITCH].sla ) - rollAttitude  );
+				pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla ) - pitchAttitude );
 
-			rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.dT);
-			pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.dT);
+				rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.dT);
+				pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.dT);
 
-			rollAttitudeErrorKdelta  = -(rollAttitudeError  - lastRollAttitudeError);
-			lastRollAttitudeError    = rollAttitudeError;
-			pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
-			lastPitchAttitudeError   = pitchAttitudeError;
+				rollAttitudeErrorKdelta  = -(rollAttitudeError  - lastRollAttitudeError);
+				lastRollAttitudeError    = rollAttitudeError;
+				pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
+				lastPitchAttitudeError   = pitchAttitudeError;
+			}
 
-			if (ModeActive(M_ATTITUDE)) //if M_ATTITUDE mode
+			if (ModeActive(M_GLUE)) //if M_GLUE mode
+			{
+
+				//current attitude is stored here:
+				//attitudeFrameQuat
+				//requested change to this quat would be:
+				//which fills requestedDegrees
+
+				yawAttitudeError         = requestedDegrees[YAW];
+				rollAttitudeError        = requestedDegrees[ROLL];
+				pitchAttitudeError       = requestedDegrees[PITCH];
+
+				yawAttitudeErrorKi       = (yawAttitudeErrorKi   + yawAttitudeError   * sliUsed * loopSpeed.dT);
+				rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.dT);
+				pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.dT);
+
+				yawAttitudeErrorKdelta   = -(yawAttitudeError  - lastYawAttitudeError);
+				lastYawAttitudeError     = yawAttitudeError;
+				rollAttitudeErrorKdelta  = -(rollAttitudeError  - lastRollAttitudeError);
+				lastRollAttitudeError    = rollAttitudeError;
+				pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
+				lastPitchAttitudeError   = pitchAttitudeError;
+
+				//roll and pitch are set directly from self level mode
+				flightSetPoints[YAW]     = ( yawAttitudeError   * 15) + yawAttitudeErrorKi   + (yawAttitudeErrorKdelta   / loopSpeed.dT * sldUsed);
+				flightSetPoints[ROLL]    = ( rollAttitudeError  * 15) + rollAttitudeErrorKi  + (rollAttitudeErrorKdelta  / loopSpeed.dT * sldUsed);
+				flightSetPoints[PITCH]   = ( pitchAttitudeError * 15) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed);
+			}
+			else if (ModeActive(M_ATTITUDE)) //if M_ATTITUDE mode
 			{
 				//roll and pitch are set directly from self level mode
 				flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
 				flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
-
 			}
 			else if (ModeActive(M_HORIZON)) //if M_HORIZON mode
 			{
@@ -838,6 +877,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			flightPids[YAW].ki   = 0;
 			flightPids[ROLL].ki  = 0;
 			flightPids[PITCH].ki = 0;
+			yawAttitudeErrorKi   = 0;
 			rollAttitudeErrorKi  = 0;
 			pitchAttitudeErrorKi = 0;
 			fullKiLatched        = 0;

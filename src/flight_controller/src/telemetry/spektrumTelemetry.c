@@ -8,9 +8,7 @@ uint8_t spektrumTxBuffer[20];
 
 extern STRU_TELE_LAPTIMER lap_timer;
 
-DMA_InitTypeDef DMA_InitStructure;
-
-uint8_t dma_count;
+uint8_t dma_count = 0;
 TELEMETRY_STATE telemetryState = TELEM_START;
 UN_TELEMETRY sensorData;
 pidSpektrumTelem_t pidSpektrumTelem;
@@ -24,8 +22,18 @@ void InitSpektrumTelemetry(void) {
 	pidSpektrumTelem.row = 2;
 	pidSpektrumTelem.status = IDLE;
 
+	bzero(&telemetry, sizeof(telemetry));
+	bzero(&bind, sizeof(bind));
+	bzero(&sensorData, sizeof(sensorData));
+	bzero(&pidSpektrumTelem, sizeof(pidSpektrumTelem));
 
-	return;
+	/*
+	bzero(telemetry, sizeof(STR_SRXL_TELEM));
+	bzero(bind, sizeof(STR_SRXL_BIND));
+	bzero(lap_timer, sizeof(STRU_TELE_LAPTIMER));
+	bzero(sensorData, sizeof(UN_TELEMETRY));
+	bzero(pidSpektrumTelem, sizeof(pidSpektrumTelem_t));
+	*/
 }
 
 uint32_t VtxSpektrumBandAndChannelToVtxBandChannel(VTX_BAND vtxBand, uint8_t channel)
@@ -570,81 +578,3 @@ void textMenuUpdate(void)
 	}
 	dataInc = 0;
 }//end textMenuUpdate()
-
-
-
-
-
-
-
-
-
-/*
-void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
-{
-
-	while (DMA_GetCurrDataCounter(spektrumUart->txDMAStream) != 0)
-	{
-		dma_count = DMA_GetCurrDataCounter(spektrumUart->txDMAStream);
-	}
-
-	DMA_DeInit(spektrumUart->txDMAStream);
-	DMA_StructInit(&DMA_InitStructure);
-	DMA_InitStructure.DMA_Channel = spektrumUart->txDMAChannel;
-	DMA_InitStructure.DMA_PeripheralBaseAddr = spektrumUart->txDMAPeripheralBaseAddr;
-	DMA_InitStructure.DMA_Memory0BaseAddr = baseAddress;
-	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-	DMA_InitStructure.DMA_BufferSize = packetSize;
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-	//DMA_InitStructure.DMA_FIFOMode =
-	//DMA_InitStructure.DMA_FIFOThreshold =
-	//DMA_InitStructure.DMA_MemoryBurst =
-	//DMA_InitStructure.DMA_PeripheralBurst =
-	DMA_Init(spektrumUart->txDMAStream, &DMA_InitStructure);
-
-	//Disable rx DMA and IT before sending
-	//USART_DMACmd(spektrumUart->USARTx, USART_DMAReq_Rx, DISABLE);
-	//USART_ITConfig(spektrumUart->USARTx, USART_IT_IDLE, DISABLE);  
-
-	//Interrupt will be used to determine when message is complete and we can re-enable uart rx
-	//DMA_ITConfig(DMA1_Stream7, DMA_IT_TC, ENABLE);
-
-	//Send data
-
-	DMA_Cmd(spektrumUart->txDMAStream, ENABLE);		
-	
-}
-
-
-#endif
-ITStatus idle = 0; 
-ITStatus rxne = 0; 
-uint32_t uart5_dr = 0;
-void DMA1_Stream7_IRQHandler() {
-  
-  //Transmit is complete, we can re enable RX interrupt and DMA
-	if (DMA_GetITStatus(DMA1_Stream7, DMA_IT_TCIF7)) {
-		DMA_ClearITPendingBit(DMA1_Stream7, DMA_IT_TCIF7);
-    
-		//Clear RXNE register. This will prevent idle interrupt bit from being set after this transmission ends
-		idle = USART_GetFlagStatus(spektrumUart->USARTx, USART_FLAG_IDLE);
-		rxne = USART_GetITStatus(spektrumUart->USARTx, USART_FLAG_RXNE);
-		//USART_ReceiveData(UART5);
-		uart5_dr = UART5->DR;
-		///USART_ClearFlag(spektrumUart->USARTx, USART_FLAG_RXNE);
-		idle = USART_GetFlagStatus(spektrumUart->USARTx, USART_IT_IDLE);
-		rxne = USART_GetITStatus(spektrumUart->USARTx, USART_IT_RXNE);
-		//Clear idle flag and re-enable UART tx
-		//USART_ClearITPendingBit(spektrumUart->USARTx, USART_IT_IDLE);
-		DMA_ITConfig(DMA1_Stream7, DMA_IT_TC, DISABLE);
-		USART_DMACmd(spektrumUart->USARTx, USART_DMAReq_Rx, ENABLE);
-		USART_ITConfig(spektrumUart->USARTx, USART_IT_IDLE, ENABLE);  
-	}
-}
-
-*/

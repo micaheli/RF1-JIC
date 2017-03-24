@@ -57,7 +57,7 @@ void ProcessTelemtry(void)
 
 	if (mainConfig.telemConfig.telemSpek)
 	{
-		if ( (sendSpektrumTelemtryAt) && ( sendSpektrumTelemtryAt > Micros() ) )
+		if ( (sendSpektrumTelemtryAt) && ( sendSpektrumTelemtryAt >= InlineMillis() ) )
 		{
 			sendSpektrumTelemtryAt = 0; //reset send time to 0 which disables it
 			sendSpektrumTelem();     //send the data. Blind of soft or hard s.port

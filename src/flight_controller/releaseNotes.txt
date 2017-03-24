@@ -813,6 +813,20 @@ Version 0.213.062 RC6:
 Version 0.214.062 RC7:
 	fix initial read of VTX values
 
+
+
+
+Version 1.001.063 ALPHA:
+	Added Glue mode for testing 
+		Should hold course during impact when enabled
+	Added Braindrain mode for testing
+		Will increase responsiveness at the possible cost of smoothness
+		Similar but different than Direct mode
+			May or may not cause hotter motors and/or oscillations when used with direct mode
+
+
+
+
 #Features in current development:
 #	MSP OSD compatibility
 #	MAVlink compatibility

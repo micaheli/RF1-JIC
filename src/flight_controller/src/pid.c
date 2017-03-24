@@ -238,8 +238,16 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 
 
 			// calculate Kd ////////////////////////// V
-			kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);
-			lastfilteredGyroData[axis] = filteredGyroData[axis];
+			if (ModeActive(M_BRAINDRAIN))
+			{
+				kdDelta[axis] = pidError - lastfilteredGyroData[axis];
+				lastfilteredGyroData[axis] = pidError;
+			}
+			else
+			{
+				kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);
+				lastfilteredGyroData[axis] = filteredGyroData[axis];
+			}
 
 			InlineUpdateWitchcraft(pidsUsed);
 
