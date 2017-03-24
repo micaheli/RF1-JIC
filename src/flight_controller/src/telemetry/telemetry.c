@@ -203,6 +203,7 @@ void InitTelemtry(void)
 {
 
 	vtxRecord.vtxDevice      = VTX_DEVICE_NONE;
+	vtxRequested.vtxDevice   = VTX_DEVICE_NONE;
 
 	//try twice to init smart audi if it's enabled
 	InitSmartAudio();
