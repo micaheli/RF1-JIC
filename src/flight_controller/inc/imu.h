@@ -20,7 +20,7 @@ typedef struct {
 } quaternion_record;
 
 extern volatile float currentSpinRate;
-extern volatile quaternion_record quat;
+extern volatile quaternion_record attitudeFrameQuat;
 extern volatile float requestedDegrees[3];
 
 extern void InitImu(void);

@@ -383,6 +383,75 @@ char *ftoa(float x, char *floatString)
     return(floatString);
 }
 
+char *ftoa6(float x, char *floatString)
+{
+    int32_t value;
+    char intString1[12];
+    char intString2[12] = { 0, };
+    char *decimalPoint = ".";
+    uint8_t dpLocation;
+
+    if (x > 0)
+        x += 0.0000005f;
+    else
+        x -= 0.0000005f;
+
+    value = (int32_t)(x * 1000000.0f);
+
+    itoa(ABS(value), intString1, 10);
+
+    if (value >= 0)
+        intString2[0] = ' ';
+    else
+        intString2[0] = '-';
+
+    if (strlen(intString1) == 1) {
+        intString2[1] = '0';
+        intString2[2] = '0';
+        intString2[3] = '0';
+        intString2[4] = '0';
+        intString2[5] = '0';
+        intString2[6] = '0';
+        strcat(intString2, intString1);
+    } else if (strlen(intString1) == 2) {
+        intString2[1] = '0';
+        intString2[2] = '0';
+        intString2[3] = '0';
+		intString2[4] = '0';
+		intString2[5] = '0';
+        strcat(intString2, intString1);
+    } else if (strlen(intString1) == 3) {
+        intString2[1] = '0';
+        intString2[2] = '0';
+        intString2[3] = '0';
+        intString2[4] = '0';
+        strcat(intString2, intString1);
+    } else if (strlen(intString1) == 4) {
+    	intString2[1] = '0';
+		intString2[2] = '0';
+		intString2[3] = '0';
+        strcat(intString2, intString1);
+    } else if (strlen(intString1) == 5) {
+    	intString2[1] = '0';
+		intString2[2] = '0';
+        strcat(intString2, intString1);
+    } else if (strlen(intString1) == 6) {
+        intString2[1] = '0';
+        strcat(intString2, intString1);
+    } else {
+        strcat(intString2, intString1);
+    }
+
+    dpLocation = strlen(intString2) - 6;
+
+    strncpy(floatString, intString2, dpLocation);
+    floatString[dpLocation] = '\0';
+    strcat(floatString, decimalPoint);
+    strcat(floatString, intString2 + dpLocation);
+
+    return(floatString);
+}
+
 void ValidateConfigSettings(void)
 {
 	uint32_t x;
@@ -993,10 +1062,14 @@ void ProcessCommand(char *inString)
 			StripSpaces(gy);
 			StripSpaces(gz);
 
-			ftoa(quat.w, qw);
-			ftoa(quat.x, qx);
-			ftoa(quat.y, qy);
-			ftoa(quat.z, qz);
+			//ftoa6(attitudeFrameQuat.w, qw);
+			//ftoa6(attitudeFrameQuat.x, qx);
+			//ftoa6(attitudeFrameQuat.y, qy);
+			//ftoa6(attitudeFrameQuat.z, qz);
+			ftoa(attitudeFrameQuat.w, qw);
+			ftoa(attitudeFrameQuat.x, qx);
+			ftoa(attitudeFrameQuat.y, qy);
+			ftoa(attitudeFrameQuat.z, qz);
 			StripSpaces(qw);
 			StripSpaces(qx);
 			StripSpaces(qy);
@@ -1009,7 +1082,13 @@ void ProcessCommand(char *inString)
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm gx=%s\n#tm gy=%s\n#tm gz=%s\n", gx,gy,gz);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm qx=%s\n#tm qy=%s\n#tm qz=%s\n#tm qw=%s\n", qx,qy,qz,qw);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm qx=%s\n", qx);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm qy=%s\n", qy);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm qz=%s\n", qz);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#tm qw=%s\n", qw);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 		}

@@ -1,6 +1,5 @@
 #include "includes.h"
 
-volatile quaternion_record quat;
 volatile quaternion_record commandQuat;
 volatile quaternion_record accQuat;
 volatile quaternion_record gyroQuat;
@@ -253,7 +252,6 @@ void InitImu(void)
 	QuaternionZeroRotation(&inertialFrameQuat);
 	QuaternionZeroRotation(&groundQuat);
 	QuaternionZeroRotation(&gyroQuat);
-	QuaternionZeroRotation(&quat);
 	QuaternionZeroRotation(&commandQuat);
 	QuaternionZeroRotation(&accQuat);
 

@@ -29,10 +29,6 @@ paf_state pafAccStates[AXIS_NUMBER];
 float actuatorRange;
 float flightSetPoints[AXIS_NUMBER];
 volatile uint32_t boardArmed, calibrateMotors, fullKiLatched;
-float currentGyroFilterConfig[AXIS_NUMBER];
-float currentKdFilterConfig[AXIS_NUMBER];
-float currentAccFilterConfig[AXIS_NUMBER];
-volatile uint32_t flightcodeTimeStart;
 volatile float flightcodeTime;
 float pitchAttitude = 0, rollAttitude = 0, yawAttitude = 0;
 uint32_t boardOrientation1 = 0;
@@ -42,7 +38,6 @@ float slpUsed;
 float sliUsed;
 float sldUsed;
 
-float accCompAccTrust, accCompGyroTrust;
 uint32_t khzLoopCounter = 0;
 uint32_t gyroLoopCounter = 0;
 volatile uint32_t SKIP_GYRO = 0;
@@ -230,6 +225,7 @@ void InitFlightCode(void)
 
 	uint32_t validLoopConfig = 0;
 
+	//biquad doesn't work unless we do this
 	kdFiltUsed[YAW]   = mainConfig.filterConfig[YAW].kd.r;
 	kdFiltUsed[ROLL]  = mainConfig.filterConfig[ROLL].kd.r;
 	kdFiltUsed[PITCH] = mainConfig.filterConfig[PITCH].kd.r;
@@ -478,18 +474,18 @@ void InitFlightCode(void)
 
 	//TODO: gyroConfig.accDenom is not set until after gyro is running.
 	//loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
-	loopSpeed.halfGyrodT = loopSpeed.gyrodT * 0.5f;
-	loopSpeed.accdT      = loopSpeed.gyrodT * (float)loopSpeed.gyroAccDiv;
-	loopSpeed.InversedT  = (1/loopSpeed.dT);
+	loopSpeed.halfGyrodT        = loopSpeed.gyrodT * 0.5f;
+	loopSpeed.halfGyrodTSquared = loopSpeed.gyrodT * loopSpeed.gyrodT * 0.5f;
+	loopSpeed.accdT             = loopSpeed.gyrodT * (float)loopSpeed.gyroAccDiv;
+	loopSpeed.InversedT         = (1/loopSpeed.dT);
 
 
 
-	actuatorRange   = 0;
-	boardArmed      = 0;
-	calibrateMotors = 0;
-	fullKiLatched   = 0;
-	flightcodeTime  = 0.0f;
-	flightcodeTimeStart = 0;
+	actuatorRange       = 0;
+	boardArmed          = 0;
+	calibrateMotors     = 0;
+	fullKiLatched       = 0;
+	flightcodeTime      = 0.0f;
 
 	InlineInitGyroFilters();
 	InlineInitKdFilters();
@@ -501,18 +497,11 @@ void InitFlightCode(void)
 inline void InlineInitGyroFilters(void)
 {
 
+	//first time init
 	int32_t axis;
 
-	for (axis = 2; axis >= 0; --axis) {
-
-		if (mainConfig.filterConfig[axis].gyro.r == 1)
-			pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, 88.0f, 0.0f, filteredGyroData[axis]);
-		else
-			pafGyroStates[axis]   = InitPaf( mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, 0.1500, filteredGyroData[axis]);
-
-		currentGyroFilterConfig[axis] = mainConfig.filterConfig[axis].gyro.r;
-
-	}
+	for (axis = 2; axis >= 0; --axis)
+			InitPaf( &pafGyroStates[axis], 0.06f, 0.088f, 0.0f, 0.0f);
 
 }
 
@@ -521,13 +510,8 @@ inline void InlineInitKdFilters(void)
 
 	int32_t axis;
 
-	for (axis = 2; axis >= 0; --axis) {
-
+	for (axis = 2; axis >= 0; --axis)
 		InitBiquad(kdFiltUsed[axis], &lpfFilterStateKd[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterStateKd[axis], 1.99f);
-
-		currentKdFilterConfig[axis] = kdFiltUsed[axis];
-
-	}
 
 }
 
@@ -548,14 +532,8 @@ inline void InlineInitAccFilters(void)
 
 	int32_t vector;
 
-	for (vector = 2; vector >= 0; --vector) {
-
+	for (vector = 2; vector >= 0; --vector)
 		InitBiquad(mainConfig.filterConfig[vector].acc.r, &lpfFilterStateAcc[vector], loopSpeed.accdT, FILTER_TYPE_LOWPASS, &lpfFilterStateAcc[vector], mainConfig.filterConfig[vector].acc.q);
-		//pafAccStates[vector]   = InitPaf( mainConfig.filterConfig[vector].acc.q, mainConfig.filterConfig[vector].acc.r, mainConfig.filterConfig[vector].acc.p, filteredAccData[vector]);
-
-		currentAccFilterConfig[vector] = mainConfig.filterConfig[vector].acc.r;
-
-	}
 
 }
 
@@ -614,16 +592,13 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 
 }
 
-inline void InlineFlightCode(float dpsGyroArray[])
+//inline void InlineFlightCode(float dpsGyroArray[])
+ void InlineFlightCode(float dpsGyroArray[])
 {
 
-	static float yy[3] = {0,0,0};
 	static uint32_t gyroStdDeviationLatch = 0;
 	int32_t axis;
 	volatile float averagedGyro;
-
-	//cycle time
-	//flightcodeTimeStart = Micros();
 
 	//Gyro routine:
 	//gyro interrupts
@@ -655,7 +630,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 	for (axis = 2; axis >= 0; --axis)
 	{
 
-		averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
+		//averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
+		averagedGyro = dpsGyroArray[axis];
 
 		PafUpdate(&pafGyroStates[axis], averagedGyro );
 		filteredGyroData[axis] = pafGyroStates[axis].output;
@@ -686,7 +662,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01, PITCH);
 		}
 
-		//get setpoint for PIDC
+		//get setpoint for PIDC for self level modes.
+		//TODO: move this to its own function in the IMU
 		if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || ModeActive(M_GLUE)) //no auto level modes active, we're in rate mode
 		{
 			if (!timeSinceSelfLevelActivated)
@@ -781,59 +758,14 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			{
 			   return;
 			}
-			else if (gyroStdDeviationPointer < GYRO_STD_DEVIATION_SAMPLE_SIZE)
-			{
-				//gather cycles during board calibration
-				gyroStdDeviationSamples[YAW][gyroStdDeviationPointer]    = dpsGyroArray[YAW];
-				gyroStdDeviationSamples[ROLL][gyroStdDeviationPointer]    = dpsGyroArray[ROLL];
-				gyroStdDeviationSamples[PITCH][gyroStdDeviationPointer++] = dpsGyroArray[PITCH];
-
-				if (gyroStdDeviationPointer == GYRO_STD_DEVIATION_SAMPLE_SIZE)
-				{
-					gyroStdDeviationPointer = 0;
-					if (gyroStdDeviationTotalsPointer < GYRO_STD_DEVIATION_SAMPLE_SIZE)
-					{
-						gyroStdDeviationTotals[YAW][gyroStdDeviationTotalsPointer]     = CalculateSDSize(gyroStdDeviationSamples[YAW], GYRO_STD_DEVIATION_SAMPLE_SIZE);
-						gyroStdDeviationTotals[ROLL][gyroStdDeviationTotalsPointer]    = CalculateSDSize(gyroStdDeviationSamples[ROLL], GYRO_STD_DEVIATION_SAMPLE_SIZE);
-						gyroStdDeviationTotals[PITCH][gyroStdDeviationTotalsPointer++] = CalculateSDSize(gyroStdDeviationSamples[PITCH], GYRO_STD_DEVIATION_SAMPLE_SIZE);
-					}
-					else
-					{
-						gyroStdDeviationPointer       = GYRO_STD_DEVIATION_SAMPLE_SIZE;
-						gyroStdDeviationTotalsPointer = GYRO_STD_DEVIATION_SAMPLE_SIZE;
-					}
-
-				}
-
-				if (gyroStdDeviationTotalsPointer == GYRO_STD_DEVIATION_SAMPLE_SIZE)
-				{
-					for (uint32_t xx = 0; xx < GYRO_STD_DEVIATION_SAMPLE_SIZE; xx++)
-					{
-						yy[YAW] += gyroStdDeviationTotals[YAW][xx];
-						yy[ROLL] += gyroStdDeviationTotals[ROLL][xx];
-						yy[PITCH] += gyroStdDeviationTotals[PITCH][xx];
-					}
-					yy[YAW] /= GYRO_STD_DEVIATION_SAMPLE_SIZE;
-					yy[ROLL] /= GYRO_STD_DEVIATION_SAMPLE_SIZE;
-					yy[PITCH] /= GYRO_STD_DEVIATION_SAMPLE_SIZE;
-				}
-
-			}
 			else if (!gyroStdDeviationLatch)
 			{
-
 				gyroStdDeviationLatch = 1;
 				PreArmFilterCheck = 0;
-
-				if (mainConfig.filterConfig[YAW].gyro.r == 1)
-					pafGyroStates[YAW]   = InitPaf( mainConfig.filterConfig[YAW].gyro.q, yy[YAW] * 100, 0.0f, filteredGyroData[YAW]);
-				if (mainConfig.filterConfig[ROLL].gyro.r == 1)
-					pafGyroStates[ROLL]   = InitPaf( mainConfig.filterConfig[ROLL].gyro.q, yy[ROLL] * 100, 0.0f, filteredGyroData[ROLL]);
-				if (mainConfig.filterConfig[PITCH].gyro.r == 1)
-					pafGyroStates[PITCH]   = InitPaf( mainConfig.filterConfig[PITCH].gyro.q, yy[PITCH] * 100, 0.0f, filteredGyroData[PITCH]);
-
+				return;
 			}
 
+			//todo: move to a single mixer. This is a mess
 			if (threeDeeMode)
 			{
 				static uint32_t actuatorToUse = 0;
@@ -903,6 +835,14 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			khzLoopCounter=loopSpeed.khzDivider;
 
 			CheckFailsafe();
+
+			for (axis = 2; axis >= 0; --axis)
+			{
+				//volatile float sd = CalculateSDSize(pafGyroStates[axis].stdDev, 32U);
+				pafGyroStates[axis].r = ABS(CalculateSDSize(pafGyroStates[axis].stdDev, 32U));
+				//pafGyroStates[axis].q = CONSTRAIN(InlineChangeRangef(ABS(CalculateSDSize(pafGyroStates[axis].stdDev, 32U)), 500, 0, 0.0000001f, 0.000040f), 0.000003f, 0.000040f);
+				InitPaf( &pafGyroStates[axis], pafGyroStates[axis].q, pafGyroStates[axis].r, pafGyroStates[axis].p, pafGyroStates[axis].x);
+			}
 
 #ifndef LOG32
 			//update blackbox here

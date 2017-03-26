@@ -7,6 +7,8 @@ typedef struct {
 	float x; //value
 	float p; //estimation error covariance
 	float k; //paf gain
+	float stdDev[32]; //standard deviation counter
+	uint32_t stdDevCnt; //standard deviation counter
 	float output; //paf gain
 } paf_state;
 
@@ -35,13 +37,24 @@ typedef struct {
 	float dT;
 } lpf_state;
 
-paf_state InitPaf(float q, float r, float p, float intial_value);
-void PafUpdate(paf_state *state, float measurement);
+typedef struct
+{
+	float x; //state matrix
+	float a;
+	float u; //control variable matrix
+	float b;
+	float w;
+} kalman_state;
 
-void  InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSeconds, uint32_t filterType, biquad_state *oldState, float bandwidth);
-float BiquadUpdate(float sample, biquad_state *bQstate);
-void  LpfInit(lpf_state *filter, float frequencyCut, float refreshRateSeconds);
-float LpfUpdate(float input, lpf_state *filter);
+extern paf_state pafGyroStates[];
+
+extern void InitPaf(paf_state *pafState, float q, float r, float p, float intial_value);
+extern void PafUpdate(paf_state *state, float measurement);
+
+extern void  InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSeconds, uint32_t filterType, biquad_state *oldState, float bandwidth);
+extern float BiquadUpdate(float sample, biquad_state *bQstate);
+extern void  LpfInit(lpf_state *filter, float frequencyCut, float refreshRateSeconds);
+extern float LpfUpdate(float input, lpf_state *filter);
 
 #define M_LN2_FLOAT	0.69314718055994530942f
 #define M_PI_FLOAT	3.14159265358979323846f
