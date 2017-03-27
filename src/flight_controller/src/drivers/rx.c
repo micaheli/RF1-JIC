@@ -495,9 +495,13 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 
 		}
 
-		if (!spekPhase && mainConfig.telemConfig.telemSpek)
+		static uint32_t mutexLock = 0;
+		if (!spekPhase && mainConfig.telemConfig.telemSpek && !mutexLock)
 		{
-			sendSpektrumTelemtryAt = Micros() + 1000;
+			mutexLock = 1;
+			sendSpektrumTelemtryAt = InlineMillis() + 2;
+			mutexLock = 0;
+			//sendSpektrumTelem();
 		}
 		else
 		{
