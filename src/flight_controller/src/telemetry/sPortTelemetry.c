@@ -26,6 +26,7 @@ int32_t           smartPortExti = -1; //dirty hack, smart port really needs to s
 static uint32_t   sPortTelemCount;
 uint32_t          lastTimeSent = 0;
 volatile uint32_t luaPacketPendingTime = 0;
+volatile uint32_t noiseCounter = 0;
 
 static uint8_t  SmartPortGetByte(uint8_t inByte, uint16_t *crcp);
 static void     SmartPortCreatePacket(uint32_t header, uint32_t id, int32_t val, uint8_t sPortPacket[]);
@@ -864,6 +865,8 @@ void SportSoftSerialExtiCallback(uint32_t callbackNumber)
 		{
 			telemtryRxTimerBufferIdx = 0;
 			EXTI_Deinit(ports[sbusActuator.port], sbusActuator.pin, sbusActuator.EXTIn);
+			if (boardArmed)
+				noiseCounter++;
 		}
 		__HAL_GPIO_EXTI_CLEAR_IT(sbusActuator.pin);
 	}
@@ -886,6 +889,10 @@ void SportSoftSerialDmaCallback(uint32_t callbackNumber)
 
 static void PutSportIntoReceiveState(motor_type actuator, uint32_t inverted)
 {
+
+	if (noiseCounter>10)
+		return;
+
 	//Set the IRQ callback functions
 	callbackFunctionArray[actuator.EXTICallback] = SportSoftSerialExtiCallback;
 	callbackFunctionArray[actuator.DmaCallback]  = SportSoftSerialDmaCallback;

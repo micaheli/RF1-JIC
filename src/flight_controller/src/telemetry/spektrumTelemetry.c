@@ -18,7 +18,8 @@ pidSpektrumTelem_t pidSpektrumTelem;
 
 
 
-void InitSpektrumTelemetry(void) {
+void InitSpektrumTelemetry(void)
+{
 	pidSpektrumTelem.row = 2;
 	pidSpektrumTelem.status = IDLE;
 
