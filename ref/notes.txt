@@ -1,0 +1,6 @@
+General Notes:
+
+
+Setup Dev Envioronment for Mac:
+    https://docs.google.com/document/d/1KYF1iB8HmNWQZcC2VyyTSA0pOa4GzfAuPFU5Zdz6PK0/edit?usp=sharing
+
