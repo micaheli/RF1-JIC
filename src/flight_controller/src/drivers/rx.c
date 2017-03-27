@@ -501,7 +501,6 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 			mutexLock = 1;
 			sendSpektrumTelemtryAt = InlineMillis() + 2;
 			mutexLock = 0;
-			sendSpektrumTelem();
 		}
 		else
 		{
