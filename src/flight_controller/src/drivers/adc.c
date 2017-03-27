@@ -26,7 +26,7 @@ float runningVoltage = 0;
 float fullVoltage = 0;
 volatile uint32_t adcDmaBuffer[2]; //first one is voltage, second one is current
 
-static void ConvertAdcVoltage(uint32_t rawAdcVoltage, uint32_t highResistor, uint32_t lowResistor);
+static void ConvertAdcVoltage(uint32_t rawAdcVoltage, float highResistor, float lowResistor);
 static void ConvertAdcCurrent(uint32_t rawAdcVoltage, float adcCurrFactor);
 
 //IRQ based conversion complete
@@ -43,7 +43,7 @@ void PollAdc(void)
 	ConvertAdcVoltage( adcDmaBuffer[1], HIGH_RESISTOR, LOW_RESISTOR );
 }
 
-static void ConvertAdcVoltage(uint32_t rawAdcVoltage, uint32_t highResistor, uint32_t lowResistor)
+static void ConvertAdcVoltage(uint32_t rawAdcVoltage, float highResistor, float lowResistor)
 {
 	static uint32_t lastTime=0;
 	if (adcVoltage == 0 )
