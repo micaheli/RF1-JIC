@@ -20,7 +20,7 @@ static void     SetValue(uint32_t position, char *value);
 static void     DlflStatusDump(void);
 static int32_t  GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray);
 
-static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+//static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 
 const string_comp_rec vtxStringCompTable[] = {

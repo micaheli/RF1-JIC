@@ -501,7 +501,9 @@ inline void InlineInitGyroFilters(void)
 	int32_t axis;
 
 	for (axis = 2; axis >= 0; --axis)
-			InitPaf( &pafGyroStates[axis], 0.06f, 0.088f, 0.0f, 0.0f);
+			InitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, mainConfig.filterConfig[axis].gyro.r, 0.0f, filteredGyroData[axis]);
+
+			//InitPaf( &pafGyroStates[axis], 0.06f, 0.088f, 0.0f, 0.0f);
 
 }
 
@@ -522,7 +524,7 @@ inline void InlineInitSpectrumNoiseFilter(void)
 	//InitBiquad(125, &lpfFilterStateNoise[1], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[1], 0.20000000000f);
 	//InitBiquad(175, &lpfFilterStateNoise[2], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[2], 0.14285714292f);
 	//InitBiquad(225, &lpfFilterStateNoise[3], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[3], 0.11111111111f);
-	//InitBiquad(275, &lpfFilterStateNoise[4], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[4], 0.09090909091f);
+	//InitBiquad(275, &lpfFilterStateNoise[4], loopSpeed.accdT, FILTER_TYPE_PEEK, &lPafpfFilterStateNoise[4], 0.09090909091f);
 	//InitBiquad(325, &lpfFilterStateNoise[5], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[5], 0.07692307692f);
 
 }
@@ -630,8 +632,8 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 	for (axis = 2; axis >= 0; --axis)
 	{
 
-		//averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
-		averagedGyro = dpsGyroArray[axis];
+		averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
+		//averagedGyro = dpsGyroArray[axis];
 
 		PafUpdate(&pafGyroStates[axis], averagedGyro );
 		filteredGyroData[axis] = pafGyroStates[axis].output;
@@ -836,13 +838,13 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 
 			CheckFailsafe();
 
-			for (axis = 2; axis >= 0; --axis)
-			{
-				//volatile float sd = CalculateSDSize(pafGyroStates[axis].stdDev, 32U);
-				pafGyroStates[axis].r = ABS(CalculateSDSize(pafGyroStates[axis].stdDev, 32U));
-				//pafGyroStates[axis].q = CONSTRAIN(InlineChangeRangef(ABS(CalculateSDSize(pafGyroStates[axis].stdDev, 32U)), 500, 0, 0.0000001f, 0.000040f), 0.000003f, 0.000040f);
-				InitPaf( &pafGyroStates[axis], pafGyroStates[axis].q, pafGyroStates[axis].r, pafGyroStates[axis].p, pafGyroStates[axis].x);
-			}
+			//for (axis = 2; axis >= 0; --axis)
+			//{
+			//	//volatile float sd = CalculateSDSize(pafGyroStates[axis].stdDev, 32U);
+			//	pafGyroStates[axis].r = ABS(CalculateSDSize(pafGyroStates[axis].stdDev, 32U));
+			//	//pafGyroStates[axis].q = CONSTRAIN(InlineChangeRangef(ABS(CalculateSDSize(pafGyroStates[axis].stdDev, 32U)), 500, 0, 0.0000001f, 0.000040f), 0.000003f, 0.000040f);
+			//	InitPaf( &pafGyroStates[axis], pafGyroStates[axis].q, pafGyroStates[axis].r, pafGyroStates[axis].p, pafGyroStates[axis].x);
+			//}
 
 #ifndef LOG32
 			//update blackbox here

@@ -11,6 +11,11 @@
 #include <ctype.h>
 #include <limits.h>
 
+//input
+#include "input/gyro.h"
+#include "usbd_hid.h"
+#include "usb_device.h"
+
 //low level drivers and driver based functions
 #include "../../low_level_driver/boarddef.h"
 #include "mcu_include.h"
@@ -39,13 +44,6 @@
 #include "telemetry/spektrumTelemetry.h"
 #include "telemetry/smartAudio.h"
 #include "telemetry/rfVtx.h"
-
-
-//input
-#include "input/gyro.h"
-#include "usbd_hid.h"
-#include "usb_device.h"
-
 
 //all drivers
 #include "drivers/adc.h"

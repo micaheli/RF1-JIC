@@ -325,7 +325,7 @@ inline void TaskWizard(void) {
 		case WIZ_RC:
 			if (wizardStatus.currentStep == 1) //step three needs to be polled by user/gui
 				HandleWizRc();
-				break;
+			break;
 		case 0:
 		default:
 			return;

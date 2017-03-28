@@ -20,6 +20,7 @@
 
 void InitKalman(kalman_state *kalmanState)
 {
+	(void)(kalmanState);
 /*
 
 	//halfGyrodTsquared
@@ -71,24 +72,6 @@ void InitKalman(kalman_state *kalmanState)
 void InitPaf(paf_state *pafState, float q, float r, float p, float intial_value)
 {
 
-	//pafState->q = q * 0.000001;
-	//pafState->r = r * 0.001;
-	//pafState->p = p * 0.001;
-	//pafState->x = intial_value;
-
-	pafState->q = q;
-	pafState->r = r;
-	pafState->p = p;
-	pafState->x = intial_value;
-
-	//reset counter. Not need to reset the array since we use the counter and that would be too slow
-	pafState->stdDevCnt = 31;
-
-}
-
-void PafUpdate(paf_state *state, float measurement)
-{
-	/*
 	float modifier;
 
 	switch (mainConfig.filterConfig[2].filterMod)
@@ -117,12 +100,57 @@ void PafUpdate(paf_state *state, float measurement)
 			break;
 
 	}
-	*/
 
+	pafState->q = q * 0.000001;
+	pafState->r = r * 0.001;
+	pafState->p = p * 0.001;
+	pafState->x = intial_value * modifier;
+
+	//pafState->q = q;
+	//pafState->r = r;
+	//pafState->p = p;
+	//pafState->x = intial_value;
+
+	//reset counter. Not need to reset the array since we use the counter and that would be too slow
+	pafState->stdDevCnt = 31;
+
+}
+
+void PafUpdate(paf_state *state, float measurement)
+{
+
+	float modifier;
+
+	switch (mainConfig.filterConfig[2].filterMod)
+	{
+		case 0:
+			modifier = 1;
+			break;
+		case 1:
+			modifier = 16.4;
+			break;
+		case 2:
+			modifier = 164.0;
+			break;
+		case 3:
+			modifier = 328.0;
+			break;
+		case 4:
+			modifier = 656.0;
+			break;
+		case 5:
+			modifier = 1312.0;
+			break;
+		case 6:
+		default:
+			modifier = 2624.0;
+			break;
+
+	}
 
 	//update stdDev
-	if(state->stdDevCnt)
-		state->stdDev[state->stdDevCnt--] = measurement;
+	//if(state->stdDevCnt)
+	//	state->stdDev[state->stdDevCnt--] = measurement;
 
 	//prediction update
 	state->p = state->p + state->q;
@@ -132,12 +160,12 @@ void PafUpdate(paf_state *state, float measurement)
 
 	//if (ABS(measurement) > 1990.0f)
 	//	state->k = 0.0f;
-//	state->x = state->x + state->k * (measurement * modifier - state->x);
-	state->x = state->x + state->k * (measurement - state->x);
+	state->x = state->x + state->k * (measurement * modifier - state->x);
+//	state->x = state->x + state->k * (measurement - state->x);
 	state->p = (1 - state->k) * state->p;
 
-//	state->output = (state->x / modifier);
-	state->output = state->x;
+	state->output = (state->x / modifier);
+//	state->output = state->x;
 }
 
 

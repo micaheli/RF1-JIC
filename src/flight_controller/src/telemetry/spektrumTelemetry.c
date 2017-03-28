@@ -8,7 +8,6 @@ uint8_t spektrumTxBuffer[20];
 
 extern STRU_TELE_LAPTIMER lap_timer;
 
-uint8_t dma_count = 0;
 TELEMETRY_STATE telemetryState = TELEM_START;
 UN_TELEMETRY sensorData;
 pidSpektrumTelem_t pidSpektrumTelem;
@@ -19,14 +18,14 @@ pidSpektrumTelem_t pidSpektrumTelem;
 
 
 void InitSpektrumTelemetry(void) {
-	pidSpektrumTelem.row = 2;
-	pidSpektrumTelem.status = IDLE;
 
 	bzero(&telemetry, sizeof(telemetry));
 	bzero(&bind, sizeof(bind));
 	bzero(&sensorData, sizeof(sensorData));
 	bzero(&pidSpektrumTelem, sizeof(pidSpektrumTelem));
 
+	pidSpektrumTelem.row = 2;
+	pidSpektrumTelem.status = IDLE;
 	/*
 	bzero(telemetry, sizeof(STR_SRXL_TELEM));
 	bzero(bind, sizeof(STR_SRXL_BIND));
