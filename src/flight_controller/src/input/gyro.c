@@ -72,7 +72,7 @@ inline void InlineUpdateGyro(int32_t rawGyro[], float scale)
     InlineFlightCode(dpsGyroArray);
 }
 
-static float rotationMatrix[3][3];
+static float    rotationMatrix[3][3];
 static uint32_t matrixFormed = 0;
 
 void BuildRotationMatrix(uint32_t x, uint32_t y, uint32_t z)

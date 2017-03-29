@@ -378,7 +378,6 @@ void textMenuUpdate(void)
 			pidSpektrumTelem.column = 0;
 			pidSpektrumTelem.columnAxis = 0;
 			progMode = 0;
-			InitPid(); //Set PID's with new config PID's
 		}
 			
 
@@ -427,6 +426,7 @@ void textMenuUpdate(void)
 				case (8):
 				    if (pidSpektrumTelem.column ==1)
 				    {
+						resetBoard = 1;
 				    	SaveConfig(ADDRESS_CONFIG_START);
 						pidSpektrumTelem.column = 0;
 						pidSpektrumTelem.status=SAVING;

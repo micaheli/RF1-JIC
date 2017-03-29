@@ -824,11 +824,12 @@ Version 0.216.062 BETA:
 Version 0.217.062 RC9:
 	Important flight performance enhancements
 
-Version 0.218.062 RC10:
+Version 0.218.062 BETA:
 	More flight code enhancements
 	Fixed Spektrum Telemetry
 
-
+Version 0.219.062 RC10:
+	Update Spektrum Telemetry handling
 
 
 
