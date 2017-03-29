@@ -4,11 +4,10 @@
 
 STR_SRXL_TELEM telemetry;
 STR_SRXL_BIND bind;
-uint8_t spektrumTxBuffer[20];
+uint8_t spektrumTxBuffer[64];
 
 extern STRU_TELE_LAPTIMER lap_timer;
 
-uint8_t dma_count = 0;
 TELEMETRY_STATE telemetryState = TELEM_START;
 UN_TELEMETRY sensorData;
 pidSpektrumTelem_t pidSpektrumTelem;
@@ -18,16 +17,15 @@ pidSpektrumTelem_t pidSpektrumTelem;
 
 
 
-void InitSpektrumTelemetry(void)
-{
-	pidSpektrumTelem.row = 2;
-	pidSpektrumTelem.status = IDLE;
+void InitSpektrumTelemetry(void) {
 
 	bzero(&telemetry, sizeof(telemetry));
 	bzero(&bind, sizeof(bind));
 	bzero(&sensorData, sizeof(sensorData));
 	bzero(&pidSpektrumTelem, sizeof(pidSpektrumTelem));
 
+	pidSpektrumTelem.row = 2;
+	pidSpektrumTelem.status = IDLE;
 	/*
 	bzero(telemetry, sizeof(STR_SRXL_TELEM));
 	bzero(bind, sizeof(STR_SRXL_BIND));
@@ -249,7 +247,7 @@ void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 {
 	if (!telemEnabled)
 			return;
-
+	memset(spektrumTxBuffer,0, sizeof(spektrumTxBuffer));
 	memcpy(spektrumTxBuffer, (uint8_t *)baseAddress, packetSize);
 
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
@@ -380,7 +378,6 @@ void textMenuUpdate(void)
 			pidSpektrumTelem.column = 0;
 			pidSpektrumTelem.columnAxis = 0;
 			progMode = 0;
-			InitPid(); //Set PID's with new config PID's
 		}
 			
 
@@ -429,6 +426,7 @@ void textMenuUpdate(void)
 				case (8):
 				    if (pidSpektrumTelem.column ==1)
 				    {
+						resetBoard = 1;
 				    	SaveConfig(ADDRESS_CONFIG_START);
 						pidSpektrumTelem.column = 0;
 						pidSpektrumTelem.status=SAVING;
@@ -578,4 +576,4 @@ void textMenuUpdate(void)
 		xbus.textLine = 0;
 	}
 	dataInc = 0;
-}//end textMenuUpdate()
+}//end textMenuUpdate()

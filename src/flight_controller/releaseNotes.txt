@@ -813,6 +813,45 @@ Version 0.213.062 RC6:
 Version 0.214.062 RC7:
 	fix initial read of VTX values
 
+Version 0.215.062 RC8:
+	fix spektrum telemetry
+
+Version 0.216.062 BETA:
+	Prevent s.port from causing in-flight performance issues
+	Increased flight performance and made flight code more efficient
+	Fixed time sync issue on flight log
+
+Version 0.217.062 RC9:
+	Important flight performance enhancements
+
+Version 0.218.062 BETA:
+	More flight code enhancements
+	Fixed Spektrum Telemetry
+
+Version 0.219.062 RC10:
+	Update Spektrum Telemetry handling
+
+
+
+
+
+
+Version 1.001.063 ALPHA:
+	Added Glue mode for testing 
+		Should hold course during impact when enabled
+	Added Braindrain mode for testing
+		Will increase responsiveness at the possible cost of smoothness
+		Similar but different than Direct mode
+			May or may not cause hotter motors and/or oscillations when used with direct mode
+
+Version 1.002.063 ALPHA:
+	Automatic filtering
+	disable s.port if it causes issues
+
+Version 1.003.063 ALPHA:
+	Automagic filtering update
+		All filter settings in config are ignored.
+
 #Features in current development:
 #	MSP OSD compatibility
 #	MAVlink compatibility

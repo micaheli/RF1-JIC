@@ -11,16 +11,18 @@ typedef struct {
 
 //also modify stringModes in modes.c
 enum {
-	M_ARMED    = (1 << 0),
-	M_ATTITUDE = (1 << 1),
-	M_HORIZON  = (1 << 2),
-	M_FAILSAFE = (1 << 3),
-	M_LOGGING  = (1 << 4),
-	M_BUZZER   = (1 << 5),
-	M_LEDMODE  = (1 << 6),
-	M_LEDCOLOR = (1 << 7),
-	M_DIRECT   = (1 << 8),
-	M_VTXON    = (1 << 9),
+	M_ARMED      = (1 << 0),
+	M_ATTITUDE   = (1 << 1),
+	M_HORIZON    = (1 << 2),
+	M_FAILSAFE   = (1 << 3),
+	M_LOGGING    = (1 << 4),
+	M_BUZZER     = (1 << 5),
+	M_LEDMODE    = (1 << 6),
+	M_LEDCOLOR   = (1 << 7),
+	M_DIRECT     = (1 << 8),
+	M_VTXON      = (1 << 9),
+	M_GLUE       = (1 << 10),
+	M_BRAINDRAIN = (1 << 11),
 };
 
 extern string_modes_rec stringModes[];

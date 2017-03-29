@@ -1,7 +1,77 @@
 #include "includes.h"
 
-paf_state InitPaf(float q, float r, float p, float intial_value)
+//enum
+//{
+//	PX = 0,
+//	PY = 1,
+//	PZ = 2,
+//	RX = 3,
+//	RY = 4,
+//	RZ = 5,
+//};
+
+//enum
+//{
+//	AX = 0,
+//	AY = 1,
+//	AZ = 2,
+//};
+
+
+void InitKalman(kalman_state *kalmanState)
 {
+	(void)(kalmanState);
+/*
+
+	//halfGyrodTsquared
+
+	X(0) = A*X(-1)
+
+	Matrix A
+	1,  0,  0, dT,  0,  0
+	0,  1,  0,  0, dT,  0
+	0,  0,  1,  0,  0, dT
+	0,  0,  0,  1,  0,  0
+	0,  0,  0,  0,  1,  0
+	0,  0,  0,  0,  0,  1
+
+	State Matrix
+	pX
+	pY
+	pZ
+	rX
+	rY
+	rZ
+
+	Matrix B
+	0.5dT^2,       0,       0
+	      0, 0.5dT^2,       0
+	      0,       0, 0.5dT^2
+	     dt,       0,       0
+	      0,      dt,       0
+	      0,       0,      dt
+
+	Control Variable Matrix
+	aX
+	aY
+	aZ
+
+
+	State Matrix
+	pX
+	pY
+	pZ
+	rX
+	rY
+	rZ
+
+ */
+	//kalmanState->x[0][0] = 1.0f;
+}
+
+void InitPaf(paf_state *pafState, float q, float r, float p, float intial_value)
+{
+
 	float modifier;
 
 	switch (mainConfig.filterConfig[2].filterMod)
@@ -31,17 +101,24 @@ paf_state InitPaf(float q, float r, float p, float intial_value)
 
 	}
 
-	paf_state result;
-	result.q = q * 0.000001;
-	result.r = r * 0.001;
-	result.p = p * 0.001;
-	result.x = intial_value * modifier;
+	pafState->q = q * 0.000001;
+	pafState->r = r * 0.001;
+	pafState->p = p * 0.001;
+	pafState->x = intial_value * modifier;
 
-	return result;
+	//pafState->q = q;
+	//pafState->r = r;
+	//pafState->p = p;
+	//pafState->x = intial_value;
+
+	//reset counter. Not need to reset the array since we use the counter and that would be too slow
+	pafState->stdDevCnt = 31;
+
 }
 
 void PafUpdate(paf_state *state, float measurement)
 {
+
 	float modifier;
 
 	switch (mainConfig.filterConfig[2].filterMod)
@@ -70,12 +147,19 @@ void PafUpdate(paf_state *state, float measurement)
 			break;
 
 	}
+
+	//update stdDev
+	//if(state->stdDevCnt)
+	//	state->stdDev[state->stdDevCnt--] = measurement;
 
 	//prediction update
 	state->p = state->p + state->q;
 
 	//measurement update
 	state->k = state->p / (state->p + state->r);
+
+	//if (ABS(measurement) > 1990.0f)
+	//	state->k = 0.0f;
 	state->x = state->x + state->k * (measurement * modifier - state->x);
 //	state->x = state->x + state->k * (measurement - state->x);
 	state->p = (1 - state->k) * state->p;

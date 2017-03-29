@@ -8,7 +8,8 @@ volatile uint32_t disarmCount = 0, latchFirstArm = 0;
 volatile SPM_VTX_DATA vtxData;
 
 uint32_t throttleIsSafe = 0;
-static uint32_t packetTime = 11;
+static uint32_t packetTime    = 11;
+static float packetTimeInv = (1000.0f/11.0f);
 volatile arming_structure armingStructure;
 
 uint32_t PreArmFilterCheck = 0;
@@ -315,7 +316,6 @@ inline void RxUpdate(void) // hook for when rx updates
 		}
 	}
 
-
 	if ( (!boardArmed) && (trueRcCommandF[YAW] > 0.95f) && (trueRcCommandF[THROTTLE] < -0.95f) && (trueRcCommandF[PITCH] < -0.95f) && (trueRcCommandF[ROLL] < -0.95f) )
 	{
 		if ( (InlineMillis() - progTimer) > 2000 )
@@ -498,9 +498,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		static uint32_t mutexLock = 0;
 		if (!spekPhase && mainConfig.telemConfig.telemSpek && !mutexLock)
 		{
-			mutexLock = 1;
 			sendSpektrumTelemtryAt = InlineMillis() + 2;
-			mutexLock = 0;
 		}
 		else
 		{
@@ -508,10 +506,12 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		}
 
 		packetTime = 11;
+		packetTimeInv = (1000.0f / (float)packetTime);
 	}
 	else
 	{
 		packetTime = 22;
+		packetTimeInv = (1000.0f / (float)packetTime);
 	}
 
 	InlineCollectRcCommand();
@@ -574,6 +574,7 @@ void ProcessSbusPacket(uint32_t serialNumber)
 			// TODO: No, we should only look at SBUS_FAILSAFE_FLAG for failsafe.
 
 			packetTime = 9;
+			packetTimeInv = (1000.0f / (float)packetTime);
 			InlineCollectRcCommand();
 			RxUpdate();
 		}
@@ -634,6 +635,7 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 				}
 
 				packetTime = 10;
+				packetTimeInv = (1000.0f / (float)packetTime);
 				rx_timeout = 0;
 				if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
 					buzzerStatus.status = STATE_BUZZER_OFF;
@@ -687,6 +689,7 @@ void ProcessIbusPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 		}
 
 		packetTime = 10;
+		packetTimeInv = (1000.0f / (float)packetTime);
 		rx_timeout = 0;
 
 		if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -730,6 +733,7 @@ void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx)
 		}
 
 		packetTime = (ppmBuffer[17] - ppmBuffer[0]);
+		packetTimeInv = (1000.0f / (float)packetTime);
 		rx_timeout = 0;
 
 		if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -1022,6 +1026,10 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 
     if (isRxDataNew)
     {
+
+    	//set command quat here
+    	ImuUpdateCommandQuat(curvedRcCommandF[ROLL] * packetTimeInv, curvedRcCommandF[PITCH] * packetTimeInv, curvedRcCommandF[YAW] * packetTimeInv);
+
         for (channel=3; channel >= 0; channel--)
         {
             deltaRC[channel] = curvedRcCommandF[channel] -  (lastCommand[channel] - ((deltaRC[channel] * (float)factor) / (float)smoothingInterval));

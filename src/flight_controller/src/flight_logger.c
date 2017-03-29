@@ -343,6 +343,9 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				BlackboxWriteSignedVB( (int32_t)(currFilteredAccData[ACCX]   * 2048) ); //46
 				BlackboxWriteSignedVB( (int32_t)(currFilteredAccData[ACCY]   * 2048) ); //48
 				BlackboxWriteSignedVB( (int32_t)(currFilteredAccData[ACCZ]   * 2048) ); //50
+				//BlackboxWriteSignedVB( (int32_t)(pafGyroStates[YAW].r        * 1) ); //46
+				//BlackboxWriteSignedVB( (int32_t)(pafGyroStates[ROLL].r       * 1) ); //48
+				//BlackboxWriteSignedVB( (int32_t)(pafGyroStates[PITCH].r      * 1) ); //50
 
 				//0 TO 1 to 1000 to 2000
 				BlackboxWriteSignedVB( (int32_t)( (currMotorOutput[0] + 1)   * 1000) ); //52

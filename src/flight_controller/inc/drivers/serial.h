@@ -2,6 +2,7 @@
 #include "includes.h"
 
 extern uint32_t lastRXPacket;
+extern volatile int32_t processRxCodeNow;
 
 unsigned char txTransimissionReady;
 
@@ -15,3 +16,4 @@ extern void USARTx_DMA_RX_IRQHandler(void);
 extern void USARTx_DMA_TX_IRQHandler(void);
 extern void USARTx_IRQHandler(void);
 extern void SerialTxCallback(uint32_t callbackNumber);
+extern void ProcessSerialRx(void);
