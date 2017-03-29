@@ -1,0 +1,69 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flight stm32f405xx OpenOCD Debug",
+            "type": "gdb",
+            "request": "attach",
+            "executable": "./output/stm32f405xx.elf",
+            "target": ":3333",
+            "remote": true,
+            "cwd": "${workspaceRoot}",
+            "autorun": [
+                "set target-async on",
+                "set confirm off",
+                "set mem inaccessible-by-default off",
+                "monitor reset halt",
+                "set debug remote 0",
+                "mon version",
+                "file ${workspaceRoot}/output/stm32f405xx.elf",
+                "load",
+                "monitor reset",
+                "break main"
+            ],
+            "gdbpath": "/Users/kalyndoerr/dev/gcc-arm-none-eabi-6-2017-q1-update/bin/arm-none-eabi-gdb"
+        },
+        {
+            "name": "Rfbl stm32f405xx OpenOCD Debug",
+            "preLaunchTask": "Flight stm32f405xx",
+            "preLaunchTask": "Rfbl stm32f405xx",
+            "type": "gdb",
+            "request": "attach",
+            "executable": "./output/stm32f405xx_nrfbl.elf",
+            "target": "127.0.0.1:3333",
+            "remote": true,
+            "cwd": "${workspaceRoot}",
+            "autorun": [
+                "set target-async on",
+                "set confirm off",
+                "set mem inaccessible-by-default off",
+                "monitor reset halt",
+                "set debug remote 0",
+                "mon version",
+                "file C${workspaceRoot}/output/stm32f405xx_nrfbl.elf",
+                "load",
+                "monitor reset",
+                "break main"
+            ],
+            "gdbpath": "arm-none-eabi-gdb"
+        },
+        {
+            "name": "Flight stm32f745xx OpenOCD Debug",
+            "type": "gdb",
+            "request": "attach",
+            "executable": "./output/stm32f745xx.elf",
+            "target": "127.0.0.1:3333",
+            "remote": true,
+            "cwd": "${workspaceRoot}",
+            "autorun": [
+                "monitor reset halt",
+                "set mem inaccessible-by-default off",
+                "file ${workspaceRoot}/output/stm32f745xx.elf",
+                "load",
+                "monitor reset"
+            ],
+            "gdbpath": "arm-none-eabi-gdb"
+        }
+
+    ]
+}
