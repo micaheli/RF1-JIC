@@ -3,6 +3,7 @@
     "configurations": [
         {
             "name": "Flight stm32f405xx OpenOCD Debug",
+            "preLaunchTask": "Flight stm32f405xx",
             "type": "gdb",
             "request": "attach",
             "executable": "./output/stm32f405xx.elf",
@@ -25,7 +26,6 @@
         },
         {
             "name": "Rfbl stm32f405xx OpenOCD Debug",
-            "preLaunchTask": "Flight stm32f405xx",
             "preLaunchTask": "Rfbl stm32f405xx",
             "type": "gdb",
             "request": "attach",

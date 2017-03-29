@@ -38,6 +38,7 @@ uint32_t ppmData[PPM_CHANNELS];
 #define SPEKTRUM_FRAME_SIZE 16
 uint32_t spektrumChannelShift = 3;
 uint32_t spektrumChannelMask  = 0x07;
+uint32_t rxUpdateCount = 0;
 
 static rx_calibration_records rxCalibrationRecords[3];
 static void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx);
@@ -243,10 +244,10 @@ inline void RxUpdate(void) // hook for when rx updates
 	CheckThrottleSafe();
 
 	//throttle must be low and board must be set to not armed before we allow an arming
-	if (!ModeActive(M_ARMED) &&  throttleIsSafe)
+	if (!ModeActive(M_ARMED) &&  throttleIsSafe && (rxUpdateCount++ > 25 ))
 		armCheckLatch = 1;
 
-	if (veryFirstArm)
+	if ( (veryFirstArm) && (rxUpdateCount > 25 ) )
 		checkRxPreArmCalibration(); //collect rx data if not armed yet
 
 	if (armCheckLatch)
@@ -758,6 +759,7 @@ void InitRcData(void)
 {
 	uint32_t axis;
 
+	rxUpdateCount = 0;
 	//pitch yaw and roll must all use the same curve. We make sure that's set here.
 	mainConfig.rcControlsConfig.useCurve[YAW]  = mainConfig.rcControlsConfig.useCurve[PITCH];
 	mainConfig.rcControlsConfig.useCurve[ROLL] = mainConfig.rcControlsConfig.useCurve[PITCH];

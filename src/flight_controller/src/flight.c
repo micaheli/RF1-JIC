@@ -584,7 +584,7 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 
 }
 
-inline void InlineFlightCode(float dpsGyroArray[])
+ void InlineFlightCode(float dpsGyroArray[])
 // void InlineFlightCode(float dpsGyroArray[])
 {
 
@@ -633,6 +633,22 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 	}
 
+		//volatile static float cat[1000];
+		//volatile float catter;
+		//volatile static uint32_t catCounter = 0;
+		//if (catCounter < 1000)
+		//{
+		//	cat[catCounter++] = dpsGyroArray[YAW];
+		//}
+		//else
+		//{
+		//	catter = CalculateSDSize(cat, 1000);
+		//	if (catter == 12)
+		//	{
+		//		catter = 0.0f;
+		//	}
+		//}
+
 	//update PIDs, mixer, outputs at gyro divider speed
 	if (gyroLoopCounter-- == 0)
 	{
@@ -642,6 +658,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		//smooth the rx data between rx signals
 		InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
 
+		
 		//1st, find request rates regardless of modes
 		if (ModeActive(M_DIRECT) || (mainConfig.rcControlsConfig.useCurve[PITCH] == BETAFLOP_EXPO) || (mainConfig.rcControlsConfig.useCurve[PITCH] == KISS_EXPO) )
 		{

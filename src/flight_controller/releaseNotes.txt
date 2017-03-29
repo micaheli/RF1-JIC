@@ -828,10 +828,13 @@ Version 0.218.062 BETA:
 	More flight code enhancements
 	Fixed Spektrum Telemetry
 
-Version 0.219.062 RC10:
+Version 0.219.062 BETA:
 	Update Spektrum Telemetry handling
 
-
+Version 0.220.062 RC10:
+	Important flight performance enhancements
+		Increase Ki and Kd performance
+	Fixed gyro calibration issue that sometimes popped up when FC was turned on before radio
 
 
 
