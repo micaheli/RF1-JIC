@@ -576,4 +576,4 @@ void textMenuUpdate(void)
 		xbus.textLine = 0;
 	}
 	dataInc = 0;
-}//end textMenuUpdate()
+}//end textMenuUpdate()

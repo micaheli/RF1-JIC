@@ -66,4 +66,4 @@ extern void    SendStatusReport(char *inString);
 extern void    SaveAndSend(void);
 
 extern int     RfCustomReplyBuffer(char *rfCustomSendBufferAdder);
-extern int     SendRfCustomReplyBuffer(void);
+extern int     SendRfCustomReplyBuffer(void);
