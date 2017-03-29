@@ -612,7 +612,6 @@ inline void InlineFlightCode(float dpsGyroArray[])
 	{
 		FeedTheDog();
 		ledStatus.status = LEDS_FAST_BLINK;
-		ProcessSerialRx();
 		return;
 	}
 
@@ -866,7 +865,6 @@ inline void InlineFlightCode(float dpsGyroArray[])
 	}
 
 	UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], filteredGyroData[PITCH], filteredGyroData[YAW]);
-	ProcessSerialRx();
 }
 
 //return setpoint in degrees per second, this is after stick smoothing

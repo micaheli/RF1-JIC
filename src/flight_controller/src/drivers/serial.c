@@ -612,6 +612,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			if (dmaIndex[serialNumber] >= board.serials[serialNumber].FrameSize)
 			{
 				processRxCodeNow = serialNumber;
+				ProcessSerialRx();
 				dmaIndex[serialNumber] = 0;
 			}
 			break;
