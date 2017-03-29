@@ -4,7 +4,7 @@
 
 STR_SRXL_TELEM telemetry;
 STR_SRXL_BIND bind;
-uint8_t spektrumTxBuffer[20];
+uint8_t spektrumTxBuffer[21];
 
 extern STRU_TELE_LAPTIMER lap_timer;
 

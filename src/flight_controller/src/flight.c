@@ -48,7 +48,7 @@ volatile float lastRollAttitudeError    = 0;
 volatile float pitchAttitudeErrorKdelta = 0;
 volatile float lastPitchAttitudeError   = 0;
 
-uint32_t usedGa[AXIS_NUMBER];
+volatile uint32_t usedGa[AXIS_NUMBER];
 
 //these numbers change based on loop_control
 volatile loop_speed_record loopSpeed;
@@ -637,7 +637,6 @@ inline void InlineFlightCode(float dpsGyroArray[])
 	if (gyroLoopCounter-- == 0)
 	{
 
-		//inlineDigitalLo(ports[ENUM_PORTB], GPIO_PIN_0);
 		gyroLoopCounter=loopSpeed.gyroDivider;
 
 		//smooth the rx data between rx signals
@@ -793,7 +792,6 @@ inline void InlineFlightCode(float dpsGyroArray[])
 					actuatorRange = InlineApplyMotorMixer1(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
 				else //freestyle mixer
 					actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
-
 			}
 
 		}
@@ -864,7 +862,22 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 	}
 
-	UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], filteredGyroData[PITCH], filteredGyroData[YAW]);
+	static float gyroAdder[3] = {0.0f,0.0f,0.0f};
+	static uint32_t gyroAverager = 0;
+	gyroAdder[ROLL]  += filteredGyroData[ROLL];
+	gyroAdder[PITCH] += filteredGyroData[PITCH];
+	gyroAdder[YAW]   += filteredGyroData[YAW];
+
+	if (gyroAverager++ == 4)
+	{
+		gyroAverager = 0;
+		UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], gyroAdder[ROLL], gyroAdder[PITCH], gyroAdder[YAW]);
+		gyroAdder[ROLL]  = 0.0f;
+		gyroAdder[PITCH] = 0.0f;
+		gyroAdder[YAW]   = 0.0f;
+	}
+	//inlineDigitalLo(ports[ENUM_PORTB], GPIO_PIN_0);
+
 }
 
 //return setpoint in degrees per second, this is after stick smoothing
@@ -945,7 +958,8 @@ void DeinitFlight(void)
 }
 
 //init the board
-void InitFlight(void) {
+void InitFlight(void)
+{
 
     //TODO: move the check into the init functions.
 

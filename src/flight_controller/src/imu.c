@@ -321,30 +321,30 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 {
 
 	float accTrust;
-	float accTrustKi = 112.1000f;
+	//float accTrustKi = 112.1000f;
 	float norm;
 	float accToGyroError[3] = {0.0f, 0.0f, 0.0f};
 
 	static float accTrustKiStorage[3] = {0.0f, 0.0f, 0.0f};
-	static uint32_t gyroToAccDivisorCounter = 0;
+	//static uint32_t gyroToAccDivisorCounter = 0;
 
 	gyroPitch = -gyroPitch;
 	gyroYaw   = -gyroYaw;
 
 	//calculate current spin rate in DPS
-	arm_sqrt_f32( SQUARE(gyroRoll) + SQUARE(gyroPitch) + SQUARE(gyroYaw), &norm);
-	currentSpinRate = norm;
+	//arm_sqrt_f32( SQUARE(gyroRoll) + SQUARE(gyroPitch) + SQUARE(gyroYaw), &norm);
+	//currentSpinRate = norm;
 
 	//use ACC to fix Gyro drift here. Only needs to be done every eigth iteration at 32 KHz.
 	if( !( (accX == 0.0f) && (accY == 0.0f) && (accZ == 0.0f) ) )
 	{
 
-		gyroToAccDivisorCounter++;
+		//gyroToAccDivisorCounter++;
 
-		if (gyroToAccDivisorCounter == loopSpeed.gyroAccDiv)
-		{
+		//if (gyroToAccDivisorCounter == loopSpeed.gyroAccDiv)
+		//{
 
-			gyroToAccDivisorCounter = 0;
+		//	gyroToAccDivisorCounter = 0;
 
 			//normalize the acc readings
 			arm_sqrt_f32( (accX * accX + accY * accY + accZ * accZ), &norm);
@@ -353,13 +353,12 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 			accY *= norm;
 			accZ *= norm;
 
-			if (currentSpinRate < MAX_SPIN_RATE_RAD)
-			{
-				accTrustKiStorage[ACCX] += accTrustKi * accToGyroError[ACCX] * loopSpeed.gyrodT;
-				accTrustKiStorage[ACCY] += accTrustKi * accToGyroError[ACCY] * loopSpeed.gyrodT;
-				accTrustKiStorage[ACCZ] += accTrustKi * accToGyroError[ACCZ] * loopSpeed.gyrodT;
-
-			}
+			//if (currentSpinRate < MAX_SPIN_RATE_RAD)
+			//{
+			//	accTrustKiStorage[ACCX] += accTrustKi * accToGyroError[ACCX] * loopSpeed.gyrodT;
+			//	accTrustKiStorage[ACCY] += accTrustKi * accToGyroError[ACCY] * loopSpeed.gyrodT;
+			//	accTrustKiStorage[ACCZ] += accTrustKi * accToGyroError[ACCZ] * loopSpeed.gyrodT;
+			//}
 
 			accToGyroError[ACCX] += (accY * rotationalMatrix[2][2] - accZ * rotationalMatrix[2][1]);
 			accToGyroError[ACCY] += (accZ * rotationalMatrix[2][0] - accX * rotationalMatrix[2][2]);
@@ -380,7 +379,7 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 			gyroYaw   += accTrust * accToGyroError[ACCZ] + accTrustKiStorage[ACCZ];
 
 
-		}
+		//}
 
 	}
 

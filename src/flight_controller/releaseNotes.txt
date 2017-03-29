@@ -816,15 +816,18 @@ Version 0.214.062 RC7:
 Version 0.215.062 RC8:
 	fix spektrum telemetry
 
-Version 0.216.062 RC9:
+Version 0.216.062 BETA:
 	disable s.port if it causes issues
 	reduced CPU load to 34.5%
 	Increased flight performance and made flight code more efficient
 	Fixed time sync issue on flight log (Log was logging two times faster than it should have)
 
+Version 0.217.062 RC9:
+	Importatnt flight performance enhancements
 
-
-
+Version 0.218.062 RC10:
+	More flight code enhancements
+	Fixed Spektrum Telemtry
 
 Version 1.001.063 ALPHA:
 	Added Glue mode for testing 
