@@ -4,7 +4,7 @@
 
 STR_SRXL_TELEM telemetry;
 STR_SRXL_BIND bind;
-uint8_t spektrumTxBuffer[20];
+uint8_t spektrumTxBuffer[64];
 
 extern STRU_TELE_LAPTIMER lap_timer;
 
@@ -247,7 +247,7 @@ void sendSpektrumSRXL(uint32_t baseAddress, uint8_t packetSize)
 {
 	if (!telemEnabled)
 			return;
-
+	memset(spektrumTxBuffer,0, sizeof(spektrumTxBuffer));
 	memcpy(spektrumTxBuffer, (uint8_t *)baseAddress, packetSize);
 
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
