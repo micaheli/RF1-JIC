@@ -9,13 +9,6 @@ biquad_state lpfFilterStateAcc[AXIS_NUMBER];
 //biquad_state lpfFilterStateNoise[6];
 biquad_state hpfFilterStateAcc[6];
 
-#define GYRO_STD_DEVIATION_SAMPLE_SIZE 100
-
-float gyroStdDeviationSamples[AXIS_NUMBER][GYRO_STD_DEVIATION_SAMPLE_SIZE];
-float gyroStdDeviationTotals[AXIS_NUMBER][GYRO_STD_DEVIATION_SAMPLE_SIZE];
-uint32_t gyroStdDeviationPointer;
-uint32_t gyroStdDeviationTotalsPointer;
-
 float kdFiltUsed[AXIS_NUMBER];
 float accNoise[6];
 float averagedGyroData[AXIS_NUMBER][GYRO_AVERAGE_MAX_SUM];
@@ -60,6 +53,12 @@ uint32_t usedGa[AXIS_NUMBER];
 //these numbers change based on loop_control
 volatile loop_speed_record loopSpeed;
 
+
+void  InlineInitGyroFilters(void);
+void  InlineInitKdFilters(void);
+void  InlineInitSpectrumNoiseFilter(void);
+void  InlineInitAccFilters(void);
+float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, float rates, float acroPlus, uint32_t axis);
 
 void ArmBoard(void)
 {
@@ -237,10 +236,6 @@ void InitFlightCode(void)
 	bzero(filteredGyroData,sizeof(filteredGyroData));
 	bzero(averagedGyroDataPointer,sizeof(averagedGyroDataPointer));
 	bzero(&flightPids,sizeof(flightPids));
-	bzero(gyroStdDeviationSamples, sizeof(gyroStdDeviationSamples));
-	bzero(gyroStdDeviationTotals, sizeof(gyroStdDeviationTotals));
-	gyroStdDeviationPointer = 0;
-	gyroStdDeviationTotalsPointer = 0;
 	timeSinceSelfLevelActivated = 0;
 	slpUsed = 0.0f;
 	sliUsed = 0.0f;
@@ -472,6 +467,7 @@ void InitFlightCode(void)
 			break;
 	}
 
+	loopSpeed.gyroDivider /= 2;
 	//TODO: gyroConfig.accDenom is not set until after gyro is running.
 	//loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
 	loopSpeed.halfGyrodT        = loopSpeed.gyrodT * 0.5f;
@@ -564,12 +560,6 @@ inline void InlineUpdateAttitude(float geeForceAccArray[])
 
 }
 
-
-inline void ComplementaryFilterUpdateAttitude(void)
-{
-	UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], filteredGyroData[PITCH], filteredGyroData[YAW]);
-}
-
 inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 {
 
@@ -594,13 +584,15 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 
 }
 
-//inline void InlineFlightCode(float dpsGyroArray[])
- void InlineFlightCode(float dpsGyroArray[])
+inline void InlineFlightCode(float dpsGyroArray[])
+// void InlineFlightCode(float dpsGyroArray[])
 {
 
 	static uint32_t gyroStdDeviationLatch = 0;
 	int32_t axis;
 	volatile float averagedGyro;
+
+	//inlineDigitalHi(ports[ENUM_PORTB], GPIO_PIN_0);
 
 	//Gyro routine:
 	//gyro interrupts
@@ -616,10 +608,11 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
-	if (SKIP_GYRO || (!boardArmed && progMode && 0))
+	if (SKIP_GYRO)
 	{
 		FeedTheDog();
 		ledStatus.status = LEDS_FAST_BLINK;
+		ProcessSerialRx();
 		return;
 	}
 
@@ -645,6 +638,7 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 	if (gyroLoopCounter-- == 0)
 	{
 
+		//inlineDigitalLo(ports[ENUM_PORTB], GPIO_PIN_0);
 		gyroLoopCounter=loopSpeed.gyroDivider;
 
 		//smooth the rx data between rx signals
@@ -824,7 +818,6 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 		//this code is less important that stabilization, so it happens AFTER stabilization.
 		//Anything changed here can happen after the next iteration without any drawbacks. Stabilization above all else!
 
-		ComplementaryFilterUpdateAttitude(); //stabilization above all else. This update happens after gyro stabilization
 
 #ifdef LOG32
 			//update blackbox here
@@ -833,6 +826,7 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 
 		if (khzLoopCounter-- == 0)
 		{
+
 			//runs at 1KHz or loopspeed, whatever is slower
 			khzLoopCounter=loopSpeed.khzDivider;
 
@@ -870,11 +864,9 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 		}
 
 	}
-	else
-	{
-		ComplementaryFilterUpdateAttitude(); //we update this in the main loop after stabilization but before logging. Outside of the divider we only update this
-	}
 
+	UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], filteredGyroData[ROLL], filteredGyroData[PITCH], filteredGyroData[YAW]);
+	ProcessSerialRx();
 }
 
 //return setpoint in degrees per second, this is after stick smoothing

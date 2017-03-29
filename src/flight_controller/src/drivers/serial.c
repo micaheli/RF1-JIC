@@ -5,7 +5,7 @@ __IO ITStatus UartReady = RESET;
 uint8_t dmaRxBuffer = '\000';
 uint32_t dmaIndex[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 6 usarts
 uint32_t dmaTxCallbackToUsartHandle[IRQH_FP_TOT] =  { 0 };
-
+volatile int32_t processRxCodeNow = -1;
 
 uint32_t lastRXPacket;
 
@@ -541,6 +541,37 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	}
 }
 
+inline void ProcessSerialRx(void)
+{
+	uint32_t serialNumber;
+
+	if (processRxCodeNow > -1)
+	{
+		serialNumber = processRxCodeNow;
+		processRxCodeNow = -1;
+
+		if ((board.serials[serialNumber].Protocol == USING_SPEK_T) || (board.serials[serialNumber].Protocol == USING_SPEK_R) || (board.serials[serialNumber].Protocol == USING_DSM2_T) || (board.serials[serialNumber].Protocol == USING_DSM2_R))
+			ProcessSpektrumPacket(serialNumber);
+		else if ((board.serials[serialNumber].Protocol == USING_SBUS_T) || (board.serials[serialNumber].Protocol == USING_SBUS_R))
+			ProcessSbusPacket(serialNumber);
+		else if ( (board.serials[serialNumber].Protocol == USING_SUMD_T) || (board.serials[serialNumber].Protocol == USING_SUMD_R) )
+			ProcessSumdPacket(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], board.serials[serialNumber].FrameSize);
+		else if ( (board.serials[serialNumber].Protocol == USING_IBUS_T) || (board.serials[serialNumber].Protocol == USING_IBUS_R) )
+			ProcessIbusPacket(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], board.serials[serialNumber].FrameSize);
+		else if (board.serials[serialNumber].Protocol == USING_SPORT)
+		{
+			//simply fill the telemetry RX buffer. The scheduler and s.port driver will handle the rest.
+			telemtryRxBuffer[0] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0];
+			telemtryRxBuffer[1] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1];
+		}
+		else if (board.serials[serialNumber].Protocol == USING_MSP)
+		{
+			//simply fill the telemetry RX buffer. The scheduler and s.port driver will handle the rest.
+			telemtryRxBuffer[0] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0];
+			telemtryRxBuffer[1] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1];
+		}
+	}
+}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -580,37 +611,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 			if (dmaIndex[serialNumber] >= board.serials[serialNumber].FrameSize)
 			{
+				processRxCodeNow = serialNumber;
 				dmaIndex[serialNumber] = 0;
-				if ((board.serials[serialNumber].Protocol == USING_SPEK_T) || (board.serials[serialNumber].Protocol == USING_SPEK_R) || (board.serials[serialNumber].Protocol == USING_DSM2_T) || (board.serials[serialNumber].Protocol == USING_DSM2_R))
-					ProcessSpektrumPacket(serialNumber);
-				else if ((board.serials[serialNumber].Protocol == USING_SBUS_T) || (board.serials[serialNumber].Protocol == USING_SBUS_R))
-					ProcessSbusPacket(serialNumber);
-				else if ( (board.serials[serialNumber].Protocol == USING_SUMD_T) || (board.serials[serialNumber].Protocol == USING_SUMD_R) )
-					ProcessSumdPacket(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], board.serials[serialNumber].FrameSize);
-				else if ( (board.serials[serialNumber].Protocol == USING_IBUS_T) || (board.serials[serialNumber].Protocol == USING_IBUS_R) )
-					ProcessIbusPacket(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], board.serials[serialNumber].FrameSize);
-				else if (board.serials[serialNumber].Protocol == USING_SPORT)
-				{
-					//simply fill the telemetry RX buffer. The scheduler and s.port driver will handle the rest.
-					telemtryRxBuffer[0] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0];
-					telemtryRxBuffer[1] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1];
-				}
-				else if (board.serials[serialNumber].Protocol == USING_MSP)
-				{
-					//simply fill the telemetry RX buffer. The scheduler and s.port driver will handle the rest.
-					telemtryRxBuffer[0] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0];
-					telemtryRxBuffer[1] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1];
-				}
-				else if (board.serials[serialNumber].Protocol == USING_RFVTX)
-				{
-					//simply fill the telemetry RX buffer. The scheduler and s.port driver will handle the rest.
-					rfVtxRxBuffer[0] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0];
-					rfVtxRxBuffer[1] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][1];
-					rfVtxRxBuffer[2] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][2];
-					rfVtxRxBuffer[3] = serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][3];
-				}
-
-
 			}
 			break;
 		}

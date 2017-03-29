@@ -26,7 +26,6 @@ typedef struct
 	uint8_t           czechsum;
 } main_config;
 
-
 enum {typeINT=0,typeUINT,typeFLOAT,typeSTRING,};
 
 typedef struct
