@@ -826,7 +826,7 @@ Version 0.217.062 RC9:
 
 Version 0.218.062 RC10:
 	More flight code enhancements
-	Fixed Spektrum Telemtry
+	Fixed Spektrum Telemetry
 
 
 
