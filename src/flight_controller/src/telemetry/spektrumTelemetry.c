@@ -469,6 +469,7 @@ void textMenuUpdate(void)
 				case (8):
 		            if (pidSpektrumTelem.column ==1)
 					{
+						resetBoard = 1;
 					 	SaveConfig(ADDRESS_CONFIG_START);
 					 	pidSpektrumTelem.column = 0;
 						pidSpektrumTelem.status=SAVING;
@@ -516,6 +517,7 @@ void textMenuUpdate(void)
 						case (8):
 							if (pidSpektrumTelem.column ==1)
 							{
+								resetBoard = 1;
 								SaveConfig(ADDRESS_CONFIG_START);
 								pidSpektrumTelem.column = 0;
 								pidSpektrumTelem.status=SAVING;
@@ -576,4 +578,4 @@ void textMenuUpdate(void)
 		xbus.textLine = 0;
 	}
 	dataInc = 0;
-}//end textMenuUpdate()
+}//end textMenuUpdate()

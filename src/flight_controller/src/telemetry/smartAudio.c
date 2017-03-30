@@ -74,9 +74,9 @@ uint32_t InitSmartAudio(void)
 	}
 
 	if (usartPinType == ENUM_USART_RX_PIN)
-		InitBlockingSoftSerialPort( 4950, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].RXPort, board.serials[usartNumber].RXPin, SERIAL_LSB, TBS_HANDLING_ON );
+		InitBlockingSoftSerialPort( 4800, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].RXPort, board.serials[usartNumber].RXPin, SERIAL_LSB, TBS_HANDLING_ON );
 	else
-		InitBlockingSoftSerialPort( 4950, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].TXPort, board.serials[usartNumber].TXPin, SERIAL_LSB, TBS_HANDLING_ON );
+		InitBlockingSoftSerialPort( 4800, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].TXPort, board.serials[usartNumber].TXPin, SERIAL_LSB, TBS_HANDLING_ON );
 
 	return( SmartAudioGetSettings() );
 }
@@ -133,7 +133,10 @@ uint32_t SmartAudioVtxTurnOn(void)
 	smartAudioTxRxBuffer[1] = SM_START_CODE2;
 	smartAudioTxRxBuffer[2] = ShiftSmartAudioCommand(SM_SET_OPERATION_MODE);
 	smartAudioTxRxBuffer[3] = 0x01;
-	smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_DIS_PMOR;
+	if (mainConfig.telemConfig.vtxPitmodeType == 0)
+		smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_PM;
+	else if (mainConfig.telemConfig.vtxPitmodeType == 0)
+		smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_DIS_PMOR;
 	smartAudioTxRxBuffer[5] = SmCrc8(smartAudioTxRxBuffer, 5);
 
 	//warning blocking code

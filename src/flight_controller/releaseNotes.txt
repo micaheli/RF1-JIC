@@ -836,6 +836,15 @@ Version 0.220.062 RC10:
 		Increase Ki and Kd performance
 	Fixed gyro calibration issue that sometimes popped up when FC was turned on before radio
 
+Version 0.221.063 RC11:
+	set vtx_pitmode_type=0 (default, VTX will always turn on after a power cycle)
+	set vtx_pitmode_type=1 (VTX will default to pit mode after power cycle)
+
+
+
+
+
+
 
 
 

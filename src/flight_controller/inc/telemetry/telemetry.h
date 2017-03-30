@@ -139,6 +139,7 @@ typedef struct
     uint32_t telemMsp;
     uint32_t telemMav;
     float    adcCurrFactor;
+	uint32_t vtxPitmodeType;
 } telem_config;
 
 typedef struct

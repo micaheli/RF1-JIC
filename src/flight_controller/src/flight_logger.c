@@ -247,7 +247,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 
 			if(logItterationCounter < 1)
 			{
-				logItterationCounter = 1;	//TODO make this configurable value. Capture rate = 1khz/value
+				logItterationCounter = 2;	//TODO make this configurable value. Capture rate = 1khz/value
 
 #ifndef LOG32
 				//average all values
