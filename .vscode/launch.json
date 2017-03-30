@@ -1,7 +1,6 @@
 {
     "version": "0.2.0",
-    "configurations": [
-        {
+    "configurations": [{
             "name": "Flight stm32f405xx OpenOCD Debug",
             "preLaunchTask": "Flight stm32f405xx",
             "type": "gdb",
@@ -22,7 +21,7 @@
                 "monitor reset",
                 "break main"
             ],
-            "gdbpath": "/Users/kalyndoerr/dev/gcc-arm-none-eabi-6-2017-q1-update/bin/arm-none-eabi-gdb"
+            "gdbpath": "arm-none-eabi-gdb"
         },
         {
             "name": "Rfbl stm32f405xx OpenOCD Debug",
