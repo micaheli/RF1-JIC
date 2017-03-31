@@ -3,8 +3,8 @@
 //this doesn't really belong here
 volatile uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 
-uint32_t skipTaskHandlePcComm   = 0;
-volatile uint32_t errorMask              = 0;
+uint32_t skipTaskHandlePcComm = 0;
+volatile uint32_t errorMask   = 0;
 
 //scheduler timer
 TIM_HandleTypeDef schedulerTimer;
@@ -18,10 +18,10 @@ volatile uint32_t softSerialLastByteProcessedLocation;
 volatile uint32_t softSerialSwitchBuffer;
 volatile uint32_t turnOnVtxNow = 0;
 
-uint8_t    proccesedSoftSerial[25]; //25 byte buffer enough?
-uint32_t   proccesedSoftSerialIdx = 0;
-uint32_t   softSerialLineIdleSensed = 0;
-uint32_t   lastBitFound = 0;
+uint8_t  proccesedSoftSerial[25]; //25 byte buffer enough?
+uint32_t proccesedSoftSerialIdx   = 0;
+uint32_t softSerialLineIdleSensed = 0;
+uint32_t lastBitFound             = 0;
 
 static void TaskProcessSoftSerial(void);
 static void TaskTelemtry(void);
@@ -190,13 +190,7 @@ inline void TaskCheckDelayedArming(void)
  			{
  				//only try turning on the VTX once per arming
  				turnOnVtxNow = 0;
- 				if (mainConfig.telemConfig.telemSport)
-					DeInitSoftSport();
- 				InitSmartAudio();
  				VtxTurnOn();
- 				DeInitSmartAudio();
- 				if (mainConfig.telemConfig.telemSport)
-					InitAllSport();
  			}
  			armBoardAt = 0;
  			ArmBoard();
@@ -234,24 +228,12 @@ inline void TaskCheckVtx(void)
 	if (turnOnVtxNow)
 	{
 		turnOnVtxNow = 0;
-		if (mainConfig.telemConfig.telemSport)
-			DeInitSoftSport();
-		InitSmartAudio();
 		VtxTurnOn(); //blocking of scheduler during send and receive
-		DeInitSmartAudio();
-		if (mainConfig.telemConfig.telemSport)
-			InitAllSport();
 	}
 
 	if (vtxRequested.vtxBandChannel != vtxRecord.vtxBandChannel)
 	{
-		if (mainConfig.telemConfig.telemSport)
-			DeInitSoftSport();
-		InitSmartAudio();
 		VtxBandChannel(vtxRequested.vtxBandChannel);
-		DeInitSmartAudio();
-		if (mainConfig.telemConfig.telemSport)
-			InitAllSport();
 	}
 
 	if (vtxRequested.vtxPit != vtxRecord.vtxPit)
@@ -264,41 +246,9 @@ inline void TaskCheckVtx(void)
 
 	if (vtxRequested.vtxPower != vtxRecord.vtxPower)
 	{
-		if (mainConfig.telemConfig.telemSport)
-			DeInitSoftSport();
-		InitSmartAudio();
 		VtxPower(vtxRequested.vtxPower);
-		DeInitSmartAudio();
-		if (mainConfig.telemConfig.telemSport)
-			InitAllSport();
 	}
 
-
-/*
-	if ( (vtxData.vtxBand != vtxBand) || (vtxData.vtxChannel != vtxChannel) )
-	{ //did vtxChannel change? If so, send change to SA VTX
-		SmartAudioSetChannelBlocking( SpektrumBandAndChannelToChannel(vtxData.vtxBand, vtxData.vtxChannel) );
-		if (vtxRecord.vtxPit == VTX_MODE_PIT)
-		{
-			VtxTurnOn();
-			vtxPit = vtxData.vtxPit;
-		}
-		vtxBand    = vtxData.vtxBand;
-		vtxChannel = vtxData.vtxChannel;
-	}
-
-	if ( (vtxRecord.vtxPower != vtxPower) || (vtxData.vtxPit != vtxPit) )
-	{
-		SmartAudioSetPowerBlocking( vtxData.vtxPower );
-		if (vtxData.vtxPit == VTX_MODE_PIT)
-		{
-			vtxPit = vtxData.vtxPit;
-			VtxTurnOn();
-		}
-		vtxPower = vtxData.vtxPower;
-		vtxPit   = vtxData.vtxPit;
-	}
-*/
 }
 
 inline void TaskAdc(void)
@@ -317,7 +267,8 @@ inline void TaskProcessSoftSerial(void)
 
 }
 
-inline void TaskWizard(void) {
+inline void TaskWizard(void)
+{
 
 	switch(wizardStatus.currentWizard)
 	{

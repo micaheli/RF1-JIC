@@ -1917,14 +1917,8 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("vtxinfo", inString))
 		{
 
-			if (mainConfig.telemConfig.telemSport)
-				DeInitSoftSport();
-
 			InitSmartAudio();
 			DeInitSmartAudio();
-
-			if (mainConfig.telemConfig.telemSport)
-				InitAllSport();
 
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -1938,11 +1932,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("vtxon", inString))
 		{
 
-			if (mainConfig.telemConfig.telemSport)
-				DeInitSoftSport();
-
 			InitSmartAudio();
-			DeInitSmartAudio();
 
 			if (VtxTurnOn())
 			{
@@ -1959,17 +1949,14 @@ void ProcessCommand(char *inString)
 			{
 				RfCustomReplyBuffer("#me Error turning on VTX\n");
 			}
-			if (mainConfig.telemConfig.telemSport)
-				InitAllSport();
+
+			DeInitSmartAudio();
 
 		}
 	else if (!strcmp("vtxpit", inString))
 		{
-			if (mainConfig.telemConfig.telemSport)
-				DeInitSoftSport();
 
 			InitSmartAudio();
-			DeInitSmartAudio();
 
 			if (VtxTurnPit())
 			{
@@ -1987,18 +1974,13 @@ void ProcessCommand(char *inString)
 				RfCustomReplyBuffer("#me Error putting VTX into pit mode\n");
 			}
 
-			if (mainConfig.telemConfig.telemSport)
-				InitAllSport();
+			DeInitSmartAudio();
 
 		}
 	else if (!strcmp("vtxbandchannel", inString))
 		{
 
-			if (mainConfig.telemConfig.telemSport)
-				DeInitSoftSport();
-
 			InitSmartAudio();
-			DeInitSmartAudio();
 
 			if (VtxBandChannel( GetValueFromString(args, vtxStringCompTable, sizeof(vtxStringCompTable)) ))
 			{
@@ -2016,80 +1998,8 @@ void ProcessCommand(char *inString)
 				RfCustomReplyBuffer("#me Error changing VTX channel\n");
 			}
 
-			if (mainConfig.telemConfig.telemSport)
-				InitAllSport();
+			DeInitSmartAudio();
 
-		}
-	else if (!strcmp("saunlock", inString))
-		{
-			//smartAudioVtxRecord.opMode &= ~(SM_OPMODE_LOCKED);
-			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu\n", SmartAudioSetOpModeBlocking( smartAudioVtxRecord.opMode ) );
-			//RfCustomReplyBuffer(rf_custom_out_buffer);
-		}
-	else if (!strcmp("salock", inString))
-		{
-			//smartAudioVtxRecord.opMode |= (SM_OPMODE_LOCKED);
-			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Mode Success: %lu\n", SmartAudioSetOpModeBlocking( smartAudioVtxRecord.opMode  ) );
-			//RfCustomReplyBuffer(rf_custom_out_buffer);
-		}
-	else if (!strcmp("sapow", inString))
-		{
-			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Power Success: %lu\n", SmartAudioSetPowerBlocking( atoi(args) ) );
-			//RfCustomReplyBuffer(rf_custom_out_buffer);
-		}
-	else if (!strcmp("sach", inString))
-		{
-			//snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SA Channel Success: %lu\n", SmartAudioSetChannelBlocking( atoi(args) ) );
-			//RfCustomReplyBuffer(rf_custom_out_buffer);
-		}
-	else if (!strcmp("vtxbaud", inString))
-		{
-			for (uint32_t x=0;x<4;x++)
-					rfVtxRxBuffer[x]=0;
-
-			uint32_t returnValueThis = RfVtxBaud();
-			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-		}
-	else if (!strcmp("vtxoff", inString))
-		{
-			for (uint32_t x=0;x<4;x++)
-					rfVtxRxBuffer[x]=0;
-
-			uint32_t returnValueThis = RfVtxOff();
-			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-
-		}
-	else if (!strcmp("vtx25", inString))
-		{
-			uint32_t returnValueThis = RfVtxOn25();
-			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-		}
-	else if (!strcmp("vtx200", inString))
-		{
-			uint32_t returnValueThis = RfVtxOn200();
-			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-		}
-	else if (!strcmp("vtxb", inString))
-		{
-			uint32_t returnValueThis = RfVtxBand(atoi(args));
-			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-		}
-	else if (!strcmp("vtxc", inString))
-		{
-			uint32_t returnValueThis = RfVtxChannel(atoi(args));
-			DelayMs(100);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX: %lu %lu %lu %lu %lu\n", returnValueThis, (uint32_t)rfVtxRxBuffer[0], (uint32_t)rfVtxRxBuffer[1], (uint32_t)rfVtxRxBuffer[2], (uint32_t)rfVtxRxBuffer[3] );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("serial", inString))
 		{

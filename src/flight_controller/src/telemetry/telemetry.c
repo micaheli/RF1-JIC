@@ -107,7 +107,9 @@ uint32_t VtxTurnOn(void)
 	{
 		case VTX_DEVICE_SMARTV1:
 		case VTX_DEVICE_SMARTV2:
+			InitSmartAudio();
 			returnValue = SmartAudioVtxTurnOn();
+			DeInitSmartAudio();
 			mutex = 0;
 			return( returnValue );
 			break;
@@ -133,7 +135,9 @@ uint32_t VtxTurnPit(void)
 	{
 		case VTX_DEVICE_SMARTV1:
 		case VTX_DEVICE_SMARTV2:
+			InitSmartAudio();
 			returnValue = SmartAudioVtxTurnPit();
+			DeInitSmartAudio();
 			mutex = 0;
 			return( returnValue );
 			break;
@@ -159,7 +163,9 @@ uint32_t VtxBandChannel(uint32_t bandChannel)
 	{
 		case VTX_DEVICE_SMARTV1:
 		case VTX_DEVICE_SMARTV2:
+			InitSmartAudio();
 			returnValue = SmartAudioVtxBandChannel(bandChannel);
+			DeInitSmartAudio();
 			mutex = 0;
 			return( returnValue );
 			break;
@@ -185,7 +191,9 @@ uint32_t VtxPower(uint32_t power)
 	{
 		case VTX_DEVICE_SMARTV1:
 		case VTX_DEVICE_SMARTV2:
+			InitSmartAudio();
 			returnValue = SmartAudioVtxPower(power);
+			DeInitSmartAudio();
 			mutex = 0;
 			return( returnValue );
 			break;

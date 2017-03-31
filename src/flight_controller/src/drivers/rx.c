@@ -464,7 +464,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		//Check for vtx data
 		if (copiedBufferData[12] == 0xE0)
 		{
-			if (vtxRecord.vtxDevice != VTX_DEVICE_NONE)
+			if (mainConfig.telemConfig.telemSmartAudio)
 			{
 				vtxRequested.vtxBandChannel = VtxSpektrumBandAndChannelToVtxBandChannel( (copiedBufferData[13] >> 5) & 0x07, (copiedBufferData[13] & 0x0F) + 1);
 				VtxChannelToBandAndChannel(vtxRequested.vtxBandChannel, &vtxRequested.vtxBand, &vtxRequested.vtxChannel);
@@ -472,13 +472,12 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 				//vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
 				//vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
 			}
-
 		}
 
 			  //Check channel slot 7 for vtx power, pit, and region data
 		if (copiedBufferData[14] == 0xE0)
 		{
-			if (vtxRecord.vtxDevice != VTX_DEVICE_NONE)
+			if (mainConfig.telemConfig.telemSmartAudio)
 			{
 				vtxRequested.vtxPower  = (uint32_t)(copiedBufferData[15] & 0x03);
 				vtxRequested.vtxRegion = (uint32_t)((copiedBufferData[15] >> 3) & 0x01);
@@ -493,7 +492,6 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 				//vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
 				//vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
 			}
-
 		}
 
 		static uint32_t mutexLock = 0;

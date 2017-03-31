@@ -63,11 +63,18 @@ void ImuResetCommandQuat(void)
 
 void ImuUpdateCommandQuat(float rollDps, float pitchDps, float yawDps)
 {
+	commandQuat = QuaternionFromEuler (
+		InlineDegreesToRadians( gyroPitch )  * loopSpeed.halfGyrodT,
+		InlineDegreesToRadians( gyroRoll )  * loopSpeed.halfGyrodT,
+		InlineDegreesToRadians( gyroYaw ) * loopSpeed.halfGyrodT
+	);
+	QuaternionNormalize(&commandQuat);
+
 	//put requested DPS into command quat.
-	QuaternionMultiplyDps(&commandQuat, rollDps, pitchDps, yawDps);
+//	QuaternionMultiplyDps(&commandQuat, rollDps, pitchDps, yawDps);
 	//find difference between command quad and attitude quat and get euler numbers back that the PIDC can use
 	//fills requestedDegrees
-	QuaternionDifference(&commandQuat, &attitudeFrameQuat);
+//	QuaternionDifference(&commandQuat, &attitudeFrameQuat);
 }
 
 static void QuaternionDifference(volatile quaternion_record *q1, volatile quaternion_record *q2)
@@ -120,8 +127,8 @@ static void QuaternionToEuler(volatile quaternion_record *inQuat, volatile float
     sqz = inQuat->z * inQuat->z;
 
     heading  = atan2f(2.0f * inQuat->y * inQuat->w - 2.0f * inQuat->x * inQuat->z , 1.0f - 2.0f * sqy - 2.0f * sqz);
-	attitude = asinf(2.0f * test);
-	bank     = atan2f(2.0f * inQuat->x * inQuat->w - 2.0f * inQuat->y * inQuat->z , 1.0f - 2.0f * sqx - 2.0f * sqz);
+	bank     = -asinf(2.0f * test);
+	attitude = -atan2f(2.0f * inQuat->x * inQuat->w - 2.0f * inQuat->y * inQuat->z , 1.0f - 2.0f * sqx - 2.0f * sqz);
 
 	rates[YAW]   = InlineRadiansToDegrees(heading);
 	rates[PITCH] = InlineRadiansToDegrees(attitude);
@@ -145,7 +152,7 @@ static float QuaternionDotProduct (volatile quaternion_record *a, volatile quate
 {
 	return(a->w * b->w + a->x * b->x + a->y * b->y + a->z * b->z);
 }
-
+*/
 
 static quaternion_record QuaternionFromEuler (float halfBankRads, float halfAttitudeRads, float halfHeadingRads)
 {
@@ -168,6 +175,7 @@ static quaternion_record QuaternionFromEuler (float halfBankRads, float halfAtti
 	return(tempQuaternion);
 }
 
+/*
 static void QuaternionToEuler(volatile quaternion_record *inQuat, float *roll, float *pitch, float *yaw)
 {
 
@@ -328,7 +336,8 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 	static float accTrustKiStorage[3] = {0.0f, 0.0f, 0.0f};
 	//static uint32_t gyroToAccDivisorCounter = 0;
 
-	gyroPitch = -gyroPitch;
+	gyroPitch = gyroPitch;
+	gyroRoll  = -gyroRoll;
 	gyroYaw   = -gyroYaw;
 
 	//calculate current spin rate in DPS
@@ -383,11 +392,34 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 
 	}
 
-	QuaternionMultiplyDps(&attitudeFrameQuat, gyroRoll, gyroPitch, gyroYaw);
-	UpdateRotationMatrix();
+	
+	//gyroQuat = QuaternionFromEuler (
+	//	InlineDegreesToRadians( gyroRoll )  * loopSpeed.halfGyrodT,
+	//	InlineDegreesToRadians( gyroPitch )  * loopSpeed.halfGyrodT,
+	//	InlineDegreesToRadians( gyroYaw ) * loopSpeed.halfGyrodT
+	//);
 
-	rollAttitude  = InlineRadiansToDegrees(atan2f(rotationalMatrix[2][1], rotationalMatrix[2][2]));
-	pitchAttitude = -InlineRadiansToDegrees(HALF_PI_F - acosf(-rotationalMatrix[2][0]));
-	yawAttitude   = -InlineRadiansToDegrees(atan2f(rotationalMatrix[1][0], rotationalMatrix[0][0]));
+	//convert gyro readins into difference quaternion which is then multiplied by the attitudeFrame quaternion
+	gyroQuat = QuaternionFromEuler (
+		InlineDegreesToRadians( gyroPitch )  * loopSpeed.halfGyrodT,
+		InlineDegreesToRadians( gyroRoll )  * loopSpeed.halfGyrodT,
+		InlineDegreesToRadians( gyroYaw ) * loopSpeed.halfGyrodT
+	);
+	QuaternionNormalize(&gyroQuat);
+	QuaternionMultiply(&attitudeFrameQuat, &attitudeFrameQuat, &gyroQuat);
+
+	//only need to do this to get p,r,y, which shouldn't be needed for flight
+	volatile float rates[3];
+	QuaternionToEuler(&commandQuat, rates);
+	rollAttitude  = rates[ROLL];
+	pitchAttitude = -rates[PITCH];
+	yawAttitude   = -rates[YAW];
+
+	//QuaternionMultiplyDps(&attitudeFrameQuat, gyroRoll, gyroPitch, gyroYaw);
+	//UpdateRotationMatrix();
+
+	//rollAttitude  = InlineRadiansToDegrees(atan2f(rotationalMatrix[2][1], rotationalMatrix[2][2]));
+	//pitchAttitude = -InlineRadiansToDegrees(HALF_PI_F - acosf(-rotationalMatrix[2][0]));
+	//yawAttitude   = -InlineRadiansToDegrees(atan2f(rotationalMatrix[1][0], rotationalMatrix[0][0]));
 
 }

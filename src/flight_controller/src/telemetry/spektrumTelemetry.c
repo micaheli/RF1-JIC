@@ -428,6 +428,7 @@ void textMenuUpdate(void)
 				    {
 						resetBoard = 1;
 				    	SaveConfig(ADDRESS_CONFIG_START);
+						SystemReset();
 						pidSpektrumTelem.column = 0;
 						pidSpektrumTelem.status=SAVING;
 						pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
@@ -471,6 +472,7 @@ void textMenuUpdate(void)
 					{
 						resetBoard = 1;
 					 	SaveConfig(ADDRESS_CONFIG_START);
+						SystemReset();
 					 	pidSpektrumTelem.column = 0;
 						pidSpektrumTelem.status=SAVING;
 						pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
@@ -519,6 +521,7 @@ void textMenuUpdate(void)
 							{
 								resetBoard = 1;
 								SaveConfig(ADDRESS_CONFIG_START);
+								SystemReset();
 								pidSpektrumTelem.column = 0;
 								pidSpektrumTelem.status=SAVING;
 								pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;

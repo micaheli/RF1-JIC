@@ -838,8 +838,23 @@ Version 0.220.062 RC10:
 
 Version 0.221.063 RC11:
 	set vtx_pitmode_type=0 (default, VTX will always turn on after a power cycle)
+		To change VTX operation, with battery connect and props off run the following commands in console:
+			set vtx_pitmode_type=0
+			save
+			vtxinfo
+			vtxpit
+			vtxon
 	set vtx_pitmode_type=1 (VTX will default to pit mode after power cycle)
+		To change VTX operation, with battery connect and props off run the following commands in console:
+			set vtx_pitmode_type=1
+			save
+			vtxinfo
+			vtxpit
+			vtxon
 
+Version 0.222.064 RC12:
+	Force board reset after spektrum telemetry updates and saves PIDs
+	Adjust SmartAudio baud rate to 4900 to counteract severe drift issue with some VTXs
 
 
 

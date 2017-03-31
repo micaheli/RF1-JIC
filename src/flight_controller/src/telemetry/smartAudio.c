@@ -14,6 +14,7 @@ uint32_t InitSmartAudio(void)
 
 	uint32_t usartNumber   = 0;
 	uint32_t usartPinType  = 0;
+	uint32_t returnValue   = 0;
 
 	if (boardArmed)
 		return(0);
@@ -73,17 +74,49 @@ uint32_t InitSmartAudio(void)
 			break;
 	}
 
-	if (usartPinType == ENUM_USART_RX_PIN)
-		InitBlockingSoftSerialPort( 4800, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].RXPort, board.serials[usartNumber].RXPin, SERIAL_LSB, TBS_HANDLING_ON );
-	else
-		InitBlockingSoftSerialPort( 4800, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].TXPort, board.serials[usartNumber].TXPin, SERIAL_LSB, TBS_HANDLING_ON );
+	if (mainConfig.telemConfig.telemSport)
+		DeInitSoftSport();
 
-	return( SmartAudioGetSettings() );
+	if (usartPinType == ENUM_USART_RX_PIN)
+		InitBlockingSoftSerialPort( 4900, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].RXPort, board.serials[usartNumber].RXPin, SERIAL_LSB, TBS_HANDLING_ON );
+	else
+		InitBlockingSoftSerialPort( 4900, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].TXPort, board.serials[usartNumber].TXPin, SERIAL_LSB, TBS_HANDLING_ON );
+
+	returnValue = SmartAudioGetSettings();
+
+	if (!returnValue)
+	{
+		DelayMs(50);
+
+		if (usartPinType == ENUM_USART_RX_PIN)
+			InitBlockingSoftSerialPort( 4900, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].RXPort, board.serials[usartNumber].RXPin, SERIAL_LSB, TBS_HANDLING_ON );
+		else
+			InitBlockingSoftSerialPort( 4900, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].TXPort, board.serials[usartNumber].TXPin, SERIAL_LSB, TBS_HANDLING_ON );
+
+		returnValue = SmartAudioGetSettings();
+	}
+
+	if (!returnValue)
+	{
+		DelayMs(50);
+
+		if (usartPinType == ENUM_USART_RX_PIN)
+			InitBlockingSoftSerialPort( 4900, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].RXPort, board.serials[usartNumber].RXPin, SERIAL_LSB, TBS_HANDLING_ON );
+		else
+			InitBlockingSoftSerialPort( 4900, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].TXPort, board.serials[usartNumber].TXPin, SERIAL_LSB, TBS_HANDLING_ON );
+
+		returnValue = SmartAudioGetSettings();
+	}
+
+	return( returnValue );
+
 }
 
 void DeInitSmartAudio(void)
 {
 	DeInitBlockingSoftSerialPort();
+	if (mainConfig.telemConfig.telemSport)
+		InitAllSport();
 }
 
 uint32_t CheckSmartAudioRxCrc(uint8_t buffer[], uint32_t bufferSize)
@@ -135,7 +168,7 @@ uint32_t SmartAudioVtxTurnOn(void)
 	smartAudioTxRxBuffer[3] = 0x01;
 	if (mainConfig.telemConfig.vtxPitmodeType == 0)
 		smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_PM;
-	else if (mainConfig.telemConfig.vtxPitmodeType == 0)
+	else if (mainConfig.telemConfig.vtxPitmodeType == 1)
 		smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_DIS_PMOR;
 	smartAudioTxRxBuffer[5] = SmCrc8(smartAudioTxRxBuffer, 5);
 
