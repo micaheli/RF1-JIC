@@ -15,7 +15,7 @@ static void QuaternionZeroRotation(volatile quaternion_record *quaternion);
 static void QuaternionNormalize (volatile quaternion_record *out);
 static void QuaternionMultiply(volatile quaternion_record *out, volatile quaternion_record *q1, volatile quaternion_record *q2);
 //static void QuaternionConjugate (volatile quaternion_record *out);
-//static quaternion_record QuaternionFromEuler (float halfBankRads, float halfAttitudeRads, float halfHeadingRads);
+static quaternion_record QuaternionFromEuler (float halfBankRads, float halfAttitudeRads, float halfHeadingRads);
 static void QuaternionToEuler(volatile quaternion_record *inQuat, volatile float rates[]);
 static void UpdateRotationMatrix(void);
 static void QuaternionMultiplyDps(volatile quaternion_record *quatToUpdate, float gyroRollDiffRads, float gyroPitchDiffRads, float gyroYawDiffRads);
@@ -64,9 +64,9 @@ void ImuResetCommandQuat(void)
 void ImuUpdateCommandQuat(float rollDps, float pitchDps, float yawDps)
 {
 	commandQuat = QuaternionFromEuler (
-		InlineDegreesToRadians( gyroPitch )  * loopSpeed.halfGyrodT,
-		InlineDegreesToRadians( gyroRoll )  * loopSpeed.halfGyrodT,
-		InlineDegreesToRadians( gyroYaw ) * loopSpeed.halfGyrodT
+		InlineDegreesToRadians( pitchDps )  * loopSpeed.halfGyrodT,
+		InlineDegreesToRadians( rollDps )  * loopSpeed.halfGyrodT,
+		InlineDegreesToRadians( yawDps ) * loopSpeed.halfGyrodT
 	);
 	QuaternionNormalize(&commandQuat);
 
@@ -369,10 +369,17 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 			//	accTrustKiStorage[ACCZ] += accTrustKi * accToGyroError[ACCZ] * loopSpeed.gyrodT;
 			//}
 
-			accToGyroError[ACCX] += (accY * rotationalMatrix[2][2] - accZ * rotationalMatrix[2][1]);
-			accToGyroError[ACCY] += (accZ * rotationalMatrix[2][0] - accX * rotationalMatrix[2][2]);
-			accToGyroError[ACCZ] += (accX * rotationalMatrix[2][1] - accY * rotationalMatrix[2][0]);
 
+			//accToGyroError[ACCX] += (accY * rotationalMatrix[2][2] - accZ * rotationalMatrix[2][1]);
+			//accToGyroError[ACCY] += (accZ * rotationalMatrix[2][0] - accX * rotationalMatrix[2][2]);
+			//accToGyroError[ACCZ] += (accX * rotationalMatrix[2][1] - accY * rotationalMatrix[2][0]);
+
+			//accToGyroError[ACCX] += (accY - accZ);
+			//accToGyroError[ACCY] += (accZ - accX);
+			//accToGyroError[ACCZ] += (accX - accY);
+			//accToGyroError[ACCX] =
+			//accToGyroError[ACCY] =
+			//accToGyroError[ACCZ] =
 			//trust ACCs more when the quad is disamred.
 			if (boardArmed)
 			{
@@ -381,7 +388,16 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 			else
 			{
 				accTrust  = 4000.3000f;
+				accTrust  = 100.3000f;
 			}
+
+			float pitchAcc = (atan2f( (float)filteredAccData[ACCX], (float)filteredAccData[ACCZ]) + PIf) * (180.0 * IPIf) - 180.0; //multiplying by the inverse of Pi is faster than dividing by Pi
+			// Turning around the Y axis results in a vector on the X-axis
+			float rollAcc  = (atan2f((float)filteredAccData[ACCY], (float)filteredAccData[ACCZ]) + PIf) * (180.0 * IPIf) - 180.0;
+			float yawAcc   = (atan2f((float)filteredAccData[ACCX], (float)filteredAccData[ACCY]) + PIf) * (180.0 * IPIf) - 180.0;
+			accToGyroError[ACCX] = rollAttitude - rollAcc;
+			accToGyroError[ACCY] = pitchAttitude - pitchAcc;
+			accToGyroError[ACCZ] = yawAttitude - yawAcc;
 
 			gyroRoll  += accTrust * accToGyroError[ACCX] + accTrustKiStorage[ACCX];
 			gyroPitch += accTrust * accToGyroError[ACCY] + accTrustKiStorage[ACCY];
@@ -410,7 +426,8 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 
 	//only need to do this to get p,r,y, which shouldn't be needed for flight
 	volatile float rates[3];
-	QuaternionToEuler(&commandQuat, rates);
+	//QuaternionToEuler(&commandQuat, rates);
+	QuaternionToEuler(&attitudeFrameQuat, rates);
 	rollAttitude  = rates[ROLL];
 	pitchAttitude = -rates[PITCH];
 	yawAttitude   = -rates[YAW];
