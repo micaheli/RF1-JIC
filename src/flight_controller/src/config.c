@@ -170,6 +170,8 @@ const config_variables_rec valueTable[] = {
 		{ "telem_mavlink", 		typeUINT,  "telm", &mainConfig.telemConfig.telemMav,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "adc_current_factor", typeFLOAT, "telm", &mainConfig.telemConfig.adcCurrFactor,				0, 50.0, 0, "" },
 		{ "vtx_pitmode_type",	typeUINT,  "telm", &mainConfig.telemConfig.vtxPitmodeType,				0, 1, 0, "" },
+		{ "vbat_buzzer",		typeUINT,  "telm", &mainConfig.telemConfig.vbatbuzzer,					0, 1, 1, "" },
+		{ "vbat_cutoff",		typeFLOAT, "telm", &mainConfig.telemConfig.vbatCutoff,					0, 4.0f, 3.3f, "" },
 
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, CW315_INV, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1,  0, "" },
@@ -178,19 +180,19 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 130.00, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 110.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 120.00, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 80.00, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 85.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 80.00, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 900.00, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 800.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 850.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 850.00, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 750.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 800.00, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1200.00, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 800.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1000.00, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1400.00, "" },
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 1600.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1800.00, "" },
 
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 4, "" },
+		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 0, "" },
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
 
@@ -203,31 +205,9 @@ const config_variables_rec valueTable[] = {
 		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
 		{ "filter_mode2",		typeUINT,  "filt", &mainConfig.filterConfig[2].filterMod, 				0, 10, 2, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 30.000, "" },
-#ifdef STM32F446xx	//TODO remove target specific ifdefs
-		{ "yaw_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r,				0, 200, 1, "" },
-#else
-		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 200, 88.000, "" },
-#endif
-
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 60.000, "" },
-#ifdef STM32F446xx	//TODO remove target specific ifdefs
-		{ "roll_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r,				0, 200, 1, "" },
-#else
-		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 200, 88.000, "" },
-#endif
-
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 60.000, "" },
-#ifdef STM32F446xx	//TODO remove target specific ifdefs
-		{ "pitch_rap",			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r,				0, 200, 1, "" },
-#else
-		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 200, 88.000, "" },
-#endif
-
-		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
-		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 90.000, "" },
-		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 100, 90.000, "" },
-
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 3000, 600.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 650.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 3000, 700.000, "" },
 
 		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 				0, 10, 2.0000, "" },
 		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 025.00, "" },
@@ -1724,37 +1704,29 @@ void ProcessCommand(char *inString)
 		{
 
 			mainConfig.gyroConfig.loopCtrl   = LOOP_UH32;
-			mainConfig.pidConfig[YAW].kp     = 130.00;
-			mainConfig.pidConfig[ROLL].kp    = 110.00;
-			mainConfig.pidConfig[PITCH].kp   = 120.00;
+			mainConfig.pidConfig[YAW].kp     = 110.00;
+			mainConfig.pidConfig[ROLL].kp    = 90.00;
+			mainConfig.pidConfig[PITCH].kp   = 100.00;
 
-			mainConfig.pidConfig[YAW].ki     = 900.00;
-			mainConfig.pidConfig[ROLL].ki    = 800.00;
-			mainConfig.pidConfig[PITCH].ki   = 850.00;
+			mainConfig.pidConfig[YAW].ki     = 1100.00;
+			mainConfig.pidConfig[ROLL].ki    = 900.00;
+			mainConfig.pidConfig[PITCH].ki   = 1000.00;
 
-			mainConfig.pidConfig[YAW].kd     = 1200.00;
-			mainConfig.pidConfig[ROLL].kd    = 0800.00;
-			mainConfig.pidConfig[PITCH].kd   = 1000.00;
+			mainConfig.pidConfig[YAW].kd     = 2600.00;
+			mainConfig.pidConfig[ROLL].kd    = 2200.00;
+			mainConfig.pidConfig[PITCH].kd   = 2400.00;
 
-			mainConfig.pidConfig[YAW].ga     = 4;
+			mainConfig.pidConfig[YAW].ga     = 0;
 			mainConfig.pidConfig[ROLL].ga    = 0;
 			mainConfig.pidConfig[PITCH].ga   = 0;
 
-			mainConfig.filterConfig[YAW].gyro.r   = 88.00;
-			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 88.00;
+			mainConfig.filterConfig[YAW].gyro.q   = 600.000;
+			mainConfig.filterConfig[ROLL].gyro.q  = 600.000;
+			mainConfig.filterConfig[PITCH].gyro.q = 600.000;
 
-			mainConfig.filterConfig[YAW].gyro.q   = 30.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 60.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 60.000;
-
-			mainConfig.filterConfig[0].filterMod  = 0;
-			mainConfig.filterConfig[1].filterMod  = 0;
-			mainConfig.filterConfig[2].filterMod  = 2;
-
-			mainConfig.filterConfig[YAW].kd.r     = 90.0;
-			mainConfig.filterConfig[ROLL].kd.r    = 90.0;
-			mainConfig.filterConfig[PITCH].kd.r   = 90.0;
+			mainConfig.filterConfig[YAW].kd.r     = 65.0;
+			mainConfig.filterConfig[ROLL].kd.r    = 55.0;
+			mainConfig.filterConfig[PITCH].kd.r   = 55.0;
 
 			resetBoard = 1;
 
@@ -1920,14 +1892,14 @@ void ProcessCommand(char *inString)
 			InitSmartAudio();
 			DeInitSmartAudio();
 
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice=%lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand=%lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel=%lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel=%lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower=%lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=%lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion=%lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency=%lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("vtxon", inString))
 		{
@@ -1936,14 +1908,14 @@ void ProcessCommand(char *inString)
 
 			if (VtxTurnOn())
 			{
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice=%lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand=%lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel=%lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel=%lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower=%lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=%lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion=%lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency=%lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 			else
 			{
@@ -1960,14 +1932,14 @@ void ProcessCommand(char *inString)
 
 			if (VtxTurnPit())
 			{
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice=%lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand=%lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel=%lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel=%lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower=%lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=%lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion=%lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency=%lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 			else
 			{
@@ -1984,14 +1956,14 @@ void ProcessCommand(char *inString)
 
 			if (VtxBandChannel( GetValueFromString(args, vtxStringCompTable, sizeof(vtxStringCompTable)) ))
 			{
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice: %lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand: %lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel: %lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel: %lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower: %lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit: %lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion: %lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency: %lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice=%lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand=%lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel=%lu\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel=%lu\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower=%lu\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=%lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion=%lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency=%lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 			else
 			{
@@ -2020,6 +1992,8 @@ void ProcessCommand(char *inString)
 
 				DlflStatusDump();
 				PrintModes();
+				ResetTpaCurves();
+				PrintTpaCurves();
 
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
@@ -2189,6 +2163,21 @@ void ProcessCommand(char *inString)
 		{
 			args = StripSpaces(args);
 			SetupModes(args);
+		}
+	else if (!strcmp("tpakp", inString))
+		{
+			args = StripSpaces(args);
+			AdjustKpTpa(args);
+		}
+	else if (!strcmp("tpaki", inString))
+		{
+			args = StripSpaces(args);
+			AdjustKiTpa(args);
+		}
+	else if (!strcmp("tpakd", inString))
+		{
+			args = StripSpaces(args);
+			AdjustKdTpa(args);
 		}
 	else if (!strcmp("save", inString))
 		{

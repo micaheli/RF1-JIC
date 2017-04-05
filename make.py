@@ -217,7 +217,7 @@ def configure_target(TARGET):
 
     elif TARGET == "stm32f745xx_nrfbl":
         TARGET_DEVICE_LC = "stm32f745xx"
-        PROJECT = "boot_loader"
+        PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
@@ -229,7 +229,7 @@ def configure_target(TARGET):
 
     elif TARGET == "stm32f745xx_nrecovery":
         TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f745xx"
-        PROJECT = "recovery_loader"
+        PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
@@ -430,6 +430,12 @@ def configure_target(TARGET):
             SOURCE_FILES.append("src/%s/src/drivers/" % (PROJECT) + feature + ".c")
             INCLUDE_DIRS.append("src/%s/inc/drivers/" % (PROJECT))
 
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_add_f32.c")
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_init_f32.c")
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_mult_f32.c")
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_sub_f32.c")
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_trans_f32.c")
+    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_inverse_f32.c")
     SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/CommonTables/arm_common_tables.c")
     SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FastMathFunctions/arm_cos_f32.c")
     SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FastMathFunctions/arm_sin_f32.c")

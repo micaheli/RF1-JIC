@@ -20,6 +20,36 @@
                 "-D"
             ],
             "isShellCommand": true
+        },
+        {
+            "taskName": "Flight stm32f745xx",
+            "command": "python",
+            "args": [
+                "make.py",
+                "-Tstm32f745xx",
+                "-D"
+            ],
+            "isShellCommand": true
+        },
+        {
+            "taskName": "RFBL stm32f745xx",
+            "command": "python",
+            "args": [
+                "make.py",
+                "-Tstm32f745xx_nrfbl",
+                "-D"
+            ],
+            "isShellCommand": true
+        },
+        {
+            "taskName": "Recovery stm32f745xx",
+            "command": "python",
+            "args": [
+                "make.py",
+                "-Tstm32f745xx_nrecovery",
+                "-D"
+            ],
+            "isShellCommand": true
         }
     ]
 }

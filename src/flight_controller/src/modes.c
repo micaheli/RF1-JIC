@@ -19,7 +19,7 @@ string_modes_rec stringModes[] = {
 		{"LEDCOLOR",    7,  M_LEDCOLOR },
 		{"DIRECT",      8,  M_DIRECT },
 		{"VTXON",       9,  M_VTXON },
-		{"TEST1",      10,  M_GLUE },
+		{"GLUE",       10,  M_GLUE },
 		{"BRAINDRAIN", 11,  M_BRAINDRAIN },
 };
 

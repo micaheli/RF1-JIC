@@ -140,6 +140,8 @@ typedef struct
     uint32_t telemMav;
     float    adcCurrFactor;
 	uint32_t vtxPitmodeType;
+	uint32_t vbatbuzzer;
+	float    vbatCutoff;
 } telem_config;
 
 typedef struct

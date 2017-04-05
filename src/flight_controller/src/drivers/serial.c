@@ -183,12 +183,12 @@ void UsartInit(uint32_t serialNumber)
 	//f0, f3, f7 usart advanced features.
 	//setup inversion
 	uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	if (board.serials[usartNumber].serialTxInverted)
+	if (board.serials[serialNumber].serialTxInverted)
 	{
 		uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_TXINVERT_INIT;
 		uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.TxPinLevelInvert = UART_ADVFEATURE_TXINV_ENABLE;
 	}
-	if (board.serials[usartNumber].serialRxInverted)
+	if (board.serials[serialNumber].serialRxInverted)
 	{
 		uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.AdvFeatureInit = (uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.AdvFeatureInit | UART_ADVFEATURE_RXINVERT_INIT);
 		uartHandles[board.serials[serialNumber].usartHandle].AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_ENABLE;

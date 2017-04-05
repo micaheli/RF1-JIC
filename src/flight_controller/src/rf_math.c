@@ -197,3 +197,30 @@ inline float InlineRadiansToDegrees(float radians)
 {
 	return(radians * d180PIf);
 }
+
+inline float Atan2fast( float y, float x )
+{
+    if ( x == 0.0f )
+    {
+        if ( y > 0.0f ) return 1.5707963f;
+        if ( y == 0.0f ) return 0.0f;
+        return -1.5707963f;
+    }
+    float atan;
+    float z = y/x;
+    if ( ABS( z ) < 1.0f )
+    {
+        atan = z/(1.0f + 0.28f*z*z);
+        if ( x < 0.0f )
+        {
+            if ( y < 0.0f ) return atan - 3.14159265f;
+            return atan + 3.14159265f;
+        }
+    }
+    else
+    {
+        atan = 1.5707963f - z/(z*z + 0.28f);
+        if ( y < 0.0f ) return atan - 3.14159265f;
+    }
+    return atan;
+}

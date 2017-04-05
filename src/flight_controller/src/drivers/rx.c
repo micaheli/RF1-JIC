@@ -8,8 +8,8 @@ volatile uint32_t disarmCount = 0, latchFirstArm = 0;
 volatile SPM_VTX_DATA vtxData;
 
 uint32_t throttleIsSafe = 0;
-static uint32_t packetTime    = 11;
-static float packetTimeInv = (1000.0f/11.0f);
+static uint32_t packetTime = 11;
+static float packetTimeInv = (11.0f / 1000.0f);
 volatile arming_structure armingStructure;
 
 uint32_t PreArmFilterCheck = 0;
@@ -505,12 +505,12 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		}
 
 		packetTime = 11;
-		packetTimeInv = (1000.0f / (float)packetTime);
+		packetTimeInv = ((float)packetTime / 1000.0f);
 	}
 	else
 	{
 		packetTime = 22;
-		packetTimeInv = (1000.0f / (float)packetTime);
+		packetTimeInv = ((float)packetTime / 1000.0f);
 	}
 
 	InlineCollectRcCommand();
@@ -573,7 +573,7 @@ void ProcessSbusPacket(uint32_t serialNumber)
 			// TODO: No, we should only look at SBUS_FAILSAFE_FLAG for failsafe.
 
 			packetTime = 9;
-			packetTimeInv = (1000.0f / (float)packetTime);
+			packetTimeInv = ((float)packetTime / 1000.0f);
 			InlineCollectRcCommand();
 			RxUpdate();
 		}
@@ -634,7 +634,7 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 				}
 
 				packetTime = 10;
-				packetTimeInv = (1000.0f / (float)packetTime);
+				packetTimeInv = ((float)packetTime / 1000.0f);
 				rx_timeout = 0;
 				if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
 					buzzerStatus.status = STATE_BUZZER_OFF;
@@ -688,7 +688,7 @@ void ProcessIbusPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 		}
 
 		packetTime = 10;
-		packetTimeInv = (1000.0f / (float)packetTime);
+		packetTimeInv = ((float)packetTime / 1000.0f);
 		rx_timeout = 0;
 
 		if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -732,7 +732,7 @@ void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx)
 		}
 
 		packetTime = (ppmBuffer[17] - ppmBuffer[0]);
-		packetTimeInv = (1000.0f / (float)packetTime);
+		packetTimeInv = ((float)packetTime / 1000.0f);
 		rx_timeout = 0;
 
 		if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -1028,7 +1028,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     {
 
     	//set command quat here
-    	ImuUpdateCommandQuat(curvedRcCommandF[ROLL] * packetTimeInv, curvedRcCommandF[PITCH] * packetTimeInv, curvedRcCommandF[YAW] * packetTimeInv);
+    	ImuUpdateCommandQuat(curvedRcCommandF[ROLL], curvedRcCommandF[PITCH], curvedRcCommandF[YAW], (float)packetTimeInv * 0.5 );
 
         for (channel=3; channel >= 0; channel--)
         {

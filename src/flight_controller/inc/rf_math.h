@@ -54,3 +54,4 @@ extern float CalculateSDSize(float data[], uint32_t size);
 extern uint8_t GetChecksum8(const uint8_t *config, uint32_t len);
 extern float InlineDegreesToRadians(float degrees);
 extern float InlineRadiansToDegrees(float radians);
+extern float Atan2fast( float y, float x );

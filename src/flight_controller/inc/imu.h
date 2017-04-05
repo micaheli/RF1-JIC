@@ -19,11 +19,17 @@ typedef struct {
 	volatile float w;
 } quaternion_record;
 
+typedef struct {
+	volatile float x;
+	volatile float y;
+	volatile float z;
+} vector_record;
+
 extern volatile float currentSpinRate;
 extern volatile quaternion_record attitudeFrameQuat;
 extern volatile float requestedDegrees[3];
 
 extern void InitImu(void);
 extern void ImuResetCommandQuat(void);
-extern void ImuUpdateCommandQuat(float rollDps, float pitchDps, float yawDps);
+extern void ImuUpdateCommandQuat(float rollDps, float pitchDps, float yawDps, float halfdT);
 extern void UpdateImu(float gx, float gy, float gz, float ax, float ay, float az);

@@ -4,6 +4,8 @@
 enum { MOTOR1 = 0,MOTOR2,MOTOR3,MOTOR4,MOTOR5,MOTOR6,MOTOR7,MOTOR8 };
 enum { SERVO1 = 0,SERVO2,SERVO3,SERVO4,SERVO5,SERVO6,SERVO7,SERVO8 };
 
+#define ATTENUATION_CURVE_SIZE 9
+
 
 typedef struct {
     float yaw;
@@ -25,6 +27,9 @@ typedef struct {
     float    idlePercent;
     float    idlePercentInverted;
     uint32_t motorOutput[8];
+	float    tpaKpCurve[ATTENUATION_CURVE_SIZE];
+	float    tpaKiCurve[ATTENUATION_CURVE_SIZE];
+	float    tpaKdCurve[ATTENUATION_CURVE_SIZE];
 } mixer_config;
 
 enum {
@@ -56,8 +61,6 @@ enum {
 	ESC_PROTOCOL_END=10,
 };
 
-#define ATTENUATION_CURVE_SIZE 9
-
 
 extern uint32_t threeDeeMode;
 extern int motorNumber;
@@ -67,6 +70,12 @@ extern volatile float servoOutput[];
 extern actuator_mixer servoMixer[];
 extern actuator_mixer motorMixer[];
 
+
+extern void  ResetTpaCurves(void);
+extern void  PrintTpaCurves(void);
+extern void  AdjustKpTpa(char *modString);
+extern void  AdjustKiTpa(char *modString);
+extern void  AdjustKdTpa(char *modString);
 
 extern void  InitMixer(void);
 extern void  InlineApplyMixer(pid_output pids[], float curvedRcCommandF[]);

@@ -7,6 +7,7 @@ typedef struct {
 	volatile float gyrodT;
 	volatile float halfGyrodT;
 	volatile float halfGyrodTSquared;
+	volatile float halfGyrodTSquaredI;
 	volatile float accdT;
 	volatile float InversedT;
 	volatile uint32_t uhohNumber;

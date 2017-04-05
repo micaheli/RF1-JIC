@@ -1,9 +1,9 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint32_t)(64U)
-#define CONFIG_VERSION_STR		"64"
-#define FIRMWARE_VERSION		"0.222.064 RC12"
-//#define FIRMWARE_VERSION		"1.003.064 ALPHA"
+#define CONFIG_VERSION			(uint32_t)(67U)
+#define CONFIG_VERSION_STR		"67"
+//#define FIRMWARE_VERSION		"0.222.064 RC12"
+#define FIRMWARE_VERSION		"1.011.067 ALPHA"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n"
 
@@ -33,7 +33,7 @@ typedef struct
     const char *name;
     const uint32_t type;
     const char *group;
-    void *ptr;
+    void  *ptr;
     float Min;
     float Max;
     float Default;
