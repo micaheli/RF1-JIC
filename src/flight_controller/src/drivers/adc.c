@@ -2,7 +2,7 @@
 
 #define CHARGED_VOLTAGE 4.0
 #define RUNNING_VOLTAGE 3.85
-#define DEAD_VOLTAGE    3.65
+//#define DEAD_VOLTAGE    3.65
 
 #define NORMAL_VOLTAGE 3.33
 
@@ -18,8 +18,8 @@ float adcVoltage=0;
 float adcCurrent=0;
 float adcMAh=0;
 uint32_t cellCount=0;
-float cellCutoff=3.65f;
-uint32_t lowVoltAlarm=0;
+//float cellCutoff=3.65f;
+//uint32_t lowVoltAlarm=0;
 float averageVoltage=0;
 float lowVoltage = 0;
 float runningVoltage = 0;
@@ -95,9 +95,9 @@ void CheckBatteryCellCount()
 
 		fullVoltage = (CHARGED_VOLTAGE * cellCount);
 		runningVoltage = (RUNNING_VOLTAGE * cellCount);
-		lowVoltage = (DEAD_VOLTAGE * cellCount);
+		lowVoltage = (mainConfig.telemConfig.vbatCutoff * cellCount);
 	}
-	if ( (averageVoltage<lowVoltage) && boardArmed && (averageVoltage > 2.0f) && lowVoltAlarm )
+	if ( (averageVoltage<lowVoltage) && boardArmed && (averageVoltage > 2.0f) && mainConfig.telemConfig.vbatbuzzer )
 	{
 		//turn buzzer on
 		buzzerStatus.status = STATE_BUZZER_LOWBAT;
