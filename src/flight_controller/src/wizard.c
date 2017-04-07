@@ -1161,7 +1161,7 @@ void OneWire(char *inString) {
 						RfCustomReplyBuffer(rf_custom_out_buffer);
 						somethingHappened=1;
 
-						if ( (escHexLocation.version > escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version) )
+						if ( forceUpgrade || (escHexLocation.version > escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version) )
 						{
 							if ( BuiltInUpgradeSiLabsBLHeli(board.motors[outputNumber], escHexLocation) )
 							{

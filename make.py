@@ -216,7 +216,7 @@ def configure_target(TARGET):
         STM32F7_ARCH_FLAGS_ADD = ""
 
     elif TARGET == "stm32f745xx_nrfbl":
-        TARGET_DEVICE_LC = "stm32f745xx"
+        TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f745xx"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_rfbl.ld"
@@ -228,7 +228,7 @@ def configure_target(TARGET):
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f745xx_nrecovery":
-        TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f745xx"
+        TARGET_DEVICE_LC = "stm32f745xx"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_recovery.ld"

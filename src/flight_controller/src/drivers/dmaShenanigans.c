@@ -548,7 +548,7 @@ void InitDshotOutputOnMotors(uint32_t usedFor)
 	{
 
 		timerHz     = 48000000;
-		pwmHz       = 600000;
+		pwmHz       = 1200000;
 		normalPulse = 15;
 		alonePulse  = 15;
 		endPulse    = 15;
@@ -559,12 +559,12 @@ void InitDshotOutputOnMotors(uint32_t usedFor)
 	else if (usedFor == ESC_DSHOT600)
 	{
 
-		timerHz     = 24000000;
+		timerHz     = 48000000;
 		pwmHz       = 600000;
-		normalPulse = 15;
-		alonePulse  = 15;
-		endPulse    = 15;
-		loPulse     = 30;
+		normalPulse = 30;
+		alonePulse  = 30;
+		endPulse    = 30;
+		loPulse     = 60;
 		inverted    = 1;
 
 	}

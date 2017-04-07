@@ -100,6 +100,7 @@ void VectorIrqInit(uint32_t address) {
 	__enable_irq(); // enable interrupts
 
 	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+	//DWT->LAR = 0xC5ACCE55; 
 	DWT->CYCCNT = 0;
 	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
