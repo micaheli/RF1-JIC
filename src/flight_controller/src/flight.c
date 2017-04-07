@@ -485,7 +485,7 @@ void InitFlightCode(void)
 	flightcodeTime      = 0.0f;
 
 	InlineInitGyroFilters();
-	InlineInitKdFilters();
+	//InlineInitKdFilters();
 	InlineInitSpectrumNoiseFilter();
 	InlineInitAccFilters();
 	InitImu();
