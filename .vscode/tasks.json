@@ -50,6 +50,16 @@
                 "-D"
             ],
             "isShellCommand": true
+        },
+        {
+            "taskName": "esc stm32f301x8",
+            "command": "python",
+            "args": [
+                "make.py",
+                "-Tstm32f301x8_nesc",
+                "-D"
+            ],
+            "isShellCommand": true
         }
     ]
 }

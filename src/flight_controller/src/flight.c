@@ -890,7 +890,7 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 
 	}
 
-
+	return;
 	static float gyroAdder[3] = {0.0f,0.0f,0.0f};
 	static uint32_t gyroAverager = 0;
 	gyroAdder[ROLL]  += filteredGyroData[ROLL];

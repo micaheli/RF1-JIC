@@ -180,21 +180,17 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 80.00, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 85.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 80.00, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 115.00, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 105.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 110.00, "" },
 
 		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 850.00, "" },
 		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 750.00, "" },
 		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 800.00, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1400.00, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 1600.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1800.00, "" },
-
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 32, 0, "" },
-		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 32, 0, "" },
-		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 32, 0, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 2300.00, "" },
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 2400.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 2500.00, "" },
 
 		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 05.0, "" },
 		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25.0, 00.1, "" },
@@ -205,9 +201,9 @@ const config_variables_rec valueTable[] = {
 		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
 		{ "filter_mode2",		typeUINT,  "filt", &mainConfig.filterConfig[2].filterMod, 				0, 10, 2, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 3000, 600.000, "" },
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 650.000, "" },
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 3000, 700.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 3000, 60.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 60.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 3000, 60.000, "" },
 
  		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
  		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 90.000, "" },
@@ -1520,13 +1516,13 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].kp    = 115.00;
 			mainConfig.pidConfig[PITCH].kp   = 120.00;
 
-			mainConfig.pidConfig[YAW].ki     = 1000.00;
-			mainConfig.pidConfig[ROLL].ki    = 900.00;
-			mainConfig.pidConfig[PITCH].ki   = 1000.00;
+			mainConfig.pidConfig[YAW].ki     = 850.00;
+			mainConfig.pidConfig[ROLL].ki    = 750.00;
+			mainConfig.pidConfig[PITCH].ki   = 800.00;
 
-			mainConfig.pidConfig[YAW].kd     = 1200.00;
-			mainConfig.pidConfig[ROLL].kd    = 1000.00;
-			mainConfig.pidConfig[PITCH].kd   = 1200.00;
+			mainConfig.pidConfig[YAW].kd     = 2300.00;
+			mainConfig.pidConfig[ROLL].kd    = 2400.00;
+			mainConfig.pidConfig[PITCH].kd   = 2500.00;
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
@@ -1708,9 +1704,9 @@ void ProcessCommand(char *inString)
 		{
 
 			mainConfig.gyroConfig.loopCtrl   = LOOP_UH32;
-			mainConfig.pidConfig[YAW].kp     = 110.00;
-			mainConfig.pidConfig[ROLL].kp    = 90.00;
-			mainConfig.pidConfig[PITCH].kp   = 100.00;
+			mainConfig.pidConfig[YAW].kp     = 115.00;
+			mainConfig.pidConfig[ROLL].kp    = 105.00;
+			mainConfig.pidConfig[PITCH].kp   = 110.00;
 
 			mainConfig.pidConfig[YAW].ki     = 1100.00;
 			mainConfig.pidConfig[ROLL].ki    = 900.00;

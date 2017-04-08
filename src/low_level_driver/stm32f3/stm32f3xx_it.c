@@ -39,7 +39,7 @@
 
 
 /* External variables --------------------------------------------------------*/
-extern PCD_HandleTypeDef hpcd_USB_FS;
+//extern PCD_HandleTypeDef hpcd_USB_FS;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Interruption and Exception Handlers         */ 
@@ -133,9 +133,9 @@ void SysTick_Handler(void)
 /**
 * @brief This function handles USB low priority or CAN_RX0 interrupts.
 */
-void USB_LP_CAN_RX0_IRQHandler(void)
-{
-  HAL_PCD_IRQHandler(&hpcd_USB_FS);
-}
+//void USB_LP_CAN_RX0_IRQHandler(void)
+//{
+//  HAL_PCD_IRQHandler(&hpcd_USB_FS);
+//}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

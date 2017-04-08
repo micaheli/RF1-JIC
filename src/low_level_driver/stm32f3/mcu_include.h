@@ -5,7 +5,8 @@
 #include "stm32f3xx_it.h"
 #include "stm32f3xx_hal_conf.h"
 #include "flash.h"
-#include <stm32f303xc.h>
+//#include <stm32f303xc.h>
+//#include <stm32f301xk.h>
 
 
 //asm delay used for not so accurate delays needed before the board is initialized
@@ -20,6 +21,10 @@
 
 extern uint32_t TimerPrescalerDivisor(uint32_t timer);
 
+
+void USB_DEVICE_Init(void);
+void USB_DEVICE_DeInit(void);
+#define EXTI2_IRQn 0
 
 #define USE_RFBL
 #define ADDRESS_FLASH_START		(uint32_t)(0x08000000)
