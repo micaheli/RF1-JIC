@@ -914,7 +914,10 @@ Version 1.008.066 ALPHA through 1.014.069 BETA:
 			RaceBees and RF 4-in-1 on J_H_15 and J_H_90 RaceFlight's BHLeli version 16.68 
 	Flight logging automatically disabled when Dshot is selected
 		This limitation will be removed soon
+	Fixed issue where RX would not autodetect if smart audio or s.port was enabled
 
+Version 1.015.069 BETA:
+	Added dpmode command to put FC into dp mode more easily
 
 
 

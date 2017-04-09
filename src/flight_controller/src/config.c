@@ -1987,6 +1987,14 @@ void ProcessCommand(char *inString)
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#serial: %lu%lu%lu\n", STM32_UUID[0], STM32_UUID[1], STM32_UUID[2] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
+	else if (!strcmp("dpmode", inString))
+		{
+			mainConfig.mixerConfig.escProtocol = ESC_DSHOT600;
+			SaveAndSend();
+			RfCustomReply("#me Rebooting\n");
+			SystemReset();
+			return;
+		}
 	else if (!strcmp("dump", inString))
 		{
 			uint32_t argsOutputted = 0;
