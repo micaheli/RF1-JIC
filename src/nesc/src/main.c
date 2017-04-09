@@ -24,10 +24,24 @@ int main(void)
     while (1)
     {
 
-		for (x = 0; x < 5; x++) {
-			Beep(2000 + x * 8000, 10, 5);
-			DelayMs(5);
-		}
+		PlayE7(125);
+		PlayD7(125);
+		PlayFs7(125);
+		PlayGs7(125);
+		PlayCs7(125);
+		PlayB7(125);
+		PlayD7(125);
+		PlayE7(125);
+		PlayB7(125);
+		PlayA7(125);
+		PlayCs7(125);
+		PlayE7(125);
+		PlayA7(125);
+		PlayA7(125);
+		PlayA7(125);
+		PlayA7(125);
+
+
 
 		inlineDigitalHi(LED0_GPIO, LED0_PIN);
 		DelayMs(100);
