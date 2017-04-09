@@ -1989,11 +1989,14 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("dpmode", inString))
 		{
-			mainConfig.mixerConfig.escProtocol = ESC_DSHOT600;
+			mainConfig.mixerConfig.escProtocol  = ESC_DSHOT600;
+			mainConfig.mixerConfig.escUpdateFrequency = 16000;
+			resetBoard = 1;
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Digital Mode Enabled\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
 			SaveAndSend();
-			RfCustomReply("#me Rebooting\n");
-			SystemReset();
-			return;
 		}
 	else if (!strcmp("dump", inString))
 		{
