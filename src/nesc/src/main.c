@@ -1,5 +1,7 @@
 #include "includes.h"
 
+
+
 int main(void)
 {
 
@@ -23,25 +25,6 @@ int main(void)
 
     while (1)
     {
-
-		PlayE7(125);
-		PlayD7(125);
-		PlayFs7(125);
-		PlayGs7(125);
-		PlayCs7(125);
-		PlayB7(125);
-		PlayD7(125);
-		PlayE7(125);
-		PlayB7(125);
-		PlayA7(125);
-		PlayCs7(125);
-		PlayE7(125);
-		PlayA7(125);
-		PlayA7(125);
-		PlayA7(125);
-		PlayA7(125);
-
-
 
 		inlineDigitalHi(LED0_GPIO, LED0_PIN);
 		DelayMs(100);

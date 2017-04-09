@@ -899,6 +899,24 @@ Version 1.008.066 ALPHA:
 	Changed filter defaults
 	Added vbat_cutoff and vbat_buzzer config variables, not yet active
 
+Version 1.008.066 ALPHA through 1.014.069 BETA:
+	Added BLHeli version 16.68 J_H_15 and J_H_90 binaries
+	Rewrite several parts of code base to handle new logic and future products
+	Increased performance and precision of ACC modes
+	Updated automatic crash handling and prevention
+	New filer design
+		Much more precise and includes sannity checks
+		Added digitial precision mode to the filters which increase precision significantly
+	Added digital precision mode
+		Select dshot 600 in configurator to enable
+			Will put filters into a much more precise state at the cost of some speed
+		ESC must be working correct on dshot 600
+			RaceBees and RF 4-in-1 on J_H_15 and J_H_90 RaceFlight's BHLeli version 16.68 
+	Flight logging automatically disabled when Dshot is selected
+		This limitation will be removed soon
+
+
+
 
 #Features in current development:
 #	MSP OSD compatibility

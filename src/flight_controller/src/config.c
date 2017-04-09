@@ -192,6 +192,14 @@ const config_variables_rec valueTable[] = {
 		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 2400.00, "" },
 		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 2500.00, "" },
 
+		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 0, 0.000, "" },
+ 		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 0, 0.000, "" },
+ 		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 0, 0.000, "" },
+
+		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 0, 0, "" },
+		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 0, 0, "" },
+		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 302, 0, "" },
+
 		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 05.0, "" },
 		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25.0, 00.1, "" },
 		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 75.0, 35.0, "" },

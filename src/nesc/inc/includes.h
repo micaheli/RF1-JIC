@@ -12,6 +12,7 @@
 #define CONSTRAIN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 #include "board.h"
+#include "bldc.h"
 
 //low level drivers and driver based functions
 #include "../../low_level_driver/boarddef.h"

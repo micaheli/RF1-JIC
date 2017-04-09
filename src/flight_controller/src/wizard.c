@@ -589,6 +589,13 @@ void SetupWizard(char *inString)
 
 	if (!strcmp("rx", inString))
 	{
+		if (mainConfig.telemConfig.telemSmartAudio || mainConfig.telemConfig.telemSport)
+		{
+			DisarmBoard();
+			mainConfig.telemConfig.telemSmartAudio = 0;
+			mainConfig.telemConfig.telemSport = 0;
+			InitFlight();
+		}
 		if (wizardStatus.currentWizard != WIZ_RX)
 		{
 			DeInitBoardUsarts();

@@ -156,6 +156,9 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	static uint32_t loggingStartedLatch = 0;
 	static int32_t  disarmLast = 0;
 
+	if (IsDshotEnabled())
+		return;
+
 #ifndef LOG32
 	pid_output currFlightPids[AXIS_NUMBER];
 	float      currFlightSetPoints[AXIS_NUMBER];
