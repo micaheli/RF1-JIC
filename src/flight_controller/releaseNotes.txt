@@ -919,6 +919,8 @@ Version 1.008.066 ALPHA through 1.014.069 BETA:
 Version 1.015.069 BETA:
 	Added dpmode command to put FC into dp mode more easily
 
+Version 1.015.069 BETA:
+	Changed defaults
 
 
 #Features in current development:

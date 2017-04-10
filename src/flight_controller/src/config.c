@@ -188,9 +188,9 @@ const config_variables_rec valueTable[] = {
 		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 750.00, "" },
 		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 800.00, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 2300.00, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 2400.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 2500.00, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1800.00, "" },
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 1900.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 2000.00, "" },
 
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 0, 0.000, "" },
  		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 0, 0.000, "" },
@@ -820,13 +820,14 @@ int RfCustomReply(char *rf_custom_out_buffer)
 //process commands here.
 void ProcessCommand(char *inString)
 {
+
 	//buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
 	uint32_t inStringLength;
 	char *args = NULL;
 	char *originalString = inString;
 	uint32_t x;
 	static uint32_t lastTimeMore = 0;
-
+	static firstTimeRunningTelem = 1;
 
 	if (rfCustomReplyBufferPointerSent < rfCustomReplyBufferPointer)
 	{
@@ -1028,6 +1029,11 @@ void ProcessCommand(char *inString)
 			char qz[12];
 			char qw[12];
 
+			if (firstTimeRunningTelem)
+			{
+				firstTimeRunningTelem = 0;
+				ResetGyroCalibration();
+			}
 			ftoa(pitchAttitude, pitchString);
 			ftoa(rollAttitude, rollString);
 			ftoa(yawAttitude, yawString);
@@ -1528,9 +1534,9 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].ki    = 750.00;
 			mainConfig.pidConfig[PITCH].ki   = 800.00;
 
-			mainConfig.pidConfig[YAW].kd     = 2300.00;
-			mainConfig.pidConfig[ROLL].kd    = 2400.00;
-			mainConfig.pidConfig[PITCH].kd   = 2500.00;
+			mainConfig.pidConfig[YAW].kd     = 1800.00;
+			mainConfig.pidConfig[ROLL].kd    = 1900.00;
+			mainConfig.pidConfig[PITCH].kd   = 2000.00;
 
 			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
 			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
