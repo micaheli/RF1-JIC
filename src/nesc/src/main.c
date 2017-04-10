@@ -86,6 +86,8 @@ int main(void)
 
 	//turn on low fet
 
+	//InitFets();
+	Beep(3000, 3000, 10);
 
 	ledtimer(32000, SystemCoreClock);
 	TIM2->CCR1 = (uint16_t)lrintf(0.5f * (float)((SystemCoreClock) / 32000));

@@ -1,0 +1,45 @@
+Open On-Chip Debugger 0.10.0
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+Info : auto-selecting first available session transport "hla_swd". To override use 'transport select <transport>'.
+adapter speed: 1000 kHz
+adapter_nsrst_delay: 100
+Info : The selected transport took over low-level target control. The results might differ compared to plain JTAG/SWD
+none separate
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : clock speed 950 kHz
+Info : STLINK v2 JTAG v17 API v2 SWIM v4 VID 0x0483 PID 0x3748
+Info : using stlink api v2
+Info : Target voltage: 3.234646
+Info : stm32f3x.cpu: hardware has 6 breakpoints, 4 watchpoints
+Info : accepting 'gdb' connection on tcp/3333
+Info : device id = 0x10016439
+Info : flash size = 64kbytes
+undefined debug reason 7 - target needs reset
+adapter speed: 1000 kHz
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x08002410 msp: 0x20004000
+background polling: on
+TAP: stm32f3x.cpu (enabled)
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x08002410 msp: 0x20004000
+adapter speed: 1000 kHz
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x08002410 msp: 0x20004000
+Open On-Chip Debugger 0.10.0
+adapter speed: 1000 kHz
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x08002410 msp: 0x20004000
+adapter speed: 8000 kHz
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x2000003a msp: 0x20004000
+adapter speed: 1000 kHz
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x0800234c msp: 0x20004000
+adapter speed: 1000 kHz
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x0800234c msp: 0x20004000
+adapter speed: 8000 kHz
+Info : halted: PC: 0x0800109a
