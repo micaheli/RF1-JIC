@@ -500,7 +500,8 @@ inline void InlineInitGyroFilters(void)
 
 	for (axis = 2; axis >= 0; --axis)
 	{
-		InitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, 12.0f, 0.0f, filteredGyroData[axis]);
+		InitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, 24.0f, 0.0f, filteredGyroData[axis]);
+		//InitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, 12.0f, 0.0f, filteredGyroData[axis]);
 		//InitPaf( &pafGyroStates[axis], 0.006f, 1.0f, 0.01f, 0.0f);
 		//InitPaf( &pafGyroStates[axis], 0.06f, 0.088f, 0.0f, 0.0f);
 	}

@@ -6,8 +6,9 @@ typedef struct
 {
     uint32_t acclim;               //Config Acceleration limit. how much is the throttle allowed to change per step
     uint32_t declim;               //Config Deceleration limit. how much is the throttle allowed to change per step
-    uint32_t alignmentdc;          //Config 0 to 1200 represents 0 to 100% duty cycle. This is the duty cycle applied to the bridge during alignment.
-    uint32_t rampupdc;             //Config 0 to 1200 represents 0 to 100% duty cycle. This is the duty cycle applied to the bridge during the ramp-up and hold portions of the starting sequence.
+    uint32_t alignmentdc;          //Config 0 to XXXX represents 0 to 100% duty cycle. This is the duty cycle applied to the bridge during alignment.
+    uint32_t rampupdc;             //Config 0 to XXXX represents 0 to 100% duty cycle. This is the duty cycle applied to the bridge during the ramp-up and hold portions of the starting sequence.
+    uint32_t beepVolumedc;         //Config duty cycle of beep volume
     uint32_t polepairs;            //Config Number of motor pole pairs. Total number of poles/2.
     uint32_t zcthreshold;          //Config 0 to 4095 represents 0 to 3.3 V DC. This is the reference value that the BEMF sample is compared against to determine zero crossings. This should normally be set very low but may be set higher with high BEMF motors to improve noise immunity.
     uint32_t alignmenttime;        //Config Units are PWM cycles (50 microseconds). This parameter sets the time that the motor start-up sequence spends in rotor alignment. This should be set long enough that the rotor comes to a stop before ramp-up commences. The required time will be influenced by rotor + load inertia and system mechanical damping.
@@ -15,31 +16,34 @@ typedef struct
     uint32_t holdrpm;              //Config Units are revolutions per minute. This sets the motor speed at the end of the start-up ramp.
     uint32_t holdtime;             //Config Units are PWM cycles (50 microseconds at 24 KHz). This parameter sets the time that the motor is held (in stepping mode) at hold rpm before rotor sync. is started.
     uint32_t startuprpmpersecond;  //Config Controls acceleration during ramp-up.
-    uint32_t overloadseconds;      //Config Sets the number of seconds that motor current is permitted to stay above the overload threshold before overload mode is entered. In overload mode, current is “pulled back” to the overload threshold level.
+    uint32_t overloadseconds;      //Config Sets the number of seconds that motor current is permitted to stay above the overload threshold before overload mode is entered. In overload mode, current is "pulled back" to the overload threshold level.
     uint32_t overloadsecondsreset; //Config Sets the number of seconds that current must stay below the overload threshold before overload mode is cancelled.
     uint32_t continuouscurrent;    //Config Units are milliamperes. This is the continuous current rating used by the overload function. Extended operation above this level will activate the overload mode.
     uint32_t direction;            //Config commutate forwards or backwards
+    uint32_t pwmHz;                //Config commutate forwards or backwards
+    uint32_t timerHz;              //Config commutate forwards or backwards
+    uint32_t currentDcSteps;       //Config Max Duty Cycle
 
 	uint32_t autostepFlag;
     uint32_t zcfoundFlag;
 	uint32_t runFlag;
     uint32_t risingEdgeFlag;
-	uint32_t commCounter;
+	uint32_t commcounter;
 	uint32_t phase;
     uint32_t position;             //Each count is one step or 60 electrical degrees. This variable holds a relative rotor position. It is incremented with each motor commutation but it is occasionally corrected so that it will not overflow. It serves as the primary input to the speed observer.
     uint32_t positionest;          //This is a state variable of the speed observer. In the steady state, it will follow position but is scaled to be 4096 times bigger to enhance resolution.
 	uint32_t startState;
     uint32_t risingdelay;
     uint32_t fallingdelay;
-    uint32_t holdcounter;          //This is a software timer that is used to measure the time that the motor is held at a constant speed (in open loop stepping mode) at the end of the ramp-up period, before BEMF sampling is commenced. Each “tick” in 50 microseconds.
-	uint32_t runningdc;            //0 to 1200 represents 0 to 100%. This is the actual duty cycle being applied to the bridge when the motor is running.
+    uint32_t holdcounter;          //This is a software timer that is used to measure the time that the motor is held at a constant speed (in open loop stepping mode) at the end of the ramp-up period, before BEMF sampling is commenced. Each "tick" in 50 microseconds.
+	uint32_t runningdc;            //0 to XXXX represents 0 to 100%. This is the actual duty cycle being applied to the bridge when the motor is running.
     uint32_t zccounter;            //Used to measure the time between zero crossings . Each count represents one PWM period or 50 microseconds. zccounter value is incremented each PWM cycle. Its value is transferred to step and it is cleared when ZC is detected.
 	uint32_t bemfsample;           //0 to 4095 (ADC counts) represents 0 to 3.3 V DC. This is the most recent reading of motor terminal voltage from the floating phase. Scaling is 1 to 1 but the value is clamped in hardware since we are only looking for zero crossings (positive or negative).
 	uint32_t demagcounter;         //Used to measure the demag time allowance, which is the required waiting time from commutation until valid BEMF sampling can resume. This allows time for the current in the floating phase to fall to zero. Each count represents one PWM period or 50 microseconds.
     uint32_t commthreshold;        //Sets the time interval between zero crossing and commutation. Each count represents one PWM period or 50 microseconds.
     uint32_t demagthreshold;       //Sets the time interval between commutation and the resumption of BEMF sampling. Each count represents one PWM period or 50 microseconds.
-	uint32_t alignmentCounter;     //This is a software timer that is used to measure the time that the motor is held at the alignment stage before the ramp-up period. Each “tick” in 50 microseconds.
-    uint32_t transitioncounter;    //Each “tick” is 1 millisecond. This software timer is used to measure out an interval of 100 milliseconds after rotor sync. is achieved and before the speed regulator is enabled, when the duty cycle is held constant to allow the system to stabilize.
+	uint32_t alignmentCounter;     //This is a software timer that is used to measure the time that the motor is held at the alignment stage before the ramp-up period. Each "tick" in 50 microseconds.
+    uint32_t transitioncounter;    //Each "tick" is 1 millisecond. This software timer is used to measure out an interval of 100 milliseconds after rotor sync. is achieved and before the speed regulator is enabled, when the duty cycle is held constant to allow the system to stabilize.
     uint32_t rampspeed;            //This variable controls the stepping rate during ramp-up. It increases in value during ramp-up as the stepping rate is increased. The constant value of 4,000,000,000 is divided by rampspeed to get the current step time (in units of PWM cycles)
     uint32_t ramprate;
     uint32_t heartbeat1time;       //Holds the value of globalcounter at the last execution of the 100 microsecond routine. Each tick is one PWM cycle. It is used to control the execution rate of the routine
@@ -50,26 +54,55 @@ typedef struct
     uint32_t minstep;
     uint32_t ifbcount;             //Used to count the number of IFB samples summed into ifbsum. This is used during the calculation of ifbave.
     uint32_t ifbave;               //Average motor current over one full electrical cycle. Used in overload determination.
+    uint32_t ifbsum;               //Summation of current samples taken in a given electrical cycle. It is used to calculate the average.
     uint32_t ifb;                  //Most recent motor current sample.
+    uint32_t speedest;
     uint32_t rpm;                  //Scaled speed derived from speedest and polepairs. Unit is revolutions per minute.
-    uint32_t ledTime;              //Used by the ledstate state machine to time out various time intervals. Each “tick” is one PWM cycle.
+    uint32_t ledTime;              //Used by the ledstate state machine to time out various time intervals. Each "tick" is one PWM cycle.
 } motor_state;
 
 motor_state motorState;
 
 
 void IncrementPhase(void);
+void ExecuteStartState(void);
+void MotorStartInit(void);
 
 
 
 void BldcInit(void)
 {
-    bzero(motorState, sizeof(motor_state));
 
-    motorState.polepairs   = 7;   //poles/2
-    motorState.alignmentdc = 100; //startup power 
-    motorState.rampupdc    = 100; //rampup power
+    bzero(&motorState, sizeof(motor_state));
 
+    //floats read from config
+    float    alignmentPower = 0.01f;
+    float    startUpPower   = 0.01f;
+    float    beepPower      = 0.01f;
+    float    accelLimit     = 0.05f;
+    float    decelLimit     = 0.09f;
+
+    //precalculate config variables needed for runtime
+    motorState.timerHz        = SystemCoreClock;  //needs to be a multiple of the SystemCoreClock, we want this number as high as possible. Beeps need half this number
+    motorState.pwmHz          = 32000;            //should be a multiple of the timerHz
+    motorState.currentDcSteps = motorState.timerHz / motorState.pwmHz; //multiples of the above make this number work perfect
+    motorState.alignmentdc    = (uint32_t)lrintf(alignmentPower * (float)motorState.currentDcSteps); //set alignment power to duty cycles based on percentage
+    motorState.rampupdc       = (uint32_t)lrintf(startUpPower   * (float)motorState.currentDcSteps); //set startup power to duty cycles based on percentage
+    motorState.acclim         = (uint32_t)lrintf(accelLimit     * (float)motorState.currentDcSteps); //set accel limit to duty cycles based on percentage
+    motorState.declim         = (uint32_t)lrintf(decelLimit     * (float)motorState.currentDcSteps); //set decel limit to duty cycles based on percentage
+    motorState.beepVolumedc   = (uint32_t)lrintf(beepPower      * (float)motorState.currentDcSteps); //set beep power to duty cycles based on percentage
+    motorState.polepairs      = 7;   //Config Number of motor pole pairs. Total number of poles/2. Read from config for usage in rpm
+    motorState.zcthreshold;          //Config 0 to 4095 represents 0 to 3.3 V DC. This is the reference value that the BEMF sample is compared against to determine zero crossings. This should normally be set very low but may be set higher with high BEMF motors to improve noise immunity.
+    motorState.alignmenttime;        //Config Units are PWM cycles (50 microseconds). This parameter sets the time that the motor start-up sequence spends in rotor alignment. This should be set long enough that the rotor comes to a stop before ramp-up commences. The required time will be influenced by rotor + load inertia and system mechanical damping.
+    motorState.demagallowance;       //Config 0 to 255 represents 0 to 255/256 of a step time. This sets the time that the state machine will wait after commutation before beginning to sample BEMF.
+    motorState.holdrpm;              //Config Units are revolutions per minute. This sets the motor speed at the end of the start-up ramp.
+    motorState.holdtime;             //Config Units are PWM cycles (50 microseconds at 24 KHz). This parameter sets the time that the motor is held (in stepping mode) at hold rpm before rotor sync. is started.
+    motorState.startuprpmpersecond;  //Config Controls acceleration during ramp-up.
+    motorState.overloadseconds;      //Config Sets the number of seconds that motor current is permitted to stay above the overload threshold before overload mode is entered. In overload mode, current is "pulled back" to the overload threshold level.
+    motorState.overloadsecondsreset; //Config Sets the number of seconds that current must stay below the overload threshold before overload mode is cancelled.
+    motorState.continuouscurrent;    //Config Units are milliamperes. This is the continuous current rating used by the overload function. Extended operation above this level will activate the overload mode.
+    motorState.direction;            //Config commutate forwards or backwards
+    motorState.polepairs = 7;   //poles/2
 }
 
 void PwmIsr(void)
@@ -77,10 +110,10 @@ void PwmIsr(void)
 
     if (motorState.autostepFlag) // ramping up or holding speed
     {
-        motorState.commCounter++; // measures time between steps in units of PWM periods
-        if (motorState.commCounter > step)
+        motorState.commcounter++; // measures time between steps in units of PWM periods
+        if (motorState.commcounter > motorState.step)
         {
-            motorState.commCounter = 0;
+            motorState.commcounter = 0;
             IncrementPhase();
             motorState.position++;
             //Lookup TIM1_CCER value from table based on phase to commutate bridge
@@ -93,7 +126,7 @@ void PwmIsr(void)
     ExecuteStartState(); //Execute the startstate state machine
     //Determine and store ADC channel of BEMF to convert on next PWMISR run // based on step
     //Convert motor current signal via ADC (with bipolar offset) and store in variable ifb
-    //Increment globalcounter while ADC is converting
+    motorState.globalcounter++;
     //Ifbsum = ifbsum + ifb // to be used in average current calculation Increment ifbcount // to be used in average current calculation Clear hardware interrupt
 
 }
@@ -115,7 +148,7 @@ void ExecuteStartState(void)
             //Set duty cycle per alignmentdc
             motorState.phase = 0;
             //Lookup TIM1_CCER value from table based on phase to commutate bridge
-            motorState.alignmentCounter = 0
+            motorState.alignmentCounter = 0;
             motorState.startState = 10;
             break;
         case 10: //timing out alignment
@@ -219,6 +252,15 @@ void ExecuteStartState(void)
     }
 }
 
+inline void ZeroMotor(void)
+{
+    motorState.runFlag   = 0;
+    motorState.runningdc = 0;
+    A_FET_HI_CCR = motorState.runningdc;
+    B_FET_HI_CCR = motorState.runningdc;
+    C_FET_HI_CCR = motorState.runningdc;
+}
+
 inline void IncrementPhase(void)
 {
     motorState.phase++;
@@ -232,12 +274,12 @@ void Routine100uf(void)
     motorState.heartbeat1time = motorState.globalcounter;
     slong0 = motorState.position - (motorState.positionest/4096); // position observer error (positionest scaled 4096X to improve resolution)
     motorState.speedest = slong0;
-    motorState.potitionest = motorState.positionest + motorState.speedest; // integrate speedest to get positionest
+    motorState.positionest = motorState.positionest + motorState.speedest; // integrate speedest to get positionest
     // check for and prevent eventual math rollover
-    if (motorState.positionest & 0x80000000) // if positionest is greater than 1⁄2 full scale for variable size
+    if (motorState.positionest & 0x80000000) // if positionest is greater than 1/2 full scale for variable size
     {
-        motorState.positionest = motorState.positionest & 0x7FFFFFFF; // subtract 1⁄2 full scale to prevent eventual math rollover
-        motorState.position = motorState.position - 524288; // subtract 1⁄2 full scale / 4096 (to account for scaling difference)
+        motorState.positionest = motorState.positionest & 0x7FFFFFFF; // subtract 1/2 full scale to prevent eventual math rollover
+        motorState.position = motorState.position - 524288; // subtract 1/2 full scale / 4096 (to account for scaling difference)
     }
 }
 
@@ -294,8 +336,9 @@ void Routine1ms(void)
 void Routine10ms(void)
 {
     uint32_t slong0;
-    heartbeat3time = globalcounter;
+    motorState.heartbeat3time = motorState.globalcounter;
 
+/*
     //all this will go into the communication ISR
     //set speed
         potvalue = 4095 - adcread(2); // read pot channel If (potvalue>200) set run flag true;
@@ -307,39 +350,17 @@ void Routine10ms(void)
     if (slong0 > acclim) slong0 = acclim;
     if (slong0 < -declim) slong0 = -declim;
     rpmref = rpmref + slong0;
+*/
 }
 
 void MotorStartInit(void)
 {
-    InitActuatorTimer(uint32_t pwmHz, uint32_t timerHz)
+    //motor runs at SystemCoreClock and whatever pwmHz we want
+    //beeps run at SystemCoreClock/2 and whatever pwmHz we want, shouldn't go lower than about 1000 hz since tim1 is a 16 bit timer
+    InitFetTimerGpios(motorState.pwmHz, motorState.timerHz);
 }
 
-
-
-
-	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
-		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-			InitActuatorTimer(board.motors[outputNumber], pwmHz, timerHz);
-		}
-	}
-
-	DelayMs(2); //give timer time to stabilize.
-
-	// Start the timers
-	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
-		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
-		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-			HAL_TIM_Base_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum]);
-			HAL_TIM_PWM_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum], board.motors[outputNumber].timChannel);
-		}
-	}
-
-	DelayMs(2); //give timer time to stabilize.
-
-}
-
-void InitActuatorTimer(uint32_t pwmHz, uint32_t timerHz)
+void InitFetTimerGpios(uint32_t pwmHz, uint32_t timerHz)
 {
 	uint16_t timerPrescaler = 0;
 
@@ -349,6 +370,10 @@ void InitActuatorTimer(uint32_t pwmHz, uint32_t timerHz)
 	TIM_ClockConfigTypeDef sClockSourceConfig;
 
 	timerPrescaler = (uint16_t)(SystemCoreClock / timerHz) - 1;
+
+	InitializeGpio(A_FET_LO_GPIO, A_FET_LO_PIN, 1);
+	InitializeGpio(B_FET_LO_GPIO, B_FET_LO_PIN, 1);
+	InitializeGpio(C_FET_LO_GPIO, C_FET_LO_PIN, 1);
 
 	// Initialize GPIO
 	HAL_GPIO_DeInit(A_FET_HI_GPIO, A_FET_HI_PIN);
@@ -389,12 +414,21 @@ void InitActuatorTimer(uint32_t pwmHz, uint32_t timerHz)
 
 	// Initialize timer pwm channel
 
-	sConfigOC.OCMode      = TIM_OCMODE_PWM1;
+	sConfigOC.OCMode      = TIM_OCMODE_PWM2;
 	sConfigOC.Pulse       = 0;
 	sConfigOC.OCPolarity  = TIM_OCPOLARITY_HIGH;
 	sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
 	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
 
-	HAL_TIM_PWM_ConfigChannel(&pwmTimer, &sConfigOC, actuator.timChannel);
+	HAL_TIM_PWM_ConfigChannel(&pwmTimer, &sConfigOC, A_FET_HI_TIM_CH);
+	HAL_TIM_PWM_ConfigChannel(&pwmTimer, &sConfigOC, B_FET_HI_TIM_CH);
+	HAL_TIM_PWM_ConfigChannel(&pwmTimer, &sConfigOC, C_FET_HI_TIM_CH);
+	HAL_TIM_PWM_ConfigChannel(&pwmTimer, &sConfigOC, PWM_CH);
+
+	HAL_TIM_Base_Start(&pwmTimer);
+	HAL_TIM_PWM_Start(&pwmTimer, A_FET_HI_TIM_CH);
+	HAL_TIM_PWM_Start(&pwmTimer, B_FET_HI_TIM_CH);
+	HAL_TIM_PWM_Start(&pwmTimer, C_FET_HI_TIM_CH);
+	HAL_TIM_PWM_Start(&pwmTimer, PWM_CH);
 
 }
