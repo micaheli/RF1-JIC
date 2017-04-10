@@ -85,7 +85,6 @@ int main(void)
 	InitFetTimerGpios(2000, SystemCoreClock / 2);
 
 	//turn on low fet
-	AFetLoOn();
 
 
 	ledtimer(32000, SystemCoreClock);
@@ -106,15 +105,48 @@ int main(void)
 		TIM2->CCR1 = (uint16_t)lrintf(0.8f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
 		TIM2->CCR1 = (uint16_t)lrintf(0.9f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
 		TIM2->CCR1 = (uint16_t)lrintf(1.0f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.9f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.8f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.7f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.6f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.5f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.4f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.3f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.2f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.1f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
 
 		uint16_t ccr = (uint16_t)lrintf(0.5f * (float)((SystemCoreClock / 2) / 2000));
 
 		//set volume for low fet
-		TIM1->CCR3 = ccr;
+		AFetLoOn();
+		A_FET_HI_CCR = ccr;
+		B_FET_HI_CCR = 0;
+		C_FET_HI_CCR = 0;
 		DelayMs(100); //let timer run for 100 ms
-		TIM1->CCR3 = 0; // turn off pwm
+		A_FET_HI_CCR = 0; // turn off pwm
+		B_FET_HI_CCR = 0; // turn off pwm
+		C_FET_HI_CCR = 0; // turn off pwm
 		DelayMs(100); //let timer run for 100 ms
 
+		BFetLoOn();
+		A_FET_HI_CCR = 0;
+		B_FET_HI_CCR = ccr;
+		C_FET_HI_CCR = 0;
+		DelayMs(100); //let timer run for 100 ms
+		A_FET_HI_CCR = 0; // turn off pwm
+		B_FET_HI_CCR = 0; // turn off pwm
+		C_FET_HI_CCR = 0; // turn off pwm
+		DelayMs(100); //let timer run for 100 ms
+
+		CFetLoOn();
+		A_FET_HI_CCR = 0;
+		B_FET_HI_CCR = 0;
+		C_FET_HI_CCR = ccr;
+		DelayMs(100); //let timer run for 100 ms
+		A_FET_HI_CCR = 0; // turn off pwm
+		B_FET_HI_CCR = 0; // turn off pwm
+		C_FET_HI_CCR = 0; // turn off pwm
+		DelayMs(100); //let timer run for 100 ms
 		//inlineDigitalHi(LED0_GPIO, LED0_PIN);
 		//DelayMs(100);
 		//inlineDigitalHi(LED1_GPIO, LED1_PIN);

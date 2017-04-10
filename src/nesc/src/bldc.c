@@ -414,9 +414,9 @@ void InitFetTimerGpios(uint32_t pwmHz, uint32_t timerHz)
 
 	// Initialize timer pwm channel
 
-	sConfigOC.OCMode      = TIM_OCMODE_PWM2;
+	sConfigOC.OCMode      = TIM_OCMODE_PWM1;
 	sConfigOC.Pulse       = 0;
-	sConfigOC.OCPolarity  = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCPolarity  = TIM_OCPOLARITY_LOW;
 	sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
 	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
 

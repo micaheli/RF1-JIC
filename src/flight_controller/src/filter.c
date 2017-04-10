@@ -245,13 +245,13 @@ void InitPaf(paf_state *state, float q, float r, float p, float intial_value)
 void PafUpdate(paf_state *state, float measurement)
 {
 
-	double acceleration;
+	float acceleration;
 	//float w; //process noise
 	//float v; //measurment noise
-	acceleration = (double)( ((double)state->x - (double)state->lastX) * (double)loopSpeed.InversedT );
+	acceleration = (float)( ((float)state->x - (float)state->lastX) * (float)loopSpeed.InversedT );
 	//project the state ahead using average acceleration
 
-	state->x = state->x + (float)((double)acceleration * (double)loopSpeed.gyrodT);
+	state->x = state->x + (float)((float)acceleration * (float)loopSpeed.gyrodT);
 	//state->x = state->x + (state->lastX - state->x) * loopSpeed.gyrodT;
 	state->lastX = state->x;
 
