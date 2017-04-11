@@ -170,7 +170,7 @@ static void PrintTpaKd(void)
 
 void AdjustKpTpa(char *modString)
 {
-	uint32_t i;
+	//uint32_t i;
 
 	(void)(modString);
 	PrintTpaKp();
@@ -178,7 +178,7 @@ void AdjustKpTpa(char *modString)
 
 void AdjustKiTpa(char *modString)
 {
-	uint32_t i;
+	//uint32_t i;
 
 	(void)(modString);
 	PrintTpaKi();
@@ -186,7 +186,7 @@ void AdjustKiTpa(char *modString)
 
 void AdjustKdTpa(char *modString)
 {
-	uint32_t i;
+	//uint32_t i;
 
 	(void)(modString);
 	PrintTpaKd();
@@ -194,7 +194,7 @@ void AdjustKdTpa(char *modString)
 
 void PrintTpaCurves(void)
 {
-	uint32_t i;
+	//uint32_t i;
 
 	PrintTpaKp();
 	PrintTpaKi();

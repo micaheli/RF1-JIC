@@ -25,7 +25,7 @@ static void VectorZeroVector(volatile vector_record *vector);
 static void QuaternionNormalize (volatile quaternion_record *out);
 static void QuaternionMultiply(volatile quaternion_record *out, volatile quaternion_record *q1, volatile quaternion_record *q2);
 static quaternion_record QuaternionFromEuler (float halfBankRads, float halfAttitudeRads, float halfHeadingRads);
-static void QuaternionToEuler(volatile quaternion_record *inQuat, volatile float rates[]);
+//static void QuaternionToEuler(volatile quaternion_record *inQuat, volatile float rates[]);
 static void UpdateRotationMatrix(void);
 //static void QuaternionMultiplyDps(volatile quaternion_record *quatToUpdate, float gyroRollDiffRads, float gyroPitchDiffRads, float gyroYawDiffRads);
 //static void QuaternionDifference(volatile quaternion_record *q1, volatile quaternion_record *q2);
@@ -95,6 +95,16 @@ void ImuUpdateCommandQuat(float rollDps, float pitchDps, float yawDps, float hal
 	vector_record     commandVector;
 	quaternion_record commandQuatChange;
 
+	if (ModeActive(M_GLUE))
+	{
+		EulerToVector( &commandVector, ( rollDps ), ( pitchDps ), ( -yawDps ) );
+		GenerateQuaternionFromGyroVector(&commandQuatChange, commandVector, halfdT * 16.0f);
+		commandQuat = MultiplyQuaternionByQuaternion(commandQuatChange, commandQuat);   //update attitudeFrameQuat quaternion
+
+		QuaternionNormalize(&commandQuat);
+	}
+
+
 	/*
 	//this is setting up the command quad for glue mode
 	if (ModeActive(M_GLUE))
@@ -152,7 +162,7 @@ static void QuaternionDifference(volatile quaternion_record *q1, volatile quater
 
 	QuaternionToEuler(&differenceQuaternion, requestedDegrees);
 }
-*/
+
 
 static void QuaternionToEuler(volatile quaternion_record *inQuat, volatile float rates[])
 {
@@ -161,9 +171,6 @@ static void QuaternionToEuler(volatile quaternion_record *inQuat, volatile float
 	float heading;
 	float attitude;
 	float bank;
-	float sqx;
-	float sqy;
-	float sqz;
 
 	test = (inQuat->x * inQuat->y + inQuat->z * inQuat->w);
 
@@ -204,7 +211,7 @@ static void QuaternionToEuler(volatile quaternion_record *inQuat, volatile float
 	//rates[PITCH] = InlineRadiansToDegrees(attitude);
 	//rates[ROLL]  = InlineRadiansToDegrees(bank);
 }
-
+*/
 
 static void QuaternionMultiply (volatile quaternion_record *out, volatile quaternion_record *q1, volatile quaternion_record *q2)
 {
@@ -503,7 +510,6 @@ inline quaternion_record MultiplyQuaternionByQuaternion(volatile quaternion_reco
 void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPitch, float gyroYaw)
 {
 
-	volatile float rates[3];
 	float accTrust = 0.01;
 	float norm;
 	float accToGyroError[3] = {0.0f, 0.0f, 0.0f};
@@ -549,15 +555,24 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 	//inlineDigitalHi(ports[ENUM_PORTB], GPIO_PIN_1);
 	//it takes 1.41 us to multiply a quaternion
 
-	//the command quat is used to find the difference between the attitude quad and where we want the qwuad to be
-	errorQuat = MultiplyQuaternionByQuaternion( commandQuat, QuaternionConjugate(&attitudeFrameQuat) );
-	//inlineDigitalLo(ports[ENUM_PORTB], GPIO_PIN_1);
 
-	//atan2f takes 4.18 us to run... atan2fast takes 2.75 us to run and you only lose 0.5% accuracy... add in arm_sin_f32 and time is at 1.99 us to run
-	requestedDegrees[ROLL]  =  InlineRadiansToDegrees( Atan2fast(errorQuat.y * errorQuat.z + errorQuat.w * errorQuat.x, 0.5f - (errorQuat.x * errorQuat.x + errorQuat.y * errorQuat.y)) );  
-	requestedDegrees[PITCH] =  InlineRadiansToDegrees( arm_sin_f32(2.0f * (errorQuat.x * errorQuat.z - errorQuat.w * errorQuat.y)) );
-	requestedDegrees[YAW]   = -InlineRadiansToDegrees( Atan2fast(errorQuat.x * errorQuat.y + errorQuat.w * errorQuat.z, 0.5f - (errorQuat.y * errorQuat.y + errorQuat.z * errorQuat.z)) );
+	if (ModeActive(M_GLUE))
+	{
+		//the command quat is used to find the difference between the attitude quad and where we want the qwuad to be
+		errorQuat = MultiplyQuaternionByQuaternion( commandQuat, QuaternionConjugate(&attitudeFrameQuat) );
+		//inlineDigitalLo(ports[ENUM_PORTB], GPIO_PIN_1);
 
+		//atan2f takes 4.18 us to run... atan2fast takes 2.75 us to run and you only lose 0.5% accuracy... add in arm_sin_f32 and time is at 1.99 us to run
+		requestedDegrees[ROLL]  =  InlineRadiansToDegrees( Atan2fast(errorQuat.y * errorQuat.z + errorQuat.w * errorQuat.x, 0.5f - (errorQuat.x * errorQuat.x + errorQuat.y * errorQuat.y)) );  
+		requestedDegrees[PITCH] =  InlineRadiansToDegrees( arm_sin_f32(2.0f * (errorQuat.x * errorQuat.z - errorQuat.w * errorQuat.y)) );
+		requestedDegrees[YAW]   = -InlineRadiansToDegrees( Atan2fast(errorQuat.x * errorQuat.y + errorQuat.w * errorQuat.z, 0.5f - (errorQuat.y * errorQuat.y + errorQuat.z * errorQuat.z)) );
+	}
+	else
+	{
+		rollAttitude  =  InlineRadiansToDegrees( Atan2fast(attitudeFrameQuat.y * attitudeFrameQuat.z + attitudeFrameQuat.w * attitudeFrameQuat.x, 0.5f - (attitudeFrameQuat.x * attitudeFrameQuat.x + attitudeFrameQuat.y * attitudeFrameQuat.y)) );  ;
+		pitchAttitude =  InlineRadiansToDegrees( arm_sin_f32(2.0f * (attitudeFrameQuat.x * attitudeFrameQuat.z - attitudeFrameQuat.w * attitudeFrameQuat.y)) );
+		yawAttitude   = -InlineRadiansToDegrees( Atan2fast(attitudeFrameQuat.x * attitudeFrameQuat.y + attitudeFrameQuat.w * attitudeFrameQuat.z, 0.5f - (attitudeFrameQuat.y * attitudeFrameQuat.y + attitudeFrameQuat.z * attitudeFrameQuat.z)) );
+	}
 	////error from the vertical
 	//rollAttitude  =  InlineRadiansToDegrees( Atan2fast(attitudeFrameQuat.y * attitudeFrameQuat.z + attitudeFrameQuat.w * attitudeFrameQuat.x, 0.5f - (attitudeFrameQuat.x * attitudeFrameQuat.x + attitudeFrameQuat.y * attitudeFrameQuat.y)) );  ;
 	//pitchAttitude =  InlineRadiansToDegrees( arm_sin_f32(2.0f * (attitudeFrameQuat.x * attitudeFrameQuat.z - attitudeFrameQuat.w * attitudeFrameQuat.y)) );

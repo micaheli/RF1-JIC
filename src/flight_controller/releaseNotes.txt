@@ -921,7 +921,7 @@ Version 1.015.069 BETA:
 Version 1.016.070 BETA:
 	Changed defaults
 
-Version 0.223.070 RC13:
+Version 0.223.070 BETA:
 	Merged in 1.000 through 1.016.070 changes which were originally meant for post Release 1
 	RC13 candidate
 	New high-tech filtering
@@ -971,7 +971,8 @@ Version 0.223.070 RC13:
 			- Improved "Setup", "Detect" and "Radio" wizards.
 			- Fixed "ESC" tab when it fails sometimes.
 
-
+Version 0.224.070 RC13:
+	Fixed self leveling modes
 
 
 #Features in current development:

@@ -32,7 +32,6 @@ extern void  ArmBoard(void);
 extern void  DisarmBoard(void);
 extern int   SetCalibrate1(void);
 extern int   SetCalibrate2(void);
-extern float AverageGyroADCbuffer(uint32_t axis, volatile float currentData); //not really extern
 extern void  InitFlightCode(void);
 extern void  InlineFlightCode(float dpsGyroArray[]);
 extern void  InlineUpdateAttitude(float geeForceAccArray[]);

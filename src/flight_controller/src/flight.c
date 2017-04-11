@@ -1,7 +1,5 @@
 #include "includes.h"
 
-#define GYRO_AVERAGE_MAX_SUM 33
-
 pid_output   flightPids[AXIS_NUMBER];
 biquad_state lpfFilterState[AXIS_NUMBER];
 biquad_state lpfFilterStateKd[AXIS_NUMBER];
@@ -11,9 +9,6 @@ biquad_state hpfFilterStateAcc[6];
 
 float kdFiltUsed[AXIS_NUMBER];
 float accNoise[6];
-float averagedGyroData[AXIS_NUMBER][GYRO_AVERAGE_MAX_SUM];
-uint32_t averagedGyroDataPointer[AXIS_NUMBER];
-float averagedGyroDataPointerMultiplier[AXIS_NUMBER];
 float filteredGyroData[AXIS_NUMBER];
 float filteredAccData[VECTOR_NUMBER];
 paf_state pafGyroStates[AXIS_NUMBER];
@@ -232,18 +227,12 @@ void InitFlightCode(void)
 	//bzero(lpfFilterStateNoise,sizeof(lpfFilterStateNoise));
 	bzero(lpfFilterState,sizeof(lpfFilterState));
 	bzero(lpfFilterStateKd,sizeof(lpfFilterStateKd));
-	bzero(averagedGyroData,sizeof(averagedGyroData));
 	bzero(filteredGyroData,sizeof(filteredGyroData));
-	bzero(averagedGyroDataPointer,sizeof(averagedGyroDataPointer));
 	bzero(&flightPids,sizeof(flightPids));
 	timeSinceSelfLevelActivated = 0;
 	slpUsed = 0.0f;
 	sliUsed = 0.0f;
 	sldUsed = 0.0f;
-
-	averagedGyroDataPointerMultiplier[YAW]   = (1.0 / (float)mainConfig.pidConfig[YAW].ga);
-	averagedGyroDataPointerMultiplier[ROLL]  = (1.0 / (float)mainConfig.pidConfig[ROLL].ga);
-	averagedGyroDataPointerMultiplier[PITCH] = (1.0 / (float)mainConfig.pidConfig[PITCH].ga);
 
 	usedGa[0] = mainConfig.pidConfig[0].ga;
 	usedGa[1] = mainConfig.pidConfig[1].ga;
@@ -570,37 +559,16 @@ inline void InlineUpdateAttitude(float geeForceAccArray[])
 
 }
 
-inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
-{
-
-	float returnData;
-	if (usedGa[axis] > 1)
-	{
-
-		averagedGyroData[axis][averagedGyroDataPointer[axis]++] = currentData;
-		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] += currentData;
-
-		if (averagedGyroDataPointer[axis] == usedGa[axis])
-			averagedGyroDataPointer[axis] = 0;
-
-		returnData = (averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] * averagedGyroDataPointerMultiplier[axis]);
-		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] -= averagedGyroData[axis][averagedGyroDataPointer[axis]];
-
-		return(returnData);
-
-	}
-
-	return currentData;
-
-}
-
- void InlineFlightCode(float dpsGyroArray[])
+inline void InlineFlightCode(float dpsGyroArray[])
 // void InlineFlightCode(float dpsGyroArray[])
 {
 
+	//used for IMU
+	static float gyroAdder[3] = {0.0f,0.0f,0.0f};
+	static uint32_t gyroAverager = 0;
+
 	static uint32_t gyroStdDeviationLatch = 0;
 	int32_t axis;
-	volatile float averagedGyro;
 
 	//inlineDigitalHi(ports[ENUM_PORTB], GPIO_PIN_0);
 
@@ -630,36 +598,11 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 		ImuResetCommandQuat();
 	}
 
-		//volatile static float cat[1000];
-		//volatile float catter;
-		//volatile static uint32_t catCounter = 0;
-		//if (catCounter < 1000)
-		//{
-		//	cat[catCounter++] = dpsGyroArray[YAW];
-		//}
-		//else
-		//{
-		//	catter = CalculateSDSize(cat, 1000);
-		//	if (catter == 12)
-		//	{
-		//		catter = 0.0f;
-		//	}
-		//}
-
-	//update PIDs, mixer, outputs at gyro divider speed
-	//static float averagedGyro1[3] = { 0.0f, 0.0f, 0.0f };
-	//for (axis = 2; axis >= 0; --axis)
-	//	averagedGyro1[axis] += dpsGyroArray[axis];
-
 	//update gyro filter, every time there's an interrupt
 	for (axis = 2; axis >= 0; --axis)
 	{
-		//averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
-		//averagedGyro = dpsGyroArray[axis];
-		//averagedGyro1[axis] *= 0.5f;
 		PafUpdate(&pafGyroStates[axis], dpsGyroArray[axis] );
 		filteredGyroData[axis] = (float)pafGyroStates[axis].x;
-		//averagedGyro1[axis] = 0.0f;
 	}
 
 	if (gyroLoopCounter-- == 0)
@@ -687,7 +630,7 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 
 		//get setpoint for PIDC for self level modes.
 		//TODO: move this to its own function in the IMU
-		if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || ModeActive(M_GLUE)) //no auto level modes active, we're in rate mode
+		if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || ModeActive(M_GLUE)) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
 		{
 			if (!timeSinceSelfLevelActivated)
 				timeSinceSelfLevelActivated = InlineMillis();
@@ -766,7 +709,7 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 					flightSetPoints[PITCH]   += InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0f, 300.0f) * (1.0f - ABS(trueRcCommandF[PITCH]) );
 			}
 		}
-		else //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
+		else //no auto level modes active, we're in rate mode
 		{
 			if (timeSinceSelfLevelActivated)
 				timeSinceSelfLevelActivated = 0;
@@ -891,8 +834,6 @@ inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 
 	}
 
-	static float gyroAdder[3] = {0.0f,0.0f,0.0f};
-	static uint32_t gyroAverager = 0;
 	gyroAdder[ROLL]  += filteredGyroData[ROLL];
 	gyroAdder[PITCH] += filteredGyroData[PITCH];
 	gyroAdder[YAW]   += filteredGyroData[YAW];

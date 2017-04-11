@@ -827,7 +827,7 @@ void ProcessCommand(char *inString)
 	char *originalString = inString;
 	uint32_t x;
 	static uint32_t lastTimeMore = 0;
-	static firstTimeRunningTelem = 1;
+	static uint32_t firstTimeRunningTelem = 1;
 
 	if (rfCustomReplyBufferPointerSent < rfCustomReplyBufferPointer)
 	{
