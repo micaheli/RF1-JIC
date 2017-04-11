@@ -866,7 +866,6 @@ Version 0.222.064 RC12:
 
 Version 1.001.063 ALPHA:
 	Added Glue mode for testing 
-		Should hold course during impact when enabled
 
 Version 1.002.063 ALPHA:
 	Automagic filtering
@@ -919,8 +918,60 @@ Version 1.008.066 ALPHA through 1.014.069 BETA:
 Version 1.015.069 BETA:
 	Added dpmode command to put FC into dp mode more easily
 
-Version 1.015.069 BETA:
+Version 1.016.070 BETA:
 	Changed defaults
+
+Version 0.223.070 RC13:
+	Merged in 1.000 through 1.016.070 changes which were originally meant for post Release 1
+	RC13 candidate
+	New high-tech filtering
+	Many configurator changes
+			#### 0.223.0
+			- Increment version to 223 to match RC13
+
+			#### 0.197.0
+			- Added VTX PitMode Type wizard
+			- Added license page
+			- Fixing translations
+			- Small bug fixes
+			- Moved "Update firmware" title to top
+			- Added 16000 option for frequency
+			- Fixed ESC start up power saving
+			- Fixed issues caused by not working motors or other problems on ESC tab
+			- Update *de*,*fr*,*es* translations
+			- Added OEM (beep) tone
+			- Added Digital Precision Mode
+
+			#### 0.196.0
+
+			- Added telemetry tab
+			- Fix radio data on setup tab
+			- Fix motor order in motor direction wizard
+			- Cosmetic fixes
+			- Fix translations
+			- Fix issue #72
+
+			#### 0.195.0
+
+			- Added DFU flashing mode
+			- Added de, es, fr, sk, zh-cn languages
+			- Fixed motor calibration labels
+			- Fixed small issues
+			- Added frequency options
+			- Added SmartAudio and OneShot options
+
+			#### 0.194.0
+
+			- Added localization
+			- Added "Medium Low" and "Medium High" timing options
+			- Added "Quick change PID level" button and Rates default values
+			- Fixed "Reset" button on PID Tuning page
+			- Fixed Bootloader flashing file upload, that could stuck when incorrect file has been uploaded.
+			- Fixed "Update Firmware" button
+			- Improved "Setup", "Detect" and "Radio" wizards.
+			- Fixed "ESC" tab when it fails sometimes.
+
+
 
 
 #Features in current development:

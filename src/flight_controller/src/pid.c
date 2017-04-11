@@ -151,7 +151,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 			// calculate Kd ////////////////////////// V
 			//if (everyOther)
 			//{
-				if (ModeActive(M_BRAINDRAIN))
+				if (1 || ModeActive(M_BRAINDRAIN))
 				{
 					kdDelta[axis] = pidError - lastfilteredGyroData[axis];
 					lastfilteredGyroData[axis] = pidError;
