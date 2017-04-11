@@ -364,10 +364,10 @@ void InitFetTimerGpios(uint32_t pwmHz, uint32_t timerHz)
 {
 	uint16_t timerPrescaler = 0;
 
-	GPIO_InitTypeDef GPIO_InitStruct;
-	TIM_OC_InitTypeDef sConfigOC;
+	GPIO_InitTypeDef        GPIO_InitStruct;
+	TIM_OC_InitTypeDef      sConfigOC;
 	TIM_MasterConfigTypeDef sMasterConfig;
-	TIM_ClockConfigTypeDef sClockSourceConfig;
+	TIM_ClockConfigTypeDef  sClockSourceConfig;
 
 	timerPrescaler = (uint16_t)(SystemCoreClock / timerHz) - 1;
 
@@ -414,7 +414,7 @@ void InitFetTimerGpios(uint32_t pwmHz, uint32_t timerHz)
 
 	// Initialize timer pwm channel
 
-	sConfigOC.OCMode      = TIM_OCMODE_PWM1;
+	sConfigOC.OCMode      = TIM_OCMODE_PWM2;
 	sConfigOC.Pulse       = 0;
 	sConfigOC.OCPolarity  = TIM_OCPOLARITY_HIGH;
 	sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
@@ -426,9 +426,9 @@ void InitFetTimerGpios(uint32_t pwmHz, uint32_t timerHz)
 	HAL_TIM_PWM_ConfigChannel(&pwmTimer, &sConfigOC, PWM_CH);
 
 	HAL_TIM_Base_Start(&pwmTimer);
-	HAL_TIM_PWM_Start(&pwmTimer, A_FET_HI_TIM_CH);
 	HAL_TIM_PWM_Start(&pwmTimer, B_FET_HI_TIM_CH);
 	HAL_TIM_PWM_Start(&pwmTimer, C_FET_HI_TIM_CH);
 	HAL_TIM_PWM_Start(&pwmTimer, PWM_CH);
+	HAL_TIM_PWM_Start(&pwmTimer, A_FET_HI_TIM_CH);
 
 }

@@ -117,7 +117,7 @@ int main(void)
 		TIM2->CCR1 = (uint16_t)lrintf(0.2f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
 		TIM2->CCR1 = (uint16_t)lrintf(0.1f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
 
-		uint16_t ccr = (uint16_t)lrintf(0.5f * (float)((SystemCoreClock / 2) / 2000));
+		uint16_t ccr = (uint16_t)lrintf(0.05f * (float)((SystemCoreClock / 2) / 2000));
 
 		//set volume for low fet
 		AFetLoOn();
