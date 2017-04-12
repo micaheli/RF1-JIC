@@ -132,6 +132,10 @@ void GyroRxDmaCallback(uint32_t callbackNumber)
         // run callback for completed gyro read
         accgyroDeviceReadComplete();
     }
+    else
+    {
+        volatile uint32_t failure = 111;
+    }
 }
 
 // TODO: get rid of this? only need read/write register and read/write data w/DMA or interrupt

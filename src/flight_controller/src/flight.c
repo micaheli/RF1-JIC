@@ -983,7 +983,7 @@ void InitFlight(void)
 #ifndef SPMFC400
 	if (!IsUsbConnected())
 	{
-		InitWs2812();
+//		InitWs2812();
 	}
 #else
 	InitWs2812();
