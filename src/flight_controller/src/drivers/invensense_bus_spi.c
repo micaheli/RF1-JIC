@@ -71,6 +71,9 @@ uint32_t AccGyroInit(loopCtrl_e loopCtrl)
 		memcpy( &board.dmasActive[board.spis[board.gyros[0].spiNumber].TXDma], &board.dmasSpi[board.spis[board.gyros[0].spiNumber].TXDma], sizeof(board_dma) );
 	}
 
+	//callbackFunctionArray[GetExtiCallbackFromPin(board.gyros[0].extiPin)] = GyroExtiCallback;
+	//callbackFunctionArray[GetDmaCallbackFromDmaStream(board.spis[board.gyros[0].spiNumber].RXDma)]    = GyroRxDmaCallback;
+
 	AccGyroDeinit();
 
     // read and write settings at slow speed
