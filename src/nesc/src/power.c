@@ -3,9 +3,9 @@
 
 void InitFets(void)
 {
-	InitializeGpio(A_FET_LO_GPIO, A_FET_LO_PIN, 1);
-	InitializeGpio(B_FET_LO_GPIO, B_FET_LO_PIN, 1);
-	InitializeGpio(C_FET_LO_GPIO, C_FET_LO_PIN, 1);
+	InitializeGpio(A_FET_LO_GPIO, A_FET_LO_PIN, 0);
+	InitializeGpio(B_FET_LO_GPIO, B_FET_LO_PIN, 0);
+	InitializeGpio(C_FET_LO_GPIO, C_FET_LO_PIN, 0);
     DelayMs(2);
 	InitializeGpio(A_FET_HI_GPIO, A_FET_HI_PIN, 0);
 	InitializeGpio(B_FET_HI_GPIO, B_FET_HI_PIN, 0);
@@ -74,30 +74,30 @@ inline void CFetHiOn(void)
 
 inline void AFetLoOff(void)
 {
-    inlineDigitalHi(A_FET_LO_GPIO, A_FET_LO_PIN);
+    inlineDigitalLo(A_FET_LO_GPIO, A_FET_LO_PIN);
 }
 
 inline void BFetLoOff(void)
 {
-    inlineDigitalHi(B_FET_LO_GPIO, B_FET_LO_PIN);
+    inlineDigitalLo(B_FET_LO_GPIO, B_FET_LO_PIN);
 }
 
 inline void CFetLoOff(void)
 {
-    inlineDigitalHi(C_FET_LO_GPIO, C_FET_LO_PIN);
+    inlineDigitalLo(C_FET_LO_GPIO, C_FET_LO_PIN);
 }
 
 inline void AFetLoOn(void)
 {
-    inlineDigitalLo(A_FET_LO_GPIO, A_FET_LO_PIN);
+    inlineDigitalHi(A_FET_LO_GPIO, A_FET_LO_PIN);
 }
 
 inline void BFetLoOn(void)
 {
-    inlineDigitalLo(B_FET_LO_GPIO, B_FET_LO_PIN);
+    inlineDigitalHi(B_FET_LO_GPIO, B_FET_LO_PIN);
 }
 
 inline void CFetLoOn(void)
 {
-    inlineDigitalLo(C_FET_LO_GPIO, C_FET_LO_PIN);
+    inlineDigitalHi(C_FET_LO_GPIO, C_FET_LO_PIN);
 }

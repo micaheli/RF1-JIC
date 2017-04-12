@@ -384,14 +384,16 @@ void InitFetTimerGpios(uint32_t pwmHz, uint32_t timerHz)
 	GPIO_InitStruct.Pull      = GPIO_PULLDOWN;
 	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
-	GPIO_InitStruct.Alternate = PWM_AF;
 
+	GPIO_InitStruct.Alternate = A_FET_HI_AF;
 	GPIO_InitStruct.Pin       = A_FET_HI_PIN;
 	HAL_GPIO_Init(A_FET_HI_GPIO, &GPIO_InitStruct);
 
+	GPIO_InitStruct.Alternate = B_FET_HI_AF;
 	GPIO_InitStruct.Pin       = B_FET_HI_PIN;
 	HAL_GPIO_Init(B_FET_HI_GPIO, &GPIO_InitStruct);
 
+	GPIO_InitStruct.Alternate = C_FET_HI_AF;
 	GPIO_InitStruct.Pin       = C_FET_HI_PIN;
 	HAL_GPIO_Init(C_FET_HI_GPIO, &GPIO_InitStruct);
 
@@ -415,7 +417,7 @@ void InitFetTimerGpios(uint32_t pwmHz, uint32_t timerHz)
 
 	// Initialize timer pwm channel
 
-	sConfigOC.OCMode      = TIM_OCMODE_PWM2;
+	sConfigOC.OCMode      = TIM_OCMODE_PWM1;
 	sConfigOC.Pulse       = 0;
 	sConfigOC.OCPolarity  = TIM_OCPOLARITY_HIGH;
 	sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
@@ -428,7 +430,7 @@ void InitFetTimerGpios(uint32_t pwmHz, uint32_t timerHz)
     sBreakDeadTimeConfig.BreakState       = TIM_BREAK_DISABLE;
     sBreakDeadTimeConfig.BreakPolarity    = TIM_BREAKPOLARITY_HIGH;
     sBreakDeadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_ENABLE;
-    HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig);
+    HAL_TIMEx_ConfigBreakDeadTime(&pwmTimer, &sBreakDeadTimeConfig);
 
 	HAL_TIM_PWM_ConfigChannel(&pwmTimer, &sConfigOC, A_FET_HI_TIM_CH);
 	HAL_TIM_PWM_ConfigChannel(&pwmTimer, &sConfigOC, B_FET_HI_TIM_CH);

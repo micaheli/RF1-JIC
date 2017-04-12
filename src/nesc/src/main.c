@@ -3,6 +3,45 @@
 TIM_HandleTypeDef ledTimer;
 
 
+#define MUS_C_1 523
+#define MUS_Cs_1 554
+#define MUS_D_1 587
+#define MUS_Ds_1 622
+#define MUS_E_1 659
+#define MUS_F_1 698
+#define MUS_Fs_1 740
+#define MUS_G_1 784
+#define MUS_Gs_1 831
+#define MUS_A_1 880
+#define MUS_As_1 932
+#define MUS_B_1 988
+
+#define MUS_C_2 1046
+#define MUS_Cs_2 1109
+#define MUS_D_2 1175
+#define MUS_Ds_2 1244
+#define MUS_E_2 1328
+#define MUS_F_2 1397
+#define MUS_Fs_2 1480
+#define MUS_G_2 1568
+#define MUS_Gs_2 1661
+#define MUS_A_2 1760
+#define MUS_As_2 1865
+#define MUS_B_2 1975
+
+#define MUS_C_3 2093
+#define MUS_Cs_3 2217
+#define MUS_D_3 2349
+#define MUS_Ds_3 2489
+#define MUS_E_3 2637
+#define MUS_F_3 2794
+#define MUS_Fs_3 2960
+#define MUS_G_3 3136
+#define MUS_Gs_3 3322
+#define MUS_A_3 3520
+#define MUS_As_3 3729
+#define MUS_B_3 3951
+
 void ledtimer(uint32_t pwmHz, uint32_t timerHz)
 {
 	uint16_t timerPrescaler = 0;
@@ -58,6 +97,20 @@ void ledtimer(uint32_t pwmHz, uint32_t timerHz)
 
 }
 
+void RunTimerSound(uint32_t frequency, uint32_t ms)
+{
+	uint16_t ccr = (uint16_t)lrintf(0.015f * (float)((SystemCoreClock / 2) / frequency));
+	AFetLoOff();
+    BFetLoOff();
+    CFetLoOff();
+	InitFetTimerGpios(frequency, SystemCoreClock / 2);
+	BFetLoOn();
+	C_FET_HI_CCR = ccr;
+	DelayMs(ms);
+	C_FET_HI_CCR = 0;
+	BFetLoOff();
+}
+
 
 int main(void)
 {
@@ -77,17 +130,17 @@ int main(void)
 
 	//for (x = 0; x < 5; x++) {
 	//	Beep(2000 + x * 6000, 10, 10);
-	//	DelayMs(10);
+	//	delayUs(1000);
 	//}
 
 	ZeroMotor();
 	// set timer to output 2000 Hz tone
-	InitFetTimerGpios(2000, SystemCoreClock / 2);
+	InitFetTimerGpios(2093, SystemCoreClock / 2);
 
 	//turn on low fet
 
 	//InitFets();
-	Beep(3000, 3000, 10);
+	//Beep(3000, 3000, 10);
 
 	ledtimer(32000, SystemCoreClock);
 	TIM2->CCR1 = (uint16_t)lrintf(0.5f * (float)((SystemCoreClock) / 32000));
@@ -96,59 +149,96 @@ int main(void)
     while (1)
     {
 
-		TIM2->CCR1 = (uint16_t)lrintf(0.0f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.1f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.2f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.3f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.4f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.5f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.6f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.7f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.8f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.9f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(1.0f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.9f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.8f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.7f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.6f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.5f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.4f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.3f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.2f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
-		TIM2->CCR1 = (uint16_t)lrintf(0.1f * (float)((SystemCoreClock) / 32000));DelayMs(100); 
+		RunTimerSound(MUS_C_3, 125);
 
-		uint16_t ccr = (uint16_t)lrintf(0.05f * (float)((SystemCoreClock / 2) / 2000));
+		TIM2->CCR1 = (uint16_t)lrintf(0.0f * (float)((SystemCoreClock) / 32000)); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.2f * (float)((SystemCoreClock) / 32000)); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.4f * (float)((SystemCoreClock) / 32000)); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.6f * (float)((SystemCoreClock) / 32000)); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.8f * (float)((SystemCoreClock) / 32000)); 
+		TIM2->CCR1 = (uint16_t)lrintf(1.0f * (float)((SystemCoreClock) / 32000)); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.8f * (float)((SystemCoreClock) / 32000)); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.6f * (float)((SystemCoreClock) / 32000)); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.4f * (float)((SystemCoreClock) / 32000)); 
+		TIM2->CCR1 = (uint16_t)lrintf(0.01f * (float)((SystemCoreClock) / 32000)); 
+
+		uint16_t ccr = (uint16_t)lrintf(0.015f * (float)((SystemCoreClock / 2) / 2093));
 
 		//set volume for low fet
+		//AFetLoOn();
+		//BFetLoOn();
+		//AFetLoOn();
+
+		//AFetLoOff();
+		//AFetLoOff();
+		//B_FET_HI_CCR = 0;
+
+/*
 		AFetLoOn();
-		A_FET_HI_CCR = ccr;
-		B_FET_HI_CCR = 0;
+		C_FET_HI_CCR = ccr;
+		delayUs(1000);
+		//AFetLoOff();
+		AFetLoOff();
 		C_FET_HI_CCR = 0;
-		DelayMs(100); //let timer run for 100 ms
-		A_FET_HI_CCR = 0; // turn off pwm
-		B_FET_HI_CCR = 0; // turn off pwm
-		C_FET_HI_CCR = 0; // turn off pwm
-		DelayMs(100); //let timer run for 100 ms
 
 		BFetLoOn();
-		A_FET_HI_CCR = 0;
-		B_FET_HI_CCR = ccr;
+		C_FET_HI_CCR = ccr;
+		delayUs(1000);
+		//AFetLoOff();
+		BFetLoOff();
 		C_FET_HI_CCR = 0;
-		DelayMs(100); //let timer run for 100 ms
-		A_FET_HI_CCR = 0; // turn off pwm
-		B_FET_HI_CCR = 0; // turn off pwm
-		C_FET_HI_CCR = 0; // turn off pwm
-		DelayMs(100); //let timer run for 100 ms
+	
+		BFetLoOn();
+		A_FET_HI_CCR = ccr;
+		delayUs(1000);
+		//AFetLoOff();
+		BFetLoOff();
+		A_FET_HI_CCR = 0;
 
 		CFetLoOn();
+		A_FET_HI_CCR = ccr;
+		delayUs(1000);
+		//AFetLoOff();
+		CFetLoOff();
 		A_FET_HI_CCR = 0;
+
+		CFetLoOn();
+		B_FET_HI_CCR = ccr;
+		delayUs(1000);
+		//AFetLoOff();
+		CFetLoOff();
 		B_FET_HI_CCR = 0;
-		C_FET_HI_CCR = ccr;
-		DelayMs(100); //let timer run for 100 ms
-		A_FET_HI_CCR = 0; // turn off pwm
-		B_FET_HI_CCR = 0; // turn off pwm
-		C_FET_HI_CCR = 0; // turn off pwm
-		DelayMs(100); //let timer run for 100 ms
+*/
+		//B_FET_HI_CCR = ccr;
+		//C_FET_HI_CCR = ccr;
+		//DelayMs(100); //let timer run for 100 ms
+		//A_FET_HI_CCR = 0; // turn off pwm
+		//B_FET_HI_CCR = 0; // turn off pwm
+		//C_FET_HI_CCR = 0; // turn off pwm
+		//DelayMs(100); //let timer run for 100 ms
+
+		//BFetLoOn();
+		//A_FET_HI_CCR = 0;
+		//B_FET_HI_CCR = ccr;
+		//C_FET_HI_CCR = 0;
+		//DelayMs(100); //let timer run for 100 ms
+		//A_FET_HI_CCR = 0; // turn off pwm
+		//B_FET_HI_CCR = 0; // turn off pwm
+		//C_FET_HI_CCR = 0; // turn off pwm
+		//DelayMs(100); //let timer run for 100 ms
+		//BFetLoOff();
+
+		//CFetLoOn();
+		//A_FET_HI_CCR = 0;
+		//B_FET_HI_CCR = 0;
+		//C_FET_HI_CCR = ccr;
+		//DelayMs(100); //let timer run for 100 ms
+		//A_FET_HI_CCR = 0; // turn off pwm
+		//B_FET_HI_CCR = 0; // turn off pwm
+		//C_FET_HI_CCR = 0; // turn off pwm
+		//DelayMs(100); //let timer run for 100 ms
+		//CFetLoOff();
+
 		//inlineDigitalHi(LED0_GPIO, LED0_PIN);
 		//DelayMs(100);
 		//inlineDigitalHi(LED1_GPIO, LED1_PIN);
