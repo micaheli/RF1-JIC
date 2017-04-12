@@ -122,6 +122,17 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
+    elif TARGET == "stm32f301x8_nesc":
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f3x.cfg &> redirection &")
+        TARGET_DEVICE_LC = "stm32f301x8"
+        PROJECT = "nesc"
+        TARGET_DEVICE = "STM32F301x8"
+        TARGET_SCRIPT = "stm32_flash_f301_64k.ld"
+        TARGET_PROCESSOR_TYPE  = "f3"
+        OPTIMIZE_FLAGS = "-Og"
+
     elif TARGET == "stm32f303xc":
         TARGET_DEVICE_LC = "stm32f303xc"
         PROJECT = "flight_controller"
@@ -216,8 +227,8 @@ def configure_target(TARGET):
         STM32F7_ARCH_FLAGS_ADD = ""
 
     elif TARGET == "stm32f745xx_nrfbl":
-        TARGET_DEVICE_LC = "stm32f745xx"
-        PROJECT = "boot_loader"
+        TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f745xx"
+        PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_rfbl.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
@@ -228,8 +239,8 @@ def configure_target(TARGET):
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
     elif TARGET == "stm32f745xx_nrecovery":
-        TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f745xx"
-        PROJECT = "recovery_loader"
+        TARGET_DEVICE_LC = "stm32f745xx"
+        PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_recovery.ld"
         TARGET_PROCESSOR_TYPE  = "f7"
@@ -281,8 +292,11 @@ def configure_target(TARGET):
     STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM3 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F1_ARCH_FLAGS = "-mthumb -mcpu=cortex-m3"
 
+    #STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    #STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
+
     STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
-    STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
+    STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16"
 
     if TARGET_DEVICE == "STM32F446xx":
         STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=12000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
@@ -362,8 +376,11 @@ def configure_target(TARGET):
         SOURCE_DIRS.append("src/flight_controller/src/telemetry")
         SOURCE_DIRS.append("src/flight_controller/src/input")
         FEATURES.extend(["adc", "transponder", "softSerial", "esc_1wire", "leds", "dmaShenanigans", "actuator_output", "buzzer", "flash_chip", "mpu_icm_device/spi", "rx", "serial"])
-    elif PROJECT == "esc":
-        FEATURES.extend(["leds"])
+    elif PROJECT == "nesc":
+        excluded_files.append("stm32f3xx_spi_msp.c")
+        excluded_files.append("stm32f4xx_spi_msp.c")
+        excluded_files.append("stm32f7xx_spi_msp.c")
+        excluded_files.append("boarddef.c")
     elif PROJECT == "passthru":
         FEATURES.extend(["leds"])
         excluded_files.append("stm32f3xx_spi_msp.c")
@@ -430,11 +447,18 @@ def configure_target(TARGET):
             SOURCE_FILES.append("src/%s/src/drivers/" % (PROJECT) + feature + ".c")
             INCLUDE_DIRS.append("src/%s/inc/drivers/" % (PROJECT))
 
-    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/CommonTables/arm_common_tables.c")
-    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FastMathFunctions/arm_cos_f32.c")
-    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FastMathFunctions/arm_sin_f32.c")
-    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FilteringFunctions/arm_fir_init_f32.c")
-    SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FilteringFunctions/arm_fir_f32.c")
+    if PROJECT != "nesc":
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_add_f32.c")
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_init_f32.c")
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_mult_f32.c")
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_sub_f32.c")
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_trans_f32.c")
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_inverse_f32.c")
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/CommonTables/arm_common_tables.c")
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FastMathFunctions/arm_cos_f32.c")
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FastMathFunctions/arm_sin_f32.c")
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FilteringFunctions/arm_fir_init_f32.c")
+        SOURCE_FILES.append("lib/CMSIS/DSP_Lib/Source/FilteringFunctions/arm_fir_f32.c")
     ################################################################################
     # compiler options
 

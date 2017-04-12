@@ -9,7 +9,7 @@
 #define MAX_KD_FM1 0.55f
 
 #define MAX_KP 0.75f
-#define MAX_KI 0.15f
+#define MAX_KI 0.25f
 #define MAX_KD 0.35f
 
 enum { KP = 0, KD, KI, PID_VARIABLE_COUNT }; // why is there a blank enum here kalyn?

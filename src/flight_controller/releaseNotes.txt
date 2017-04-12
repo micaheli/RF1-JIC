@@ -828,9 +828,37 @@ Version 0.218.062 BETA:
 	More flight code enhancements
 	Fixed Spektrum Telemetry
 
-Version 0.219.062 RC10:
+Version 0.219.062 BETA:
 	Update Spektrum Telemetry handling
 
+Version 0.220.062 RC10:
+	Added Braindrain mode
+		Will increase responsiveness at the possible cost of smoothness
+		Similar but different than Direct mode
+			May or may not cause hotter motors and/or oscillations when used with direct mode
+	Important flight performance enhancements
+		Increase Ki and Kd performance
+	Fixed gyro calibration issue that sometimes popped up when FC was turned on before radio
+
+Version 0.221.063 RC11:
+	set vtx_pitmode_type=0 (default, VTX will always turn on after a power cycle)
+		To change VTX operation, with battery connect and props off run the following commands in console:
+			set vtx_pitmode_type=0
+			save
+			vtxinfo
+			vtxpit
+			vtxon
+	set vtx_pitmode_type=1 (VTX will default to pit mode after power cycle)
+		To change VTX operation, with battery connect and props off run the following commands in console:
+			set vtx_pitmode_type=1
+			save
+			vtxinfo
+			vtxpit
+			vtxon
+
+Version 0.222.064 RC12:
+	Force board reset after spektrum telemetry updates and saves PIDs
+	Adjust SmartAudio baud rate to 4900 to counteract severe drift issue with some VTXs
 
 
 
@@ -838,19 +866,116 @@ Version 0.219.062 RC10:
 
 Version 1.001.063 ALPHA:
 	Added Glue mode for testing 
-		Should hold course during impact when enabled
-	Added Braindrain mode for testing
-		Will increase responsiveness at the possible cost of smoothness
-		Similar but different than Direct mode
-			May or may not cause hotter motors and/or oscillations when used with direct mode
 
 Version 1.002.063 ALPHA:
-	Automatic filtering
-	disable s.port if it causes issues
+	Automagic filtering
 
 Version 1.003.063 ALPHA:
 	Automagic filtering update
 		All filter settings in config are ignored.
+
+Version 1.004.064 ALPHA:
+	Auto filters completely disabled
+	Glue mode is back, and safe to flip
+	Level and Acro Level mode are also working
+
+Version 1.005.065 ALPHA:
+	Adjusted filters, no autofiltering yet
+
+Version 1.006.065 ALPHA:
+	Adjusted filters and pid output
+
+Version 1.007.065 ALPHA:
+	Adjusted filters and pid output
+	Basic filter replaced with much more advanced filter
+	tpa curves added to dump
+	tpa curve adjustment function added but not yet functional
+	Decreased CPU load
+	Removed wc and ga
+
+Version 1.008.066 ALPHA:
+	Incremented config
+	Changed filter defaults
+	Added vbat_cutoff and vbat_buzzer config variables, not yet active
+
+Version 1.008.066 ALPHA through 1.014.069 BETA:
+	Added BLHeli version 16.68 J_H_15 and J_H_90 binaries
+	Rewrite several parts of code base to handle new logic and future products
+	Increased performance and precision of ACC modes
+	Updated automatic crash handling and prevention
+	New filer design
+		Much more precise and includes sannity checks
+		Added digitial precision mode to the filters which increase precision significantly
+	Added digital precision mode
+		Select dshot 600 in configurator to enable
+			Will put filters into a much more precise state at the cost of some speed
+		ESC must be working correct on dshot 600
+			RaceBees and RF 4-in-1 on J_H_15 and J_H_90 RaceFlight's BHLeli version 16.68 
+	Flight logging automatically disabled when Dshot is selected
+		This limitation will be removed soon
+	Fixed issue where RX would not autodetect if smart audio or s.port was enabled
+
+Version 1.015.069 BETA:
+	Added dpmode command to put FC into dp mode more easily
+
+Version 1.016.070 BETA:
+	Changed defaults
+
+Version 0.223.070 BETA:
+	Merged in 1.000 through 1.016.070 changes which were originally meant for post Release 1
+	RC13 candidate
+	New high-tech filtering
+	Many configurator changes
+			#### 0.223.0
+			- Increment version to 223 to match RC13
+
+			#### 0.197.0
+			- Added VTX PitMode Type wizard
+			- Added license page
+			- Fixing translations
+			- Small bug fixes
+			- Moved "Update firmware" title to top
+			- Added 16000 option for frequency
+			- Fixed ESC start up power saving
+			- Fixed issues caused by not working motors or other problems on ESC tab
+			- Update *de*,*fr*,*es* translations
+			- Added OEM (beep) tone
+			- Added Digital Precision Mode
+
+			#### 0.196.0
+
+			- Added telemetry tab
+			- Fix radio data on setup tab
+			- Fix motor order in motor direction wizard
+			- Cosmetic fixes
+			- Fix translations
+			- Fix issue #72
+
+			#### 0.195.0
+
+			- Added DFU flashing mode
+			- Added de, es, fr, sk, zh-cn languages
+			- Fixed motor calibration labels
+			- Fixed small issues
+			- Added frequency options
+			- Added SmartAudio and OneShot options
+
+			#### 0.194.0
+
+			- Added localization
+			- Added "Medium Low" and "Medium High" timing options
+			- Added "Quick change PID level" button and Rates default values
+			- Fixed "Reset" button on PID Tuning page
+			- Fixed Bootloader flashing file upload, that could stuck when incorrect file has been uploaded.
+			- Fixed "Update Firmware" button
+			- Improved "Setup", "Detect" and "Radio" wizards.
+			- Fixed "ESC" tab when it fails sometimes.
+
+Version 0.224.070 BETA:
+	Fixed self leveling modes
+
+Version 0.225.070 RC13:
+	Changed bootloader startup timing
 
 #Features in current development:
 #	MSP OSD compatibility

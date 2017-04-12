@@ -106,15 +106,100 @@ volatile float servoOutput[MAX_SERVO_NUMBER];
 
 int32_t activeMotorCounter = -1; //number of active motors minus 1
 
-//float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.30, 1.25, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
-//float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
-//float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.3, 1.15, 1.0, 1.0, 0.9, 0.9, 0.85, 0.80, 0.75};
+static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.05, 1.05, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 0.95};
+static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.30, 1.00, 0.85, 0.75, 0.65, 0.60, 0.55, 0.50, 0.55};
+static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.10, 1.05, 0.95, 0.80, 0.75, 0.70, 0.65};
 
-float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.40, 1.35, 1.28, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
-float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
-float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
+static void PrintTpaKp(void);
+static void PrintTpaKi(void);
+static void PrintTpaKd(void);
 
 static float ApplyAttenuationCurve (float input, float curve[], uint32_t curveSize);
+
+void ResetTpaCurves(void)
+{
+	memcpy(mainConfig.mixerConfig.tpaKpCurve, kpAttenuationCurve, sizeof(kpAttenuationCurve));
+	memcpy(mainConfig.mixerConfig.tpaKiCurve, kiAttenuationCurve, sizeof(kiAttenuationCurve));
+	memcpy(mainConfig.mixerConfig.tpaKdCurve, kdAttenuationCurve, sizeof(kdAttenuationCurve));
+}
+
+static void PrintTpaKp(void)
+{
+	uint32_t i;
+	RfCustomReplyBuffer("tpakp ");
+	for (i=0;i<ATTENUATION_CURVE_SIZE;i++)
+	{
+		if (i == ATTENUATION_CURVE_SIZE - 1)
+			sprintf(rf_custom_out_buffer, "%lu", (uint32_t)(mainConfig.mixerConfig.tpaKpCurve[i]*100) );
+		else
+			sprintf(rf_custom_out_buffer, "%lu=", (uint32_t)(mainConfig.mixerConfig.tpaKpCurve[i]*100) );
+		RfCustomReplyBuffer(rf_custom_out_buffer);
+	}
+	RfCustomReplyBuffer("\n");
+}
+
+static void PrintTpaKi(void)
+{
+	uint32_t i;
+	RfCustomReplyBuffer("tpaki ");
+	for (i=0;i<ATTENUATION_CURVE_SIZE;i++)
+	{
+		if (i == ATTENUATION_CURVE_SIZE - 1)
+			sprintf(rf_custom_out_buffer, "%lu", (uint32_t)(mainConfig.mixerConfig.tpaKiCurve[i]*100) );
+		else
+			sprintf(rf_custom_out_buffer, "%lu=", (uint32_t)(mainConfig.mixerConfig.tpaKiCurve[i]*100) );
+		RfCustomReplyBuffer(rf_custom_out_buffer);
+	}
+	RfCustomReplyBuffer("\n");
+}
+
+static void PrintTpaKd(void)
+{
+	uint32_t i;
+	RfCustomReplyBuffer("tpakd ");
+	for (i=0;i<ATTENUATION_CURVE_SIZE;i++)
+	{
+		if (i == ATTENUATION_CURVE_SIZE - 1)
+			sprintf(rf_custom_out_buffer, "%lu", (uint32_t)(mainConfig.mixerConfig.tpaKdCurve[i]*100) );
+		else
+			sprintf(rf_custom_out_buffer, "%lu=", (uint32_t)(mainConfig.mixerConfig.tpaKdCurve[i]*100) );
+		RfCustomReplyBuffer(rf_custom_out_buffer);
+	}
+	RfCustomReplyBuffer("\n");
+}
+
+void AdjustKpTpa(char *modString)
+{
+	//uint32_t i;
+
+	(void)(modString);
+	PrintTpaKp();
+}
+
+void AdjustKiTpa(char *modString)
+{
+	//uint32_t i;
+
+	(void)(modString);
+	PrintTpaKi();
+}
+
+void AdjustKdTpa(char *modString)
+{
+	//uint32_t i;
+
+	(void)(modString);
+	PrintTpaKd();
+}
+
+void PrintTpaCurves(void)
+{
+	//uint32_t i;
+
+	PrintTpaKp();
+	PrintTpaKi();
+	PrintTpaKd();
+}
 
 void InitMixer(void) {
 	int32_t i;

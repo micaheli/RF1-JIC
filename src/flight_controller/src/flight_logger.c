@@ -30,6 +30,7 @@ int InitFlightLogger(void)
 {
 
 	flashCountdownFake = 0;
+	logItterationCounter = 1;
 	LoggingEnabled = 0;
 	firstLogging   = 1;
 	flashAlign     = 0;
@@ -155,6 +156,9 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	static uint32_t loggingStartedLatch = 0;
 	static int32_t  disarmLast = 0;
 
+	if (IsDshotEnabled())
+		return;
+
 #ifndef LOG32
 	pid_output currFlightPids[AXIS_NUMBER];
 	float      currFlightSetPoints[AXIS_NUMBER];
@@ -239,15 +243,15 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 			//DumbWriteString(blackboxHeader, strlen(blackboxHeader)+1);
 			//FinishPage();
 			firstLogging = 0;
-			logItterationCounter = 0;
+			logItterationCounter = 1;
 
 		}
 		else
 		{
 
-			if(logItterationCounter < 1)
+			if(--logItterationCounter == 0)
 			{
-				logItterationCounter = 1;	//TODO make this configurable value. Capture rate = 1khz/value
+				logItterationCounter = 3;	//TODO make this configurable value. Capture rate = 1khz/value
 
 #ifndef LOG32
 				//average all values
@@ -360,8 +364,6 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 #endif
 
 			}
-
-			logItterationCounter--;
 
 		}
 

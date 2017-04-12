@@ -1,174 +1,384 @@
 #include "includes.h"
 
-//enum
-//{
-//	PX = 0,
-//	PY = 1,
-//	PZ = 2,
-//	RX = 3,
-//	RY = 4,
-//	RZ = 5,
-//};
 
-//enum
-//{
-//	AX = 0,
-//	AY = 1,
-//	AZ = 2,
-//};
-
-
-void InitKalman(kalman_state *kalmanState)
-{
-	(void)(kalmanState);
 /*
+kalman_state kalmanState;
 
-	//halfGyrodTsquared
+arm_matrix_instance_f32 xOld; //state matrix
+arm_matrix_instance_f32 x; //state matrix
+arm_matrix_instance_f32 z; //state matrix
+arm_matrix_instance_f32 a; //a matrix
+arm_matrix_instance_f32 aTranspose; //a transpose matrix
+arm_matrix_instance_f32 u; //control variable matrix
+arm_matrix_instance_f32 b; //b matrix
+arm_matrix_instance_f32 w; //w matrix
+arm_matrix_instance_f32 p; //Process variance/covariance matrix
+arm_matrix_instance_f32 pTemp; //Process variance/covariance matrix, temporary
+arm_matrix_instance_f32 k; //Kalman gain matrix
+arm_matrix_instance_f32 h; //h matrix
+arm_matrix_instance_f32 q; //h matrix
+arm_matrix_instance_f32 r; //h matrix
+arm_matrix_instance_f32 y; //h matrix
+arm_matrix_instance_f32 aTx; //a times x matrix
+arm_matrix_instance_f32 aTp; //a times x matrix
+arm_matrix_instance_f32 bTu; //a times x matrix
 
-	X(0) = A*X(-1)
+#define VARIANCE_AMOUNT 10
+#define P_M_X 0
+#define P_M_Y 4
+#define P_M_Z 8
 
-	Matrix A
-	1,  0,  0, dT,  0,  0
-	0,  1,  0,  0, dT,  0
-	0,  0,  1,  0,  0, dT
-	0,  0,  0,  1,  0,  0
-	0,  0,  0,  0,  1,  0
-	0,  0,  0,  0,  0,  1
-
-	State Matrix
-	pX
-	pY
-	pZ
-	rX
-	rY
-	rZ
-
-	Matrix B
-	0.5dT^2,       0,       0
-	      0, 0.5dT^2,       0
-	      0,       0, 0.5dT^2
-	     dt,       0,       0
-	      0,      dt,       0
-	      0,       0,      dt
-
-	Control Variable Matrix
-	aX
-	aY
-	aZ
+uint32_t measurementPtr[3] = {VARIANCE_AMOUNT,VARIANCE_AMOUNT,VARIANCE_AMOUNT};
+float    measurementData[3][VARIANCE_AMOUNT] = {0};
+float    measurementVariance[3] = {0};
 
 
-	State Matrix
-	pX
-	pY
-	pZ
-	rX
-	rY
-	rZ
+void KalmanTestUpdate(float measurement[])
+{
 
- */
-	//kalmanState->x[0][0] = 1.0f;
+
+	static float lastMeasurement[3] = {0.0f, 0.0f, 0.0f};
+	static float lastPosition[3]    = {0.0f, 0.0f, 0.0f};
+	static float position[3]        = {0.0f, 0.0f, 0.0f};
+
+	int32_t axis;
+
+	// (1) update prediction
+	arm_mat_mult_f32(&a, &x, &aTx);
+	arm_mat_mult_f32(&b, &u, &bTu);
+	arm_mat_add_f32(&aTx, &bTu, &x);
+
+	// (2) project covariance
+	arm_mat_mult_f32(&a, &p, &aTp);
+	arm_mat_mult_f32(&aTp, &aTranspose, &pTemp);
+	arm_mat_add_f32(&pTemp, &q, &p);
+
+	// (3) compute the kalman gain
+	arm_mat_add_f32(&p, &r, &pTemp);
+	arm_mat_inverse_f32(&pTemp, &bTu);
+	arm_mat_mult_f32(&p, &bTu, &k);
+
+	// (4) import new observation
+	//Yk = CYk + Zk (0)
+
+	//calculate position and acceleration
+	for (axis = 2; axis >= 0; --axis)
+	{
+		//position
+		position[axis]       = (lastPosition[axis] + (lastMeasurement[axis] * loopSpeed.gyrodT));
+		//acceleration
+		kalmanState.u[axis] = ((measurement[axis] - lastMeasurement[axis]) * loopSpeed.gyrodT);
+	}
+	kalmanState.y[0] = position[0];
+	kalmanState.y[1] = position[1];
+	kalmanState.y[2] = position[2];
+	kalmanState.y[3] = measurement[0];
+	kalmanState.y[4] = measurement[1];
+	kalmanState.y[5] = measurement[2];
+
+	// (5) compute current state
+	arm_mat_sub_f32(&y, &x, &z);
+	arm_mat_mult_f32(&k, &z, &y);
+	arm_mat_add_f32(&xOld, &y, &x);
+	memcpy(&kalmanState.xOld, &kalmanState.x, sizeof(kalmanState.x));
+	
 }
 
-void InitPaf(paf_state *pafState, float q, float r, float p, float intial_value)
+void InitKalmanTest(void)
 {
+	uint32_t srcRows;
+	uint32_t srcColumns;
 
-	float modifier;
-
-	switch (mainConfig.filterConfig[2].filterMod)
+	float m_x[6] =
 	{
-		case 0:
-			modifier = 1;
-			break;
-		case 1:
-			modifier = 16.4;
-			break;
-		case 2:
-			modifier = 164.0;
-			break;
-		case 3:
-			modifier = 328.0;
-			break;
-		case 4:
-			modifier = 656.0;
-			break;
-		case 5:
-			modifier = 1312.0;
-			break;
-		case 6:
-		default:
-			modifier = 2624.0;
-			break;
+		0.0f,
+		0.0f,
+		0.0f,
+		0.0f,
+		0.0f,
+		0.0f,
+	};
+	memcpy(kalmanState.xOld, m_x, sizeof(m_x));
+	memcpy(kalmanState.x, m_x, sizeof(m_x));
+	memcpy(kalmanState.aTx_matrix, m_x, sizeof(m_x));
+	memcpy(kalmanState.y, m_x, sizeof(m_x));
+	memcpy(kalmanState.z, m_x, sizeof(m_x));
+	srcRows    = 1;
+	srcColumns = 6;
+	arm_mat_init_f32(&xOld, srcRows, srcColumns, (float *)kalmanState.x);
+	arm_mat_init_f32(&x, srcRows, srcColumns, (float *)kalmanState.x);
+	arm_mat_init_f32(&aTx, srcRows, srcColumns, (float *)kalmanState.aTx_matrix);
+	arm_mat_init_f32(&y, srcRows, srcColumns, (float *)kalmanState.y);
+	arm_mat_init_f32(&z, srcRows, srcColumns, (float *)kalmanState.z);
 
-	}
 
-	pafState->q = q * 0.000001;
-	pafState->r = r * 0.001;
-	pafState->p = p * 0.001;
-	pafState->x = intial_value * modifier;
 
-	//pafState->q = q;
-	//pafState->r = r;
-	//pafState->p = p;
-	//pafState->x = intial_value;
+	float m_u[3] =
+	{
+		0.0f,
+		0.0f,
+		0.0f,
+	};
+	memcpy(kalmanState.u, m_u, sizeof(m_u));
+	srcRows    = 1;
+	srcColumns = 3;
+	arm_mat_init_f32(&u, srcRows, srcColumns, (float *)kalmanState.u);
 
-	//reset counter. Not need to reset the array since we use the counter and that would be too slow
-	pafState->stdDevCnt = 31;
 
+
+	float m_a_matrix[36] =
+	{
+		1.0f, 0.0f, 0.0f, loopSpeed.gyrodT,             0.0f,             0.0f,
+		0.0f, 1.0f, 0.0f,             0.0f, loopSpeed.gyrodT,             0.0f,
+		0.0f, 0.0f, 1.0f,             0.0f,             0.0f, loopSpeed.gyrodT,
+		0.0f, 0.0f, 0.0f,             1.0f,             0.0f,             0.0f,
+		0.0f, 0.0f, 0.0f,             0.0f,             1.0f,             0.0f,
+		0.0f, 0.0f, 0.0f,             0.0f,             0.0f,             1.0f,
+	};
+	memcpy(kalmanState.a_matrix, m_a_matrix, sizeof(m_a_matrix));
+	memcpy(kalmanState.aTp_matrix, m_a_matrix, sizeof(m_a_matrix));
+	memcpy(kalmanState.aTranpose_matrix, m_a_matrix, sizeof(m_a_matrix));
+	srcRows    = 6;
+	srcColumns = 6;
+	arm_mat_init_f32(&a, srcRows, srcColumns, (float *)kalmanState.a_matrix);
+	arm_mat_init_f32(&aTp, srcRows, srcColumns, (float *)kalmanState.aTp_matrix);
+	arm_mat_init_f32(&aTranspose, srcRows, srcColumns, (float *)kalmanState.aTranpose_matrix);
+	arm_mat_trans_f32(&a, &aTranspose);
+
+
+	float m_b_matrix[18] =
+	{
+		loopSpeed.halfGyrodTSquared, 0.0f,                        0.0f,
+		0.0f,                        loopSpeed.halfGyrodTSquared, 0.0f,
+		0.0f,                        0.0f,                        loopSpeed.halfGyrodTSquared,
+		loopSpeed.gyrodT,            0.0f,                        0.0f,
+		0.0f,                        loopSpeed.gyrodT,            0.0f,
+		0.0f,                        0.0f,                        loopSpeed.gyrodT,
+	};
+	memcpy(kalmanState.b_matrix, m_b_matrix, sizeof(m_b_matrix));
+	memcpy(kalmanState.bTu_matrix, m_b_matrix, sizeof(m_b_matrix));
+	srcRows    = 3;
+	srcColumns = 6;
+	arm_mat_init_f32(&b, srcRows, srcColumns, (float *)kalmanState.b_matrix);
+	arm_mat_init_f32(&bTu, srcRows, srcColumns, (float *)kalmanState.bTu_matrix);
+
+
+	//Pk
+	//assuming error of 1.5 dps for gyro and 
+	float m_p_matrix[36] =
+	{
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+	};
+	memcpy(kalmanState.p_matrix, m_p_matrix, sizeof(m_p_matrix));
+	srcRows    = 6;
+	srcColumns = 6;
+	arm_mat_init_f32(&p, srcRows, srcColumns, (float *)kalmanState.p_matrix);
+	arm_mat_init_f32(&pTemp, srcRows, srcColumns, (float *)kalmanState.p_matrix_temp);
+
+
+
+	float m_q_matrix[36] =
+	{
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+	};
+	memcpy(kalmanState.q_matrix, m_q_matrix, sizeof(m_q_matrix));
+	srcRows    = 6;
+	srcColumns = 6;
+	arm_mat_init_f32(&q, srcRows, srcColumns, (float *)kalmanState.q_matrix);
+
+
+
+	float m_r_matrix[36] =
+	{
+		0.0000390625f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0000390625f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0000390625f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,          2.3f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,          0.0f, 2.3f, 0.0f,
+		0.0f, 0.0f, 0.0f,          0.0f, 0.0f, 2.3f,
+	};
+	memcpy(kalmanState.r_matrix, m_r_matrix, sizeof(m_r_matrix));
+	srcRows    = 6;
+	srcColumns = 6;
+	arm_mat_init_f32(&r, srcRows, srcColumns, (float *)kalmanState.r_matrix);
+
+
+
+	float m_k_matrix[36] =
+	{
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+	};
+	memcpy(kalmanState.k_matrix, m_k_matrix, sizeof(m_k_matrix));
+	srcRows    = 6;
+	srcColumns = 6;
+	arm_mat_init_f32(&k, srcRows, srcColumns, (float *)kalmanState.k_matrix);
+
+}
+*/
+
+void InitPaf(paf_state *state, float q, float r, float p, float intial_value)
+{
+	(void)(p);
+	state->q = (float)q * 0.000001;
+	//state->r = r * 0.001;
+	state->r = (float)r;
+	state->p = 0.0f;
+	state->x = (float)intial_value;
+	state->lastX = (float)0.0;
 }
 
 void PafUpdate(paf_state *state, float measurement)
 {
 
-	float modifier;
+	float acceleration;
+	//float w; //process noise
+	//float v; //measurment noise
+	acceleration = (float)( ((float)state->x - (float)state->lastX) * (float)loopSpeed.InversedT );
+	//project the state ahead using average acceleration
 
-	switch (mainConfig.filterConfig[2].filterMod)
-	{
-		case 0:
-			modifier = 1;
-			break;
-		case 1:
-			modifier = 16.4;
-			break;
-		case 2:
-			modifier = 164.0;
-			break;
-		case 3:
-			modifier = 328.0;
-			break;
-		case 4:
-			modifier = 656.0;
-			break;
-		case 5:
-			modifier = 1312.0;
-			break;
-		case 6:
-		default:
-			modifier = 2624.0;
-			break;
+	state->x = state->x + (float)((float)acceleration * (float)loopSpeed.gyrodT);
+	//state->x = state->x + (state->lastX - state->x) * loopSpeed.gyrodT;
+	state->lastX = state->x;
 
-	}
+	//calculate acceleration change and average it over 4 cycles
+	//state->accelAvgTotal -= state->accelAvgBuff[--state->accelAvgPtr];
+	//state->accelAvgBuff[state->accelAvgPtr] = (measurement - state->x) * loopSpeed.gyrodT;
+	//state->accelAvgTotal += state->accelAvgBuff[state->accelAvgPtr];
+	//state->accelAvg = state->accelAvgTotal * 0.25f;
 
-	//update stdDev
-	//if(state->stdDevCnt)
-	//	state->stdDev[state->stdDevCnt--] = measurement;
+	//handle pointer
+	//if (!state->accelAvgPtr)
+	//	state->accelAvgPtr = 4;
 
 	//prediction update
 	state->p = state->p + state->q;
-
 	//measurement update
 	state->k = state->p / (state->p + state->r);
-
-	//if (ABS(measurement) > 1990.0f)
-	//	state->k = 0.0f;
-	state->x = state->x + state->k * (measurement * modifier - state->x);
-//	state->x = state->x + state->k * (measurement - state->x);
+	state->x = state->x + (float)state->k * ((float)measurement - (float)state->x);
 	state->p = (1 - state->k) * state->p;
+}
+/*
+void InitKalman(kalman_state *kalmanState, float q, float r, float p, float intial_value)
+{
 
-	state->output = (state->x / modifier);
-//	state->output = state->x;
+	kalmanState->lastMeasurment = 0.0f;
+
+	//temp 4x4 matrix
+	bzero(kalmanState->temp4x4a, 4 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatTemp4x4a, 2, 2, (float *)kalmanState->temp4x4a);
+	bzero(kalmanState->temp4x4b, 4 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatTemp4x4b, 2, 2, (float *)kalmanState->temp4x4b);
+	bzero(kalmanState->temp2x1a, 2 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatTemp2x1a, 2, 1, (float *)kalmanState->temp2x1a);
+	bzero(kalmanState->temp2x1b, 2 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatTemp2x1b, 2, 1, (float *)kalmanState->temp2x1b);
+
+	//identity matrix
+	kalmanState->i[0] = 1.0f;
+	kalmanState->i[1] = 0.0f;
+	kalmanState->i[2] = 0.0f;
+	kalmanState->i[3] = 1.0f;
+	arm_mat_init_f32(&kalmanState->armMatI, 2, 2, (float *)kalmanState->i);
+
+	//k matrix
+	bzero(kalmanState->k, 4 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatK, 2, 2, (float *)kalmanState->k);
+
+	//q process noise covariance
+	bzero(kalmanState->q, 4 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatQ, 2, 2, (float *)kalmanState->q);
+
+	//x matrix
+	bzero(kalmanState->x, 2 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatX, 2, 1, (float *)kalmanState->x);
+	bzero(kalmanState->lastX, 2 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatLastX, 2, 1, (float *)kalmanState->lastX);
+
+	//y matrix
+	bzero(kalmanState->y, 2 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatY, 2, 1, (float *)kalmanState->y);
+
+	//r measurement noise covariance
+	kalmanState->r[0] = (1.5f * 1.5f);
+	kalmanState->r[1] = 0.0f;
+	kalmanState->r[2] = 0.0f;
+	kalmanState->r[3] = (( (1.5f * 1.5f) + (1.5f * 1.5f) ) * loopSpeed.gyrodT) * (( (1.5f * 1.5f) + (1.5f * 1.5f) ) * loopSpeed.gyrodT);
+	arm_mat_init_f32(&kalmanState->armMatR, 2, 2, (float *)kalmanState->r);
+
+	//p covarianve matrix
+	bzero(kalmanState->p, 4 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatP, 2, 2, (float *)kalmanState->p);
+	bzero(kalmanState->lastP, 4 * sizeof(float));
+	arm_mat_init_f32(&kalmanState->armMatLastP, 2, 2, (float *)kalmanState->lastP);
+
+	//a matrix
+	kalmanState->a[0] = loopSpeed.gyrodT;
+	kalmanState->a[1] = loopSpeed.halfGyrodTSquared;
+	kalmanState->a[2] = 0.0f;
+	kalmanState->a[3] = loopSpeed.gyrodT;
+	arm_mat_init_f32(&kalmanState->armMatA, 2, 2, (float *)kalmanState->a);
+
+	//a transpose matrix
+	kalmanState->aT[0] = loopSpeed.gyrodT;
+	kalmanState->aT[1] = 0.0f;
+	kalmanState->aT[2] = loopSpeed.halfGyrodTSquared;
+	kalmanState->aT[3] = loopSpeed.gyrodT;
+	arm_mat_init_f32(&kalmanState->armMatAT, 2, 2, (float *)kalmanState->aT);
+
 }
 
+void KalmanUpdate(kalman_state *state, float measurement)
+{
 
+		//predict covariance
+		//Pk = APk-1A^t
+		//state->p = state->p + state->q;
+		arm_mat_mult_f32(&state->armMatA, &state->armMatP, &state->armMatTemp4x4a);
+		arm_mat_mult_f32(&state->armMatTemp4x4a, &state->armMatAT, &state->armMatTemp4x4b);
+		arm_mat_add_f32(&state->armMatTemp4x4b, &state->armMatQ, &state->armMatP);
+
+		//compute kalman gain
+		//state->k = state->p / (state->p + state->r);
+		arm_mat_add_f32(&state->armMatP, &state->armMatR, &state->armMatTemp4x4a);
+		arm_mat_inverse_f32(&state->armMatTemp4x4a, &state->armMatTemp4x4b);
+		arm_mat_add_f32(&state->armMatP, &state->armMatTemp4x4b, &state->armMatK);
+		memcpy(&state->lastP, &state->p, 2 * sizeof(float)); //todo in right spot?
+
+		//Yk = CYkm + Zk //add Z?
+		//put in velocity and acceleration
+		state->y[0] = measurement;
+		state->y[1] = (measurement - state->lastMeasurment) * loopSpeed.gyrodT; //use last state? average?
+		state->lastMeasurment = measurement;
+		//state->x = state->x + state->k * (measurement - state->x);
+		arm_mat_sub_f32(&state->armMatY, &state->armMatLastX, &state->armMatTemp2x1a);
+		arm_mat_mult_f32(&state->armMatK, &state->armMatTemp2x1a, &state->armMatTemp2x1b);
+		arm_mat_add_f32(&state->armMatLastX, &state->armMatTemp2x1b, &state->armMatX);
+		memcpy(&state->lastX, &state->x, 2 * sizeof(float));
+
+		//update the covariance matrix
+		//state->p = (1 - state->k) * state->p;
+		arm_mat_sub_f32(&state->armMatI, &state->armMatK, &state->armMatTemp4x4a);
+		arm_mat_mult_f32(&state->armMatTemp4x4a, &state->armMatLastP, &state->armMatP);
+		state->output = state->x[0];
+
+}
+
+*/
 
 void InitBiquad(float filterCutFreq, biquad_state *newState, float refreshRateSeconds, uint32_t filterType, biquad_state *oldState, float bandwidth)
 {

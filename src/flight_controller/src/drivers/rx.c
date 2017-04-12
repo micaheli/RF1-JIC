@@ -8,8 +8,8 @@ volatile uint32_t disarmCount = 0, latchFirstArm = 0;
 volatile SPM_VTX_DATA vtxData;
 
 uint32_t throttleIsSafe = 0;
-static uint32_t packetTime    = 11;
-static float packetTimeInv = (1000.0f/11.0f);
+static uint32_t packetTime = 11;
+static float packetTimeInv = (11.0f / 1000.0f);
 volatile arming_structure armingStructure;
 
 uint32_t PreArmFilterCheck = 0;
@@ -38,6 +38,7 @@ uint32_t ppmData[PPM_CHANNELS];
 #define SPEKTRUM_FRAME_SIZE 16
 uint32_t spektrumChannelShift = 3;
 uint32_t spektrumChannelMask  = 0x07;
+uint32_t rxUpdateCount = 0;
 
 static rx_calibration_records rxCalibrationRecords[3];
 static void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx);
@@ -243,10 +244,10 @@ inline void RxUpdate(void) // hook for when rx updates
 	CheckThrottleSafe();
 
 	//throttle must be low and board must be set to not armed before we allow an arming
-	if (!ModeActive(M_ARMED) &&  throttleIsSafe)
+	if (!ModeActive(M_ARMED) &&  throttleIsSafe && (rxUpdateCount++ > 25 ))
 		armCheckLatch = 1;
 
-	if (veryFirstArm)
+	if ( (veryFirstArm) && (rxUpdateCount > 25 ) )
 		checkRxPreArmCalibration(); //collect rx data if not armed yet
 
 	if (armCheckLatch)
@@ -463,7 +464,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		//Check for vtx data
 		if (copiedBufferData[12] == 0xE0)
 		{
-			if (vtxRecord.vtxDevice != VTX_DEVICE_NONE)
+			if (mainConfig.telemConfig.telemSmartAudio)
 			{
 				vtxRequested.vtxBandChannel = VtxSpektrumBandAndChannelToVtxBandChannel( (copiedBufferData[13] >> 5) & 0x07, (copiedBufferData[13] & 0x0F) + 1);
 				VtxChannelToBandAndChannel(vtxRequested.vtxBandChannel, &vtxRequested.vtxBand, &vtxRequested.vtxChannel);
@@ -471,13 +472,12 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 				//vtxData.vtxChannel = (copiedBufferData[13] & 0x0F) + 1;
 				//vtxData.vtxBand    = (copiedBufferData[13] >> 5) & 0x07;
 			}
-
 		}
 
 			  //Check channel slot 7 for vtx power, pit, and region data
 		if (copiedBufferData[14] == 0xE0)
 		{
-			if (vtxRecord.vtxDevice != VTX_DEVICE_NONE)
+			if (mainConfig.telemConfig.telemSmartAudio)
 			{
 				vtxRequested.vtxPower  = (uint32_t)(copiedBufferData[15] & 0x03);
 				vtxRequested.vtxRegion = (uint32_t)((copiedBufferData[15] >> 3) & 0x01);
@@ -492,7 +492,6 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 				//vtxData.vtxRegion = (copiedBufferData[15] >> 3) & 0x01;
 				//vtxData.vtxPit    = (copiedBufferData[15] >> 4) & 0x01;
 			}
-
 		}
 
 		static uint32_t mutexLock = 0;
@@ -506,12 +505,12 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		}
 
 		packetTime = 11;
-		packetTimeInv = (1000.0f / (float)packetTime);
+		packetTimeInv = ((float)packetTime / 1000.0f);
 	}
 	else
 	{
 		packetTime = 22;
-		packetTimeInv = (1000.0f / (float)packetTime);
+		packetTimeInv = ((float)packetTime / 1000.0f);
 	}
 
 	InlineCollectRcCommand();
@@ -574,7 +573,7 @@ void ProcessSbusPacket(uint32_t serialNumber)
 			// TODO: No, we should only look at SBUS_FAILSAFE_FLAG for failsafe.
 
 			packetTime = 9;
-			packetTimeInv = (1000.0f / (float)packetTime);
+			packetTimeInv = ((float)packetTime / 1000.0f);
 			InlineCollectRcCommand();
 			RxUpdate();
 		}
@@ -635,7 +634,7 @@ void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 				}
 
 				packetTime = 10;
-				packetTimeInv = (1000.0f / (float)packetTime);
+				packetTimeInv = ((float)packetTime / 1000.0f);
 				rx_timeout = 0;
 				if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
 					buzzerStatus.status = STATE_BUZZER_OFF;
@@ -689,7 +688,7 @@ void ProcessIbusPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 		}
 
 		packetTime = 10;
-		packetTimeInv = (1000.0f / (float)packetTime);
+		packetTimeInv = ((float)packetTime / 1000.0f);
 		rx_timeout = 0;
 
 		if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -733,7 +732,7 @@ void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx)
 		}
 
 		packetTime = (ppmBuffer[17] - ppmBuffer[0]);
-		packetTimeInv = (1000.0f / (float)packetTime);
+		packetTimeInv = ((float)packetTime / 1000.0f);
 		rx_timeout = 0;
 
 		if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
@@ -758,6 +757,7 @@ void InitRcData(void)
 {
 	uint32_t axis;
 
+	rxUpdateCount = 0;
 	//pitch yaw and roll must all use the same curve. We make sure that's set here.
 	mainConfig.rcControlsConfig.useCurve[YAW]  = mainConfig.rcControlsConfig.useCurve[PITCH];
 	mainConfig.rcControlsConfig.useCurve[ROLL] = mainConfig.rcControlsConfig.useCurve[PITCH];
@@ -1028,7 +1028,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     {
 
     	//set command quat here
-    	ImuUpdateCommandQuat(curvedRcCommandF[ROLL] * packetTimeInv, curvedRcCommandF[PITCH] * packetTimeInv, curvedRcCommandF[YAW] * packetTimeInv);
+    	ImuUpdateCommandQuat(curvedRcCommandF[ROLL], curvedRcCommandF[PITCH], curvedRcCommandF[YAW], (float)packetTimeInv * 0.5 );
 
         for (channel=3; channel >= 0; channel--)
         {

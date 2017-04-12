@@ -94,18 +94,21 @@ void SystemClock_Config(void)
  // Activating the timerprescalers while the APBx prescalers are 1/2/4 will connect the TIMxCLK to HCLK which has been configured to 216MHz
  __HAL_RCC_TIMCLKPRESCALER(RCC_TIMPRES_ACTIVATED);
 
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+SystemCoreClockUpdate();
+systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
 
-  systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+//  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+//  systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
+//  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-  SysTick->CTRL = 0;
-  SysTick->VAL = 0; /* Load the SysTick Counter Value */
-  SysTick->CTRL = (SysTick_CTRL_TICKINT_Msk   |  /* Enable SysTick exception */
-                   SysTick_CTRL_ENABLE_Msk) |    /* Enable SysTick system timer */
-                   SysTick_CTRL_CLKSOURCE_Msk;   /* Use processor clock source */
+//  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+//  SysTick->CTRL = 0;
+//  SysTick->VAL = 0; /* Load the SysTick Counter Value */
+//  SysTick->CTRL = (SysTick_CTRL_TICKINT_Msk   |  /* Enable SysTick exception */
+//                   SysTick_CTRL_ENABLE_Msk) |    /* Enable SysTick system timer */
+//                   SysTick_CTRL_CLKSOURCE_Msk;   /* Use processor clock source */
 
   /* SysTick_IRQn interrupt configuration */
   //HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
@@ -121,6 +124,8 @@ void BoardInit(void)
 	HAL_Init();
 
 	SystemClock_Config();
+
+HAL_InitTick(TICK_INT_PRIORITY);
 
 	__HAL_RCC_PWR_CLK_ENABLE();
 

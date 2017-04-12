@@ -1,9 +1,9 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint32_t)(62U)
-#define CONFIG_VERSION_STR		"62"
-#define FIRMWARE_VERSION		"0.218.062 RC10"
-//#define FIRMWARE_VERSION		"1.003.063 ALPHA"
+#define CONFIG_VERSION			(uint32_t)(70U)
+#define CONFIG_VERSION_STR		"70"
+#define FIRMWARE_VERSION		"0.225.070 RC13"
+//#define FIRMWARE_VERSION		"1.017.070 RC13"
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n"
 
@@ -33,7 +33,7 @@ typedef struct
     const char *name;
     const uint32_t type;
     const char *group;
-    void *ptr;
+    void  *ptr;
     float Min;
     float Max;
     float Default;
@@ -66,4 +66,4 @@ extern void    SendStatusReport(char *inString);
 extern void    SaveAndSend(void);
 
 extern int     RfCustomReplyBuffer(char *rfCustomSendBufferAdder);
-extern int     SendRfCustomReplyBuffer(void);
+extern int     SendRfCustomReplyBuffer(void);

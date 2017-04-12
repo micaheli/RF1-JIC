@@ -397,7 +397,7 @@ void WizRcCheckAndSendDirection(void)
 			}
 			else
 			{
-				RfCustomReplyBuffer("#wiz Set Roll To Right\n");
+				RfCustomReplyBuffer("#wiz Push Roll To Right\n");
 			}
 			break;
 
@@ -589,6 +589,13 @@ void SetupWizard(char *inString)
 
 	if (!strcmp("rx", inString))
 	{
+		if (mainConfig.telemConfig.telemSmartAudio || mainConfig.telemConfig.telemSport)
+		{
+			DisarmBoard();
+			mainConfig.telemConfig.telemSmartAudio = 0;
+			mainConfig.telemConfig.telemSport = 0;
+			InitFlight();
+		}
 		if (wizardStatus.currentWizard != WIZ_RX)
 		{
 			DeInitBoardUsarts();
@@ -1161,7 +1168,7 @@ void OneWire(char *inString) {
 						RfCustomReplyBuffer(rf_custom_out_buffer);
 						somethingHappened=1;
 
-						if ( (escHexLocation.version > escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version) )
+						if ( forceUpgrade || (escHexLocation.version > escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version) )
 						{
 							if ( BuiltInUpgradeSiLabsBLHeli(board.motors[outputNumber], escHexLocation) )
 							{

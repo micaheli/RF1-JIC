@@ -11,9 +11,8 @@ float kdDelta[AXIS_NUMBER];
 float kiError[AXIS_NUMBER];
 float kiErrorLimit[AXIS_NUMBER];
 biquad_state kdBqFilterState[AXIS_NUMBER];
-lpf_state yawKpLpf;
-
 pid_terms  pidsUsed[AXIS_NUMBER];
+int32_t axis;
 
 
 uint32_t uhOhRecover = 0;
@@ -34,6 +33,7 @@ void InitPid (void)
 
 	if (mainConfig.mixerConfig.mixerStyle == 1)
 	{
+		mainConfig.pidConfig[0].ga = 0;
 		pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 100000;
 		pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 50000) * loopSpeed.dT;
 		pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 200000000)  / loopSpeed.dT;
@@ -51,6 +51,8 @@ void InitPid (void)
 	}
 	else
 	{
+		mainConfig.pidConfig[0].ga = 0;
+
 		pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 50000;
 		pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 25000) * loopSpeed.dT;
 		pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 100000000)  / loopSpeed.dT;
@@ -67,8 +69,8 @@ void InitPid (void)
 		pidsUsed[2].wc = mainConfig.pidConfig[2].wc = (mainConfig.pidConfig[0].ga * 0.333);
 	}
 
-	LpfInit(&yawKpLpf, 30.0f, loopSpeed.dT);
-
+	for (axis = 2; axis >= 0; --axis)
+		InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 1.66f);
 }
 
 
@@ -76,109 +78,17 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 {
 
 	int32_t axis;
-	float pidError;
+	//uint32_t everyOther;
+	float   pidError;
 	static float lastfilteredGyroData[AXIS_NUMBER];
-	static float usedFlightSetPoints[AXIS_NUMBER];
-	static uint32_t filterSetup[AXIS_NUMBER] = {0,0,0};
-	static float lastSetPoint[AXIS_NUMBER] = {0,0,0};
-
-	//test yaw reductor
-	static uint32_t yawCounter = 0;
-	static float yawKp = 0;
-	static float yawKd = 0;
-	static float yawKi = 0;
-	static float yawKpStore = 0;
-	static float yawKdStore = 0;
-	static float yawKiStore = 0;
-	//test yaw reductor
 
 	(void)(pidConfig);
 	(void)(actuatorRange);
 
-	//set point limiter.
-	if ( actuatorRange >= 0.90 )
-	{
-		//we don't change the setpoint when actuators are maxed, unless setpoint is shrinking
-		for (axis = 2; axis >= 0; --axis)
-		{
-			if ( abs(usedFlightSetPoints[axis]) > abs(flightSetPoints[axis]) )
-			{
-				usedFlightSetPoints[axis] = flightSetPoints[axis];
-			}
-		}
-	}
-	else if ( actuatorRange >= 0.80 )
-	{
-		//if actuator is near max, we limit the change of the setpoint unless the setpoint is shrinking
-
-		for (axis = 2; axis >= 0; --axis)
-		{
-			if ( abs(usedFlightSetPoints[axis]) > abs(flightSetPoints[axis]) )
-			{
-				usedFlightSetPoints[axis] = flightSetPoints[axis];
-			}
-			else
-			{
-				usedFlightSetPoints[axis] += ( (flightSetPoints[axis]-usedFlightSetPoints[axis]) * 0.5 );
-			}
-		}
-
-	}
-	else
-	{
-
-		//else we set the full setpoint
-		usedFlightSetPoints[0] = flightSetPoints[0];
-		usedFlightSetPoints[1] = flightSetPoints[1];
-		usedFlightSetPoints[2] = flightSetPoints[2];
-
-	}
-
-	//bypass limiter
-	usedFlightSetPoints[0] = flightSetPoints[0];
-	usedFlightSetPoints[1] = flightSetPoints[1];
-	usedFlightSetPoints[2] = flightSetPoints[2];
-
-
 	for (axis = 2; axis >= 0; --axis)
 	{
 
-		if (0)
-		{
-			//limit setpoint change to 0.05 degrees per iteration
-			if (flightSetPoints[axis] > lastSetPoint[axis])
-			{
-				lastSetPoint[axis] +=mainConfig.filterConfig[0].gyro.p;
-				InlineConstrainf(lastSetPoint[axis], lastSetPoint[axis], flightSetPoints[axis]);
-			}
-			else if (flightSetPoints[axis] < lastSetPoint[axis])
-			{
-				lastSetPoint[axis] -= mainConfig.filterConfig[0].gyro.p;
-				InlineConstrainf(lastSetPoint[axis], flightSetPoints[axis], lastSetPoint[axis]);
-			}
-			usedFlightSetPoints[axis] = lastSetPoint[axis];
-		}
-		else if (0)
-		{
-			//limit setpoint change to 0.05 degrees per iteration only when setpoint is being reduced and under 200 DPS (near center stick and reducing)
-			if ( (flightSetPoints[axis] > lastSetPoint[axis]) && ( ABS(flightSetPoints[axis]) < mainConfig.filterConfig[1].gyro.p) && ( ABS(lastSetPoint[axis]) < mainConfig.filterConfig[1].gyro.p) )
-			{
-				lastSetPoint[axis] += mainConfig.filterConfig[0].gyro.p;
-				InlineConstrainf(lastSetPoint[axis], lastSetPoint[axis], flightSetPoints[axis]);
-			}
-			else if ( (flightSetPoints[axis] < lastSetPoint[axis]) && ( ABS(flightSetPoints[axis]) < mainConfig.filterConfig[1].gyro.p) && ( ABS(lastSetPoint[axis]) < mainConfig.filterConfig[1].gyro.p) )
-			{
-				lastSetPoint[axis] -= mainConfig.filterConfig[0].gyro.p;
-				InlineConstrainf(lastSetPoint[axis], flightSetPoints[axis], lastSetPoint[axis]);
-			}
-			else
-			{
-				lastSetPoint[axis] = flightSetPoints[axis];
-			}
-			usedFlightSetPoints[axis] = lastSetPoint[axis];
-		}
-
-		pidError = usedFlightSetPoints[axis] - filteredGyroData[axis];
+		pidError = flightSetPoints[axis] - filteredGyroData[axis];
 
 	    if ( SpinStopper(axis, pidError) )
 	    {
@@ -207,6 +117,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 			// calculate Kp
 			//flightPids[axis].kp = InlineConstrainf((pidError * pidsUsed[axis].kp), -MAX_KP, MAX_KP);
 			flightPids[axis].kp = (pidError * pidsUsed[axis].kp);
+
 
 			// calculate Ki ////////////////////////// V
 			if ( fullKiLatched )
@@ -238,68 +149,33 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 
 
 			// calculate Kd ////////////////////////// V
-			if (ModeActive(M_BRAINDRAIN))
-			{
-				kdDelta[axis] = pidError - lastfilteredGyroData[axis];
-				lastfilteredGyroData[axis] = pidError;
-			}
-			else
-			{
-				kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);
-				lastfilteredGyroData[axis] = filteredGyroData[axis];
-			}
-
-			InlineUpdateWitchcraft(pidsUsed);
-
-			if (filterSetup[axis])
-			{
-				kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
-			}
-			else
-			{
-				filterSetup[axis] = 1;
-				InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 1.66f);
-			}
-
-			if (mainConfig.filterConfig[1].filterMod == 1) //let Ki only act on erros above 100
-			{
-				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD_FM1, MAX_KD_FM1);
-			}
-			else
-			{
-				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD, MAX_KD);
-			}
-
-			// calculate Kd ////////////////////////// ^
-
-			//yaw Kd 8 KHz
-			//yaw reductor
-			if ( (axis == YAW) && (mainConfig.filterConfig[0].filterMod == 1) )
-			{
-				yawCounter++;
-				yawKp += flightPids[YAW].kp;
-				yawKi += flightPids[YAW].ki;
-				yawKd += flightPids[YAW].kd;
-
-				if (yawCounter == 4)
+			//if (everyOther)
+			//{
+				if (1 || ModeActive(M_BRAINDRAIN))
 				{
-					yawKpStore = yawKp / yawCounter;
-					yawKiStore = yawKi / yawCounter;
-					yawKdStore = yawKd / yawCounter;
-					yawKp = 0;
-					yawKd = 0;
-					yawKi = 0;
-					yawCounter = 0;
+					kdDelta[axis] = pidError - lastfilteredGyroData[axis];
+					lastfilteredGyroData[axis] = pidError;
+				}
+				else
+				{
+					kdDelta[axis] = -(filteredGyroData[axis] - lastfilteredGyroData[axis]);
+					lastfilteredGyroData[axis] = filteredGyroData[axis];
 				}
 
-				flightPids[YAW].kp = yawKpStore;
-				flightPids[YAW].ki = yawKiStore;
-				flightPids[YAW].kd = yawKdStore;
+				InlineUpdateWitchcraft(pidsUsed);
 
-			}
+				kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
+
+				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD, MAX_KD);
+			//}
+			// calculate Kd ////////////////////////// ^
 
 	    }
 
+		//if (everyOther)
+		//	everyOther = 0;
+		//else
+		//	everyOther = 1;
 	}
 
 	return (1);
@@ -315,7 +191,7 @@ inline uint32_t SpinStopper(int32_t axis, float pidError)
 	if (!uhOhRecover)
 	{
 		uhOhRecoverCounter = 0;
-		if (ABS(pidError) > 1400) {
+		if (ABS(pidError) > 1000) {
 			countErrorUhoh[axis]++;
 		} else {
 			countErrorUhoh[axis] = 0;

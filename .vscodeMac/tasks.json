@@ -1,0 +1,25 @@
+{
+    "version": "0.1.0",
+    "tasks": [
+        {
+            "taskName": "Flight stm32f405xx",
+            "command": "python",
+            "args": [
+                "make.py",
+                "-Tstm32f405xx",
+                "-D"
+            ],
+            "isShellCommand": true
+        },
+        {
+            "taskName": "Rfbl stm32f405xx",
+            "command": "python",
+            "args": [
+                "make.py",
+                "-Tstm32f405xx_nrfbl",
+                "-D"
+            ],
+            "isShellCommand": true
+        }
+    ]
+}

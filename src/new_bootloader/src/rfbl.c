@@ -408,9 +408,10 @@ static void HandleBackupRegistersAndBooting(void)
 			else //we're in Recovery loader, boot to RFBL
 				BootToAddress(applicationAddress);
 			break;
-		case BOOT_TO_ADDRESS:
 		case BOOT_TO_SPEKTRUM5:
 		case BOOT_TO_SPEKTRUM9:
+			bootupDelay = 0;
+		case BOOT_TO_ADDRESS:
 		case BOOT_TO_APP_COMMAND:
 		default: //default is to boot
 			if(bootupDelay)
