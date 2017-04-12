@@ -274,8 +274,14 @@ void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLo
 	}
 }
 
+#ifdef STM32F446xx
+extern uint32_t used1Wire;
+#endif
 uint32_t OneWireInit(void)
 {
+#ifdef STM32F446xx
+	used1Wire = 1;
+#endif
 
 	uint8_t  reportOut[50];
 	uint32_t x;

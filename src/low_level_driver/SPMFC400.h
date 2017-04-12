@@ -32,8 +32,8 @@
 #define LED3_INVERTED			0
 
 //buzzer setup
-#define BUZZER_GPIO_Port        ENUM_PORTB
-#define BUZZER_GPIO_Pin         GPIO_PIN_4
+#define BUZZER_GPIO_Port        ENUM_PORTC
+#define BUZZER_GPIO_Pin         GPIO_PIN_2
 #define BUZZER_TIM				0
 #define BUZZER_ALTERNATE		0
 #define BUZZER_TIM_CH			0

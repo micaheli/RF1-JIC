@@ -932,6 +932,9 @@ void DeinitFlight(void)
 	DeInitAllowedSoftOutputs(); //deinit all the soft outputs
 }
 
+#ifdef STM32F446xx
+uint32_t used1Wire = 0;
+#endif
 //init the board
 void InitFlight(void)
 {
@@ -958,11 +961,18 @@ void InitFlight(void)
 	InitAdc();            //init ADC functions
     InitModes();          //set flight modes mask to zero.
     InitBoardUsarts();    //most important thing is activated last, the ability to control the craft.
-
-	if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl))
+	
+#ifdef STM32F446xx
+	if (used1Wire == 0)
 	{
-		ErrorHandler(GYRO_INIT_FAILIURE);
+#endif
+		if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl))
+		{
+			ErrorHandler(GYRO_INIT_FAILIURE);
+		}
+#ifdef STM32F446xx
 	}
+#endif
 
 	//make sure gyro is interrupting and init scheduler
 	InitScheduler();
