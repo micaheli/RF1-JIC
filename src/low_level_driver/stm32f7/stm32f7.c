@@ -1,24 +1,25 @@
 #include "includes.h"
 
 /**
-  * @brief  System Clock Configuration
-  *         The system Clock is configured as follow :
-  *            System Clock source            = PLL (HSE)
-  *            SYSCLK(Hz)                     = 216000000
-  *            HCLK(Hz)                       = 216000000
-  *            AHB Prescaler                  = 1
-  *            APB1 Prescaler                 = 4
-  *            APB2 Prescaler                 = 2
-  *            HSE Frequency(Hz)              = 25000000
-  *            PLL_M                          = 25
-  *            PLL_N                          = 432
-  *            PLL_P                          = 2
-  *            VDD(V)                         = 3.3
-  *            Main regulator output voltage  = Scale1 mode
-  *            Flash Latency(WS)              = 7
-  * @param  None
-  * @retval None
-  */
+* @brief  System Clock Configuration
+*         The system Clock is configured as follow :
+*            System Clock source            = PLL (HSE)
+*            SYSCLK(Hz)                     = 216000000
+*            HCLK(Hz)                       = 216000000
+*            AHB Prescaler                  = 1
+*            APB1 Prescaler                 = 4
+*            APB2 Prescaler                 = 2
+*            HSE Frequency(Hz)              = 25000000
+*            PLL_M                          = 25
+*            PLL_N                          = 432
+*            PLL_P                          = 2
+*            VDD(V)                         = 3.3
+*            Main regulator output voltage  = Scale1 mode
+*            Flash Latency(WS)              = 7
+* @param  None
+* @retval None
+*/
+
 void SystemClock_Config(void)
 {
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
@@ -28,7 +29,6 @@ void SystemClock_Config(void)
   /* Enable HSE Oscillator and activate PLL with HSE as source */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = FC_PLLM;
@@ -53,7 +53,6 @@ void SystemClock_Config(void)
   PeriphClkInitStruct.PLLSAI.PLLSAIP = FC_PLL_SAIP;
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CK48;
   PeriphClkInitStruct.Clk48ClockSelection  = RCC_CLK48SOURCE_PLLSAIP;
-  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
   if(HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct)  != HAL_OK)
   {
     while(1);
@@ -73,7 +72,7 @@ void SystemClock_Config(void)
   }
 
 
-	PeriphClkInitStruct.PeriphClockSelection  = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_USART6|RCC_PERIPHCLK_UART4|RCC_PERIPHCLK_UART5|RCC_PERIPHCLK_UART7|RCC_PERIPHCLK_UART8|RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_I2C2|RCC_PERIPHCLK_I2C4;
+	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_USART6|RCC_PERIPHCLK_UART4|RCC_PERIPHCLK_UART5|RCC_PERIPHCLK_UART7|RCC_PERIPHCLK_UART8|RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_I2C2|RCC_PERIPHCLK_I2C4;
 	PeriphClkInitStruct.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
 	PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
 	PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
@@ -94,8 +93,25 @@ void SystemClock_Config(void)
  // Activating the timerprescalers while the APBx prescalers are 1/2/4 will connect the TIMxCLK to HCLK which has been configured to 216MHz
  __HAL_RCC_TIMCLKPRESCALER(RCC_TIMPRES_ACTIVATED);
 
-SystemCoreClockUpdate();
-systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
+  SystemCoreClockUpdate();
+
+
+    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+    /* SysTick_IRQn interrupt configuration */
+   // HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+   // HAL_NVIC_EnableIRQ(SysTick_IRQn);
+
+//HAL_InitTick(TICK_INT_PRIORITY);
+//    systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
+    systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
+
+
+
+//SystemCoreClockUpdate();
+//systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
+//systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
 
 //  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 
@@ -125,7 +141,8 @@ void BoardInit(void)
 
 	SystemClock_Config();
 
-HAL_InitTick(TICK_INT_PRIORITY);
+
+  //HAL_InitTick(TICK_INT_PRIORITY);
 
 	__HAL_RCC_PWR_CLK_ENABLE();
 
@@ -139,9 +156,9 @@ HAL_InitTick(TICK_INT_PRIORITY);
 	__HAL_RCC_GPIOH_CLK_ENABLE();
 	__HAL_RCC_GPIOI_CLK_ENABLE();
 
-    __HAL_RCC_ADC1_CLK_ENABLE();
-    __HAL_RCC_ADC2_CLK_ENABLE();
-    __HAL_RCC_ADC3_CLK_ENABLE();
+  __HAL_RCC_ADC1_CLK_ENABLE();
+  __HAL_RCC_ADC2_CLK_ENABLE();
+  __HAL_RCC_ADC3_CLK_ENABLE();
 
 	__HAL_RCC_DMA1_CLK_ENABLE();
 	__HAL_RCC_DMA2_CLK_ENABLE();

@@ -397,7 +397,7 @@ void WizRcCheckAndSendDirection(void)
 			}
 			else
 			{
-				RfCustomReplyBuffer("#wiz Push Roll To Right\n");
+				RfCustomReplyBuffer("#wiz Set Roll To Right\n");
 			}
 			break;
 

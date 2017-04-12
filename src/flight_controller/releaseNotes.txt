@@ -974,8 +974,15 @@ Version 0.223.070 BETA:
 Version 0.224.070 BETA:
 	Fixed self leveling modes
 
-Version 0.225.070 RC13:
+Version 0.225.070 BETA:
 	Changed bootloader startup timing
+
+Version 0.226.070 RC13:
+	Updated flight code
+
+
+
+
 
 #Features in current development:
 #	MSP OSD compatibility

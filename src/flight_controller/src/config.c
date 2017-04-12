@@ -180,13 +180,13 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 145.00, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 134.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 140.00, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 115.00, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 105.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 110.00, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 1100.00, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 1000.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 1100.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 850.00, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 750.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 800.00, "" },
 
 		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1800.00, "" },
 		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 1900.00, "" },
@@ -209,9 +209,9 @@ const config_variables_rec valueTable[] = {
 		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
 		{ "filter_mode2",		typeUINT,  "filt", &mainConfig.filterConfig[2].filterMod, 				0, 10, 2, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 3000, 60.000, "" },
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 60.000, "" },
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 3000, 60.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 3000, 90.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 90.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 3000, 90.000, "" },
 
  		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
  		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 90.000, "" },
@@ -243,7 +243,6 @@ const config_variables_rec valueTable[] = {
 		{ "aux2_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX2], 		0, 0.1, 0, "" },
 		{ "aux3_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX3], 		0, 0.1, 0, "" },
 		{ "aux4_deadband", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.deadBand[AUX4], 		0, 0.1, 0, "" },
-
 
 		{ "pitch_midrc",		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[PITCH], 			0, 21480, 1024, "" },
 		{ "roll_midrc", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.midRc[ROLL], 			0, 21480, 1024, "" },
@@ -1431,46 +1430,6 @@ void ProcessCommand(char *inString)
 			SaveAndSend();
 
 		}
-		else if (!strcmp("rs2k", inString))
-		{
-
-			SetRxDefaults(USING_SPEK_T, ENUM_USART3);
-			SetMode(M_ARMED, 4, 50, 100);
-			mainConfig.rcControlsConfig.rcCalibrated = 1;
-
-			mainConfig.mixerConfig.mixerType                 = 1;
-
-			mainConfig.rcControlsConfig.useCurve[PITCH]      = ACRO_PLUS;
-			mainConfig.rcControlsConfig.useCurve[ROLL]       = ACRO_PLUS;
-			mainConfig.rcControlsConfig.useCurve[YAW]        = ACRO_PLUS;
-			mainConfig.rcControlsConfig.useCurve[THROTTLE]   = NO_EXPO;
-			mainConfig.rcControlsConfig.useCurve[AUX1]       = NO_EXPO;
-			mainConfig.rcControlsConfig.useCurve[AUX2]       = NO_EXPO;
-			mainConfig.rcControlsConfig.useCurve[AUX3]       = NO_EXPO;
-			mainConfig.rcControlsConfig.useCurve[AUX4]       = NO_EXPO;
-
-			mainConfig.rcControlsConfig.rates[PITCH]         = 400;
-			mainConfig.rcControlsConfig.rates[ROLL]          = 400;
-			mainConfig.rcControlsConfig.rates[YAW]           = 400;
-
-			mainConfig.rcControlsConfig.curveExpo[PITCH]     = 50;
-			mainConfig.rcControlsConfig.curveExpo[ROLL]      = 50;
-			mainConfig.rcControlsConfig.curveExpo[YAW]       = 50;
-
-			mainConfig.rcControlsConfig.acroPlus[PITCH]      = 140;
-			mainConfig.rcControlsConfig.acroPlus[ROLL]       = 140;
-			mainConfig.rcControlsConfig.acroPlus[YAW]        = 140;
-
-			mainConfig.gyroConfig.gyroRotation               = CW0;
-			mainConfig.gyroConfig.boardCalibrated            = 1;
-
-			resetBoard = 1;
-
-			RfCustomReplyBuffer("#me RS2K mode engaged\n");
-
-			SaveAndSend();
-
-		}
 		else if (!strcmp("braindrainall", inString))
 		{
 
@@ -1722,25 +1681,25 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].kp    = 105.00;
 			mainConfig.pidConfig[PITCH].kp   = 110.00;
 
-			mainConfig.pidConfig[YAW].ki     = 1100.00;
-			mainConfig.pidConfig[ROLL].ki    = 900.00;
-			mainConfig.pidConfig[PITCH].ki   = 1000.00;
+			mainConfig.pidConfig[YAW].ki     = 850.00;
+			mainConfig.pidConfig[ROLL].ki    = 750.00;
+			mainConfig.pidConfig[PITCH].ki   = 800.00;
 
-			mainConfig.pidConfig[YAW].kd     = 2600.00;
-			mainConfig.pidConfig[ROLL].kd    = 2200.00;
-			mainConfig.pidConfig[PITCH].kd   = 2400.00;
+			mainConfig.pidConfig[YAW].kd     = 1800.00;
+			mainConfig.pidConfig[ROLL].kd    = 2000.00;
+			mainConfig.pidConfig[PITCH].kd   = 2200.00;
 
 			mainConfig.pidConfig[YAW].ga     = 0;
 			mainConfig.pidConfig[ROLL].ga    = 0;
 			mainConfig.pidConfig[PITCH].ga   = 0;
 
-			mainConfig.filterConfig[YAW].gyro.q   = 600.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 600.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 600.000;
+			mainConfig.filterConfig[YAW].gyro.q   = 90.000;
+			mainConfig.filterConfig[ROLL].gyro.q  = 90.000;
+			mainConfig.filterConfig[PITCH].gyro.q = 90.000;
 
-			mainConfig.filterConfig[YAW].kd.r     = 65.0;
-			mainConfig.filterConfig[ROLL].kd.r    = 55.0;
-			mainConfig.filterConfig[PITCH].kd.r   = 55.0;
+			mainConfig.filterConfig[YAW].kd.r     = 0.0;
+			mainConfig.filterConfig[ROLL].kd.r    = 0.0;
+			mainConfig.filterConfig[PITCH].kd.r   = 0.0;
 
 			resetBoard = 1;
 
