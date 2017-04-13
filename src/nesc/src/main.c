@@ -97,21 +97,9 @@ void LoadSongs(void)
 	imperialMarch[noteCount].note = notes[4][nB].flat; imperialMarch[noteCount++].noteLength = SIXTEENTH_NOTE;
 	imperialMarch[noteCount].note = notes[5][nD].natural; imperialMarch[noteCount++].noteLength = HALF_NOTE; 
 
-
-
-
-
-
-
 	imperialMarchLength=noteCount;
 
-
-
-
-
-
 }
-
 
 
 
@@ -246,51 +234,58 @@ void SetTempo(uint32_t tempo, uint32_t articulation) {
 
 void CommutateAB(uint16_t ccr, uint32_t ms)
 {
-	AFetLoOn();
-	B_FET_HI_CCR = ccr;
+	A_FET_HI_CCR = ccr;
+	//PWM_CCR      = ccr;
 	DelayMs(ms);
-	B_FET_HI_CCR = 0;
-	AFetLoOff();
+	A_FET_HI_CCR = 0;
+	PWM_CCR      = 0;
 }
 void CommutateAC(uint16_t ccr, uint32_t ms)
 {
-	AFetLoOn();
-	C_FET_HI_CCR = ccr;
-	DelayMs(ms);
-	C_FET_HI_CCR = 0;
-	AFetLoOff();
+	BFetLoOff();
+	CFetLoOn();
+	//A_FET_HI_CCR = ccr;
+	//PWM_CCR      = ccr;
+	//DelayMs(ms);
+	//A_FET_HI_CCR = 0;
+	//PWM_CCR      = 0;
 }
 void CommutateBC(uint16_t ccr, uint32_t ms)
 {
-	BFetLoOn();
-	C_FET_HI_CCR = ccr;
-	DelayMs(ms);
-	C_FET_HI_CCR = 0;
-	BFetLoOff();
+	//B_FET_HI_CCR = ccr;
+	//PWM_CCR      = ccr;
+	//DelayMs(ms);
+	//B_FET_HI_CCR = 0;
+	//PWM_CCR      = 0;
 }
 void CommutateBA(uint16_t ccr, uint32_t ms)
 {
-	BFetLoOn();
-	A_FET_HI_CCR = ccr;
-	DelayMs(ms);
-	A_FET_HI_CCR = 0;
-	BFetLoOff();
+	CFetLoOff();
+	AFetLoOn();
+	//B_FET_HI_CCR = ccr;
+	//PWM_CCR      = ccr;
+	//DelayMs(ms);
+	//B_FET_HI_CCR = 0;
+	//PWM_CCR      = 0;
 }
 void CommutateCA(uint16_t ccr, uint32_t ms)
 {
-	CFetLoOn();
-	A_FET_HI_CCR = ccr;
-	DelayMs(ms);
-	A_FET_HI_CCR = 0;
-	CFetLoOff();
+	//C_FET_HI_CCR = ccr;
+	//PWM_CCR      = ccr;
+	//DelayMs(ms);
+	//C_FET_HI_CCR = 0;
+	//PWM_CCR      = 0;
 }
 void CommutateCB(uint16_t ccr, uint32_t ms)
 {
-	CFetLoOn();
-	B_FET_HI_CCR = ccr;
+	AFetLoOff();
+	BFetLoOn();
+	C_FET_HI_CCR = ccr;
+	//PWM_CCR      = ccr;
 	DelayMs(ms);
-	B_FET_HI_CCR = 0;
-	CFetLoOff();
+	C_FET_HI_CCR = 0;
+	PWM_CCR      = 0;
+	//BFetLoOff();
 }
 void RunTimerSound(uint32_t frequency, uint32_t ms)
 {
@@ -300,12 +295,13 @@ void RunTimerSound(uint32_t frequency, uint32_t ms)
 	if (commutationStep >= 6)
 		commutationStep = 0;
 
-	uint16_t ccr = (uint16_t)lrintf(0.010f * (float)((SystemCoreClock / 4) / frequency));
-	AFetLoOff();
-    BFetLoOff();
-    CFetLoOff();
+	uint16_t ccr = (uint16_t)lrintf(0.125f * (float)((SystemCoreClock / 4) / frequency));
+	//AFetLoOff();
+    //BFetLoOff();
+    //CFetLoOff();
 	InitFetTimerGpios(frequency, SystemCoreClock / 4);
 
+	//commutationStep = 0;
 	switch (commutationStep)
 	{
 		case 0:
@@ -356,6 +352,7 @@ void PlayImperialMarch(void)
 {
 
 	SetTempo(108, LEGATO);
+
 
 	for (uint32_t x=0;x<imperialMarchLength;x++)
 	{
@@ -439,20 +436,102 @@ int main(void)
 	VectorIrqInit(0x08000000);
     BoardInit();
 
-	//InitLeds();
+
+
+
+
+
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    HAL_GPIO_DeInit(A_FET_LO_GPIO, A_FET_LO_PIN);
+    HAL_GPIO_DeInit(B_FET_LO_GPIO, B_FET_LO_PIN);
+    HAL_GPIO_DeInit(C_FET_LO_GPIO, C_FET_LO_PIN);
+    HAL_GPIO_DeInit(A_FET_HI_GPIO, A_FET_HI_PIN);
+    HAL_GPIO_DeInit(B_FET_HI_GPIO, B_FET_HI_PIN);
+    HAL_GPIO_DeInit(C_FET_HI_GPIO, C_FET_HI_PIN);
+
+    HAL_GPIO_WritePin(A_FET_LO_GPIO, A_FET_LO_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(B_FET_LO_GPIO, B_FET_LO_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(C_FET_LO_GPIO, C_FET_LO_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(A_FET_HI_GPIO, A_FET_HI_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(B_FET_HI_GPIO, B_FET_HI_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(C_FET_HI_GPIO, C_FET_HI_PIN, GPIO_PIN_SET);
+
+    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+
+    GPIO_InitStructure.Pin   = A_FET_LO_PIN;
+    HAL_GPIO_Init(A_FET_LO_GPIO, &GPIO_InitStructure);
+    GPIO_InitStructure.Pin   = B_FET_LO_PIN;
+    HAL_GPIO_Init(B_FET_LO_GPIO, &GPIO_InitStructure);
+    GPIO_InitStructure.Pin   = C_FET_LO_PIN;
+    HAL_GPIO_Init(C_FET_LO_GPIO, &GPIO_InitStructure);
+    GPIO_InitStructure.Pin   = A_FET_HI_PIN;
+    HAL_GPIO_Init(A_FET_HI_GPIO, &GPIO_InitStructure);
+    GPIO_InitStructure.Pin   = B_FET_HI_PIN;
+    HAL_GPIO_Init(B_FET_HI_GPIO, &GPIO_InitStructure);
+    GPIO_InitStructure.Pin   = C_FET_HI_PIN;
+    HAL_GPIO_Init(C_FET_HI_GPIO, &GPIO_InitStructure);
+
+
+
+	DelayMs(200);
+	PrechargeBootstrap();
+	FreeWheel();
+	DelayMs(200);
+	FullBrake();
+	DelayMs(1000);
+	FreeWheel();
+	DelayMs(200);
+
+	InitFetTimerGpios(8000, SystemCoreClock);
+
+	DelayMs(10);
+
+
+
+	//FreeWheel();
+
+	BFetLoOn();
+
+	// - 9
+	// - 10
+	// - 11
+	// -
+	// -
+	A_FET_HI_CCR = 2000;//10
+	B_FET_HI_CCR = 0; //11
+	C_FET_HI_CCR = 0; //9
+	//PWM_CCR = 500;
+
+	while (1)
+	{
+		A_FET_HI_CCR = 2000;//10
+		B_FET_HI_CCR = 0; //11
+		C_FET_HI_CCR = 0; //9
+	}
+
+	//BldcInit();
+
+
 	//DelayMs(200);
 	//InitFets();
 	//DelayMs(5);
 
-	//for (x = 0; x < 5; x++) {
-	//	Beep(2000 + x * 6000, 10, 10);
-	//	delayUs(1000);
-	//}
-
 	ZeroMotor();
-	// set timer to output 2000 Hz tone
-	InitFetTimerGpios(2093, SystemCoreClock / 2);
 
+	// set timer to output 2000 Hz tone
+
+    //AFetHiOn();
+    //BFetHiOn();
+    //CFetHiOn();
+
+    //BFetLoOn();
+    //CFetLoOn();
+	PWM_CCR      = 1;
+
+	while (1);
 	//turn on low fet
 
 	//InitFets();
@@ -461,221 +540,31 @@ int main(void)
 	ledtimer(32000, SystemCoreClock);
 	TIM2->CCR1 = (uint16_t)lrintf(0.5f * (float)((SystemCoreClock) / 32000));
 
+	//SKIP_PWM_ISR = 1;
+	//SKIP_PWM_ISR = 0;
 
+	//motorState.runFlag = 1;
+	uint32_t counter = 0;
     while (1)
     {
-/*
-		RunTimerSound(MUS_G_1, 400);
-		RunTimerSound(MUS_G_1, 100);
-		RunTimerSound(MUS_A_1, 500);
-		RunTimerSound(MUS_G_1, 500);
-		RunTimerSound(MUS_C_2, 500);
-		RunTimerSound(MUS_B_1, 1000);
-		DelayMs(250);
-		RunTimerSound(MUS_G_1, 400);
-		RunTimerSound(MUS_G_1, 100);
-		RunTimerSound(MUS_A_1, 500);
-		RunTimerSound(MUS_G_1, 500);
-		RunTimerSound(MUS_D_2, 500);
-		RunTimerSound(MUS_C_2, 1000);
-		DelayMs(250);
-		RunTimerSound(MUS_G_1, 400);
-		RunTimerSound(MUS_G_1, 100);
-		RunTimerSound(MUS_G_2, 500);
-		RunTimerSound(MUS_E_2, 500);
-		RunTimerSound(MUS_C_2, 250);DelayMs(10);
-		RunTimerSound(MUS_C_2, 250);
-		RunTimerSound(MUS_B_1, 500);
-		RunTimerSound(MUS_A_1, 1000);
-		DelayMs(250);
-		RunTimerSound(MUS_F_2, 250);DelayMs(10);
-		RunTimerSound(MUS_F_2, 250);
-		RunTimerSound(MUS_E_2, 500);
-		RunTimerSound(MUS_C_2, 500);
-		RunTimerSound(MUS_D_2, 500);
-		RunTimerSound(MUS_C_2, 1000);
-		DelayMs(250);
 
-		RunTimerSound(MUS_G_0, 400);
-		RunTimerSound(MUS_G_0, 100);
-		RunTimerSound(MUS_A_0, 500);
-		RunTimerSound(MUS_G_0, 500);
-		RunTimerSound(MUS_C_1, 500);
-		RunTimerSound(MUS_B_0, 1000);
-		DelayMs(250);
-		RunTimerSound(MUS_G_0, 400);
-		RunTimerSound(MUS_G_0, 100);
-		RunTimerSound(MUS_A_0, 500);
-		RunTimerSound(MUS_G_0, 500);
-		RunTimerSound(MUS_D_1, 500);
-		RunTimerSound(MUS_C_1, 1000);
-		DelayMs(250);
-		RunTimerSound(MUS_G_0, 400);
-		RunTimerSound(MUS_G_0, 100);
-		RunTimerSound(MUS_G_1, 500);
-		RunTimerSound(MUS_E_1, 500);
-		RunTimerSound(MUS_C_1, 250);DelayMs(10);
-		RunTimerSound(MUS_C_1, 250);
-		RunTimerSound(MUS_B_0, 500);
-		RunTimerSound(MUS_A_0, 1000);
-		DelayMs(250);
-		RunTimerSound(MUS_F_1, 250);DelayMs(10);
-		RunTimerSound(MUS_F_1, 250);
-		RunTimerSound(MUS_E_1, 500);
-		RunTimerSound(MUS_C_1, 500);
-		RunTimerSound(MUS_D_1, 500);
-		RunTimerSound(MUS_C_1, 1000);
-		DelayMs(250);
-*/
+		counter++;
+	//SetupNotes();
+	//LoadSongs();
+	//PlayImperialMarch();
 
-/*
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_Ef_0, (uint32_t)(600 * 0.75));
-		RunTimerSound(MUS_Bf_0, (uint32_t)(600 * 0.25));
-		DelayMs(50);
-
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_Ef_0, (uint32_t)(600 * 0.75));
-		RunTimerSound(MUS_Bf_0, (uint32_t)(600 * 0.25));
-		DelayMs(50);
-		RunTimerSound(MUS_G_0, 1200);
-		DelayMs(50);
-
-
-
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_Ef_0, (uint32_t)(600 * 0.75));
-		DelayMs(50);
-		RunTimerSound(MUS_G_0, 1200);
-		DelayMs(50);
-
-
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_Ef_0, (uint32_t)(600 * 0.75));
-		RunTimerSound(MUS_Bf_0, (uint32_t)(600 * 0.25));
-		DelayMs(50);
-
-		RunTimerSound(MUS_G_0, 600);
-		DelayMs(50);
-		RunTimerSound(MUS_Ef_0, (uint32_t)(600 * 0.75));
-		RunTimerSound(MUS_Bf_0, (uint32_t)(600 * 0.25));
-		DelayMs(50);
-		RunTimerSound(MUS_G_0, 1200);
-		DelayMs(50);
-*/
-
-		SetupNotes();
-		LoadSongs();
-		PlayImperialMarch();
-
-		//set volume for low fet
-		//AFetLoOn();
-		//BFetLoOn();
-		//AFetLoOn();
-
-		//AFetLoOff();
-		//AFetLoOff();
-		//B_FET_HI_CCR = 0;
-
-/*
-		AFetLoOn();
-		C_FET_HI_CCR = ccr;
-		delayUs(1000);
-		//AFetLoOff();
-		AFetLoOff();
-		C_FET_HI_CCR = 0;
-
-		BFetLoOn();
-		C_FET_HI_CCR = ccr;
-		delayUs(1000);
-		//AFetLoOff();
-		BFetLoOff();
-		C_FET_HI_CCR = 0;
-	
-		BFetLoOn();
-		A_FET_HI_CCR = ccr;
-		delayUs(1000);
-		//AFetLoOff();
-		BFetLoOff();
-		A_FET_HI_CCR = 0;
-
-		CFetLoOn();
-		A_FET_HI_CCR = ccr;
-		delayUs(1000);
-		//AFetLoOff();
-		CFetLoOff();
-		A_FET_HI_CCR = 0;
-
-		CFetLoOn();
-		B_FET_HI_CCR = ccr;
-		delayUs(1000);
-		//AFetLoOff();
-		CFetLoOff();
-		B_FET_HI_CCR = 0;
-*/
-		//B_FET_HI_CCR = ccr;
-		//C_FET_HI_CCR = ccr;
-		//DelayMs(100); //let timer run for 100 ms
-		//A_FET_HI_CCR = 0; // turn off pwm
-		//B_FET_HI_CCR = 0; // turn off pwm
-		//C_FET_HI_CCR = 0; // turn off pwm
-		//DelayMs(100); //let timer run for 100 ms
-
-		//BFetLoOn();
-		//A_FET_HI_CCR = 0;
-		//B_FET_HI_CCR = ccr;
-		//C_FET_HI_CCR = 0;
-		//DelayMs(100); //let timer run for 100 ms
-		//A_FET_HI_CCR = 0; // turn off pwm
-		//B_FET_HI_CCR = 0; // turn off pwm
-		//C_FET_HI_CCR = 0; // turn off pwm
-		//DelayMs(100); //let timer run for 100 ms
-		//BFetLoOff();
-
-		//CFetLoOn();
-		//A_FET_HI_CCR = 0;
-		//B_FET_HI_CCR = 0;
-		//C_FET_HI_CCR = ccr;
-		//DelayMs(100); //let timer run for 100 ms
-		//A_FET_HI_CCR = 0; // turn off pwm
-		//B_FET_HI_CCR = 0; // turn off pwm
-		//C_FET_HI_CCR = 0; // turn off pwm
-		//DelayMs(100); //let timer run for 100 ms
-		//CFetLoOff();
-
-		//inlineDigitalHi(LED0_GPIO, LED0_PIN);
-		//DelayMs(100);
-		//inlineDigitalHi(LED1_GPIO, LED1_PIN);
-		//DelayMs(100);
-		//inlineDigitalHi(LED2_GPIO, LED2_PIN);
-		//DelayMs(100);
-
-		//inlineDigitalLo(LED0_GPIO, LED0_PIN);
-		//DelayMs(100);
-		//inlineDigitalLo(LED1_GPIO, LED1_PIN);
-		//DelayMs(100);
-		//inlineDigitalLo(LED2_GPIO, LED2_PIN);
-		//DelayMs(100);
-
+	if (counter < 1)
+		RunTimerSound(32000, 15);
+	else if (counter < 5)
+		RunTimerSound(32000, 10);
+	else if (counter < 10)
+		RunTimerSound(32000, 7);
+	else if (counter < 15)
+		RunTimerSound(32000, 6);
+	else if (counter < 20)
+		RunTimerSound(32000, 3);
+	else
+		RunTimerSound(32000, 2);
     	//Scheduler(count--);
 
     	if (count == -1)

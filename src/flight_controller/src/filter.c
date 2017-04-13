@@ -231,6 +231,18 @@ void InitKalmanTest(void)
 }
 */
 
+void InitKdFilter(kd_filter *kdFilter)
+{
+	kdFilter->r = 1.0f / ( 2.0f * PIf * 50.0f );
+	kdFilter->k = loopSpeed.gyrodT / (kdFilter->r + loopSpeed.gyrodT);
+	kdFilter->x = 0.0f;
+}
+
+void KdFilterUpdate(kd_filter *kdFilter, float measurement)
+{
+	kdFilter->x = kdFilter->x + kdFilter->k * (measurement - kdFilter->x);
+}
+
 void InitPaf(paf_state *state, float q, float r, float p, float intial_value)
 {
 	(void)(p);

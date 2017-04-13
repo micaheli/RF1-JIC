@@ -11,7 +11,8 @@ float kdDelta[AXIS_NUMBER];
 float kiError[AXIS_NUMBER];
 float kiErrorLimit[AXIS_NUMBER];
 biquad_state kdBqFilterState[AXIS_NUMBER];
-pid_terms  pidsUsed[AXIS_NUMBER];
+kd_filter kdFilter[AXIS_NUMBER];
+pid_terms pidsUsed[AXIS_NUMBER];
 int32_t axis;
 
 
@@ -70,7 +71,10 @@ void InitPid (void)
 	}
 
 	for (axis = 2; axis >= 0; --axis)
-		InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 1.66f);
+	{
+		InitKdFilter(&kdFilter[axis]);
+		InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 2.11f);
+	}
 }
 
 
@@ -164,6 +168,8 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 
 				InlineUpdateWitchcraft(pidsUsed);
 
+				//KdFilterUpdate(&kdFilter[axis], kdDelta[axis]);
+				//kdDelta[axis] = kdFilter[axis].x;
 				kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
 
 				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD, MAX_KD);
