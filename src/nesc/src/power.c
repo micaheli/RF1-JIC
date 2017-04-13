@@ -33,6 +33,10 @@ inline void FullBrake(void)
 
 void PrechargeBootstrap(void)
 {
+    AFetLoOff();
+    BFetLoOff();
+    CFetLoOff();
+    DelayMs(5);
     AFetHiOn();
     BFetHiOn();
     CFetHiOn();

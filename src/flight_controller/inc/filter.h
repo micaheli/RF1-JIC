@@ -39,6 +39,13 @@ typedef struct
 	float output; //paf gain
 } kalman_state;
 
+typedef struct 
+{
+	float x;
+	float k;
+	float r;
+} kd_filter;
+
 //Single axis paf filter
 typedef struct {
 	float q; //process noise covariance
@@ -109,6 +116,9 @@ typedef struct
 
 extern kalman_state kalmanState;
 extern paf_state pafGyroStates[];
+
+extern void InitKdFilter(kd_filter *kdFilter);
+extern void KdFilterUpdate(kd_filter *kdFilter, float measurement);
 
 extern void InitPaf(paf_state *pafState, float q, float r, float p, float intial_value);
 extern void PafUpdate(paf_state *state, float measurement);
