@@ -980,9 +980,15 @@ Version 0.225.070 BETA:
 Version 0.226.070 RC13:
 	Updated flight code
 
+Version 0.227.071 RC14:
+	New defaults and filter tweaks
 
-
-
+Version 0.228.071 BETA
+	Fix fuel calculation (mAh)
+	Adjusted Kd
+	For bolt current sensor
+		set adc_current_factor=34.2
+		save
 
 #Features in current development:
 #	MSP OSD compatibility
