@@ -990,6 +990,9 @@ Version 0.228.071 BETA
 		set adc_current_factor=34.2
 		save
 
+Version 0.229.071 RC15
+	Adjusted defaults
+
 #Features in current development:
 #	MSP OSD compatibility
 #	MAVlink compatibility
