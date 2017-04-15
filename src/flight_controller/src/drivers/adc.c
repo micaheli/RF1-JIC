@@ -70,8 +70,13 @@ static void ConvertAdcCurrent(uint32_t rawAdcVoltage, float adcCurrFactor)
 
 	if (lastTime > 0)
 	{
-		//milliamphours is current times microseconds divided by 100000
-		adcMAh = adcMAh +  ( ( Micros() - lastTime ) * adcCurrent / 100000 );
+		//ma / hour
+		//3600000000 ma / hour
+		//3600000000 us in an hour
+		//1000 ma in an amp
+		//amps / (3600000000 / 1000) = mah
+
+		adcMAh = adcMAh +  ( ( Micros() - lastTime ) * adcCurrent / 3600000.0f );
 	}
 	lastTime=Micros();
 }
@@ -218,4 +223,4 @@ void InitAdc(void)
 //		/* Start Conversation Error */
 //		ErrorHandler(ADC_DMA_INIT_FAILIURE);
 //	}
-}
+}
