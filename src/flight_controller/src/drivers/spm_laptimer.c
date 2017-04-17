@@ -47,7 +47,7 @@ __HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
 	HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
 
 	GPIO_InitStruct.Pin       = actuator.pin;
-	GPIO_InitStruct.Pull      = (actuator.polarity == TIM_OCPOLARITY_LOW) ? GPIO_PULLDOWN : GPIO_PULLUP;
+	GPIO_InitStruct.Pull      = actuator.polarity;
 	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
 	GPIO_InitStruct.Alternate = actuator.AF;
@@ -121,7 +121,7 @@ LAP_STATE lapState = READING_PULSES;
 void SPM_LAPTIMER_TIM_CC_IRQ_HANDLER(void)
 {
 	SPM_LAPTIMER_TIM->CNT = 0;
-	__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
+	__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
 	captureTime = HAL_TIM_ReadCapturedValue(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
 	
 		if (pulseIndex >= CODE_SIZE)
@@ -136,7 +136,7 @@ void SPM_LAPTIMER_TIM_CC_IRQ_HANDLER(void)
 		{
 			__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
 			pulseCode = 0;
-			memset(pulseDuration, 0, 16);
+			memset(pulseDuration, 0, 32);
 		}
 
 		if ((captureTime > SHORT_MIN_PULSE + OFF_DURATION) && (captureTime < SHORT_MAX_PULSE + OFF_DURATION))	//0
