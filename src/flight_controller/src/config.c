@@ -827,6 +827,7 @@ void ProcessCommand(char *inString)
 	uint32_t x;
 	static uint32_t lastTimeMore = 0;
 	static uint32_t firstTimeRunningTelem = 1;
+	static uint32_t testModeAproved = 0;
 
 	if (rfCustomReplyBufferPointerSent < rfCustomReplyBufferPointer)
 	{
@@ -1963,6 +1964,78 @@ void ProcessCommand(char *inString)
 
 			SaveAndSend();
 		}
+	else if (!strcmp("testmotors", inString))
+		{
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me WARNING! WARNING! WARNING! \n");RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Your motors will be spun up one at a time to high throttle.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me You MUST remove your props to continue the test.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Or serious injury or damage can occur during the test.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me To continue the test, please run the command propsarenowoff.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+	
+			if (!testModeAproved)
+				testModeAproved = 1;
+
+		}
+	else if (!strcmp("propsarenowoff", inString))
+		{
+			if (testModeAproved)
+			{
+				DelayMs(500);
+				boardArmed=1;
+				SKIP_GYRO=1;
+				//run test here:
+				for (uint32_t x=0;x<4;x++)
+				{
+					motorOutput[0] = 0.0f;
+					motorOutput[1] = 0.0f;
+					motorOutput[2] = 0.0f;
+					motorOutput[3] = 0.0f;
+					OutputActuators(motorOutput, servoOutput);
+					DelayMs(1000);
+					boardArmed=1;
+					SKIP_GYRO=1;
+					for (uint32_t y=0;y<8;y++)
+					{
+						float stdDeviation[50];
+						bzero(stdDeviation, sizeof(stdDeviation));
+
+						motorOutput[0] = 0.0f;
+						motorOutput[1] = 0.0f;
+						motorOutput[2] = 0.0f;
+						motorOutput[3] = 0.0f;
+
+						motorOutput[x] = (y / 10.0f);
+						OutputActuators(motorOutput, servoOutput);
+						DelayMs(10);
+						for (uint32_t simpleCouter=0;simpleCouter < 50;simpleCouter++)
+						{
+							stdDeviation[simpleCouter]   = ABS(geeForceAccArray[ACCX]) + ABS(geeForceAccArray[ACCY]) + ABS(geeForceAccArray[ACCZ]);
+							DelayMs(2);
+						}
+						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu noise level at %lu percent: %lu\n", x, (uint32_t)(y * 10), (uint32_t)(CalculateSDSize(stdDeviation, 50) * 1000.0f));RfCustomReplyBuffer(rf_custom_out_buffer);
+					}
+				}
+				motorOutput[0] = 0.0f;
+				motorOutput[1] = 0.0f;
+				motorOutput[2] = 0.0f;
+				motorOutput[3] = 0.0f;
+				OutputActuators(motorOutput, servoOutput);
+				boardArmed=0;
+				SKIP_GYRO=0;
+				testModeAproved = 0;
+			}
+			else
+			{
+				testModeAproved = 0;
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me WARNING! WARNING! WARNING! \n");RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Your motors will be spun up one at a time to high throttle.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me You MUST remove your props to continue the test.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Or serious injury or damage can occur during the test.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me To continue the test, please run the command testmotors\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me before running this command.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+		}
 	else if (!strcmp("dump", inString))
 		{
 			uint32_t argsOutputted = 0;
@@ -1976,7 +2049,6 @@ void ProcessCommand(char *inString)
 
 				DlflStatusDump();
 				PrintModes();
-				ResetTpaCurves();
 				PrintTpaCurves();
 
 				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
@@ -2188,6 +2260,7 @@ void ProcessCommand(char *inString)
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			GenerateConfig();
 
+			ResetTpaCurves();
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Config Reset\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			SaveAndSend();

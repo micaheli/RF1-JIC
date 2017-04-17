@@ -990,8 +990,21 @@ Version 0.228.071 BETA
 		set adc_current_factor=34.2
 		save
 
-Version 0.229.071 RC15
+Version 0.229.072 RC15
 	Adjusted defaults
+
+Version 0.230.073 BETA
+	Added TPA parser
+		Example usage to adjust Kp TPA:
+			tpakp 130=100=85=75=65=60=55=50=55
+	Added motor diagnostic function
+		To use:
+			TAKE OFF ALL PROPS!!!!!
+			Plug in battery
+			In console run:
+				testmotors
+				propsarenowoff
+		Motors will all go to idle then spin up one at a time to high throttle to check for problems
 
 #Features in current development:
 #	MSP OSD compatibility

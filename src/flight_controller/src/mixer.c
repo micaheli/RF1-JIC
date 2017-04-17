@@ -170,26 +170,155 @@ static void PrintTpaKd(void)
 
 void AdjustKpTpa(char *modString)
 {
-	//uint32_t i;
+	char tempString[8];
+	float curve[9] = {0.0f,};
+	float tempFloat = 0.0f;
+	uint32_t x = 0;
 
-	(void)(modString);
+	for ( char *p = modString, *q = modString; p != NULL; p = q )
+    {
+        q = strchr( p, '=' );
+        if ( q )
+        {
+			sprintf(tempString, "%*.*s", ( int )(q - p ), ( int )( q - p ), p );
+			tempFloat = (float)((float)atoi( tempString ) / 100.0f);
+			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
+			{
+            	curve[x++] = tempFloat;
+			}
+			else
+			{
+				x = 0;
+			}
+            ++q;
+        }
+		else
+        {
+			sprintf(tempString, "%s", p );
+            tempFloat = (float)((float)atoi( tempString ) / 100.0f);
+			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
+			{
+            	curve[x++] = tempFloat;
+			}
+			else
+			{
+				x = 0;
+			}
+        }
+    }
+	if (x == 9)
+	{
+		for (x=0;x<9;x++)
+			mainConfig.mixerConfig.tpaKpCurve[x] = curve[x];
+		RfCustomReplyBuffer("#me New Curve Set\n");
+		PrintTpaKp();
+		return;
+	}
+
+	RfCustomReplyBuffer("#me Curve Not Changed\n");
 	PrintTpaKp();
 }
 
 void AdjustKiTpa(char *modString)
 {
-	//uint32_t i;
+	char tempString[8];
+	float curve[9] = {0.0f,};
+	float tempFloat = 0.0f;
+	uint32_t x = 0;
 
-	(void)(modString);
+	for ( char *p = modString, *q = modString; p != NULL; p = q )
+    {
+        q = strchr( p, '=' );
+        if ( q )
+        {
+			sprintf(tempString, "%*.*s", ( int )(q - p ), ( int )( q - p ), p );
+			tempFloat = (float)((float)atoi( tempString ) / 100.0f);
+			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
+			{
+            	curve[x++] = tempFloat;
+			}
+			else
+			{
+				x = 0;
+			}
+            ++q;
+        }
+		else
+        {
+			sprintf(tempString, "%s", p );
+            tempFloat = (float)((float)atoi( tempString ) / 100.0f);
+			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
+			{
+            	curve[x++] = tempFloat;
+			}
+			else
+			{
+				x = 0;
+			}
+        }
+    }
+	if (x == 9)
+	{
+		for (x=0;x<9;x++)
+			mainConfig.mixerConfig.tpaKiCurve[x] = curve[x];
+		RfCustomReplyBuffer("#me New Curve Set\n");
+		PrintTpaKi();
+		return;
+	}
+
+	RfCustomReplyBuffer("#me Curve Not Changed\n");
 	PrintTpaKi();
 }
 
 void AdjustKdTpa(char *modString)
 {
-	//uint32_t i;
+	char tempString[8];
+	float curve[9] = {0.0f,};
+	float tempFloat = 0.0f;
+	uint32_t x = 0;
 
-	(void)(modString);
-	PrintTpaKd();
+	for ( char *p = modString, *q = modString; p != NULL; p = q )
+    {
+        q = strchr( p, '=' );
+        if ( q )
+        {
+			sprintf(tempString, "%*.*s", ( int )(q - p ), ( int )( q - p ), p );
+			tempFloat = (float)((float)atoi( tempString ) / 100.0f);
+			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
+			{
+            	curve[x++] = tempFloat;
+			}
+			else
+			{
+				x = 0;
+			}
+            ++q;
+        }
+		else
+        {
+			sprintf(tempString, "%s", p );
+            tempFloat = (float)((float)atoi( tempString ) / 100.0f);
+			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
+			{
+            	curve[x++] = tempFloat;
+			}
+			else
+			{
+				x = 0;
+			}
+        }
+    }
+	if (x == 9)
+	{
+		for (x=0;x<9;x++)
+			mainConfig.mixerConfig.tpaKdCurve[x] = curve[x];
+		RfCustomReplyBuffer("#me New Curve Set\n");
+		PrintTpaKi();
+		return;
+	}
+
+	RfCustomReplyBuffer("#me Curve Not Changed\n");
+	PrintTpaKi();
 }
 
 void PrintTpaCurves(void)
