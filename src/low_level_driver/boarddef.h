@@ -84,21 +84,30 @@ enum {
 	FP_DMA2_S5   = 20,
 	FP_DMA2_S6   = 21,
 	FP_DMA2_S7   = 22,
-	FP_TIM1      = 23,
-	FP_TIM2      = 24,
-	FP_TIM3      = 25,
-	FP_TIM4      = 26,
-	FP_TIM5      = 27,
-	FP_TIM6      = 28,
-	FP_TIM7      = 29,
-	FP_TIM8      = 30,
-	FP_TIM9      = 31,
-	FP_TIM10     = 32,
-	FP_TIM11     = 33,
-	FP_TIM12     = 34,
-	FP_TIM13     = 35,
-	FP_TIM14     = 36,
-	IRQH_FP_TOT  = 37,
+	FP_TIM1,
+	FP_TIM2,
+	FP_TIM3,
+	FP_TIM4,
+	FP_TIM5,
+	FP_TIM6,
+	FP_TIM7,
+	FP_TIM8,
+	FP_TIM9,
+	FP_TIM10,
+	FP_TIM11,
+	FP_TIM12,
+	FP_TIM13,
+	FP_TIM14,
+	IRQH_FP_TOT,
+};
+
+//TIM interrupt types
+enum
+{
+	TIM_BRK = 0,
+	TIM_UP,
+	TIM_TRG,
+	TIM_CC,
 };
 
 enum {
@@ -420,6 +429,10 @@ typedef struct {
 	uint32_t				dmaIRQn;
 	uint32_t				CcDmaHandle;
 	uint32_t				timerIRQn;
+	uint32_t				timerIRQn_BRK;
+	uint32_t				timerIRQn_UP;
+	uint32_t				timerIRQn_TRG;
+	uint32_t				timerIRQn_CC;
  	uint32_t				EXTIn;
  	uint32_t				EXTICallback;
  	uint32_t				DmaCallback;

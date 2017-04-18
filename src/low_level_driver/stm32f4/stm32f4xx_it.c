@@ -139,19 +139,19 @@ void OTG_FS_IRQHandler(void)
 //
 //}
 
-/* TODO ask kalyn how he wants the enums to handle multiple handlers for same peripheral
+
 void TIM1_UP_TIM10_IRQHandler(void)
 {
 	if (callbackFunctionArray[FP_TIM1])
-		callbackFunctionArray[FP_TIM1](FP_TIM1);
+		callbackFunctionArray[FP_TIM1](TIM_UP);
 }
 
 void TIM1_CC_IRQHandler(void)
 {
 	if (callbackFunctionArray[FP_TIM1])
-		callbackFunctionArray[FP_TIM1](FP_TIM1);
+		callbackFunctionArray[FP_TIM1](TIM_CC);
 }
-*/
+
 void TIM6_DAC_IRQHandler(void)
 {
 	if (callbackFunctionArray[FP_TIM6])

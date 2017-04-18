@@ -41,8 +41,8 @@ void laptimerInit(void)
 	TIM_IC_InitTypeDef TIM_ICInitStruct;
 
 	uint16_t prescalerValue;
-__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
-	    //GPIOA Configuration: TIM5 Channel 1 as alternate function push-pull
+	__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+
 	// Initialize GPIO
 	HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
 
@@ -67,8 +67,6 @@ __HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
 	HAL_TIM_IC_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
 	// PWM1 Mode configuration: Channel1
-	//TIM_ICStructInit(&TIM_ICInitStruct);
-	//TIM_ICInitStruct.TIM_Channel = SPM_LAPTIMER_CHANNEL;
 	TIM_ICInitStruct.ICPolarity = TIM_ICPOLARITY_FALLING;
 	TIM_ICInitStruct.ICSelection = TIM_ICSELECTION_DIRECTTI;
 	TIM_ICInitStruct.ICPrescaler = TIM_ICPSC_DIV1;
@@ -80,56 +78,58 @@ __HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
 
-  
-	HAL_NVIC_SetPriority(SPM_LAPTIMER_TIM_CC_IRQN, 0, 0);
-	HAL_NVIC_EnableIRQ(SPM_LAPTIMER_TIM_CC_IRQN);
+	callbackFunctionArray[GetTimerCallbackFromTimerEnum(actuator.timer)] = SpmLaptimerCallback;
 
-	HAL_NVIC_SetPriority(SPM_LAPTIMER_TIM_UP_IRQN, 8, 8);
-	HAL_NVIC_EnableIRQ(SPM_LAPTIMER_TIM_UP_IRQN);
+	//if timer has global interrupt
+	if (actuator.timerIRQn)
+	{
+		HAL_NVIC_SetPriority(actuator.timerIRQn, 0, 0);
+		HAL_NVIC_EnableIRQ(actuator.timerIRQn);
+	}
+	//Otherwise, it has dedicated interrupts
+	else	
+	{
+		HAL_NVIC_SetPriority(actuator.timerIRQn_CC, 0, 0);
+		HAL_NVIC_EnableIRQ(actuator.timerIRQn_CC);
 
-	// Enable timer and interupts
-	//HAL_TIM_Cmd(SPM_LAPTIMER_TIM, ENABLE);
+		HAL_NVIC_SetPriority(actuator.timerIRQn_UP, 8, 8);
+		HAL_NVIC_EnableIRQ(actuator.timerIRQn_UP);
+	}
+	
+
 
 	if (HAL_TIM_IC_Start_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel) != HAL_OK)
 	{
 		/* Starting Error */
 		ErrorHandler(TIMER_INPUT_INIT_FAILIURE);
 	}
-	//__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
-	//TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE);
+
 	
 
 }
 
-/*
-void EXTI9_5_IRQHandler(void)
-{
-	if(EXTI_GetITStatus(EXTI_Line9)){
-		captureTime = micros();
-		EXTI_ClearITPendingBit(EXTI_Line9);
-	}
-	
 
-}
-*/
 uint8_t gpioStatus;
 uint8_t fallingEdges;
 uint8_t risingEdges;
 uint8_t pulseCodeDebug;
 LAP_STATE lapState = READING_PULSES;
 
-void SPM_LAPTIMER_TIM_CC_IRQ_HANDLER(void)
+void SpmLaptimerCallback(uint32_t callbackNumber)
 {
-	SPM_LAPTIMER_TIM->CNT = 0;
-	__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
-	captureTime = HAL_TIM_ReadCapturedValue(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+//TIM CC Handler
+	if (callbackNumber == TIM_CC)
+	{
+		timers[actuator.timer]->CNT = 0;
+		__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+		captureTime = HAL_TIM_ReadCapturedValue(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
 	
 		if (pulseIndex >= CODE_SIZE)
 		{
 			pulseIndex = 0;
 			pulseCode = 0;
-			__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
-			__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
+			__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+			__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
 			return;
 		}
 		if (pulseIndex == 0)
@@ -152,76 +152,77 @@ void SPM_LAPTIMER_TIM_CC_IRQ_HANDLER(void)
 			pulseIndex++;
 		}
 
-	__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
-	__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
-}
+		__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+		__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+	}
 
-
-
-void SPM_LAPTIMER_TIM_UP_IRQ_HANDLER(void)
-{
-	__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
+// TIM UP HANDLER
+	else if (callbackNumber == TIM_UP)
+	{
+		__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
 	
 	
-	if (pulseIndex == CODE_SIZE 
+		if (pulseIndex == CODE_SIZE 
 #ifdef START_PULSES
-            && (pulseCode & 3) == 1 
+		            && (pulseCode & 3) == 1 
 #endif
 #ifdef END_PULSES
-            && (pulseCode >> (CODE_SIZE - 2) & 3) == 1
+		                        && (pulseCode >> (CODE_SIZE - 2) & 3) == 1
 #endif
-	)
-	{
-		//LED0_ON;
-		lapDelay = 0;
-		pulseCodeDebug = pulseCode;
-		currentTime = InlineMillis() ;
-		if ((pulseCode>>PULSE_SHIFT & 0x0F) == 0)	//lap captured. Disable CC and wait for enough update interrupts 
+		)
 		{
-			lap_timer.lapNumber++;
-			lap_timer.lastLapTime = currentTime;
-			lastTimeLap = currentTime;
-		}
-		else	//no lap. Disable update interrupt until a starting pulse is detected once again
-		{
-			lap_timer.gateNumber = (pulseCode >> PULSE_SHIFT & 0x0F); 
-			lap_timer.gateTime = currentTime;
-		}
+			//LED0_ON;
+			lapDelay = 0;
+			pulseCodeDebug = pulseCode;
+			currentTime = InlineMillis();
+			if ((pulseCode >> PULSE_SHIFT & 0x0F) == 0)	//lap captured. Disable CC and wait for enough update interrupts 
+			{
+				lap_timer.lapNumber++;
+				lap_timer.lastLapTime = currentTime;
+				lastTimeLap = currentTime;
+			}
+			else	//no lap. Disable update interrupt until a starting pulse is detected once again
+			{
+				lap_timer.gateNumber = (pulseCode >> PULSE_SHIFT & 0x0F); 
+				lap_timer.gateTime = currentTime;
+			}
 		
 	
-		__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
-		__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
-		__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
-		__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
-		SPM_LAPTIMER_TIM->ARR = DISABLE_PERIOD;
-		lapState = GATE_PASSED;
-	}
-	else if (lapDelay > DISABLE_TIME)
-	{
-		//LED0_OFF;
-		lapDelay = 0;
-		SPM_LAPTIMER_TIM->ARR = SEQUENCE_TIMEOUT;
-		__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
-		__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
-		__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
-		__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], SPM_LAPTIMER_IT_CC);
-		lapState = READING_PULSES;
+			__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+			__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
+			__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
+			__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+			timers[actuator.timer]->ARR = DISABLE_PERIOD;
+			lapState = GATE_PASSED;
+		}
+		else if (lapDelay > DISABLE_TIME)
+		{
+			//LED0_OFF;
+			lapDelay = 0;
+			timers[actuator.timer]->ARR = SEQUENCE_TIMEOUT;
+			__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+			__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
+			__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
+			__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel);
+			lapState = READING_PULSES;
+			pulseIndex = 0;
+			pulseCode = 0;
+			return;
+		}
+		else if (lapState == GATE_PASSED)
+		{
+			lapDelay++;
+			__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
+			__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
+		}
+		else
+		{
+			__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
+			__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
+		}
+
 		pulseIndex = 0;
 		pulseCode = 0;
-		return;
 	}
-	else if(lapState == GATE_PASSED)
-	{
-		lapDelay++;
-		__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
-		__HAL_TIM_ENABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
-	}
-	else
-	{
-		__HAL_TIM_CLEAR_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
-		__HAL_TIM_DISABLE_IT(&pwmTimers[actuator.actuatorArrayNum], TIM_IT_UPDATE);
-	}
-
-	pulseIndex = 0;
-	pulseCode = 0;
 }
+

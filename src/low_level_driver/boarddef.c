@@ -392,6 +392,10 @@ void GetBoardHardwareDefs(void)
 	board.motors[5].dmaChannel        = ACTUATOR6_DMA_CHANNEL;
 	board.motors[5].CcDmaHandle       = ACTUATOR6_DMA_HANDLE;
 	board.motors[5].timerIRQn         = ACTUATOR6_IRQN;
+	board.motors[5].timerIRQn_BRK     = ACTUATOR6_IRQN_BRK;
+	board.motors[5].timerIRQn_UP      = ACTUATOR6_IRQN_UP;
+	board.motors[5].timerIRQn_TRG     = ACTUATOR6_IRQN_TRG;
+	board.motors[5].timerIRQn_CC      = ACTUATOR6_IRQN_CC;
 	board.motors[5].EXTIn             = ACTUATOR6_EXTIN; //used for input
 	board.motors[5].EXTICallback      = ACTUATOR6_EXTICALLBACK; //used for input
 	board.motors[5].DmaCallback       = ACTUATOR6_DMACALLBACK; //used for input

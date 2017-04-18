@@ -1,28 +1,4 @@
 
-#define SPM_LAPTIMER
-#define SPM_LAPTIMER_GPIO             	GPIOA
-#define SPM_LAPTIMER_PIN              	GPIO_Pin_10
-#define SPM_LAPTIMER_PINSOURCE        	GPIO_PinSource10
-#define SPM_LAPTIMER_PERIPH           	RCC_AHB1Periph_GPIOA
-#define SPM_LAPTIMER_TIM              	TIM1
-#define	SPM_LAPTIMER_CHANNEL			TIM_Channel_3
-#define	SPM_LAPTIMER_IT_CC				TIM_IT_CC3
-#define SPM_LAPTIMER_TIM_AF      	    GPIO_AF1_TIM1
-#define SPM_LAPTIMER_TIM_PERIPH       	RCC_APB2Periph_TIM1
-
-#define SPM_LAPTIMER_TIM_CC_IRQN		TIM1_CC_IRQn
-#define SPM_LAPTIMER_TIM_UP_IRQN		TIM1_UP_TIM10_IRQn
-#define SPM_LAPTIMER_TIM_CC_IRQ_HANDLER	TIM1_CC_IRQHandler
-#define SPM_LAPTIMER_TIM_UP_IRQ_HANDLER	TIM1_UP_TIM10_IRQHandler
-
-#define SPM_LAPTIMER_DMA_CH           	DMA_Channel_6
-#define SPM_LAPTIMER_DMA_ST           	DMA2_Stream6
-#define SPM_LAPTIMER_DMA_IRQ          	DMA2_Stream6_IRQn
-#define SPM_LAPTIMER_DMA_FLAG         	DMA_FLAG_TCIF6
-#define SPM_LAPTIMER_DMA_IRQ_HANDLER  	DMA2_Stream6_IRQHandler
-#define SPM_LAPTIMER_DMA_PERIPH       	RCC_AHB1Periph_DMA2
-
-
 #define START_PULSES
 #define END_PULSES
 #ifdef START_PULSES
@@ -56,3 +32,4 @@ typedef enum
 
 
 void laptimerInit(void);
+void SpmLaptimerCallback(uint32_t callbackNumber);
