@@ -172,7 +172,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 				//kdDelta[axis] = kdFilter[axis].x;
 				kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
 
-				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -MAX_KD, MAX_KD);
+				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -mainConfig.pidConfig[0].kdLimit, mainConfig.pidConfig[0].kdLimit);
 			//}
 			// calculate Kd ////////////////////////// ^
 
@@ -197,7 +197,7 @@ inline uint32_t SpinStopper(int32_t axis, float pidError)
 	if (!uhOhRecover)
 	{
 		uhOhRecoverCounter = 0;
-		if (ABS(pidError) > 1000) {
+		if (ABS(pidError) > 500.0f) {
 			countErrorUhoh[axis]++;
 		} else {
 			countErrorUhoh[axis] = 0;

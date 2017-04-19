@@ -161,6 +161,9 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-Og"
 
     elif TARGET == "stm32f405xx":
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
         TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F405xx"

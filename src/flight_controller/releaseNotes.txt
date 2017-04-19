@@ -1006,6 +1006,12 @@ Version 0.230.073 BETA
 				propsarenowoff
 		Motors will all go to idle then spin up one at a time to high throttle to check for problems
 
+Version 0.231.073 BETA:
+	Made crash detetion algorythm a bit more sensitive
+	Initial MSP OSD support
+
+
+
 #Features in current development:
 #	MSP OSD compatibility
 #	MAVlink compatibility

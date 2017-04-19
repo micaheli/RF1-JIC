@@ -1,6 +1,7 @@
 #include "includes.h"
 
 
+volatile uint32_t sendMspAt = 0;
 volatile uint32_t sendSmartPortAt = 0;
 volatile uint32_t sendSmartPortLuaAt = 0;
 volatile uint32_t sendSpektrumTelemtryAt = 0;
@@ -34,6 +35,23 @@ void ProcessTelemtry(void)
 	//if it's time to send figure out what to send and send it.
 
 	//SoftSerialReceiveBlocking(uint8_t inBuffer[], motor_type actuator, uint32_t timeoutMs, uint32_t baudRate, uint32_t bitLength, uint32_t inverted);
+	if (mainConfig.telemConfig.telemMsp)
+	{
+			//send at 10 ms intervals
+			if ( (sendMspAt) && ( InlineMillis() > sendMspAt ) )
+			{
+				//set msp to run in 10 ms
+				sendMspAt = InlineMillis() + 10;
+				//Send MSP
+				//SendMspAttitude();
+				SendMspAnalog();
+			}
+			else if (!sendMspAt) 
+			{
+				//if not set then we set msp to run in 10 ms.
+				sendMspAt = InlineMillis() + 10;
+			}
+	}
 
 	if (mainConfig.telemConfig.telemSport)
 	{
