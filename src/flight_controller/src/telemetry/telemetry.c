@@ -21,7 +21,7 @@ static const uint32_t vtxBandChannelToFrequencyLookup[] = {
 
 void ProcessTelemtry(void)
 {
-
+	static uint32_t mspCase = 0;
 	if (!telemEnabled)
 		return;
 	//This function is run by the task manager quite often.
@@ -44,7 +44,22 @@ void ProcessTelemtry(void)
 				sendMspAt = InlineMillis() + 10;
 				//Send MSP
 				//SendMspAttitude();
-				SendMspAnalog();
+				switch (mspCase++)
+				{
+					case 0:
+						SendMspBoxIds();
+						break;
+					case 1:
+						SendMspStatus();
+						break;
+					case 2:
+						SendMspAnalog();
+						break;
+					case 3:
+						SendMspAttitude();
+						mspCase = 0;
+						break;
+				}
 			}
 			else if (!sendMspAt) 
 			{

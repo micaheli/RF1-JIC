@@ -68,13 +68,13 @@ void SendMspAnalog(void)
 	mspTxBuffer[2] =  '>';
 	mspTxBuffer[3] =  7;
 	mspTxBuffer[4] =  MSP_ANALOG;
-	mspTxBuffer[5] =  55;
-	mspTxBuffer[6] =  (uint8_t)((int16_t)(100.0f  * 10.0f) & 0xFF);
-	mspTxBuffer[7] =  (uint8_t)(((int16_t)(100.0f * 10.0f) >> 8) & 0xFF);;
-	mspTxBuffer[8] =  (uint8_t)((int16_t)(1023) & 0xFF);
-	mspTxBuffer[9] =  (uint8_t)(((int16_t)(1023) >> 8) & 0xFF);;
-	mspTxBuffer[10] = (uint8_t)((int16_t)(4) & 0xFF);
-	mspTxBuffer[11] = (uint8_t)(((int16_t)(4) >> 8) & 0xFF);;
+	mspTxBuffer[5] =  (uint8_t)(averageVoltage * 10.0f); //	unit: 1/10 volt
+	mspTxBuffer[6] =  (uint8_t)((uint16_t)(adcMAh) & 0xFF); //mAh drawn
+	mspTxBuffer[7] =  (uint8_t)(((uint16_t)(adcMAh) >> 8) & 0xFF); //mAh drawn
+	mspTxBuffer[8] =  (uint8_t)((uint16_t)(0) & 0xFF);         //RSSI range: [0;1023]
+	mspTxBuffer[9] =  (uint8_t)(((uint16_t)(0) >> 8) & 0xFF); //RSSI range: [0;1023]
+	mspTxBuffer[10] = (uint8_t)((uint16_t)(adcCurrent * 10.0f) & 0xFF); //current in 1/10 amp ?
+	mspTxBuffer[11] = (uint8_t)(((uint16_t)(adcCurrent * 10.0f) >> 8) & 0xFF); //current in 1/10 amp ?
 
 	crc ^= mspTxBuffer[3];
 	crc ^= mspTxBuffer[4];
@@ -99,19 +99,142 @@ void SendMspAnalog(void)
 				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)mspTxBuffer, packetSize);
 		}
 	}
+}
+
+void SendMspStatus(void)
+{
+	uint32_t mspFlag = 0;
+	uint8_t crc = 0;
+	uint32_t packetSize = 16;
 
 /*
-	//this isn't calculated in glue mode'
-		rollAttitude  =  InlineRadiansToDegrees( Atan2fast(attitudeFrameQuat.y * attitudeFrameQuat.z + attitudeFrameQuat.w * attitudeFrameQuat.x, 0.5f - (attitudeFrameQuat.x * attitudeFrameQuat.x + attitudeFrameQuat.y * attitudeFrameQuat.y)) );
-		pitchAttitude =  InlineRadiansToDegrees( arm_sin_f32(2.0f * (attitudeFrameQuat.x * attitudeFrameQuat.z - attitudeFrameQuat.w * attitudeFrameQuat.y)) );
-		yawAttitude   = -InlineRadiansToDegrees( Atan2fast(attitudeFrameQuat.x * attitudeFrameQuat.y + attitudeFrameQuat.w * attitudeFrameQuat.z, 0.5f - (attitudeFrameQuat.y * attitudeFrameQuat.y + attitudeFrameQuat.z * attitudeFrameQuat.z)) );
+// Mode bits
+struct {
+  uint8_t armed;
+  uint8_t stable;
+  uint8_t horizon;
+  uint8_t baro;
+  uint8_t mag;
+  uint16_t camstab;
+  uint16_t gpshome;
+  uint16_t gpshold;
+  uint16_t passthru;
+  uint32_t air;
+  uint32_t acroplus;
+  uint32_t osd_switch;
+  uint32_t llights;
+  uint32_t gpsmission;
+  uint32_t gpsland;
+}mode;
+
+	M_ARMED      = (1 << 0),
+	M_ATTITUDE   = (1 << 1),
+	M_HORIZON    = (1 << 2),
+	M_FAILSAFE   = (1 << 3),
+	M_LOGGING    = (1 << 4),
+	M_BUZZER     = (1 << 5),
+	M_LEDMODE    = (1 << 6),
+	M_LEDCOLOR   = (1 << 7),
+	M_DIRECT     = (1 << 8),
+	M_VTXON      = (1 << 9),
+	M_GLUE       = (1 << 10),
+	M_BRAINDRAIN = (1 << 11)
+
 */
 
+
+	mspFlag |= (boardArmed);
+	mspFlag |= ModeActive(M_ATTITUDE) << 1;
+	mspFlag |= ModeActive(M_HORIZON) << 2;
+
+	//<preamble>,<direction>,<size>,<command>,,<crc>
+	mspTxBuffer[0]  =  '$';
+	mspTxBuffer[1]  =  'M';
+	mspTxBuffer[2]  =  '>';
+	mspTxBuffer[3]  =  11;
+	mspTxBuffer[4]  =  MSP_STATUS;
+	mspTxBuffer[5]  =  0;
+	mspTxBuffer[6]  =  31; //cycle time is a 16 bit variable... HAH!
+	mspTxBuffer[7]  =  0;
+	mspTxBuffer[8]  =  0;  //I2C errors, none ever because we don't use sucky I2C
+	mspTxBuffer[9]  =  0xff;
+	mspTxBuffer[10] =  0xff;  //ACC<<0|BARO<<1|MAG<<2|GPS<<3|SONAR<<4|
+	mspTxBuffer[11] =  (uint8_t)((uint32_t)(mspFlag) & 0xFF);
+	mspTxBuffer[12] =  (uint8_t)(((uint32_t)(mspFlag) >> 8) & 0xFF);
+	mspTxBuffer[13] =  (uint8_t)(((uint32_t)(mspFlag) >> 16) & 0xFF);
+	mspTxBuffer[14] =  (uint8_t)(((uint32_t)(mspFlag) >> 24) & 0xFF);
+	mspTxBuffer[15] =  0;
+
+	crc ^= mspTxBuffer[3];
+	crc ^= mspTxBuffer[4];
+	crc ^= mspTxBuffer[5];
+	crc ^= mspTxBuffer[6];
+	crc ^= mspTxBuffer[7];
+	crc ^= mspTxBuffer[8];
+	crc ^= mspTxBuffer[9];
+	crc ^= mspTxBuffer[10];
+	crc ^= mspTxBuffer[11];
+	crc ^= mspTxBuffer[12];
+	crc ^= mspTxBuffer[13];
+	crc ^= mspTxBuffer[14];
+	crc ^= mspTxBuffer[15];
+
+	mspTxBuffer[16] = crc;
+
+	if (!telemEnabled)
+			return;
+
+	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
+	{
+		if ( (board.serials[serialNumber].enabled) && (mainConfig.telemConfig.telemMsp) )
+		{
+			if (board.serials[serialNumber].Protocol == USING_MSP)
+				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)mspTxBuffer, packetSize);
+		}
+	}
+}
+
+void SendMspBoxIds(void)
+{
+	uint8_t  crc = 0;
+	uint32_t packetSize = 9;
+
 /*
-	angx	INT 16	Range [-1800;1800] (unit: 1/10 degree)
-	angy	INT 16	Range [-900;900] (unit: 1/10 degree)
-	heading	INT 16	Range [-180;180]
+// Mode bits
+each BOX (used or not) have a unique ID.
+In order to retrieve the number of BOX and which BOX are in used, this request can be used. It is more efficient than retrieving BOX names if you know what BOX function is behing the ID. See enum MultiWii.cpp (0: ARM, 1 ANGLE, 2 HORIZON, …)
 */
+
+	//<preamble>,<direction>,<size>,<command>,,<crc>
+	mspTxBuffer[0]  =  '$';
+	mspTxBuffer[1]  =  'M';
+	mspTxBuffer[2]  =  '>';
+	mspTxBuffer[3]  =  3;
+	mspTxBuffer[4]  =  MSP_BOXIDS;
+	mspTxBuffer[5]  =  0;
+	mspTxBuffer[6]  =  1;
+	mspTxBuffer[7]  =  2;
+
+
+	crc ^= mspTxBuffer[3];
+	crc ^= mspTxBuffer[4];
+	crc ^= mspTxBuffer[5];
+	crc ^= mspTxBuffer[6];
+	crc ^= mspTxBuffer[7];
+
+	mspTxBuffer[8] = crc;
+
+	if (!telemEnabled)
+			return;
+
+	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
+	{
+		if ( (board.serials[serialNumber].enabled) && (mainConfig.telemConfig.telemMsp) )
+		{
+			if (board.serials[serialNumber].Protocol == USING_MSP)
+				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)mspTxBuffer, packetSize);
+		}
+	}
 }
 
 void InitMsp(uint32_t usartNumber)

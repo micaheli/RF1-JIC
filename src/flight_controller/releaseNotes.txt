@@ -1010,6 +1010,21 @@ Version 0.231.073 BETA:
 	Made crash detetion algorythm a bit more sensitive
 	Initial MSP OSD support
 
+Version 0.232.073 ALPHA A:
+	Super Secret Test A
+
+Version 0.232.073 ALPHA B:
+	Super Secret Test B
+
+
+Version 0.234.073 BETA:
+	Added MSP support for OSD usage
+	To enable:
+		set telem_msp=1 through 6 for usart 1 through usart 6's TX pin
+		example:
+			set telem_msp=3
+			save
+			#This will enabled MSP telemtry on usart 3's TX pin at 115,200 baud
 
 
 #Features in current development:
