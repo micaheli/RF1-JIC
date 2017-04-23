@@ -280,7 +280,7 @@ void PafUpdate(paf_state *state, float measurement)
 	float acceleration;
 	double accelerationD;
 
-	switch (mainConfig.filterConfig[0].filterType == 1)
+	switch (mainConfig.filterConfig[0].filterType)
 	{
 		case 1:
 			//float w; //process noise
