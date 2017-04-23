@@ -1,5 +1,8 @@
 #include "includes.h"
 
+#define GYRO_AVERAGE_MAX_SUM 33
+
+
 pid_output   flightPids[AXIS_NUMBER];
 biquad_state lpfFilterState[AXIS_NUMBER];
 biquad_state lpfFilterStateKd[AXIS_NUMBER];
@@ -9,6 +12,9 @@ biquad_state hpfFilterStateAcc[6];
 
 float kdFiltUsed[AXIS_NUMBER];
 float accNoise[6];
+float averagedGyroData[AXIS_NUMBER][GYRO_AVERAGE_MAX_SUM];
+uint32_t averagedGyroDataPointer[AXIS_NUMBER];
+float averagedGyroDataPointerMultiplier[AXIS_NUMBER];
 float filteredGyroData[AXIS_NUMBER];
 float filteredAccData[VECTOR_NUMBER];
 paf_state pafGyroStates[AXIS_NUMBER];
@@ -54,6 +60,7 @@ void  InlineInitKdFilters(void);
 void  InlineInitSpectrumNoiseFilter(void);
 void  InlineInitAccFilters(void);
 float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, float rates, float acroPlus, uint32_t axis);
+float AverageGyroADCbuffer(uint32_t axis, volatile float currentData);
 
 void ArmBoard(void)
 {
@@ -214,6 +221,22 @@ int SetCalibrate2(void)
 
 }
 
+inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
+{
+	float returnData;
+	if (usedGa[axis] > 1)
+	{
+		averagedGyroData[axis][averagedGyroDataPointer[axis]++] = currentData;
+		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] += currentData;
+		if (averagedGyroDataPointer[axis] == usedGa[axis])
+			averagedGyroDataPointer[axis] = 0;
+		returnData = (averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] * averagedGyroDataPointerMultiplier[axis]);
+		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] -= averagedGyroData[axis][averagedGyroDataPointer[axis]];
+		return(returnData);
+	}
+	return currentData;
+}
+
 void InitFlightCode(void)
 {
 
@@ -227,12 +250,18 @@ void InitFlightCode(void)
 	//bzero(lpfFilterStateNoise,sizeof(lpfFilterStateNoise));
 	bzero(lpfFilterState,sizeof(lpfFilterState));
 	bzero(lpfFilterStateKd,sizeof(lpfFilterStateKd));
+	bzero(averagedGyroData,sizeof(averagedGyroData));
+	bzero(averagedGyroDataPointer,sizeof(averagedGyroDataPointer));
 	bzero(filteredGyroData,sizeof(filteredGyroData));
 	bzero(&flightPids,sizeof(flightPids));
 	timeSinceSelfLevelActivated = 0;
 	slpUsed = 0.0f;
 	sliUsed = 0.0f;
 	sldUsed = 0.0f;
+
+	averagedGyroDataPointerMultiplier[YAW]   = (1.0 / (float)mainConfig.pidConfig[YAW].ga);
+	averagedGyroDataPointerMultiplier[ROLL]  = (1.0 / (float)mainConfig.pidConfig[ROLL].ga);
+	averagedGyroDataPointerMultiplier[PITCH] = (1.0 / (float)mainConfig.pidConfig[PITCH].ga);
 
 	usedGa[0] = mainConfig.pidConfig[0].ga;
 	usedGa[1] = mainConfig.pidConfig[1].ga;
@@ -489,10 +518,10 @@ inline void InlineInitGyroFilters(void)
 
 	for (axis = 2; axis >= 0; --axis)
 	{
-		//InitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, 24.0f, 0.0f, filteredGyroData[axis]);
-		InitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, 12.0f, 0.0f, filteredGyroData[axis]);
-		//InitPaf( &pafGyroStates[axis], 0.006f, 1.0f, 0.01f, 0.0f);
-		//InitPaf( &pafGyroStates[axis], 0.06f, 0.088f, 0.0f, 0.0f);
+		if (mainConfig.filterConfig[0].filterType == 0)
+			OldInitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, 88.0f, 0.0f, filteredGyroData[axis]);
+		else 
+			InitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, 0.088f, 0.0f, filteredGyroData[axis]);
 	}
 
 }
@@ -569,6 +598,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 	static uint32_t gyroStdDeviationLatch = 0;
 	int32_t axis;
+	volatile float averagedGyro;
 
 	//inlineDigitalHi(ports[ENUM_PORTB], GPIO_PIN_0);
 
@@ -601,8 +631,20 @@ inline void InlineFlightCode(float dpsGyroArray[])
 	//update gyro filter, every time there's an interrupt
 	for (axis = 2; axis >= 0; --axis)
 	{
-		PafUpdate(&pafGyroStates[axis], dpsGyroArray[axis] );
-		filteredGyroData[axis] = (float)pafGyroStates[axis].x;
+
+		if (mainConfig.filterConfig[0].filterType == 0)
+		{
+			averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
+			OldPafUpdate(&pafGyroStates[axis], averagedGyro );
+			filteredGyroData[axis] = (float)pafGyroStates[axis].output;
+		}
+		else
+		{
+			PafUpdate(&pafGyroStates[axis], dpsGyroArray[axis] );
+			filteredGyroData[axis] = (float)pafGyroStates[axis].x;
+		}
+
+
 	}
 
 	if (gyroLoopCounter-- == 0)
@@ -980,14 +1022,11 @@ void InitFlight(void)
 	//init telemtry, if there's a gyro EXTI and soft serial collision then the fake EXTI will be used in place of the actual gyro EXTI
 	InitTelemtry();
 
-#ifndef SPMFC400
-	if (!IsUsbConnected())
+
+	if ( (!mainConfig.ledConfig.ledOnWithUsb) && (!IsUsbConnected()) )
 	{
-//		InitWs2812();
+		InitWs2812();
 	}
-#else
-	InitWs2812();
-#endif
 
 	//InitTransponderTimer();
 	DelayMs(2);

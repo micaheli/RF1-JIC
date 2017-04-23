@@ -162,13 +162,14 @@ const config_variables_rec valueTable[] = {
 		{ "led_green",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledGreen,						0, 255, 0, "" },
 		{ "led_blue",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledBlue,						0, 255, 0, "" },
 		{ "led_mode",	 		typeUINT,  "leds", &mainConfig.ledConfig.ledMode,						0, 255, 0, "" },
+		{ "led_with_usb",	 	typeUINT,  "leds", &mainConfig.ledConfig.ledOnWithUsb,					0, 1, 0, "" },
 
 		{ "telem_smartaudio",	typeUINT,  "telm", &mainConfig.telemConfig.telemSmartAudio,				0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "telem_sport",		typeUINT,  "telm", &mainConfig.telemConfig.telemSport,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "telem_spek",	 		typeUINT,  "telm", &mainConfig.telemConfig.telemSpek,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "telem_msp",	 		typeUINT,  "telm", &mainConfig.telemConfig.telemMsp,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "telem_mavlink", 		typeUINT,  "telm", &mainConfig.telemConfig.telemMav,					0, TELEM_NUM-1, TELEM_OFF, "" },
-		{ "adc_current_factor", typeFLOAT, "telm", &mainConfig.telemConfig.adcCurrFactor,				0, 50.0, 0, "" },
+		{ "adc_current_factor", typeFLOAT, "telm", &mainConfig.telemConfig.adcCurrFactor,				0, 50.0, 34.2, "" },
 		{ "vtx_pitmode_type",	typeUINT,  "telm", &mainConfig.telemConfig.vtxPitmodeType,				0, 1, 0, "" },
 		{ "vbat_buzzer",		typeUINT,  "telm", &mainConfig.telemConfig.vbatbuzzer,					0, 1, 1, "" },
 		{ "vbat_cutoff",		typeFLOAT, "telm", &mainConfig.telemConfig.vbatCutoff,					0, 4.0f, 3.3f, "" },
@@ -180,40 +181,39 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 130.00, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 150.00, "" },
 		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 140.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 140.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 150.00, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 720.00, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 610.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 670.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 1200.00, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 1000.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 1000.00, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1100.00, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 1450.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1500.00, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1200.00, "" },
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 0800.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1000.00, "" },
 
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 0, 0.000, "" },
  		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 0, 0.000, "" },
  		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 0, 0.000, "" },
 
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 0, 0, "" },
-		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 0, 0, "" },
-		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 302, 0, "" },
+		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 31, 4, "" },
+		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 31, 0, "" },
+		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 31, 0, "" },
 
 		{ "kd_limit", 			typeFLOAT,  "pids", &mainConfig.pidConfig[0].kdLimit, 					0.1, 1.0, 0.35, "" },
+		{ "ki_limit", 			typeFLOAT,  "pids", &mainConfig.pidConfig[0].kiLimit, 					0.1, 1.0, 0.25, "" },
 
 		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 05.0, "" },
 		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25.0, 00.1, "" },
 		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 75.0, 35.0, "" },
 		{ "sld", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.90, 0.03, "" },
 
-		{ "filter_mode0",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterMod, 				0, 10, 0, "" },
-		{ "filter_mode1",		typeUINT,  "filt", &mainConfig.filterConfig[1].filterMod, 				0, 10, 0, "" },
-		{ "filter_mode2",		typeUINT,  "filt", &mainConfig.filterConfig[2].filterMod, 				0, 10, 2, "" },
+		{ "filter_type",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterType, 				0, 1, 0, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 3000, 90.000, "" },
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 90.000, "" },
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 3000, 90.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 3000, 30.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 60.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 3000, 60.000, "" },
 
  		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
  		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 90.000, "" },
@@ -476,6 +476,7 @@ void GenerateConfig(void)
 	uint32_t x;
 
 	bzero(&mainConfig, sizeof(mainConfig));
+	ResetTpaCurves();
 
 	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 	{
@@ -1865,6 +1866,7 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("vtxinfo", inString))
 		{
 
+			progMode=1;
 			InitSmartAudio();
 			DeInitSmartAudio();
 
@@ -1876,10 +1878,11 @@ void ProcessCommand(char *inString)
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=%lu\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion=%lu\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency=%lu\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+			progMode=0;
 		}
 	else if (!strcmp("vtxon", inString))
 		{
-
+			progMode=1;
 			InitSmartAudio();
 
 			if (VtxTurnOn())
@@ -1899,11 +1902,13 @@ void ProcessCommand(char *inString)
 			}
 
 			DeInitSmartAudio();
+			progMode=0;
 
 		}
 	else if (!strcmp("vtxpit", inString))
 		{
 
+			progMode=1;
 			InitSmartAudio();
 
 			if (VtxTurnPit())
@@ -1923,11 +1928,13 @@ void ProcessCommand(char *inString)
 			}
 
 			DeInitSmartAudio();
+			progMode=0;
 
 		}
 	else if (!strcmp("vtxbandchannel", inString))
 		{
 
+			progMode=1;
 			InitSmartAudio();
 
 			if (VtxBandChannel( GetValueFromString(args, vtxStringCompTable, sizeof(vtxStringCompTable)) ))
@@ -1947,6 +1954,7 @@ void ProcessCommand(char *inString)
 			}
 
 			DeInitSmartAudio();
+			progMode=0;
 
 		}
 	else if (!strcmp("serial", inString))
@@ -1965,6 +1973,14 @@ void ProcessCommand(char *inString)
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();
+		}
+	else if (!strcmp("resetcurves", inString))
+		{
+			ResetTpaCurves();
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me TPA and Throttle Curves have been reset to defaults.\n" );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Do not forget to save.\n" );
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("testmotors", inString))
 		{
@@ -1997,7 +2013,7 @@ void ProcessCommand(char *inString)
 					DelayMs(1000);
 					boardArmed=1;
 					SKIP_GYRO=1;
-					for (uint32_t y=0;y<8;y++)
+					for (uint32_t y=0;y<12;y++)
 					{
 						float stdDeviation[50];
 						bzero(stdDeviation, sizeof(stdDeviation));
@@ -2007,15 +2023,36 @@ void ProcessCommand(char *inString)
 						motorOutput[2] = 0.0f;
 						motorOutput[3] = 0.0f;
 
-						motorOutput[x] = (y / 10.0f);
+						if (y == 11)
+						{
+							motorOutput[x] = 0.0f;
+						}
+						else
+						{
+							motorOutput[x] = (y / 10.0f);
+						}
 						OutputActuators(motorOutput, servoOutput);
 						DelayMs(10);
 						for (uint32_t simpleCouter=0;simpleCouter < 50;simpleCouter++)
 						{
 							stdDeviation[simpleCouter]   = ABS(geeForceAccArray[ACCX]) + ABS(geeForceAccArray[ACCY]) + ABS(geeForceAccArray[ACCZ]);
-							DelayMs(2);
+							if (y == 11)
+							{
+								delayUs(500);
+							}
+							else
+							{
+								DelayMs(3);
+							}
 						}
-						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu noise level at %lu percent: %lu\n", x, (uint32_t)(y * 10), (uint32_t)(CalculateSDSize(stdDeviation, 50) * 1000.0f));RfCustomReplyBuffer(rf_custom_out_buffer);
+						if (y == 11)
+						{
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu noise during brake event: %lu\n", x, (uint32_t)(CalculateSDSize(stdDeviation, 50) * 1000.0f));RfCustomReplyBuffer(rf_custom_out_buffer);
+						}
+						else
+						{
+							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu noise level at %lu percent: %lu\n", x, (uint32_t)(y * 10), (uint32_t)(CalculateSDSize(stdDeviation, 50) * 1000.0f));RfCustomReplyBuffer(rf_custom_out_buffer);
+						}
 					}
 				}
 				motorOutput[0] = 0.0f;
@@ -2262,7 +2299,6 @@ void ProcessCommand(char *inString)
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			GenerateConfig();
 
-			ResetTpaCurves();
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Config Reset\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			SaveAndSend();

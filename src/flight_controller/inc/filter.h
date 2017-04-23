@@ -54,6 +54,7 @@ typedef struct {
 	float lastX; //value
 	float p; //estimation error covariance
 	float k; //paf gain
+	float output;
 } paf_state;
 
 //config structure which is loaded by config
@@ -67,6 +68,7 @@ typedef struct
 typedef struct
 {
 	uint32_t filterMod;
+	uint32_t filterType;
 	paf_filter_config_record kd;
 	paf_filter_config_record gyro;
 	paf_filter_config_record acc;
@@ -116,6 +118,9 @@ typedef struct
 
 extern kalman_state kalmanState;
 extern paf_state pafGyroStates[];
+
+extern void OldInitPaf(paf_state *state, float q, float r, float p, float intial_value);
+extern void OldPafUpdate(paf_state *state, float measurement);
 
 extern void InitKdFilter(kd_filter *kdFilter);
 extern void KdFilterUpdate(kd_filter *kdFilter, float measurement);

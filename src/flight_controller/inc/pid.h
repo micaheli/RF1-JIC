@@ -31,6 +31,7 @@ typedef struct {
     float sla;
     float sld;
     float kdLimit;
+    float kiLimit;
 } pid_terms;
 
 extern float pidSetpoint[AXIS_NUMBER];    //3 axis for pidc. range is in DPS.

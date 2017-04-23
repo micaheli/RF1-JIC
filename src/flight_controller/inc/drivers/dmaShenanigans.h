@@ -28,6 +28,7 @@ typedef struct {
     uint32_t ledGreen;
     uint32_t ledBlue;
     uint32_t ledMode;
+    uint32_t ledOnWithUsb;
 } led_config;
 
 

@@ -261,15 +261,12 @@ inline void TaskAdc(void)
 
 inline void TaskProcessSoftSerial(void)
 {
-
 	 if (oneWireActive)
 		 FeedTheDog();
-
 }
 
 inline void TaskWizard(void)
 {
-
 	switch(wizardStatus.currentWizard)
 	{
 
@@ -307,11 +304,6 @@ inline void TaskHandlePcComm(void)
 inline void TaskLed(void)
 {
 	UpdateLeds(); //update status LEDs
-
-	//TODO: Hack to make this lua crap work
-	if ( progMode )
-		return;
-
 	UpdateWs2812Leds();
 }
 

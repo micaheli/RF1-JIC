@@ -1010,14 +1010,14 @@ Version 0.231.073 BETA:
 	Made crash detetion algorythm a bit more sensitive
 	Initial MSP OSD support
 
-Version 0.232.073 ALPHA A:
+Version 0.232.074 ALPHA A:
 	Super Secret Test A
 
-Version 0.232.073 ALPHA B:
+Version 0.232.075 ALPHA B:
 	Super Secret Test B
 
 
-Version 0.234.073 BETA:
+Version 0.234.076 BETA:
 	Added MSP support for OSD usage
 	To enable:
 		set telem_msp=1 through 6 for usart 1 through usart 6's TX pin
@@ -1025,6 +1025,19 @@ Version 0.234.073 BETA:
 			set telem_msp=3
 			save
 			#This will enabled MSP telemtry on usart 3's TX pin at 115,200 baud
+	Fixed issue with LEDs not always turning on
+	Added set led_with_usb=0
+		Default is 0
+		set to 1 to enable WS2812 LEDs when plugged into USB
+		The default is to have them disabled (0) since too many LEDs may draw too much power through the USB connection
+
+Version 0.235.077 ALPHA:
+	added "set filter_type", default is 0, other option is 1
+	changed defaults
+	set current setting to default for bolt
+	adjusted tpa defaults
+	added throttle curve
+
 
 
 #Features in current development:

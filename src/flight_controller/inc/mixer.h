@@ -27,6 +27,7 @@ typedef struct {
     float    idlePercent;
     float    idlePercentInverted;
     uint32_t motorOutput[8];
+	float    throttleCurve[ATTENUATION_CURVE_SIZE];
 	float    tpaKpCurve[ATTENUATION_CURVE_SIZE];
 	float    tpaKiCurve[ATTENUATION_CURVE_SIZE];
 	float    tpaKdCurve[ATTENUATION_CURVE_SIZE];
@@ -76,6 +77,7 @@ extern void  PrintTpaCurves(void);
 extern void  AdjustKpTpa(char *modString);
 extern void  AdjustKiTpa(char *modString);
 extern void  AdjustKdTpa(char *modString);
+extern void  AdjustThrottleCurve(char *modString);
 
 extern void  InitMixer(void);
 extern void  InlineApplyMixer(pid_output pids[], float curvedRcCommandF[]);

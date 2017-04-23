@@ -243,6 +243,26 @@ void KdFilterUpdate(kd_filter *kdFilter, float measurement)
 	kdFilter->x = kdFilter->x + kdFilter->k * (measurement - kdFilter->x);
 }
 
+void OldInitPaf(paf_state *state, float q, float r, float p, float intial_value)
+{
+	state->q = q * 0.000001;
+	state->r = r * 0.001;
+	state->p = p * 0.001;
+	state->x = intial_value * 16.4f;
+	state->output = intial_value;
+}
+
+void OldPafUpdate(paf_state *state, float measurement)
+{
+	//prediction update
+	state->p = state->p + state->q;
+	//measurement update
+	state->k = state->p / (state->p + state->r);
+	state->x = state->x + state->k * (measurement * 16.4f - state->x);
+	state->p = (1 - state->k) * state->p;
+	state->output = (state->x * 0.06097560975f);
+}
+
 void InitPaf(paf_state *state, float q, float r, float p, float intial_value)
 {
 	(void)(p);
