@@ -1031,12 +1031,18 @@ Version 0.234.076 BETA:
 		set to 1 to enable WS2812 LEDs when plugged into USB
 		The default is to have them disabled (0) since too many LEDs may draw too much power through the USB connection
 
-Version 0.235.077 ALPHA:
+Version 0.235.078 ALPHA:
 	added "set filter_type", default is 0, other option is 1
 	changed defaults
 	set current setting to default for bolt
 	adjusted tpa defaults
 	added throttle curve
+
+Version 0.236.078 BETA:
+	added filter_type 2 and 3
+		these are the same filter as filter 1 but use different methods to increase resolution
+	Reversed vtxon and vtxpit commands
+
 
 
 

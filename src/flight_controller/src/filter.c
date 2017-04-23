@@ -278,14 +278,42 @@ void PafUpdate(paf_state *state, float measurement)
 {
 
 	float acceleration;
-	//float w; //process noise
-	//float v; //measurment noise
-	acceleration = (float)( ((float)state->x - (float)state->lastX) * (float)loopSpeed.InversedT );
-	//project the state ahead using average acceleration
+	double accelerationD;
 
-	state->x = state->x + (float)((float)acceleration * (float)loopSpeed.gyrodT);
-	//state->x = state->x + (state->lastX - state->x) * loopSpeed.gyrodT;
-	state->lastX = state->x;
+	switch (mainConfig.filterConfig[0].filterType == 1)
+	{
+		case 1:
+			//float w; //process noise
+			//float v; //measurment noise
+			acceleration = (float)( ((float)state->x - (float)state->lastX) * (float)loopSpeed.InversedT );
+			//project the state ahead using average acceleration
+
+			state->x = state->x + (float)((float)acceleration * (float)loopSpeed.gyrodT);
+			//state->x = state->x + (state->lastX - state->x) * loopSpeed.gyrodT;
+			state->lastX = state->x;
+			break;
+		case 2:
+			//float w; //process noise
+			//float v; //measurment noise
+			accelerationD = (double)( ((double)state->x - (double)state->lastX) * (double)loopSpeed.InversedT );
+			//project the state ahead using average acceleration
+
+			state->x = state->x + (float)((double)accelerationD * (double)loopSpeed.gyrodT);
+			//state->x = state->x + (state->lastX - state->x) * loopSpeed.gyrodT;
+			state->lastX = state->x;
+			break;
+		case 3:
+			//only calculater acceleration if we are above 150 degrees per second rotation
+			if(ABS(state->x) > 150.0f)
+			{
+				acceleration = (float)( ((float)state->x - (float)state->lastX) * (float)loopSpeed.InversedT );
+
+				state->x = state->x + (float)((float)acceleration * (float)loopSpeed.gyrodT);
+
+				state->lastX = state->x;
+			}
+			break;
+	}
 
 	//calculate acceleration change and average it over 4 cycles
 	//state->accelAvgTotal -= state->accelAvgBuff[--state->accelAvgPtr];

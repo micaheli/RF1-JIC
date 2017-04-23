@@ -209,7 +209,7 @@ const config_variables_rec valueTable[] = {
 		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 75.0, 35.0, "" },
 		{ "sld", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.90, 0.03, "" },
 
-		{ "filter_type",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterType, 				0, 1, 0, "" },
+		{ "filter_type",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterType, 				0, 3, 0, "" },
 
 		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 3000, 30.000, "" },
 		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 60.000, "" },

@@ -169,7 +169,7 @@ uint32_t SmartAudioVtxTurnOn(void)
 	if (mainConfig.telemConfig.vtxPitmodeType == 0)
 		smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_PM;
 	else if (mainConfig.telemConfig.vtxPitmodeType == 1)
-		smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_DIS_PMOR;
+		smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_PMOR;
 	smartAudioTxRxBuffer[5] = SmCrc8(smartAudioTxRxBuffer, 5);
 
 	//warning blocking code
@@ -207,7 +207,7 @@ uint32_t SmartAudioVtxTurnPit(void)
 	smartAudioTxRxBuffer[1] = SM_START_CODE2;
 	smartAudioTxRxBuffer[2] = ShiftSmartAudioCommand(SM_SET_OPERATION_MODE);
 	smartAudioTxRxBuffer[3] = 0x01;
-	smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_PMOR;
+	smartAudioTxRxBuffer[4] = (uint8_t)SM_SET_OPMODE_DIS_PMOR;
 	smartAudioTxRxBuffer[5] = SmCrc8(smartAudioTxRxBuffer, 5);
 
 	//warning blocking code
