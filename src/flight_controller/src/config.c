@@ -181,13 +181,13 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 150.00, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 140.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 150.00, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 130.00, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 110.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 120.00, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 1200.00, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 1000.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 1000.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 700.00, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 600.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 650.00, "" },
 
 		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1200.00, "" },
 		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 0800.00, "" },
@@ -197,12 +197,12 @@ const config_variables_rec valueTable[] = {
  		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 0, 0.000, "" },
  		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 0, 0.000, "" },
 
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 31, 4, "" },
+		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 31, 12, "" },
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 31, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 31, 0, "" },
 
 		{ "kd_limit", 			typeFLOAT,  "pids", &mainConfig.pidConfig[0].kdLimit, 					0.1, 1.0, 0.35, "" },
-		{ "ki_limit", 			typeFLOAT,  "pids", &mainConfig.pidConfig[0].kiLimit, 					0.1, 1.0, 0.25, "" },
+		{ "ki_limit", 			typeFLOAT,  "pids", &mainConfig.pidConfig[0].kiLimit, 					0.1, 1.0, 0.35, "" },
 
 		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 05.0, "" },
 		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25.0, 00.1, "" },
@@ -211,9 +211,9 @@ const config_variables_rec valueTable[] = {
 
 		{ "filter_type",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterType, 				0, 3, 0, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 3000, 30.000, "" },
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 60.000, "" },
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 3000, 60.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 3000, 10.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 25.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 3000, 25.000, "" },
 
  		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
  		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 90.000, "" },
@@ -908,38 +908,26 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("idle", inString))
 		{
-			uint32_t motorToSpin = CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER);
-			DisarmBoard();
-			SKIP_GYRO=1;
+			if (!strcmp("stop", args))
+			{
+				DisarmBoard();
+				ZeroActuators( 1000 );
+				SKIP_GYRO=0;
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me idlestop\n" );
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			else
+			{
+				uint32_t motorToSpin = CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER);
+				DisarmBoard();
+				SKIP_GYRO=1;
 
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Spinning Motor %lu\n", motorToSpin );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Spinning Motor %lu\n", motorToSpin );
+				RfCustomReplyBuffer(rf_custom_out_buffer);
 
-			DelayMs(10);
-			IdleActuator( motorToSpin );
-		}
-
-	else if (!strcmp("fakerx", inString))
-		{
-			rxData[0] = 1100;
-			rxData[1] = 1200;
-			rxData[2] = 1300;
-			rxData[3] = 1400;
-			rxData[4] = 1500;
-			rxData[5] = 1600;
-			rxData[6] = 1700;
-			rxData[7] = 1800;
-			trueRcCommandF[0] = -1.00f;
-			trueRcCommandF[1] = -0.75f;
-			trueRcCommandF[2] = -0.25f;
-			trueRcCommandF[3] =  0.00f;
-			trueRcCommandF[4] =  0.25f;
-			trueRcCommandF[5] =  0.50f;
-			trueRcCommandF[6] =  0.75f;
-			trueRcCommandF[7] =  1.00f;
-
-			RfCustomReplyBuffer("#me RX Data has been faked\n");
-
+				DelayMs(10);
+				IdleActuator( motorToSpin );
+			}
 		}
 	else if (!strcmp("idlestop", inString))
 		{
@@ -964,16 +952,6 @@ void ProcessCommand(char *inString)
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "rxt:%lu\n", armingStructure.rxTimeout);RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "fh:%lu\n", armingStructure.failsafeHappend);RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "af:%lu\n", armingStructure.activeFailsafe);RfCustomReplyBuffer(rf_custom_out_buffer);
-
-		}
-	else if (!strcmp("fakeflash", inString))
-		{
-			flashInfo.enabled = FLASH_ENABLED;
-			//flashInfo.currentWriteAddress = atoi(args);
-			flashCountdownFake = 100;
-
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me It's a FAAAAKE\n" );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 		}
 	else if (!strcmp("set", inString))
@@ -1682,41 +1660,6 @@ void ProcessCommand(char *inString)
 
 			mainConfig.gyroConfig.loopCtrl   = LOOP_UH32;
 			mainConfig.pidConfig[YAW].kp     = 130.00;
-			mainConfig.pidConfig[ROLL].kp    = 140.00;
-			mainConfig.pidConfig[PITCH].kp   = 140.00;
-
-			mainConfig.pidConfig[YAW].ki     = 720.00;
-			mainConfig.pidConfig[ROLL].ki    = 610.00;
-			mainConfig.pidConfig[PITCH].ki   = 670.00;
-
-			mainConfig.pidConfig[YAW].kd     = 1100.00;
-			mainConfig.pidConfig[ROLL].kd    = 1450.00;
-			mainConfig.pidConfig[PITCH].kd   = 1500.00;
-
-			mainConfig.pidConfig[YAW].ga     = 0;
-			mainConfig.pidConfig[ROLL].ga    = 0;
-			mainConfig.pidConfig[PITCH].ga   = 0;
-
-			mainConfig.filterConfig[YAW].gyro.q   = 90.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 90.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 90.000;
-
-			mainConfig.filterConfig[YAW].kd.r     = 0.0;
-			mainConfig.filterConfig[ROLL].kd.r    = 0.0;
-			mainConfig.filterConfig[PITCH].kd.r   = 0.0;
-
-			resetBoard = 1;
-
-			RfCustomReplyBuffer("#me Default PIDs\n");
-
-			SaveAndSend();
-
-		}
-	else if (!strcmp("pidsrs2k", inString))
-		{
-
-			mainConfig.gyroConfig.loopCtrl   = LOOP_UH32;
-			mainConfig.pidConfig[YAW].kp     = 130.00;
 			mainConfig.pidConfig[ROLL].kp    = 110.00;
 			mainConfig.pidConfig[PITCH].kp   = 120.00;
 
@@ -1725,35 +1668,27 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[PITCH].ki   = 650.00;
 
 			mainConfig.pidConfig[YAW].kd     = 1200.00;
-			mainConfig.pidConfig[ROLL].kd    = 800.00;
+			mainConfig.pidConfig[ROLL].kd    = 0800.00;
 			mainConfig.pidConfig[PITCH].kd   = 1000.00;
 
-			mainConfig.pidConfig[YAW].ga     = 4;
+			mainConfig.pidConfig[YAW].ga     = 12;
 			mainConfig.pidConfig[ROLL].ga    = 0;
 			mainConfig.pidConfig[PITCH].ga   = 0;
 
-			mainConfig.filterConfig[YAW].gyro.r   = 88.00;
-			mainConfig.filterConfig[ROLL].gyro.r  = 88.00;
-			mainConfig.filterConfig[PITCH].gyro.r = 88.00;
+			mainConfig.filterConfig[YAW].gyro.q   = 10.000;
+			mainConfig.filterConfig[ROLL].gyro.q  = 25.000;
+			mainConfig.filterConfig[PITCH].gyro.q = 25.000;
 
-			mainConfig.filterConfig[YAW].gyro.q   = 30.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 60.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 60.000;
-
-			mainConfig.filterConfig[0].filterMod  = 0;
-			mainConfig.filterConfig[1].filterMod  = 0;
-			mainConfig.filterConfig[2].filterMod  = 2;
-
-			mainConfig.filterConfig[YAW].kd.r     = 90.0;
-			mainConfig.filterConfig[ROLL].kd.r    = 90.0;
-			mainConfig.filterConfig[PITCH].kd.r   = 90.0;
+			mainConfig.filterConfig[YAW].kd.r     = 90.0f;
+			mainConfig.filterConfig[ROLL].kd.r    = 90.0f;
+			mainConfig.filterConfig[PITCH].kd.r   = 90.0f;
 
 			resetBoard = 1;
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RS2K PIDs\n");
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			RfCustomReplyBuffer("#me Default PIDs\n");
 
 			SaveAndSend();
+
 		}
 	else if (!strncmp("spek_", inString, 4))
 		{

@@ -357,7 +357,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00003125;
 			loopSpeed.uhohNumber  = 24000;
 			loopSpeed.gyroDivider = 1;
-			loopSpeed.khzDivider  = 32;
+			loopSpeed.khzDivider  = 16;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -367,7 +367,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00006250;
 			loopSpeed.uhohNumber  = 12000;
 			loopSpeed.gyroDivider = 2;
-			loopSpeed.khzDivider  = 16;
+			loopSpeed.khzDivider  = 8;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -376,7 +376,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00012500;
 			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 4;
-			loopSpeed.khzDivider  = 8;
+			loopSpeed.khzDivider  = 4;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -386,7 +386,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00012500;
 			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 1;
-			loopSpeed.khzDivider  = 8;
+			loopSpeed.khzDivider  = 4;
 			loopSpeed.gyroAccDiv  = 2;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -395,7 +395,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00025000;
 			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 8;
-			loopSpeed.khzDivider  = 4;
+			loopSpeed.khzDivider  = 2;
 			loopSpeed.gyroAccDiv  = 8;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -405,7 +405,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00025000;
 			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 2;
-			loopSpeed.khzDivider  = 4;
+			loopSpeed.khzDivider  = 2;
 			loopSpeed.gyroAccDiv  = 2;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -414,7 +414,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00050000;
 			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 16;
-			loopSpeed.khzDivider  = 2;
+			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 8;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 		case LOOP_H2:
@@ -423,7 +423,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00050000;
 			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 4;
-			loopSpeed.khzDivider  = 2;
+			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 2;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -493,6 +493,7 @@ void InitFlightCode(void)
 	loopSpeed.halfGyrodTSquaredI = 1.0f/loopSpeed.halfGyrodTSquared;
 	loopSpeed.accdT              = loopSpeed.gyrodT * (float)loopSpeed.gyroAccDiv;
 	loopSpeed.InversedT          = (1/loopSpeed.dT);
+	loopSpeed.truedT             = loopSpeed.dT * 2.0f;
 
 
 
@@ -697,8 +698,8 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.pidConfig[PITCH].sla ) - rollAttitude  );
 				pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla ) - pitchAttitude );
 
-				rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.dT);
-				pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.dT);
+				rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.truedT);
+				pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.truedT);
 
 				rollAttitudeErrorKdelta  = -(rollAttitudeError  - lastRollAttitudeError);
 				lastRollAttitudeError    = rollAttitudeError;
@@ -718,9 +719,9 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				rollAttitudeError        = requestedDegrees[ROLL];
 				pitchAttitudeError       = requestedDegrees[PITCH];
 
-				yawAttitudeErrorKi       = (yawAttitudeErrorKi   + yawAttitudeError   * sliUsed * loopSpeed.dT);
-				rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.dT);
-				pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.dT);
+				yawAttitudeErrorKi       = (yawAttitudeErrorKi   + yawAttitudeError   * sliUsed * loopSpeed.truedT);
+				rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.truedT);
+				pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.truedT);
 
 				yawAttitudeErrorKdelta   = -(yawAttitudeError  - lastYawAttitudeError);
 				lastYawAttitudeError     = yawAttitudeError;
@@ -730,25 +731,25 @@ inline void InlineFlightCode(float dpsGyroArray[])
 				lastPitchAttitudeError   = pitchAttitudeError;
 
 				//roll and pitch are set directly from self level mode
-				flightSetPoints[YAW]     = ( yawAttitudeError   * 15) + yawAttitudeErrorKi   + (yawAttitudeErrorKdelta   / loopSpeed.dT * sldUsed);
-				flightSetPoints[ROLL]    = ( rollAttitudeError  * 15) + rollAttitudeErrorKi  + (rollAttitudeErrorKdelta  / loopSpeed.dT * sldUsed);
-				flightSetPoints[PITCH]   = ( pitchAttitudeError * 15) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed);
+				flightSetPoints[YAW]     = ( yawAttitudeError   * 15) + yawAttitudeErrorKi   + (yawAttitudeErrorKdelta   / loopSpeed.truedT * sldUsed);
+				flightSetPoints[ROLL]    = ( rollAttitudeError  * 15) + rollAttitudeErrorKi  + (rollAttitudeErrorKdelta  / loopSpeed.truedT * sldUsed);
+				flightSetPoints[PITCH]   = ( pitchAttitudeError * 15) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.truedT * sldUsed);
 			}
 			else if (ModeActive(M_ATTITUDE)) //if M_ATTITUDE mode
 			{
 				//roll and pitch are set directly from self level mode
-				flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
-				flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0, 300.0);
+				flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.truedT * sldUsed), -300.0, 300.0);
+				flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.truedT * sldUsed), -300.0, 300.0);
 			}
 			else if (ModeActive(M_HORIZON)) //if M_HORIZON mode
 			{
 				//roll and pitch and modified by stick angle proportionally to stick angle
 				if ( (ABS(trueRcCommandF[PITCH]) < 0.75f) && (ABS(trueRcCommandF[ROLL]) < 0.75f) && ABS(pitchAttitude) < 75.0f ) //prevent gimbal lock since PIDc uses euler angles
 				{
-					flightSetPoints[ROLL]    += InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0f, 300.0f) * (1.0f - ABS(trueRcCommandF[ROLL]) );
+					flightSetPoints[ROLL]    += InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.truedT * sldUsed), -300.0f, 300.0f) * (1.0f - ABS(trueRcCommandF[ROLL]) );
 				}
 				if ( (ABS(trueRcCommandF[PITCH]) < 0.75f)  && (ABS(trueRcCommandF[ROLL]) < 0.75f) )
-					flightSetPoints[PITCH]   += InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.dT * sldUsed), -300.0f, 300.0f) * (1.0f - ABS(trueRcCommandF[PITCH]) );
+					flightSetPoints[PITCH]   += InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.truedT * sldUsed), -300.0f, 300.0f) * (1.0f - ABS(trueRcCommandF[PITCH]) );
 			}
 		}
 		else //no auto level modes active, we're in rate mode

@@ -3,6 +3,7 @@
 
 typedef struct {
 	volatile float dT;
+	volatile float truedT;
 	volatile uint32_t gyroAccDiv;
 	volatile float gyrodT;
 	volatile float halfGyrodT;
