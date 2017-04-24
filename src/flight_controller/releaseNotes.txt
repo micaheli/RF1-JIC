@@ -1016,7 +1016,6 @@ Version 0.232.074 ALPHA A:
 Version 0.232.075 ALPHA B:
 	Super Secret Test B
 
-
 Version 0.234.076 BETA:
 	Added MSP support for OSD usage
 	To enable:
@@ -1043,6 +1042,9 @@ Version 0.236.078 BETA:
 		these are the same filter as filter 1 but use different methods to increase resolution
 	Reversed vtxon and vtxpit commands
 
+Version 0.237.079 BETA:
+	Flight code improvments and new defaults
+	Adjusted motor test function
 
 
 
