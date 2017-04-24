@@ -485,7 +485,7 @@ void InitFlightCode(void)
 			break;
 	}
 
-	loopSpeed.gyroDivider /= 2;
+//	loopSpeed.gyroDivider /= 2;
 	//TODO: gyroConfig.accDenom is not set until after gyro is running.
 	//loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
 	loopSpeed.halfGyrodT         = loopSpeed.gyrodT * 0.5f;

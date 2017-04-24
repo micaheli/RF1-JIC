@@ -34,7 +34,7 @@ void InitPid (void)
 
 	if (mainConfig.mixerConfig.mixerStyle == 1)
 	{
-		mainConfig.pidConfig[0].ga = 0;
+		//mainConfig.pidConfig[0].ga = 0;
 		pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 100000;
 		pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 50000) * loopSpeed.dT;
 		pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 200000000)  / loopSpeed.dT;
@@ -52,8 +52,7 @@ void InitPid (void)
 	}
 	else
 	{
-		mainConfig.pidConfig[0].ga = 0;
-
+		//mainConfig.pidConfig[0].ga = 0;
 		pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 50000;
 		pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 25000) * loopSpeed.dT;
 		pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 100000000)  / loopSpeed.dT;

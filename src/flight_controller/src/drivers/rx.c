@@ -1019,7 +1019,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     static int32_t factor = 0;
     int32_t channel;
 
-    int32_t smoothingInterval = (loopSpeed.khzDivider * packetTime); //todo: calculate this number to be number of loops between PID loops
+    int32_t smoothingInterval = (loopSpeed.khzDivider * packetTime / 2); //todo: calculate this number to be number of loops between PID loops
 	//88  for spektrum at  8 KHz loop time
 	//264 for spektrum at 24 KHz loop time
 	//352 for spektrum at 32 KHz loop time
