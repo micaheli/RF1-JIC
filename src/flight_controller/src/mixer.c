@@ -108,9 +108,9 @@ volatile float servoOutput[MAX_SERVO_NUMBER];
 int32_t activeMotorCounter = -1; //number of active motors minus 1
 
 static float throttleCurve[ATTENUATION_CURVE_SIZE]      = {0.000f, 0.125f, 0.250f, 0.375f, 0.500f, 0.625f, 0.750f, 0.875f, 1.000f};
-static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.100f, 1.050f, 1.000f, 1.000f, 1.000f, 1.000f, 1.000f, 1.000f, 1.005f};
-static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.300f, 1.200f, 1.100f, 1.000f, 0.900f, 0.800f, 0.700f, 0.600f, 0.500f};
-static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.300f, 1.200f, 1.100f, 1.000f, 0.900f, 0.800f, 0.700f, 0.600f, 0.500f};
+static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.000f, 1.000f, 1.000f, 1.000f, 1.000f, 1.000f, 1.000f, 1.000f, 1.000f};
+static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.300f, 1.150f, 1.000f, 0.770f, 0.550f, 0.500f, 0.450f, 0.500f, 0.550f};
+static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.300f, 1.150f, 1.000f, 0.770f, 0.550f, 0.500f, 0.450f, 0.500f, 0.550f};
 
 static void PrintThrottleCurve(void);
 static void PrintTpaKp(void);

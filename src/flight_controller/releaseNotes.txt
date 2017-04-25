@@ -1048,7 +1048,10 @@ Version 0.237.079 RC16:
 
 Version 0.238.079 RC17:
 	Smart audio update
+	New defaults
 
+Version 0.239.079 RC18:
+	New defaults
 
 #Features in current development:
 #	MSP OSD compatibility
