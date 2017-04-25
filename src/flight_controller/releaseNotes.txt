@@ -1042,11 +1042,11 @@ Version 0.236.078 BETA:
 		these are the same filter as filter 1 but use different methods to increase resolution
 	Reversed vtxon and vtxpit commands
 
-Version 0.237.079 BETA:
+Version 0.237.079 RC16:
 	Flight code improvments and new defaults
 	Adjusted motor test function
 
-Version 0.238.079 BETA:
+Version 0.238.079 RC17:
 	Smart audio update
 
 

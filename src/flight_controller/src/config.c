@@ -185,9 +185,9 @@ const config_variables_rec valueTable[] = {
 		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 110.00, "" },
 		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 120.00, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 700.00, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 600.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 650.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 1500.00, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 0900.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 1300.00, "" },
 
 		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1200.00, "" },
 		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 0800.00, "" },
@@ -1663,9 +1663,9 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[ROLL].kp    = 110.00;
 			mainConfig.pidConfig[PITCH].kp   = 120.00;
 
-			mainConfig.pidConfig[YAW].ki     = 700.00;
-			mainConfig.pidConfig[ROLL].ki    = 600.00;
-			mainConfig.pidConfig[PITCH].ki   = 650.00;
+			mainConfig.pidConfig[YAW].ki     = 1500.00;
+			mainConfig.pidConfig[ROLL].ki    = 0900.00;
+			mainConfig.pidConfig[PITCH].ki   = 1300.00;
 
 			mainConfig.pidConfig[YAW].kd     = 1200.00;
 			mainConfig.pidConfig[ROLL].kd    = 0800.00;

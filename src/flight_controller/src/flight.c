@@ -519,6 +519,7 @@ inline void InlineInitGyroFilters(void)
 
 	for (axis = 2; axis >= 0; --axis)
 	{
+		volatile int32_t cat = axis;
 		if (mainConfig.filterConfig[0].filterType == 0)
 			OldInitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, 88.0f, 0.0f, filteredGyroData[axis]);
 		else 
