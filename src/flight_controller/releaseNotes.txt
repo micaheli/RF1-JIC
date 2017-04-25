@@ -1046,6 +1046,8 @@ Version 0.237.079 BETA:
 	Flight code improvments and new defaults
 	Adjusted motor test function
 
+Version 0.238.079 BETA:
+	Smart audio update
 
 
 #Features in current development:
