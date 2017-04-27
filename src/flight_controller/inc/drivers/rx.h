@@ -17,6 +17,7 @@ typedef struct {
     float    rates[3];
     float    acroPlus[3];
     uint32_t rcCalibrated;
+	float    rcSmoothingFactor;
     uint32_t rxProtcol;
     uint32_t rxUsart;
     uint32_t rxInvertPin;

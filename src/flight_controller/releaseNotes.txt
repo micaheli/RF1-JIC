@@ -1053,6 +1053,15 @@ Version 0.238.079 RC17:
 Version 0.239.079 RC18:
 	New defaults
 
+Version 0.240.080 BETA:
+	Added "set rc_smoothing = 1.0"
+		You can range it from 0.1 to 4.0 to decrease or increase the smoothing effect with 1.0 being default
+			Does not function in direct mode
+	set skunk = 1 will change flight code to RC12 opperation
+	set skunk = 0 will change flight code to RC1 opperation
+
+
+
 #Features in current development:
 #	MSP OSD compatibility
 #	MAVlink compatibility

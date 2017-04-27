@@ -100,7 +100,10 @@ actuator_mixer servoMixer[MAX_SERVO_NUMBER] =  {
 };
 
 uint32_t threeDeeMode;
-float    throttleLookup[2048];
+float    throttleLookup[1024];
+float    throttleLookupKp[1024];
+float    throttleLookupKi[1024];
+float    throttleLookupKd[1024];
 float    stabilizerAttenuation;
 volatile float motorOutput[MAX_MOTOR_NUMBER];
 volatile float servoOutput[MAX_SERVO_NUMBER];
@@ -117,18 +120,49 @@ static void PrintTpaKp(void);
 static void PrintTpaKi(void);
 static void PrintTpaKd(void);
 static void BuildThrottleLookupTable(void);
+static void BuildThrottleLookupTableKp(void);
+static void BuildThrottleLookupTableKi(void);
+static void BuildThrottleLookupTableKd(void);
 
 static float ApplyAttenuationCurve (float input, float curve[], uint32_t curveSize);
 
 static void BuildThrottleLookupTable(void)
 {
-	//int32_t x;
-	//for (x=2047;x>=0;x--)
-//	{
-//		throttleLookup[x] = 
-//	}
+	int32_t x;
+	for (x=1023;x>=0;x--)
+	{
+		//range throttle 0 through 1023
+		throttleLookup[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.throttleCurve, ATTENUATION_CURVE_SIZE );
+	}
 }
 
+static void BuildThrottleLookupTableKp(void)
+{
+	int32_t x;
+	for (x=1023;x>=0;x--)
+	{
+		//range throttle 0 through 1023
+		throttleLookupKp[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE );
+	}
+}
+static void BuildThrottleLookupTableKi(void)
+{
+	int32_t x;
+	for (x=1023;x>=0;x--)
+	{
+		//range throttle 0 through 1023
+		throttleLookupKi[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE );
+	}
+}
+static void BuildThrottleLookupTableKd(void)
+{
+	int32_t x;
+	for (x=1023;x>=0;x--)
+	{
+		//range throttle 0 through 1023
+		throttleLookupKd[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE );
+	}
+}
 void ResetTpaCurves(void)
 {
 	memcpy(mainConfig.mixerConfig.throttleCurve, throttleCurve,      sizeof(throttleCurve));
@@ -416,6 +450,10 @@ void InitMixer(void) {
 	threeDeeMode = 0;
 	stabilizerAttenuation = 0;
 
+	BuildThrottleLookupTable();
+	BuildThrottleLookupTableKp();
+	BuildThrottleLookupTableKi();
+	BuildThrottleLookupTableKd();
 	for (i=0;i<MAX_MOTOR_NUMBER;i++)
 		motorOutput[i]=0.0f;
 
@@ -682,28 +720,30 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 	volatile float throttle;
 	float throttleOffset;
 	int32_t i           = 0;
+	uint32_t motorOutput0_1023 = 0;
 
 	//static int32_t threeDeeThrottleLatch = 1;
 
 	for (i = activeMotorCounter; i >= 0; i--)
 	{
 
+		motorOutput0_1023 = lrintf( InlineChangeRangef(motorOutput[i], 1.0f, -1.0f, 1023.0f, 0.0f) );
 		//-1 to 1
 		motorOutput[i] = (
 			(
-				(pids[YAW].kp * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[YAW].kd * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[YAW].ki * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[YAW].kp * throttleLookupKp[motorOutput0_1023] ) +
+				(pids[YAW].kd * throttleLookupKd[motorOutput0_1023] ) +
+				(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] )
 			) * motorMixer[i].yaw +
 			(
-				(pids[ROLL].kp * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[ROLL].kd * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[ROLL].ki * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[ROLL].kp * throttleLookupKp[motorOutput0_1023] ) +
+				(pids[ROLL].kd * throttleLookupKd[motorOutput0_1023] ) +
+				(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] )
 			) * motorMixer[i].roll +
 			(
-				(pids[PITCH].kp * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[PITCH].kd * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE ) ) +
-				(pids[PITCH].ki * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE ) )
+				(pids[PITCH].kp * throttleLookupKp[motorOutput0_1023] ) +
+				(pids[PITCH].kd * throttleLookupKd[motorOutput0_1023] ) +
+				(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] )
 			) * motorMixer[i].pitch
 		);
 		motorOutput[i] = InlineChangeRangef(motorOutput[i], 1.0, -1.0, 1.0, 0.0);
@@ -724,8 +764,8 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 	else
 	{
 		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
-		rangedThrottle = InlineChangeRangef(throttleIn, 1.0, -1.0, 1.0, 0.0);
-		rangedThrottle = ApplyAttenuationCurve(rangedThrottle, mainConfig.mixerConfig.throttleCurve, ATTENUATION_CURVE_SIZE );
+		uint32_t rangedThrottleU = lrintf( InlineChangeRangef(throttleIn, 1.0f, -1.0f, 1023.0f, 0.0f) );
+		rangedThrottle = throttleLookup[rangedThrottleU];
 		throttleOffset = actuatorRange / 2.0f;
 		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset) - 0.5;
 
@@ -750,26 +790,28 @@ inline float InlineApplyMotorMixer1(pid_output pids[], float throttleIn)
 	float throttle;
  	float throttleOffset;
 	int32_t i           = 0;
+	uint32_t motorOutput0_1023 = 0;
 
 	for (i = activeMotorCounter; i >= 0; i--)
 	{
+		motorOutput0_1023 = lrintf( InlineChangeRangef(motorOutput[i], 1.0f, -1.0f, 1023.0f, 0.0f) );
  		//-1 to 1
  		motorOutput[i] = (
- 			(
- 				(pids[YAW].kp * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE ) ) +
- 				(pids[YAW].kd * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE ) ) +
- 				(pids[YAW].ki * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE ) )
- 			) * motorMixer[i].yaw +
- 			(
- 				(pids[ROLL].kp * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE ) ) +
- 				(pids[ROLL].kd * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE ) ) +
- 				(pids[ROLL].ki * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE ) )
- 			) * motorMixer[i].roll +
- 			(
- 				(pids[PITCH].kp * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE ) ) +
- 				(pids[PITCH].kd * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE ) ) +
- 				(pids[PITCH].ki * ApplyAttenuationCurve(motorOutput[i], mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE ) )
- 			) * motorMixer[i].pitch
+			(
+				(pids[YAW].kp * throttleLookupKp[motorOutput0_1023] ) +
+				(pids[YAW].kd * throttleLookupKd[motorOutput0_1023] ) +
+				(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] )
+			) * motorMixer[i].yaw +
+			(
+				(pids[ROLL].kp * throttleLookupKp[motorOutput0_1023] ) +
+				(pids[ROLL].kd * throttleLookupKd[motorOutput0_1023] ) +
+				(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] )
+			) * motorMixer[i].roll +
+			(
+				(pids[PITCH].kp * throttleLookupKp[motorOutput0_1023] ) +
+				(pids[PITCH].kd * throttleLookupKd[motorOutput0_1023] ) +
+				(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] )
+			) * motorMixer[i].pitch
  		);
  		if (motorOutput[i] > highestMotor) { highestMotor = motorOutput[i]; }
  		if (motorOutput[i] < lowestMotor)  { lowestMotor  = motorOutput[i]; }
@@ -786,8 +828,8 @@ inline float InlineApplyMotorMixer1(pid_output pids[], float throttleIn)
  	else
  	{
  		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
- 		rangedThrottle = InlineChangeRangef(throttleIn, 1.0, -1.0, 1.0, 0.0);
-		rangedThrottle = ApplyAttenuationCurve(rangedThrottle, mainConfig.mixerConfig.throttleCurve, ATTENUATION_CURVE_SIZE );
+		uint32_t rangedThrottleU = lrintf( InlineChangeRangef(throttleIn, 1.0f, -1.0f, 1023.0f, 0.0f) );
+		rangedThrottle = throttleLookup[rangedThrottleU];
  		throttleOffset = actuatorRange / 2.0f;
  		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset);
 

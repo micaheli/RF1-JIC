@@ -245,9 +245,9 @@ void KdFilterUpdate(kd_filter *kdFilter, float measurement)
 
 void OldInitPaf(paf_state *state, float q, float r, float p, float intial_value)
 {
-	state->q = q * 0.000001;
-	state->r = r * 0.001;
-	state->p = p * 0.001;
+	state->q = q * 0.000001f;
+	state->r = r * 0.001f;
+	state->p = p * 0.001f;
 	state->x = intial_value * 16.4f;
 	state->output = intial_value;
 }
@@ -259,19 +259,19 @@ void OldPafUpdate(paf_state *state, float measurement)
 	//measurement update
 	state->k = state->p / (state->p + state->r);
 	state->x = state->x + state->k * (measurement * 16.4f - state->x);
-	state->p = (1 - state->k) * state->p;
+	state->p = (1.0f - state->k) * state->p;
 	state->output = (state->x * 0.06097560975f);
 }
 
 void InitPaf(paf_state *state, float q, float r, float p, float intial_value)
 {
 	(void)(p);
-	state->q = (float)q * 0.000001;
+	state->q = (float)q * 0.000001f;
 	//state->r = r * 0.001;
 	state->r = (float)r;
 	state->p = 0.0f;
 	state->x = (float)intial_value;
-	state->lastX = (float)0.0;
+	state->lastX = (float)0.0f;
 }
 
 void PafUpdate(paf_state *state, float measurement)
@@ -330,7 +330,7 @@ void PafUpdate(paf_state *state, float measurement)
 	//measurement update
 	state->k = state->p / (state->p + state->r);
 	state->x = state->x + (float)state->k * ((float)measurement - (float)state->x);
-	state->p = (1 - state->k) * state->p;
+	state->p = (1.0f - state->k) * state->p;
 }
 /*
 void InitKalman(kalman_state *kalmanState, float q, float r, float p, float intial_value)

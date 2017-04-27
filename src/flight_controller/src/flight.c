@@ -353,30 +353,30 @@ void InitFlightCode(void)
 	switch (mainConfig.gyroConfig.loopCtrl) {
 		case LOOP_UH32:
 		case LOOP_H32:
-			loopSpeed.gyrodT      = 0.00003125;
-			loopSpeed.dT          = 0.00003125;
+			loopSpeed.gyrodT      = 0.00003125f;
+			loopSpeed.dT          = 0.00003125f;
 			loopSpeed.uhohNumber  = 24000;
 			loopSpeed.gyroDivider = 1;
-			loopSpeed.khzDivider  = 16;
+			loopSpeed.khzDivider  = 32;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH16:
 		case LOOP_H16:
-			loopSpeed.gyrodT      = 0.00003125;
-			loopSpeed.dT          = 0.00006250;
+			loopSpeed.gyrodT      = 0.00003125f;
+			loopSpeed.dT          = 0.00006250f;
 			loopSpeed.uhohNumber  = 12000;
 			loopSpeed.gyroDivider = 2;
-			loopSpeed.khzDivider  = 8;
+			loopSpeed.khzDivider  = 16;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH8:
-			loopSpeed.gyrodT      = 0.00003125;
-			loopSpeed.dT          = 0.00012500;
+			loopSpeed.gyrodT      = 0.00003125f;
+			loopSpeed.dT          = 0.00012500f;
 			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 4;
-			loopSpeed.khzDivider  = 4;
+			loopSpeed.khzDivider  = 8;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -386,7 +386,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00012500;
 			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 1;
-			loopSpeed.khzDivider  = 4;
+			loopSpeed.khzDivider  = 8;
 			loopSpeed.gyroAccDiv  = 2;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -395,7 +395,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00025000;
 			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 8;
-			loopSpeed.khzDivider  = 2;
+			loopSpeed.khzDivider  = 4;
 			loopSpeed.gyroAccDiv  = 8;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -405,7 +405,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00025000;
 			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 2;
-			loopSpeed.khzDivider  = 2;
+			loopSpeed.khzDivider  = 4;
 			loopSpeed.gyroAccDiv  = 2;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -414,7 +414,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00050000;
 			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 16;
-			loopSpeed.khzDivider  = 1;
+			loopSpeed.khzDivider  = 2;
 			loopSpeed.gyroAccDiv  = 8;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 		case LOOP_H2:
@@ -423,7 +423,7 @@ void InitFlightCode(void)
 			loopSpeed.dT          = 0.00050000;
 			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 4;
-			loopSpeed.khzDivider  = 1;
+			loopSpeed.khzDivider  = 2;
 			loopSpeed.gyroAccDiv  = 2;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
@@ -485,7 +485,19 @@ void InitFlightCode(void)
 			break;
 	}
 
-//	loopSpeed.gyroDivider /= 2;
+	//skunk above 0.5f
+	if(mainConfig.filterConfig[1].gyro.p > 0.5f)
+	{
+		//true 32Khz
+		loopSpeed.gyroDivider /= 2;
+	}
+	else
+	{
+		loopSpeed.khzDivider /= 2;
+		if (!loopSpeed.khzDivider)
+			loopSpeed.khzDivider = 1;
+	}
+
 	//TODO: gyroConfig.accDenom is not set until after gyro is running.
 	//loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;
 	loopSpeed.halfGyrodT         = loopSpeed.gyrodT * 0.5f;
@@ -494,7 +506,6 @@ void InitFlightCode(void)
 	loopSpeed.accdT              = loopSpeed.gyrodT * (float)loopSpeed.gyroAccDiv;
 	loopSpeed.InversedT          = (1/loopSpeed.dT);
 	loopSpeed.truedT             = loopSpeed.dT * 2.0f;
-
 
 
 	actuatorRange       = 0;
