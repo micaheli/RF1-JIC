@@ -727,7 +727,7 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 	for (i = activeMotorCounter; i >= 0; i--)
 	{
 
-		motorOutput0_1023 = lrintf( InlineChangeRangef(motorOutput[i], 1.0f, -1.0f, 1023.0f, 0.0f) );
+		motorOutput0_1023 = lrintf( InlineChangeRangef(motorOutput[i], 1.0f, 0.0f, 1023.0f, 0.0f) );
 		//-1 to 1
 		motorOutput[i] = (
 			(
@@ -794,7 +794,7 @@ inline float InlineApplyMotorMixer1(pid_output pids[], float throttleIn)
 
 	for (i = activeMotorCounter; i >= 0; i--)
 	{
-		motorOutput0_1023 = lrintf( InlineChangeRangef(motorOutput[i], 1.0f, -1.0f, 1023.0f, 0.0f) );
+		motorOutput0_1023 = lrintf( InlineChangeRangef(motorOutput[i], 1.0f, 0.0f, 1023.0f, 0.0f) );
  		//-1 to 1
  		motorOutput[i] = (
 			(
