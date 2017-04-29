@@ -1060,7 +1060,11 @@ Version 0.240.080 BETA:
 	set skunk = 1 will change flight code to RC12 opperation
 	set skunk = 0 will change flight code to RC1 opperation
 
+Version 0.241.080 BETA:
+	Adjust defaults
 
+Version 0.242.080 BETA:
+	Adjust PID scaling to be thge same between skunks
 
 #Features in current development:
 #	MSP OSD compatibility
