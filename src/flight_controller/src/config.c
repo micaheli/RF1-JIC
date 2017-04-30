@@ -215,9 +215,9 @@ const config_variables_rec valueTable[] = {
 		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 3000, 25.000, "" },
 		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 3000, 25.000, "" },
 
- 		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
- 		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 90.000, "" },
- 		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 100, 90.000, "" },
+ 		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 70.000, "" },
+ 		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 70.000, "" },
+ 		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 100, 70.000, "" },
  
 		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 				0, 10, 2.0000, "" },
 		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 025.00, "" },
@@ -1345,6 +1345,26 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.acroPlus[PITCH]    = 58;
 			mainConfig.rcControlsConfig.acroPlus[ROLL]     = 58;
 			mainConfig.rcControlsConfig.acroPlus[YAW]      = 40;
+
+			mainConfig.pidConfig[ROLL].kp  = 90.0f;
+			mainConfig.pidConfig[PITCH].kp = 105.0f;
+			mainConfig.pidConfig[YAW].kp   = 95.0f;
+
+			mainConfig.pidConfig[ROLL].ki  = 0800.0f;
+			mainConfig.pidConfig[PITCH].ki = 0900.0f;
+			mainConfig.pidConfig[YAW].ki   = 1100.0f;
+
+			mainConfig.pidConfig[ROLL].kd  = 1150.0f;
+			mainConfig.pidConfig[PITCH].kd = 1400.0f;
+			mainConfig.pidConfig[YAW].kd   = 1100.0f;
+
+			mainConfig.pidConfig[ROLL].ga  = 0;
+			mainConfig.pidConfig[PITCH].ga = 0;
+			mainConfig.pidConfig[YAW].ga   = 12;
+
+			mainConfig.filterConfig[ROLL].gyro.q  = 40.0f;
+			mainConfig.filterConfig[PITCH].gyro.q = 40.0f;
+			mainConfig.filterConfig[YAW].gyro.q   = 25.0f;
 
 			resetBoard = 1;
 
