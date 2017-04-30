@@ -1063,8 +1063,11 @@ Version 0.240.080 BETA:
 Version 0.241.080 BETA:
 	Adjust defaults
 
-Version 0.242.080 BETA:
+Version 0.242.081 BETA:
 	Adjust PID scaling to be thge same between skunks
+
+Version 0.243.081 BETA:
+	New Defaults
 
 #Features in current development:
 #	MSP OSD compatibility
