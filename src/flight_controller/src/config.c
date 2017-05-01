@@ -313,7 +313,7 @@ const config_variables_rec valueTable[] = {
 		{ "aux12_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX12], 		0, 100, 100, "" },
 
 		{ "rc_calibrated", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rcCalibrated,			0, 1, 0, "" },
-		{ "rc_smoothing", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.rcSmoothingFactor,		0.1, 4.0, 1.0, "" },
+		{ "rc_smoothing", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.rcSmoothingFactor,		0.0, 4.0, 1.0, "" },
 
 		{ "stick_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[PITCH], 		0, EXPO_CURVE_END, ACRO_PLUS, "" },
 		{ "throttle_curve", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[THROTTLE], 	0, EXPO_CURVE_END, NO_EXPO, "" },

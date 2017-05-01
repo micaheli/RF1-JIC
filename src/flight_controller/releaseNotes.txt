@@ -1079,6 +1079,7 @@ Version 0.245.083 BETA:
 	New PID scaling based on percentage of defaults
 		Default values are now 30%
 		Range is 0% through 100% of defaults
+	Reduced s.port telemtry output speed
 
 #Features in current development:
 #	MSP OSD compatibility
