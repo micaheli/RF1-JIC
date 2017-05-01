@@ -203,17 +203,17 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 100.00, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 105.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 110.00, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 1150.00, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 0900.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 0700.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 900.00, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 700.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 900.00, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
 
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 0, 0.000, "" },
  		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 0, 0.000, "" },
@@ -468,6 +468,31 @@ char *ftoa6(float x, char *floatString)
 void ValidateConfigSettings(void)
 {
 	uint32_t x;
+
+	//if one PID value is wrong we reset them all
+	if (
+		(mainConfig.pidConfig[YAW].kp > 100.0f)   || (mainConfig.pidConfig[YAW].kp < 0.0f)   ||
+		(mainConfig.pidConfig[YAW].ki > 100.0f)   || (mainConfig.pidConfig[YAW].ki < 0.0f)   ||
+		(mainConfig.pidConfig[YAW].kd > 100.0f)   || (mainConfig.pidConfig[YAW].kd < 0.0f)   ||
+		(mainConfig.pidConfig[ROLL].kp > 100.0f)  || (mainConfig.pidConfig[ROLL].kp < 0.0f)  ||
+		(mainConfig.pidConfig[ROLL].ki > 100.0f)  || (mainConfig.pidConfig[ROLL].ki < 0.0f)  ||
+		(mainConfig.pidConfig[ROLL].kd > 100.0f)  || (mainConfig.pidConfig[ROLL].kd < 0.0f)  ||
+		(mainConfig.pidConfig[PITCH].kp > 100.0f) || (mainConfig.pidConfig[PITCH].kp < 0.0f) ||
+		(mainConfig.pidConfig[PITCH].ki > 100.0f) || (mainConfig.pidConfig[PITCH].ki < 0.0f) ||
+		(mainConfig.pidConfig[PITCH].kd > 100.0f) || (mainConfig.pidConfig[PITCH].kd < 0.0f)
+	   )
+	{
+		mainConfig.pidConfig[YAW].kp   = DEFAULT_PID_CONFIG_VALUE;
+		mainConfig.pidConfig[YAW].ki   = DEFAULT_PID_CONFIG_VALUE;
+		mainConfig.pidConfig[YAW].kd   = DEFAULT_PID_CONFIG_VALUE;
+		mainConfig.pidConfig[ROLL].kp  = DEFAULT_PID_CONFIG_VALUE;
+		mainConfig.pidConfig[ROLL].ki  = DEFAULT_PID_CONFIG_VALUE;
+		mainConfig.pidConfig[ROLL].kd  = DEFAULT_PID_CONFIG_VALUE;
+		mainConfig.pidConfig[PITCH].kp = DEFAULT_PID_CONFIG_VALUE;
+		mainConfig.pidConfig[PITCH].ki = DEFAULT_PID_CONFIG_VALUE;
+		mainConfig.pidConfig[PITCH].kd = DEFAULT_PID_CONFIG_VALUE;
+	}
+
 
 	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 	{

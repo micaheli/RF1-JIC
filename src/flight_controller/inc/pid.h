@@ -12,6 +12,18 @@
 #define MAX_KI 0.25f
 #define MAX_KD 0.30f
 
+
+#define DEFAULT_PID_CONFIG_VALUE 30.0f
+#define DEFAULT_YAW_KP           100.0f
+#define DEFAULT_ROLL_KP          105.0f
+#define DEFAULT_PITCH_KP         110.0f
+#define DEFAULT_YAW_KI           1150.0f
+#define DEFAULT_ROLL_KI          0900.0f
+#define DEFAULT_PITCH_KI         0700.0f
+#define DEFAULT_YAW_KD           900.0f
+#define DEFAULT_ROLL_KD          700.0f
+#define DEFAULT_PITCH_KD         900.0f
+
 enum { KP = 0, KD, KI, PID_VARIABLE_COUNT }; // why is there a blank enum here kalyn?
 
 typedef struct {

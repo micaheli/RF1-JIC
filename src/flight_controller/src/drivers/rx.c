@@ -800,9 +800,6 @@ void InitRcData(void)
 	armingStructure.failsafeHappend = 0;
 	armingStructure.activeFailsafe  = 0;
 
-
-	smoothingInterval = (loopSpeed.khzDivider * packetTime * mainConfig.rcControlsConfig.rcSmoothingFactor ); //todo: calculate this number to be number of loops between PID loops
-	smoothingIntervalThrottle = (loopSpeed.khzDivider * packetTime ); //todo: calculate this number to be number of loops between PID loops
 	//88  for spektrum at  8 KHz loop time
 	//264 for spektrum at 24 KHz loop time
 	//352 for spektrum at 32 KHz loop time
@@ -1028,6 +1025,9 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     static int32_t factor = 0;
     int32_t channel;
 
+	smoothingInterval = lrintf((float)loopSpeed.khzDivider * (float)packetTime * mainConfig.rcControlsConfig.rcSmoothingFactor ); //todo: calculate this number to be number of loops between PID loops
+	//smoothingIntervalThrottle = lrintf((float)loopSpeed.khzDivider * (float)packetTime ); //todo: calculate this number to be number of loops between PID loops
+
     if (isRxDataNew)
     {
 
@@ -1036,14 +1036,14 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 
         for (channel=3; channel >= 0; channel--)
         {
-			if (channel == THROTTLE)
-			{
-				deltaRC[channel] = curvedRcCommandF[channel] -  (lastCommand[channel] - ((deltaRC[channel] * (float)factor) / (float)smoothingIntervalThrottle));
-			}
-			else
-			{
+			//if (channel == THROTTLE)
+			//{
+			//	deltaRC[channel] = curvedRcCommandF[channel] -  (lastCommand[channel] - ((deltaRC[channel] * (float)factor) / (float)smoothingIntervalThrottle));
+			//}
+			//else
+			//{
 				deltaRC[channel] = curvedRcCommandF[channel] -  (lastCommand[channel] - ((deltaRC[channel] * (float)factor) / (float)smoothingInterval));
-			}
+			//}
             lastCommand[channel] = curvedRcCommandF[channel];
         }
         factor = smoothingInterval - 1;

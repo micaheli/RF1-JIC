@@ -32,41 +32,52 @@ void InitPid (void)
 
 	uhOhRecover = 0; //unset recover mode
 
+	pidsUsed[YAW].kp   = (DEFAULT_YAW_KP * mainConfig.pidConfig[YAW].kp) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[YAW].ki   = (DEFAULT_YAW_KI * mainConfig.pidConfig[YAW].ki) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[YAW].kd   = (DEFAULT_YAW_KD * mainConfig.pidConfig[YAW].kd) / DEFAULT_PID_CONFIG_VALUE;
+
+	pidsUsed[ROLL].kp  = (DEFAULT_ROLL_KP * mainConfig.pidConfig[ROLL].kp) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[ROLL].ki  = (DEFAULT_ROLL_KI * mainConfig.pidConfig[ROLL].ki) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[ROLL].kd  = (DEFAULT_ROLL_KD * mainConfig.pidConfig[ROLL].kd) / DEFAULT_PID_CONFIG_VALUE;
+
+	pidsUsed[PITCH].kp = (DEFAULT_PITCH_KP * mainConfig.pidConfig[PITCH].kp) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[PITCH].ki = (DEFAULT_PITCH_KI * mainConfig.pidConfig[PITCH].ki) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[PITCH].kd = (DEFAULT_PITCH_KD * mainConfig.pidConfig[PITCH].kd) / DEFAULT_PID_CONFIG_VALUE;
+	//cross multiply pids
+
 	if (mainConfig.mixerConfig.mixerStyle == 1)
 	{
-		//mainConfig.pidConfig[0].ga = 0;
-		pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 100000;
-		pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 50000) * loopSpeed.dT;
-		pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[0].wc = mainConfig.pidConfig[0].wc = (mainConfig.pidConfig[0].ga * 0.333);
+		pidsUsed[YAW].kp = pidsUsed[YAW].kp  / 100000;
+		pidsUsed[YAW].ki = (pidsUsed[YAW].ki / 50000) * loopSpeed.dT;
+		pidsUsed[YAW].kd = (pidsUsed[YAW].kd / 200000000)  / loopSpeed.dT;
+		pidsUsed[YAW].wc = mainConfig.pidConfig[0].wc  = (mainConfig.pidConfig[YAW].ga * 0.333);
 
-		pidsUsed[1].kp = mainConfig.pidConfig[1].kp  / 100000;
-		pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 50000) * loopSpeed.dT;
-		pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[1].wc = mainConfig.pidConfig[1].wc = (mainConfig.pidConfig[0].ga * 0.333);
+		pidsUsed[ROLL].kp = pidsUsed[ROLL].kp  / 100000;
+		pidsUsed[ROLL].ki = (pidsUsed[ROLL].ki / 50000) * loopSpeed.dT;
+		pidsUsed[ROLL].kd = (pidsUsed[ROLL].kd / 200000000)  / loopSpeed.dT;
+		pidsUsed[ROLL].wc = mainConfig.pidConfig[ROLL].wc  = (mainConfig.pidConfig[ROLL].ga * 0.333);
 
-		pidsUsed[2].kp = mainConfig.pidConfig[2].kp  / 100000;
-		pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 50000) * loopSpeed.dT;
-		pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[2].wc = mainConfig.pidConfig[2].wc = (mainConfig.pidConfig[0].ga * 0.333);
+		pidsUsed[PITCH].kp = pidsUsed[PITCH].kp  / 100000;
+		pidsUsed[PITCH].ki = (pidsUsed[PITCH].ki / 50000) * loopSpeed.dT;
+		pidsUsed[PITCH].kd = (pidsUsed[PITCH].kd / 200000000)  / loopSpeed.dT;
+		pidsUsed[PITCH].wc = mainConfig.pidConfig[PITCH].wc  = (mainConfig.pidConfig[PITCH].ga * 0.333);
 	}
 	else
 	{
-		//mainConfig.pidConfig[0].ga = 0;
-		pidsUsed[0].kp = mainConfig.pidConfig[0].kp  / 50000;
-		pidsUsed[0].ki = (mainConfig.pidConfig[0].ki / 25000) * loopSpeed.dT;
-		pidsUsed[0].kd = (mainConfig.pidConfig[0].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[0].wc = mainConfig.pidConfig[0].wc = (mainConfig.pidConfig[0].ga * 0.333);
+		pidsUsed[YAW].kp = pidsUsed[YAW].kp  / 50000;
+		pidsUsed[YAW].ki = (pidsUsed[YAW].ki / 25000) * loopSpeed.dT;
+		pidsUsed[YAW].kd = (pidsUsed[YAW].kd / 100000000)  / loopSpeed.dT;
+		pidsUsed[YAW].wc = mainConfig.pidConfig[0].wc  = (mainConfig.pidConfig[YAW].ga * 0.333);
 
-		pidsUsed[1].kp = mainConfig.pidConfig[1].kp  / 50000;
-		pidsUsed[1].ki = (mainConfig.pidConfig[1].ki / 25000) * loopSpeed.dT;
-		pidsUsed[1].kd = (mainConfig.pidConfig[1].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[1].wc = mainConfig.pidConfig[1].wc = (mainConfig.pidConfig[0].ga * 0.333);
+		pidsUsed[ROLL].kp = pidsUsed[ROLL].kp  / 50000;
+		pidsUsed[ROLL].ki = (pidsUsed[ROLL].ki / 25000) * loopSpeed.dT;
+		pidsUsed[ROLL].kd = (pidsUsed[ROLL].kd / 100000000)  / loopSpeed.dT;
+		pidsUsed[ROLL].wc = mainConfig.pidConfig[ROLL].wc  = (mainConfig.pidConfig[ROLL].ga * 0.333);
 
-		pidsUsed[2].kp = mainConfig.pidConfig[2].kp  / 50000;
-		pidsUsed[2].ki = (mainConfig.pidConfig[2].ki / 25000) * loopSpeed.dT;
-		pidsUsed[2].kd = (mainConfig.pidConfig[2].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[2].wc = mainConfig.pidConfig[2].wc = (mainConfig.pidConfig[0].ga * 0.333);
+		pidsUsed[PITCH].kp = pidsUsed[PITCH].kp  / 50000;
+		pidsUsed[PITCH].ki = (pidsUsed[PITCH].ki / 25000) * loopSpeed.dT;
+		pidsUsed[PITCH].kd = (pidsUsed[PITCH].kd / 100000000)  / loopSpeed.dT;
+		pidsUsed[PITCH].wc = mainConfig.pidConfig[PITCH].wc  = (mainConfig.pidConfig[PITCH].ga * 0.333);
 	}
 
 	for (axis = 2; axis >= 0; --axis)
