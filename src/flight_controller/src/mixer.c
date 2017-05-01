@@ -111,9 +111,9 @@ volatile float servoOutput[MAX_SERVO_NUMBER];
 int32_t activeMotorCounter = -1; //number of active motors minus 1
 
 static float throttleCurve[ATTENUATION_CURVE_SIZE]      = {0.000f, 0.125f, 0.250f, 0.375f, 0.500f, 0.625f, 0.750f, 0.875f, 1.000f};
-static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.000f, 1.000f, 1.000f, 1.000f, 1.000f, 1.000f, 1.000f, 1.000f, 1.000f};
-static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.300f, 1.150f, 1.000f, 0.770f, 0.550f, 0.500f, 0.450f, 0.500f, 0.550f};
-static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.300f, 1.150f, 1.000f, 0.770f, 0.550f, 0.500f, 0.450f, 0.500f, 0.550f};
+static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.20, 1.10, 1.00, 0.90, 0.80, 0.90, 1.00, 1.10, 1.20};
+static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.20, 1.10, 1.00, 0.90, 0.80, 0.90, 1.00, 1.10, 1.20};
+static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.20, 1.10, 1.00, 0.90, 0.80, 0.90, 1.00, 1.10, 1.20};
 
 static void PrintThrottleCurve(void);
 static void PrintTpaKp(void);
@@ -125,6 +125,7 @@ static void BuildThrottleLookupTableKi(void);
 static void BuildThrottleLookupTableKd(void);
 
 static float ApplyAttenuationCurve (float input, float curve[], uint32_t curveSize);
+static float ApplyAttenuationOldCurve (float input, float curve[], uint32_t curveSize);
 
 static void BuildThrottleLookupTable(void)
 {
@@ -518,6 +519,23 @@ static float ApplyAttenuationCurve (float inputAttn, float curve[], uint32_t cur
 		return(curve[position] + (((curve[position+1] - curve[position]) * remainder)));
 }
 
+static float ApplyAttenuationOldCurve (float inputAttn, float curve[], uint32_t curveSize)
+{
+    uint32_t indexAttn;
+    float remainderAttn;
+#ifdef STM32F446xx
+    return(1.0f);
+#endif
+    remainderAttn = (float)((float)inputAttn * (float)curveSize);
+    indexAttn =(int)remainderAttn;
+    if (indexAttn == 0)
+        return (curve[0]);
+    else
+    {
+        remainderAttn = remainderAttn - (float)indexAttn;
+        return (curve[indexAttn-1] + (curve[indexAttn] * remainderAttn));
+    }
+}
 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
 inline float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn)

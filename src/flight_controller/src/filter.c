@@ -248,7 +248,7 @@ void OldInitPaf(paf_state *state, float q, float r, float p, float intial_value)
 	state->q = q * 0.000001f;
 	state->r = r * 0.001f;
 	state->p = p * 0.001f;
-	state->x = intial_value * 16.4f;
+	state->x = intial_value * 164.0f;
 	state->output = intial_value;
 }
 
@@ -258,9 +258,9 @@ void OldPafUpdate(paf_state *state, float measurement)
 	state->p = state->p + state->q;
 	//measurement update
 	state->k = state->p / (state->p + state->r);
-	state->x = state->x + state->k * (measurement * 16.4f - state->x);
+	state->x = state->x + state->k * (measurement * 164.0f - state->x);
 	state->p = (1.0f - state->k) * state->p;
-	state->output = (state->x * 0.06097560975f);
+	state->output = (state->x * 0.006097560975f);
 }
 
 void InitPaf(paf_state *state, float q, float r, float p, float intial_value)

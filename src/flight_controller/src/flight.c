@@ -363,7 +363,6 @@ void InitFlightCode(void)
 		{
 			loopUsed = LOOP_H16;
 		}
-		
 	}
 
 	//set loopSpeed variables based on requested option
@@ -894,6 +893,9 @@ inline void InlineFlightCode(float dpsGyroArray[])
 		}
 
 	}
+
+	if(mainConfig.filterConfig[1].gyro.p > 1.5f)
+		return;
 
 	gyroAdder[ROLL]  += filteredGyroData[ROLL];
 	gyroAdder[PITCH] += filteredGyroData[PITCH];

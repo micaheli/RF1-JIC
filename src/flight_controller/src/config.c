@@ -20,9 +20,31 @@ static void     SetValue(uint32_t position, char *value);
 static void     DlflStatusDump(void);
 static int32_t  GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray);
 
-//static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-
+/*
+set yaw_kp=130.000
+set roll_kp=110.000
+set pitch_kp=120.000
+set yaw_ki=1400.000
+set roll_ki=1200.000
+set pitch_ki=1400.000
+set yaw_kd=600.000
+set roll_kd=400.000
+set pitch_kd=500.000
+set yaw_ga=12
+set roll_ga=0
+set pitch_ga=0
+set yaw_quick=10.000
+set yaw_rap=88.000
+set roll_quick=25.000
+set roll_rap=88.000
+set pitch_quick=25.000
+set pitch_rap=88.000
+set yaw_kd_rap=45.000
+set roll_kd_rap=45.000
+set pitch_kd_rap=45.000
+set skunk=0.000
+save
+*/
 const string_comp_rec vtxStringCompTable[] = {
 		//telemetry.h.h
 		{"a1", VTX_CH_A1 },
@@ -181,17 +203,17 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 095.00, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 090.00, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 105.00, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 500, 130.00, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 500, 110.00, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 500, 120.00, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 1100.00, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 0800.00, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 0900.00, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 3000, 1400.00, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 3000, 1200.00, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 3000, 1400.00, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 1100.00, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 1150.00, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 1400.00, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 3000, 600.00, "" },
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 3000, 400.00, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 3000, 500.00, "" },
 
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 0, 0.000, "" },
  		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 0, 0.000, "" },
@@ -202,7 +224,7 @@ const config_variables_rec valueTable[] = {
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 31, 0, "" },
 
 		{ "kd_limit", 			typeFLOAT,  "pids", &mainConfig.pidConfig[0].kdLimit, 					0.1, 1.0, 0.35, "" },
-		{ "ki_limit", 			typeFLOAT,  "pids", &mainConfig.pidConfig[0].kiLimit, 					0.1, 1.0, 0.35, "" },
+		{ "ki_limit", 			typeFLOAT,  "pids", &mainConfig.pidConfig[0].kiLimit, 					0.1, 1.0, 0.15, "" },
 
 		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 05.0, "" },
 		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25.0, 00.1, "" },
@@ -320,7 +342,7 @@ const config_variables_rec valueTable[] = {
 		{ "yaw_acrop", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[YAW],			0, 300, 140, "" },
 
 		{ "drunk", 				typeFLOAT, "filt", &mainConfig.filterConfig[0].gyro.p, 					0, 1, 0.01, "" },
-		{ "skunk", 				typeFLOAT, "filt", &mainConfig.filterConfig[1].gyro.p, 					0, 2.0, 1.0, "" },
+		{ "skunk", 				typeFLOAT, "filt", &mainConfig.filterConfig[1].gyro.p, 					0, 2.0, 0.0, "" },
 
 };
 
@@ -2078,6 +2100,14 @@ void ProcessCommand(char *inString)
 			//RfCustomReplyBuffer("#RFEND");
 			//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#RFEND");
 			//RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("tpaout", inString))
+		{
+			for (uint32_t x=0;x<1000;x++)
+			{
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu\n", (uint32_t)(throttleLookupKp[x] * 100) );
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
 		}
 	else if (!strcmp("eraseallflash", inString))
 		{
