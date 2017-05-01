@@ -31,6 +31,7 @@ uint32_t timeSinceSelfLevelActivated;
 float slpUsed;
 float sliUsed;
 float sldUsed;
+float usedSkunk;
 
 uint32_t khzLoopCounter = 0;
 uint32_t gyroLoopCounter = 0;
@@ -356,7 +357,7 @@ void InitFlightCode(void)
 	}
 
 	//skunk below 0.5f will set 32 KHz to 16 KHz operation
-	if(mainConfig.filterConfig[1].gyro.p < 0.5f)
+	if(usedSkunk < 0.5f)
 	{
 		//true 32Khz
 		if (loopUsed == LOOP_UH32)
@@ -898,7 +899,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 	}
 
-	if(mainConfig.filterConfig[1].gyro.p > 1.5f)
+	if(usedSkunk > 1.5f)
 		return;
 
 	gyroAdder[ROLL]  += filteredGyroData[ROLL];
@@ -1010,6 +1011,7 @@ void InitFlight(void)
 
 	CheckRxToModes(); //check which modes are set whether or not they're enabled
 
+	usedSkunk = mainConfig.filterConfig[1].gyro.p;
 	if ( 
 		ModeSet(M_ATTITUDE) || 
 		ModeSet(M_HORIZON)  || 
@@ -1017,7 +1019,7 @@ void InitFlight(void)
 	   )
 	{
 		//set skunk to 0 which is 16 KHz w/ACC if ACC mode is needed
-		mainConfig.filterConfig[1].gyro.p = 0.0f; 
+		usedSkunk = 0.0f; 
 	}
 
 	DeInitAllowedSoftOutputs();
