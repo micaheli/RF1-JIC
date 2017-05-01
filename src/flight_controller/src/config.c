@@ -20,31 +20,6 @@ static void     SetValue(uint32_t position, char *value);
 static void     DlflStatusDump(void);
 static int32_t  GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray);
 
-/*
-set yaw_kp=130.000
-set roll_kp=110.000
-set pitch_kp=120.000
-set yaw_ki=1400.000
-set roll_ki=1200.000
-set pitch_ki=1400.000
-set yaw_kd=600.000
-set roll_kd=400.000
-set pitch_kd=500.000
-set yaw_ga=12
-set roll_ga=0
-set pitch_ga=0
-set yaw_quick=10.000
-set yaw_rap=88.000
-set roll_quick=25.000
-set roll_rap=88.000
-set pitch_quick=25.000
-set pitch_rap=88.000
-set yaw_kd_rap=45.000
-set roll_kd_rap=45.000
-set pitch_kd_rap=45.000
-set skunk=0.000
-save
-*/
 const string_comp_rec vtxStringCompTable[] = {
 		//telemetry.h.h
 		{"a1", VTX_CH_A1 },

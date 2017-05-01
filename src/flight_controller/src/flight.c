@@ -1008,6 +1008,18 @@ void InitFlight(void)
 
     //TODO: move the check into the init functions.
 
+	CheckRxToModes(); //check which modes are set whether or not they're enabled
+
+	if ( 
+		ModeSet(M_ATTITUDE) || 
+		ModeSet(M_HORIZON)  || 
+		ModeSet(M_GLUE)
+	   )
+	{
+		//set skunk to 0 which is 16 KHz w/ACC if ACC mode is needed
+		mainConfig.filterConfig[1].gyro.p = 0.0f; 
+	}
+
 	DeInitAllowedSoftOutputs();
 
     if (board.flash[0].enabled)
