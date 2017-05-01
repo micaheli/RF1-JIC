@@ -31,7 +31,7 @@ int main(void)
 
     InitFlight();
 
-    InitWatchdog(WATCHDOG_TIMEOUT_32S);
+    InitWatchdog(WATCHDOG_TIMEOUT_2S);
 
     InitSpektrumTelemetry();
 

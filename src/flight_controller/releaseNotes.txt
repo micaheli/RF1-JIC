@@ -1072,6 +1072,8 @@ Version 0.243.082 BETA:
 Version 0.244.083 BETA:
 	New Defaults
 	set skunk=2 disables attitude calculations (Roll Pitch Yaw) using ACC
+	Adjustments to disarming and failsafe handling
+	Adjusted rc smoothing factor
 
 #Features in current development:
 #	MSP OSD compatibility

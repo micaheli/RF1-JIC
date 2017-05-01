@@ -72,6 +72,7 @@ void ArmBoard(void)
 void DisarmBoard(void)
 {
 	boardArmed = 0;
+	ZeroActuators(10000); //make sure hardware PWM is zeroed
 	InitWatchdog(WATCHDOG_TIMEOUT_32S);
 }
 

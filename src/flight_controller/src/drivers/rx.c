@@ -24,8 +24,10 @@ volatile float maxKissRate[3];
 uint32_t skipRxMap    = 0;
 uint32_t progTimer    = 0;
 uint32_t ppmPin       = 99;
-volatile uint32_t progMode      = 0;
-volatile uint32_t armCheckLatch = 0;
+volatile uint32_t progMode        = 0;
+volatile uint32_t armCheckLatch   = 0;
+int32_t smoothingInterval         = 1;
+int32_t smoothingIntervalThrottle = 1;
 
 #define PPM_SYNC_MINIMUM_US 4000
 #define PPM_BUFFER_SIZE 25
@@ -417,7 +419,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 	uint16_t servoPosMask;
 	uint32_t bitShift;
 
-	if ( (InlineMillis() - timeSinceLastPacket)  < 9)
+	if ( (InlineMillis() - timeSinceLastPacket)  < 5)
 		return;
 
 	channelIdMask = 0x7800;
@@ -797,6 +799,13 @@ void InitRcData(void)
 	armingStructure.rxTimeout       = 0;
 	armingStructure.failsafeHappend = 0;
 	armingStructure.activeFailsafe  = 0;
+
+
+	smoothingInterval = (loopSpeed.khzDivider * packetTime * mainConfig.rcControlsConfig.rcSmoothingFactor ); //todo: calculate this number to be number of loops between PID loops
+	smoothingIntervalThrottle = (loopSpeed.khzDivider * packetTime ); //todo: calculate this number to be number of loops between PID loops
+	//88  for spektrum at  8 KHz loop time
+	//264 for spektrum at 24 KHz loop time
+	//352 for spektrum at 32 KHz loop time
 }
 
 
@@ -1019,11 +1028,6 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     static int32_t factor = 0;
     int32_t channel;
 
-    int32_t smoothingInterval = (loopSpeed.khzDivider * packetTime * mainConfig.rcControlsConfig.rcSmoothingFactor ); //todo: calculate this number to be number of loops between PID loops
-	//88  for spektrum at  8 KHz loop time
-	//264 for spektrum at 24 KHz loop time
-	//352 for spektrum at 32 KHz loop time
-
     if (isRxDataNew)
     {
 
@@ -1032,7 +1036,14 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 
         for (channel=3; channel >= 0; channel--)
         {
-            deltaRC[channel] = curvedRcCommandF[channel] -  (lastCommand[channel] - ((deltaRC[channel] * (float)factor) / (float)smoothingInterval));
+			if (channel == THROTTLE)
+			{
+				deltaRC[channel] = curvedRcCommandF[channel] -  (lastCommand[channel] - ((deltaRC[channel] * (float)factor) / (float)smoothingIntervalThrottle));
+			}
+			else
+			{
+				deltaRC[channel] = curvedRcCommandF[channel] -  (lastCommand[channel] - ((deltaRC[channel] * (float)factor) / (float)smoothingInterval));
+			}
             lastCommand[channel] = curvedRcCommandF[channel];
         }
         factor = smoothingInterval - 1;
