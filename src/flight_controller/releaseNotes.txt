@@ -1053,29 +1053,29 @@ Version 0.238.079 RC17:
 Version 0.239.079 RC18:
 	New defaults
 
-Version 0.240.080 BETA:
+Version 0.240.080 ALPHA:
 	Added "set rc_smoothing = 1.0"
 		You can range it from 0.1 to 4.0 to decrease or increase the smoothing effect with 1.0 being default
 			Does not function in direct mode
 	set skunk = 1 will change flight code to RC12 opperation
 	set skunk = 0 will change flight code to RC1 opperation
 
-Version 0.241.080 BETA:
+Version 0.241.080 ALPHA:
 	Adjust defaults
 
-Version 0.242.081 BETA:
+Version 0.242.081 ALPHA:
 	Adjust PID scaling to be thge same between skunks
 
-Version 0.243.082 BETA:
+Version 0.243.082 ALPHA:
 	New Defaults
 
-Version 0.244.083 BETA:
+Version 0.244.083 ALPHA:
 	New Defaults
 	set skunk=2 disables attitude calculations (Roll Pitch Yaw) using ACC
 	Adjustments to disarming and failsafe handling
 	Adjusted rc smoothing factor
 
-Version 0.245.083 BETA:
+Version 0.245.083 ALPHA:
 	New PID scaling based on percentage of defaults
 		Default values are now 30%
 		Range is 0% through 100% of defaults
@@ -1084,7 +1084,8 @@ Version 0.245.083 BETA:
 		33% is the old default
 		The new default is 100%
 
-
+Version 0.246.083 BETA:
+	Tweak defaults
 
 
 
