@@ -10,7 +10,7 @@ biquad_state lpfFilterStateAcc[AXIS_NUMBER];
 //biquad_state lpfFilterStateNoise[6];
 biquad_state hpfFilterStateAcc[6];
 
-float kdFiltUsed[AXIS_NUMBER];
+float gyroFiltUsed[AXIS_NUMBER];
 float accNoise[6];
 float averagedGyroData[AXIS_NUMBER][GYRO_AVERAGE_MAX_SUM];
 uint32_t averagedGyroDataPointer[AXIS_NUMBER];
@@ -249,9 +249,9 @@ void InitFlightCode(void)
 	uint32_t validLoopConfig = 0;
 
 	//biquad doesn't work unless we do this
-	kdFiltUsed[YAW]   = mainConfig.filterConfig[YAW].kd.r;
-	kdFiltUsed[ROLL]  = mainConfig.filterConfig[ROLL].kd.r;
-	kdFiltUsed[PITCH] = mainConfig.filterConfig[PITCH].kd.r;
+	//kdFiltUsed[YAW]   = mainConfig.filterConfig[YAW].kd.r;
+	//kdFiltUsed[ROLL]  = mainConfig.filterConfig[ROLL].kd.r;
+	//kdFiltUsed[PITCH] = mainConfig.filterConfig[PITCH].kd.r;
 
 	//bzero(lpfFilterStateNoise,sizeof(lpfFilterStateNoise));
 	bzero(lpfFilterState,sizeof(lpfFilterState));
@@ -525,6 +525,10 @@ void InitFlightCode(void)
 	fullKiLatched       = 0;
 	flightcodeTime      = 0.0f;
 
+	gyroFiltUsed[YAW]   = (100.0f - mainConfig.filterConfig[YAW].gyro.q);
+	gyroFiltUsed[ROLL]  = (100.0f - mainConfig.filterConfig[ROLL].gyro.q);
+	gyroFiltUsed[PITCH] = (100.0f - mainConfig.filterConfig[PITCH].gyro.q);
+	
 	InlineInitGyroFilters();
 	//InlineInitKdFilters();
 	InlineInitSpectrumNoiseFilter();
@@ -542,9 +546,9 @@ inline void InlineInitGyroFilters(void)
 	for (axis = 2; axis >= 0; --axis)
 	{
 		if (mainConfig.filterConfig[0].filterType == 0)
-			OldInitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, 88.0f, 0.0f, filteredGyroData[axis]);
+			OldInitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], 88.0f, 0.0f, filteredGyroData[axis]);
 		else 
-			InitPaf( &pafGyroStates[axis], mainConfig.filterConfig[axis].gyro.q, 0.088f, 0.0f, filteredGyroData[axis]);
+			InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], 0.088f, 0.0f, filteredGyroData[axis]);
 	}
 
 }

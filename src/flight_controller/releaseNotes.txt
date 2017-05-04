@@ -1098,6 +1098,8 @@ Version 0.247.083 BETA:
 		Dshot as programmed is far too CPU intensive and must be redesigned for BLHeli_s use
 	Configurator improvements
 
+Version 0.248.084 BETA:
+	Filter values now range from 0% to 100% with 100% being maximum filtering
 
 #Features in current development:
 #	MSP OSD compatibility
