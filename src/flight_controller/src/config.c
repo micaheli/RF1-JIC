@@ -178,17 +178,17 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 100, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
 
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 0, 0.000, "" },
  		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 0, 0.000, "" },
