@@ -14,15 +14,18 @@
 
 
 #define DEFAULT_PID_CONFIG_VALUE 30.0f
-#define DEFAULT_YAW_KP           100.0f
-#define DEFAULT_ROLL_KP          105.0f
-#define DEFAULT_PITCH_KP         110.0f
+
+#define DEFAULT_YAW_KP           125.0f
+#define DEFAULT_ROLL_KP          125.0f
+#define DEFAULT_PITCH_KP         130.0f
+
 #define DEFAULT_YAW_KI           1500.0f
 #define DEFAULT_ROLL_KI          1100.0f
 #define DEFAULT_PITCH_KI         1200.0f
-#define DEFAULT_YAW_KD           900.0f
-#define DEFAULT_ROLL_KD          700.0f
-#define DEFAULT_PITCH_KD         900.0f
+
+#define DEFAULT_YAW_KD           1500.0f
+#define DEFAULT_ROLL_KD          1200.0f
+#define DEFAULT_PITCH_KD         1500.0f
 
 enum { KP = 0, KD, KI, PID_VARIABLE_COUNT }; // why is there a blank enum here kalyn?
 

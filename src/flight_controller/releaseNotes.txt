@@ -1087,7 +1087,16 @@ Version 0.245.083 ALPHA:
 Version 0.246.083 BETA:
 	Tweak defaults
 
-
+Version 0.247.083 BETA:
+	Fixed spektrum telemetry scale
+	Added deadband to spektrum telemetry I/O
+	General Spektrum telemetry improvments
+	Tweaked PID defaults
+		Made Kp, Ki and Kd adjustmens stronger
+	Removed dshot from blheli_s builds
+		ESC bins are Multishot only until the new protocol is ready
+		Dshot as programmed is far too CPU intensive and must be redesigned for BLHeli_s use
+	Configurator improvements
 
 
 #Features in current development:
