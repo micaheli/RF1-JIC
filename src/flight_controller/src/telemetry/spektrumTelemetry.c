@@ -289,7 +289,7 @@ void textMenuUpdate(void)
 		if (progMode != 0)
 		{
 			//vertical stick
-			if (rxData[2] > 1224 && pidSpektrumTelem.vStickStatus != 1)
+			if (trueRcCommandF[PITCH] > 0.25f && pidSpektrumTelem.vStickStatus != 1)
 			{
 				if (pidSpektrumTelem.column == 0)
 				{
@@ -302,7 +302,7 @@ void textMenuUpdate(void)
 
 				pidSpektrumTelem.vStickStatus = 1;
 			}
-			else if (rxData[2] < 824 && pidSpektrumTelem.vStickStatus != -1)
+			else if (trueRcCommandF[PITCH] < -0.25f && pidSpektrumTelem.vStickStatus != -1)
 			{
 				if (pidSpektrumTelem.column == 0)
 				{
@@ -314,13 +314,13 @@ void textMenuUpdate(void)
 				//toggleTime = currentTime;
 				pidSpektrumTelem.vStickStatus = -1;
 			}
-			else if (rxData[2] > 924 && rxData[2] < 1124)
+			else if (trueRcCommandF[PITCH] > -0.10f && trueRcCommandF[PITCH] < 0.10f)
 			{
 				pidSpektrumTelem.vStickStatus = 0;
 			}
 
 			//horizontal stick
-			if (rxData[1] > 1224 && pidSpektrumTelem.hStickStatus != 1)
+			if (trueRcCommandF[ROLL] > 0.25f && pidSpektrumTelem.hStickStatus != 1)
 			{
 				pidSpektrumTelem.column++;
 				//toggleTime = currentTime;
@@ -328,7 +328,7 @@ void textMenuUpdate(void)
 				pidSpektrumTelem.hStickStatus = 1;
 				pidSpektrumTelem.status=CHANGING_SETTING;
 			}
-			else if (rxData[1] < 824 && pidSpektrumTelem.hStickStatus != -1)
+			else if (trueRcCommandF[ROLL] < -0.25f && pidSpektrumTelem.hStickStatus != -1)
 			{
 				pidSpektrumTelem.column--;
 				//toggleTime = currentTime;
@@ -337,7 +337,7 @@ void textMenuUpdate(void)
 				pidSpektrumTelem.status=IDLE;
 
 			}	
-			else if (rxData[1] > 924 && rxData[1] < 1124)
+			else if (trueRcCommandF[ROLL] > -0.10f && trueRcCommandF[ROLL] < 0.10f)
 			{
 				pidSpektrumTelem.hStickStatus = 0;
 			}
@@ -370,7 +370,7 @@ void textMenuUpdate(void)
 
         if (pidSpektrumTelem.row == 2)
         	{
-        	pidSpektrumTelem.columnAxis += dataInc;
+        	pidSpektrumTelem.columnAxis += dataInc*-1;
         	if (pidSpektrumTelem.columnAxis > MAX_MENUS)
         		pidSpektrumTelem.columnAxis = MAX_MENUS;
         	if (pidSpektrumTelem.columnAxis < 0)
