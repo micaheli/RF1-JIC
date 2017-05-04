@@ -6,6 +6,7 @@ STR_SRXL_TELEM telemetry;
 STR_SRXL_BIND bind;
 uint8_t spektrumTxBuffer[64];
 
+
 extern STRU_TELE_LAPTIMER lap_timer;
 
 TELEMETRY_STATE telemetryState = TELEM_START;
@@ -25,7 +26,7 @@ void InitSpektrumTelemetry(void) {
 	bzero(&pidSpektrumTelem, sizeof(pidSpektrumTelem));
 
 	pidSpektrumTelem.row = 2;
-	pidSpektrumTelem.status = IDLE;
+	pidSpektrumTelem.status = STARTUP;
 	/*
 	bzero(telemetry, sizeof(STR_SRXL_TELEM));
 	bzero(bind, sizeof(STR_SRXL_BIND));
@@ -409,26 +410,23 @@ void textMenuUpdate(void)
 			switch(pidSpektrumTelem.row)
 			{
 				case (3):
-					mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp += dataInc * 10;
+					mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp += dataInc; // kp
 				    break;
 				case (4):
-		            mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki += dataInc * 10;
+		            mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki += dataInc; //ki
 				    break;
 				case (5):
-		            mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd += dataInc * 50;
+		            mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd += dataInc; //kd
 				    break;
 				case (6):
-					mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q += dataInc * 5;
+					mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q += dataInc; //filter
 				    break;
 				case (7):
-					mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga += dataInc * 1;
+					mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga += dataInc ;
 				    break;
 				case (8):
 				    if (pidSpektrumTelem.column ==1)
 				    {
-						resetBoard = 1;
-				    	SaveConfig(ADDRESS_CONFIG_START);
-						SystemReset();
 						pidSpektrumTelem.column = 0;
 						pidSpektrumTelem.status=SAVING;
 						pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
@@ -451,7 +449,7 @@ void textMenuUpdate(void)
 			strcpy(stringArray[3], " Rate:");
 			strcpy(stringArray[4], " Expo:");
 			strcpy(stringArray[5], " Acro:");
-			strcpy(stringArray[6], "  ");
+			strcpy(stringArray[6], " DeadBand: ");
 			strcpy(stringArray[7], "  ");
 			strcpy(stringArray[8], " Save");
 
@@ -459,20 +457,20 @@ void textMenuUpdate(void)
 			switch(pidSpektrumTelem.row)
 			{
 				case (3):
-					mainConfig.rcControlsConfig.rates[pidSpektrumTelem.columnAxis-3] += dataInc * 10; // subtract three to make axis line up with enumeration
+					mainConfig.rcControlsConfig.rates[pidSpektrumTelem.columnAxis-3] += dataInc; // subtract three to make axis line up with enumeration
 				    break;
 				case (4):
-					mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3] += dataInc * 10;
+					mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3] += dataInc;
 				    break;
 				case (5):
-			        mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3] += dataInc * 10;
+			        mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3] += dataInc;
 				    break;
+				case (6):
+					mainConfig.rcControlsConfig.deadBand[pidSpektrumTelem.columnAxis-3] += dataInc * .001;
+					break;
 				case (8):
 		            if (pidSpektrumTelem.column ==1)
 					{
-						resetBoard = 1;
-					 	SaveConfig(ADDRESS_CONFIG_START);
-						SystemReset();
 					 	pidSpektrumTelem.column = 0;
 						pidSpektrumTelem.status=SAVING;
 						pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
@@ -486,6 +484,7 @@ void textMenuUpdate(void)
 			itoa(mainConfig.rcControlsConfig.rates[pidSpektrumTelem.columnAxis-3], &stringArray[3][6], 10);
 			itoa(mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3], &stringArray[4][6], 10);
 			itoa(mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3], &stringArray[5][6], 10);
+			itoa((mainConfig.rcControlsConfig.deadBand[pidSpektrumTelem.columnAxis-3]) * 1000 , &stringArray[6][10], 10);
 
 
 		}
@@ -500,7 +499,7 @@ void textMenuUpdate(void)
         	//
         	//set menu, Always have a space before
 			strcpy(stringArray[3], " LedCount:");
-			strcpy(stringArray[4], " ");
+			strcpy(stringArray[4], "");
 			strcpy(stringArray[5], " ");
 			strcpy(stringArray[6], "  ");
 			strcpy(stringArray[7], "  ");
@@ -519,9 +518,6 @@ void textMenuUpdate(void)
 						case (8):
 							if (pidSpektrumTelem.column ==1)
 							{
-								resetBoard = 1;
-								SaveConfig(ADDRESS_CONFIG_START);
-								SystemReset();
 								pidSpektrumTelem.column = 0;
 								pidSpektrumTelem.status=SAVING;
 								pidSpektrumTelem.waitTime=pidSpektrumTelem.currentTime;
@@ -534,25 +530,38 @@ void textMenuUpdate(void)
 					//fills in the rows with the data
 					itoa(mainConfig.ledConfig.ledCount, &stringArray[3][10], 10);
 
+
 		}
 /*------------------------------Switch for different status-----------------------------------------------------------------------*/
 		switch(pidSpektrumTelem.status)
 		{
 
 			case (SAVING):
-				strcpy(stringArray[0], " Saved");
-				if (pidSpektrumTelem.currentTime-pidSpektrumTelem.waitTime > 500)
-					pidSpektrumTelem.status=IDLE;
+				strcpy(stringArray[0], " Saving");
+				strcpy(stringArray[1], " ");
+				strcpy(stringArray[2], " Your Revolt ");
+				strcpy(stringArray[3], " Will Now ");
+				strcpy(stringArray[4], " Restart ");
+				strcpy(stringArray[5], " Please Wait.. ");
+				strcpy(stringArray[6], " ");
+				strcpy(stringArray[7], " ");
+				strcpy(stringArray[8], " ");
+
+				if (pidSpektrumTelem.currentTime-pidSpektrumTelem.waitTime > 1500)
+				{
+					SaveConfig(ADDRESS_CONFIG_START);
+					pidSpektrumTelem.status=STARTUP;
+					resetBoard = 1;
+					SystemReset();
+				}
 				break;
 
 			case (IDLE):
 				if (pidSpektrumTelem.row < 2)
 					pidSpektrumTelem.row = 2;
-				strcpy(stringArray[0], " RF1 Tuning");
-				strcpy(stringArray[1], "------------------------ ");
-				strcpy(stringArray[2], " ");
-				strcpy(&stringArray[2][1], axisTable[pidSpektrumTelem.columnAxis]);
 
+			 	strcpy(stringArray[2], " ");
+				strcpy(&stringArray[2][1], axisTable[pidSpektrumTelem.columnAxis]);
 
 				if (progMode)
 				{
@@ -563,6 +572,22 @@ void textMenuUpdate(void)
 			case (CHANGING_SETTING):
 				strcpy(&stringArray[2][1], axisTable[pidSpektrumTelem.columnAxis]);
 				stringArray[pidSpektrumTelem.row][0] = '*';
+				break;
+			case (STARTUP):
+				if (pidSpektrumTelem.row < 2)
+					pidSpektrumTelem.row = 2;
+
+				strcpy(stringArray[0], " RF1 Tuning");
+				strcpy(stringArray[1], "------------------------ ");
+				strcpy(stringArray[2], "Welcome ");
+				strcpy(stringArray[3], "To ");
+				strcpy(stringArray[4], "Raceflight One ");
+				strcpy(stringArray[5], "");
+				strcpy(stringArray[6], " ");
+				strcpy(stringArray[7], " ");
+				strcpy(stringArray[8], " ");
+
+				pidSpektrumTelem.status = IDLE;
 				break;
 		}
 

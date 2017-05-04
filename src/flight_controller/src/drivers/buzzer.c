@@ -9,7 +9,8 @@ uint32_t lostBuzzArray[]     = {500,100,500,150,500,1};
 uint32_t failsafeBuzzArray[] = {500,100,500,150,500,1};
 uint32_t errorBuzzArray[]    = {100,200,300,400,500,600,700,1};
 uint32_t armingBuzzArray[]   = {100,100,100,100,100,0};
-uint32_t batteryBuzzArray[]  = {200,50,100,50,200,50,100,0};
+//uint32_t lowBatteryBuzzArray[]  = {200,0,0,0,0,0,0,0,0,0,0,0,0,0};
+uint32_t deadBatteryBuzzArray[]  = {200,50,100,50,200,50,100,0};
 
 void InitBuzzer(void)
 {
@@ -85,8 +86,11 @@ void UpdateBuzzer(void)
 		case STATE_BUZZER_STARTUP:
 			ComplexBuzz(timeNow, startBuzzArray);
 			break;
-		case STATE_BUZZER_LOWBAT:
-			ComplexBuzz(timeNow, batteryBuzzArray);
+		case STATE_BUZZER_DEADBAT:
+			ComplexBuzz(timeNow, deadBatteryBuzzArray);
+			break;
+//		case STATE_BUZZER_LOWBAT:
+//			ComplexBuzz(timeNow, lowBatteryBuzzArray);
 			break;
 		case STATE_BUZZER_ERROR:
 			ComplexBuzz(timeNow, errorBuzzArray);

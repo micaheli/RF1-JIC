@@ -204,6 +204,8 @@ enum
     IDLE=0,
     CHANGING_SETTING=1,
     SAVING=2,
+	STARTUP=3,
+
 };
 
 typedef struct pidSpektrumTelem_t

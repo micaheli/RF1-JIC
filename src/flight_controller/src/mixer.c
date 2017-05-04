@@ -125,7 +125,7 @@ static void BuildThrottleLookupTableKi(void);
 static void BuildThrottleLookupTableKd(void);
 
 static float ApplyAttenuationCurve (float input, float curve[], uint32_t curveSize);
-static float ApplyAttenuationOldCurve (float input, float curve[], uint32_t curveSize);
+//static float ApplyAttenuationOldCurve (float input, float curve[], uint32_t curveSize);
 
 static void BuildThrottleLookupTable(void)
 {
@@ -519,6 +519,7 @@ static float ApplyAttenuationCurve (float inputAttn, float curve[], uint32_t cur
 		return(curve[position] + (((curve[position+1] - curve[position]) * remainder)));
 }
 
+/*
 static float ApplyAttenuationOldCurve (float inputAttn, float curve[], uint32_t curveSize)
 {
     uint32_t indexAttn;
@@ -536,6 +537,7 @@ static float ApplyAttenuationOldCurve (float inputAttn, float curve[], uint32_t 
         return (curve[indexAttn-1] + (curve[indexAttn] * remainderAttn));
     }
 }
+*/
 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
 inline float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn)

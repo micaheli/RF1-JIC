@@ -169,7 +169,7 @@ const config_variables_rec valueTable[] = {
 		{ "adc_current_factor", typeFLOAT, "telm", &mainConfig.telemConfig.adcCurrFactor,				0, 50.0, 34.2, "" },
 		{ "vtx_pitmode_type",	typeUINT,  "telm", &mainConfig.telemConfig.vtxPitmodeType,				0, 1, 0, "" },
 		{ "vbat_buzzer",		typeUINT,  "telm", &mainConfig.telemConfig.vbatbuzzer,					0, 1, 1, "" },
-		{ "vbat_cutoff",		typeFLOAT, "telm", &mainConfig.telemConfig.vbatCutoff,					0, 4.0f, 3.3f, "" },
+		{ "vbat_cutoff",		typeFLOAT, "telm", &mainConfig.telemConfig.vbatCutoff,					0, 4.0f, 3.8f, "" },
 
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, CW315_INV, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1,  0, "" },

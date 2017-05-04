@@ -1,7 +1,7 @@
 #include "includes.h"
 
 #define CHARGED_VOLTAGE 4.0
-#define RUNNING_VOLTAGE 3.85
+#define RUNNING_VOLTAGE 3.80
 //#define DEAD_VOLTAGE    3.65
 
 #define NORMAL_VOLTAGE 3.33
@@ -105,8 +105,16 @@ void CheckBatteryCellCount()
 	if ( (averageVoltage<lowVoltage) && boardArmed && (averageVoltage > 2.0f) && mainConfig.telemConfig.vbatbuzzer )
 	{
 		//turn buzzer on
+		buzzerStatus.status = STATE_BUZZER_DEADBAT;
+	}
+
+	/*
+	if ( (averageVoltage>lowVoltage) && (averageVoltage<runningVoltage)  && (averageVoltage > 2.0f) && mainConfig.telemConfig.vbatbuzzer )
+	{
+		//turn buzzer on
 		buzzerStatus.status = STATE_BUZZER_LOWBAT;
 	}
+	*/
 }
 
 void InitAdc(void)
