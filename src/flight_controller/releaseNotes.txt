@@ -1115,10 +1115,11 @@ Version 0.250.085 BETA:
 	Updated s.port telemetry output
 	Updated LUA output
 
+Version 0.251.085 BETA:
+	Adjusted defaults
 
 
 #Features in current development:
-#	MSP OSD compatibility
 #	MAVlink compatibility
 
 #Features for future development:
