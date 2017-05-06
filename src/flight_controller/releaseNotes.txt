@@ -1110,7 +1110,10 @@ Version 0.249.084 BETA:
 		in console, run "save"
 		On setup tab skip wizard 2 and continue to wizard 3
 
-
+Version 0.250.085 BETA:
+	Updated defaults
+	Updated s.port telemetry output
+	Updated LUA output
 
 
 
