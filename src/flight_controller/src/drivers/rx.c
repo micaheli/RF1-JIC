@@ -545,16 +545,16 @@ void ProcessSbusPacket(uint32_t serialNumber)
 			if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
 				buzzerStatus.status = STATE_BUZZER_OFF;
 
-			rxDataRaw[0] = frame->chan0;
-			rxDataRaw[1] = frame->chan1;
-			rxDataRaw[2] = frame->chan2;
-			rxDataRaw[3] = frame->chan3;
-			rxDataRaw[4] = frame->chan4;
-			rxDataRaw[5] = frame->chan5;
-			rxDataRaw[6] = frame->chan6;
-			rxDataRaw[7] = frame->chan7;
-			rxDataRaw[8] = frame->chan8;
-			rxDataRaw[9] = frame->chan9;
+			rxDataRaw[0]  = frame->chan0;
+			rxDataRaw[1]  = frame->chan1;
+			rxDataRaw[2]  = frame->chan2;
+			rxDataRaw[3]  = frame->chan3;
+			rxDataRaw[4]  = frame->chan4;
+			rxDataRaw[5]  = frame->chan5;
+			rxDataRaw[6]  = frame->chan6;
+			rxDataRaw[7]  = frame->chan7;
+			rxDataRaw[8]  = frame->chan8;
+			rxDataRaw[9]  = frame->chan9;
 			rxDataRaw[10] = frame->chan10;
 			rxDataRaw[11] = frame->chan11;
 			rxDataRaw[12] = frame->chan12;
@@ -723,7 +723,16 @@ void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx)
 		ppmData[6] = (ppmBuffer[15] - ppmBuffer[14]);
 		ppmData[7] = (ppmBuffer[17] - ppmBuffer[16]);
 
-		memcpy(rxDataRaw, ppmData, 8);
+		//memcpy(rxDataRaw, ppmData, 8);
+
+		rxDataRaw[0] = ppmData[0];
+		rxDataRaw[1] = ppmData[1];
+		rxDataRaw[2] = ppmData[2];
+		rxDataRaw[3] = ppmData[3];
+		rxDataRaw[4] = ppmData[4];
+		rxDataRaw[5] = ppmData[5];
+		rxDataRaw[6] = ppmData[6];
+		rxDataRaw[7] = ppmData[7];
 
 		for (x=0;x<8;x++)
 		{
@@ -754,6 +763,7 @@ void ProcessPpmPacket(uint32_t ppmBuffer2[], uint32_t *ppmBufferIdx)
 	}
 
 }
+
 
 void InitRcData(void)
 {
@@ -1080,37 +1090,37 @@ void SetRxDefaults(uint32_t rxProtocol, uint32_t usart)
 	{
 		case USING_CPPM_R:
 		case USING_CPPM_T:
-			mainConfig.rcControlsConfig.midRc[PITCH]         = 1500;
-			mainConfig.rcControlsConfig.midRc[ROLL]          = 1500;
-			mainConfig.rcControlsConfig.midRc[YAW]           = 1500;
-			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX1]          = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX2]          = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX3]          = 1500;
-			mainConfig.rcControlsConfig.midRc[AUX4]          = 1500;
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 1100;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 1100;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 1100;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 1100;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 1100;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 1100;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 1100;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 1100;
 
-			mainConfig.rcControlsConfig.minRc[PITCH]         = 1000;
-			mainConfig.rcControlsConfig.minRc[ROLL]          = 1000;
-			mainConfig.rcControlsConfig.minRc[YAW]           = 1000;
-			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX1]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX2]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX3]          = 1000;
-			mainConfig.rcControlsConfig.minRc[AUX4]          = 1000;
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 800;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 800;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 800;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 800;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 800;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 800;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 800;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 800;
 
-			mainConfig.rcControlsConfig.maxRc[PITCH]         = 2000;
-			mainConfig.rcControlsConfig.maxRc[ROLL]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[YAW]           = 2000;
-			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX1]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX2]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX3]          = 2000;
-			mainConfig.rcControlsConfig.maxRc[AUX4]          = 2000;
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 1400;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 1400;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 1400;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 1400;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1400;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1400;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1400;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1400;
 
-			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
-			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 1;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 0;
 			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
-			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 2;
 			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
 			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
 			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;

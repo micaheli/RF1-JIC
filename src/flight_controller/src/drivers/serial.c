@@ -128,6 +128,7 @@ void UsartInit(uint32_t serialNumber)
 			rxPort = ports[board.serials[serialNumber].RXPort];
 			break;
 		case USING_MSP:
+		case USING_RFOSD:
 		case USING_SPORT:
 		case USING_RFVTX:
 		case USING_SMARTAUDIO:

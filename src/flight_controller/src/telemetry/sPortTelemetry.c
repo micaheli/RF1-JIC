@@ -138,6 +138,7 @@ void FillLuaPacket(void)
 	//int32_t fastTrack = -1;
 	uint32_t cursor = 0;
 	static uint32_t counter=0;
+	static uint32_t directionLatch = 0;
 	volatile char outString[6] = {};
 	volatile uint32_t line, column;
 	//x,y,id,data,data,data
@@ -147,6 +148,7 @@ void FillLuaPacket(void)
 	bzero(charMatrix, sizeof(charMatrix));
 	if (!progMode)
 	{
+		directionLatch = 0;
 		strcpy(charMatrix[0], "RaceFlight One Menu");
 		strcpy(charMatrix[1], "Place both sticks in");
 		strcpy(charMatrix[2], "the bottom center to");
@@ -154,7 +156,6 @@ void FillLuaPacket(void)
 	}
 	else
 	{
-
 		if (programStatus.updateTime == 0)
 		{
 			//init
@@ -182,8 +183,15 @@ void FillLuaPacket(void)
 			programStatus.menuCountdown--;
 			outString[0] = ID_CMD_ERASE; //send a clear command several times to make sure the radio gets it
 		}
-		else if (InlineMillis() - programStatus.updateTime > 250) //500 ms wait time between RX checks
+		else if ( (directionLatch == 0) && (InlineMillis() - programStatus.updateTime > 10) ) //500 ms wait time between RX checks
 		{
+			//we're in program mode, let's check the direction latch
+			//last time we checked we were in the center, set the direction latch if not in center
+			if ( ( ABS(trueRcCommandF[PITCH]) > 0.95) || ( ABS(trueRcCommandF[ROLL]) > 0.95) )
+			{
+				directionLatch = 1;
+			}
+
 			if ( (programStatus.lineActive == PROG_STAT_LINE_INACTIVE) && (trueRcCommandF[PITCH] > 0.95) )
 			{
 				programStatus.line = InlineConstrainui(programStatus.line-1, 0, 4); //cursor up
@@ -236,9 +244,9 @@ void FillLuaPacket(void)
 				{
 					//value up
 					if ( (*programStatus.value[programStatus.line-1]) < 400 )
-						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) + 5.0f;
+						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) + 1.0f;
 					else
-						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) + 50.0f;
+						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) + 1.0f;
 					programStatus.updateTime = InlineMillis();
 				}
 			}
@@ -282,9 +290,15 @@ void FillLuaPacket(void)
 				{
 					//value down
 					if ( (*programStatus.value[programStatus.line-1]) < 400 )
-						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) - 10.0f;
+						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) - 1.0f;
 					else
-						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) - 50.0f;
+						(*programStatus.value[programStatus.line-1]) = (*programStatus.value[programStatus.line-1]) - 1.0f;
+
+					if ( (*programStatus.value[programStatus.line-1]) < 0)
+					{
+						(*programStatus.value[programStatus.line-1]) = 0;
+					}
+
 					programStatus.updateTime = InlineMillis();
 				}
 			}
@@ -344,6 +358,14 @@ void FillLuaPacket(void)
 				programStatus.updateTime = InlineMillis();
 			}
 
+		}
+		else if ( ( ABS(trueRcCommandF[PITCH]) > 0.95) || ( ABS(trueRcCommandF[ROLL]) > 0.95) )
+		{
+
+		}
+		else
+		{
+			directionLatch = 0;
 		}
 
 		//clamp/rollover menu

@@ -1100,6 +1100,19 @@ Version 0.247.083 BETA:
 
 Version 0.248.084 BETA:
 	Filter values now range from 0% to 100% with 100% being maximum filtering
+	Fixes to configurator
+
+Version 0.249.084 BETA:
+	Fixed CPPM selection in GUI
+	To enable CPPM:
+		Connect to USART3 RX pin
+		in console, run "CPPM_R3"
+		in console, run "save"
+		On setup tab skip wizard 2 and continue to wizard 3
+
+
+
+
 
 #Features in current development:
 #	MSP OSD compatibility

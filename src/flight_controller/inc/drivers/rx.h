@@ -122,7 +122,8 @@ enum
 #define USING_MSP              14
 #define USING_RFVTX            15
 #define USING_SMARTAUDIO       16
-#define USING_RX_END           17
+#define USING_RFOSD            17
+#define USING_RX_END           18
 
 extern uint32_t ppmPin;
 extern volatile float maxFlopRate[];
