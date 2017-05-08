@@ -112,7 +112,7 @@ int32_t activeMotorCounter = -1; //number of active motors minus 1
 
 static float throttleCurve[ATTENUATION_CURVE_SIZE]      = {0.000f, 0.125f, 0.250f, 0.375f, 0.500f, 0.625f, 0.750f, 0.875f, 1.000f};
 static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.10, 1.05, 1.00, 0.90, 0.80, 0.90, 1.00, 1.10, 1.20};
-static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.00, 1.00, 1.00, 0.95, 0.90, 0.95, 1.00, 1.05, 1.10};
+static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {0.80, 0.85, 0.90, 0.95, 1.00, 1.00, 1.00, 1.00, 1.00};
 static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.10, 1.05, 1.00, 0.90, 0.80, 0.90, 1.00, 1.10, 1.20};
 
 static void PrintThrottleCurve(void);

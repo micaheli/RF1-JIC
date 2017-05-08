@@ -43,6 +43,7 @@
 #include "telemetry/spektrumTelemetry.h"
 #include "telemetry/smartAudio.h"
 #include "telemetry/rfVtx.h"
+#include "telemetry/rfosdTelemetry.h"
 
 //all drivers
 #include "drivers/adc.h"

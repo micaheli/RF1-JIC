@@ -138,6 +138,7 @@ typedef struct
     uint32_t telemSpek;
     uint32_t telemMsp;
     uint32_t telemMav;
+	uint32_t telemRfOsd;
     float    adcCurrFactor;
 	uint32_t vtxPitmodeType;
 	uint32_t vbatbuzzer;
@@ -154,7 +155,7 @@ typedef struct
 	uint32_t vtxPit;
 	uint32_t vtxRegion;
 	uint32_t vtxFrequency;
-}	vtx_record;
+} vtx_record;
 
 extern volatile vtx_record vtxRequested;
 extern volatile vtx_record vtxRecord;

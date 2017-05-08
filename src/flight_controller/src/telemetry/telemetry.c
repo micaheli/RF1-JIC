@@ -2,6 +2,7 @@
 
 
 volatile uint32_t sendMspAt = 0;
+volatile uint32_t sendRfOsdAt = 0;
 volatile uint32_t sendSmartPortAt = 0;
 volatile uint32_t sendSmartPortLuaAt = 0;
 volatile uint32_t sendSpektrumTelemtryAt = 0;
@@ -66,6 +67,21 @@ void ProcessTelemtry(void)
 				//if not set then we set msp to run in 10 ms.
 				sendMspAt = InlineMillis() + 10;
 			}
+	}
+
+	if (mainConfig.telemConfig.telemRfOsd)
+	{
+		if ( (sendRfOsdAt) && ( InlineMillis() > sendRfOsdAt ) )
+		{
+			//set msp to run in 10 ms
+			sendRfOsdAt = InlineMillis() + 10;
+			HandleRfOsd();
+		}
+		else if (!sendRfOsdAt) 
+		{
+			//if not set then we set msp to run in 10 ms.
+			sendRfOsdAt = InlineMillis() + 10;
+		}
 	}
 
 	if (mainConfig.telemConfig.telemSport)
@@ -285,6 +301,40 @@ void InitTelemtry(void)
 			break;
 		case TELEM_USART6:
 			InitMsp(ENUM_USART6);
+			break;
+		default:
+			break;
+	}
+
+	switch(mainConfig.telemConfig.telemRfOsd)
+	{
+		//soft msp not supported right now
+		case TELEM_ACTUATOR1:
+		case TELEM_ACTUATOR2:
+		case TELEM_ACTUATOR3:
+		case TELEM_ACTUATOR4:
+		case TELEM_ACTUATOR5:
+		case TELEM_ACTUATOR6:
+		case TELEM_ACTUATOR7:
+		case TELEM_ACTUATOR8:
+			break;
+		case TELEM_USART1:
+			InitRfOsd(ENUM_USART1);
+			break;
+		case TELEM_USART2:
+			InitRfOsd(ENUM_USART2);
+			break;
+		case TELEM_USART3:
+			InitRfOsd(ENUM_USART3);
+			break;
+		case TELEM_USART4:
+			InitRfOsd(ENUM_USART4);
+			break;
+		case TELEM_USART5:
+			InitRfOsd(ENUM_USART5);
+			break;
+		case TELEM_USART6:
+			InitRfOsd(ENUM_USART6);
 			break;
 		default:
 			break;
