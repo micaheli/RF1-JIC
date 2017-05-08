@@ -1127,6 +1127,9 @@ Version 0.252.086 BETA:
 			save
 			#This will enabled RF OSD telemtry on usart 5's TX pin at 115,200 baud
 
+Version 0.253.087 BETA:
+	Adjusted defaults
+
 #Features in current development:
 #	MAVlink compatibility
 

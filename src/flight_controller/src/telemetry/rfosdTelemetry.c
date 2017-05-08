@@ -69,7 +69,7 @@ static void FillLine(void)
     for (x = (RFOSD_LINE_SIZE-1);x>(-1);x--)
     {
         //x and y coordinates ( 4 MSBs of X coordinate are stored in the 4 MSBs of the "A" bytes) (All 4 bytes of the Y coordinate are stored in the 4 LSBs of the "A" byte)
-        rfOsdTxBuffer[ (x * 2) ] = (char)(( x << 4) | (currentLine & 15) ;
+        rfOsdTxBuffer[ (x * 2) ] = (char)(( x << 4) | (currentLine & 15)) ;
         //x coordinate LSB and charector (LSB of X coordinate is LSB of the "B" byte)
         rfOsdTxBuffer[ (x * 2) + 1 ] = ( (rfOsdLineBuffer[x] & 127) << 1) | ( (x >> 4) & 1 ) ;
         // 
