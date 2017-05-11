@@ -7,11 +7,13 @@
 #define NORMAL_VOLTAGE 3.33
 
 #ifdef SPMFC400
-  #define HIGH_RESISTOR 68.00
-  #define LOW_RESISTOR 3.30
+	#define HIGH_RESISTOR 68.00
+	#define LOW_RESISTOR 3.30
+	#undef NORMAL_VOLTAGE
+	#define NORMAL_VOLTAGE 3.30
 #else
-  #define HIGH_RESISTOR 100.00
-  #define LOW_RESISTOR 10.00
+	#define HIGH_RESISTOR 100.00
+	#define LOW_RESISTOR 10.00
 #endif
 
 VoltageStorageRec voltageStorage[3];
