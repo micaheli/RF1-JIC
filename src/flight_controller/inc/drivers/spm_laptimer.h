@@ -31,5 +31,5 @@ typedef enum
 } LAP_STATE;
 
 
-void laptimerInit(void);
+void InitLaptimer(void);
 void SpmLaptimerCallback(uint32_t callbackNumber);

@@ -352,10 +352,10 @@ void textMenuUpdate(void)
 		}
 						
 
-		if (pidSpektrumTelem.row >= ROW_MAX)
-			pidSpektrumTelem.row = ROW_MAX;
-		else if (pidSpektrumTelem.row < 0)
+		if (pidSpektrumTelem.row > ROW_MAX)
 			pidSpektrumTelem.row = 1;
+		else if (pidSpektrumTelem.row < 1)
+			pidSpektrumTelem.row = ROW_MAX;
 
 		if (pidSpektrumTelem.column >= COLUMN_MAX)
 			pidSpektrumTelem.column = COLUMN_MAX;
@@ -465,8 +465,8 @@ void textMenuUpdate(void)
 				case (5):
 					mainConfig.rcControlsConfig.deadBand[pidSpektrumTelem.columnAxis-3] += dataInc * .001;
 					break;
-				case (8):
-		            if (pidSpektrumTelem.column ==1)
+				case (7):
+					if (dataInc != 0)
 					{
 					 	pidSpektrumTelem.column = 0;
 						pidSpektrumTelem.status=SAVING;
@@ -553,7 +553,7 @@ void textMenuUpdate(void)
 			case (SAVING):
 				strcpy(stringArray[0], " Saving");
 				strcpy(stringArray[1], " ");
-				strcpy(stringArray[2], " Your Revolt ");
+				strcpy(stringArray[2], " Your FC ");
 				strcpy(stringArray[3], " Will Now ");
 				strcpy(stringArray[4], " Restart ");
 				strcpy(stringArray[5], " Please Wait.. ");
@@ -572,9 +572,9 @@ void textMenuUpdate(void)
 
 			case (IDLE):
 				if (pidSpektrumTelem.row < 1)
-					pidSpektrumTelem.row = 1;
+					pidSpektrumTelem.row = ROW_MAX;
 				if (pidSpektrumTelem.row > 8)
-					pidSpektrumTelem.row = 8;
+					pidSpektrumTelem.row = 1;
 
 			 	strcpy(stringArray[1], " ");
 				strcpy(&stringArray[1][1], axisTable[pidSpektrumTelem.columnAxis]);
@@ -590,8 +590,8 @@ void textMenuUpdate(void)
 				stringArray[pidSpektrumTelem.row][0] = '*';
 				break;
 			case (STARTUP):
-				if (pidSpektrumTelem.row < 2)
-					pidSpektrumTelem.row = 2;
+				if (pidSpektrumTelem.row < 1)
+					pidSpektrumTelem.row = 1;
 
 				strcpy(stringArray[0], " RF1 Tuning");
 				strcpy(stringArray[1], "------------------------ ");

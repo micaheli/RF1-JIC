@@ -13,7 +13,7 @@ uint8_t lapDelay = 0;
 
 motor_type actuator;
 
-void laptimerInit(void)
+void InitLaptimer(void)
 {
 	lap_timer.identifier = TELE_DEVICE_LAPTIMER;
 	lap_timer.sID = 0x00;
