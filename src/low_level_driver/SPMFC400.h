@@ -9,6 +9,8 @@
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
+#define FC_NAME "Spektrum SPMFCF400"
+
 //MCU config
 #define FC_PLLM	12
 #define FC_PLLN	384
