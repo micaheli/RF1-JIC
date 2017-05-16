@@ -1717,6 +1717,9 @@ void ProcessCommand(char *inString)
 			{
 
 				RfCustomReplyBuffer(FULL_VERSION_STRING);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#fc HARDWARE:%s\n", FC_NAME);
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+				
 				//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s", FULL_VERSION_STRING);
 				//RfCustomReply(rf_custom_out_buffer);
 
