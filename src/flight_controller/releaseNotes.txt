@@ -1130,6 +1130,12 @@ Version 0.252.086 BETA:
 Version 0.253.087 BETA:
 	Adjusted defaults
 
+
+Version 0.262.087 BETA:
+	Fixed rc smoothing issue
+	Changed how throttle I/O works between rates
+	HWFS set to 500 ms
+
 #Features in current development:
 #	MAVlink compatibility
 
