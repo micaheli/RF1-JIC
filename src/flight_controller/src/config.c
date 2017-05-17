@@ -2112,6 +2112,14 @@ void ProcessCommand(char *inString)
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 		}
+	else if (!strcmp("tpaoutt", inString))
+		{
+			for (uint32_t x=0;x<1000;x++)
+			{
+				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu\n", (uint32_t)(throttleLookup[x] * 100) );
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+		}
 	else if (!strcmp("eraseallflash", inString))
 		{
 
