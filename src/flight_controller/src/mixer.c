@@ -547,7 +547,6 @@ inline float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn)
 	float highestMotor  = -100.0f;
 	float lowestMotor   =  100.0f;
 	float actuatorRange =  0.0f;
-	volatile float rangedThrottle;
 	volatile float throttle;
 	float throttleOffset;
 	int32_t i           = 0;
@@ -593,9 +592,8 @@ inline float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn)
 	else
 	{
 		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
-		rangedThrottle = InlineChangeRangef(throttleIn, 1.00f, 0.1f, 1.0f, 0.0f);
 		throttleOffset = actuatorRange / 2.0f;
-		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset) - 0.5;
+		throttle = InlineConstrainf(throttleIn, throttleOffset, 1.0f - throttleOffset) - 0.5f;
 
 	}
 
@@ -618,7 +616,6 @@ inline float InlineApplyMotorMixer3dInverted(pid_output pids[], float throttleIn
 	float highestMotor  = -100.0f;
 	float lowestMotor   =  100.0f;
 	float actuatorRange =  0.0f;
-	volatile float rangedThrottle;
 	volatile float throttle;
 	float throttleOffset;
 	int32_t i           = 0;
@@ -664,9 +661,8 @@ inline float InlineApplyMotorMixer3dInverted(pid_output pids[], float throttleIn
 	else
 	{
 		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
-		rangedThrottle = InlineChangeRangef(throttleIn, -0.1, -1.0, 1.0, 0.0);
 		throttleOffset = actuatorRange / 2.0f;
-		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset) - 0.5;
+		throttle = InlineConstrainf(throttleIn, throttleOffset, 1.0f - throttleOffset) - 0.5f;
 
 	}
 
@@ -733,14 +729,13 @@ inline float ForeAftMixerFixer(float motorOutputFloat, float throttleFloat, uint
 inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 {
 
-	float highestMotor  = -100.0f;
-	float lowestMotor   =  100.0f;
-	float actuatorRange =  0.0f;
-	volatile float rangedThrottle;
-	volatile float throttle;
-	float throttleOffset;
-	int32_t i           = 0;
-	uint32_t motorOutput0_1023 = 0;
+	float highestMotor = -100.0f;
+	float lowestMotor  =  100.0f;
+	int32_t i;                  //set
+	float actuatorRange;        //set
+	float throttle;             //set
+ 	float throttleOffset;       //set
+	uint32_t motorOutput0_1023; //set
 
 	//static int32_t threeDeeThrottleLatch = 1;
 
@@ -784,11 +779,8 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 	else
 	{
 		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
-		uint32_t rangedThrottleU = lrintf( InlineChangeRangef(throttleIn, 1.0f, -1.0f, 1023.0f, 0.0f) );
-		rangedThrottle = throttleLookup[rangedThrottleU];
-		throttleOffset = actuatorRange / 2.0f;
-		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset) - 0.5;
-
+		throttleOffset  = actuatorRange / 2.0f;
+		throttle        = InlineConstrainf(throttleIn, throttleOffset, 1.0f - throttleOffset) - 0.5f;
 	}
 
 	for(i=7; i>=0; i--)
@@ -805,12 +797,11 @@ inline float InlineApplyMotorMixer1(pid_output pids[], float throttleIn)
 
 	float highestMotor  = -100.0f;
 	float lowestMotor   =  100.0f;
-	float actuatorRange =    0.0f;
-	volatile float rangedThrottle;
-	float throttle;
- 	float throttleOffset;
-	int32_t i           = 0;
-	uint32_t motorOutput0_1023 = 0;
+	int32_t i;                  //set
+	float actuatorRange;        //set
+	float throttle;             //set
+ 	float throttleOffset;       //set
+	uint32_t motorOutput0_1023; //set
 
 	for (i = activeMotorCounter; i >= 0; i--)
 	{
@@ -848,10 +839,8 @@ inline float InlineApplyMotorMixer1(pid_output pids[], float throttleIn)
  	else
  	{
  		//put throttle range to same range as actuators. 0 to 1 from -1 to 1
-		uint32_t rangedThrottleU = lrintf( InlineChangeRangef(throttleIn, 1.0f, -1.0f, 1023.0f, 0.0f) );
-		rangedThrottle = throttleLookup[rangedThrottleU];
- 		throttleOffset = actuatorRange / 2.0f;
- 		throttle = InlineConstrainf(rangedThrottle, throttleOffset, 1.0f - throttleOffset);
+		throttleOffset  = actuatorRange / 2.0f;
+		throttle        = InlineConstrainf(throttleIn, throttleOffset, 1.0f - throttleOffset);
 
  	}
  	for(i=7; i>=0; i--)

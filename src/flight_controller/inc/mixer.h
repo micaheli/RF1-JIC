@@ -71,6 +71,7 @@ extern volatile float servoOutput[];
 extern actuator_mixer servoMixer[];
 extern actuator_mixer motorMixer[];
 extern float throttleLookupKp[];
+extern float throttleLookup[];
 
 extern void  ResetTpaCurves(void);
 extern void  PrintTpaCurves(void);

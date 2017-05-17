@@ -2,7 +2,6 @@
 
 #define GYRO_AVERAGE_MAX_SUM 33
 
-
 pid_output   flightPids[AXIS_NUMBER];
 biquad_state lpfFilterState[AXIS_NUMBER];
 biquad_state lpfFilterStateKd[AXIS_NUMBER];
@@ -33,24 +32,24 @@ float sliUsed;
 float sldUsed;
 float usedSkunk;
 
-uint32_t khzLoopCounter = 0;
-uint32_t gyroLoopCounter = 0;
-volatile uint32_t SKIP_GYRO = 0;
-volatile float yawAttitudeError = 0;
-volatile float rollAttitudeError = 0;
-volatile float pitchAttitudeError = 0;
-volatile float yawAttitudeErrorKi = 0;
-volatile float rollAttitudeErrorKi = 0;
-volatile float pitchAttitudeErrorKi = 0;
+uint32_t khzLoopCounter                 = 0;
+uint32_t gyroLoopCounter                = 0;
+volatile uint32_t SKIP_GYRO             = 0;
+volatile float yawAttitudeError         = 0.0f;
+volatile float rollAttitudeError        = 0.0f;
+volatile float pitchAttitudeError       = 0.0f;
+volatile float yawAttitudeErrorKi       = 0.0f;
+volatile float rollAttitudeErrorKi      = 0.0f;
+volatile float pitchAttitudeErrorKi     = 0.0f;
 
-volatile float yawAttitudeErrorKdelta   = 0;
-volatile float lastYawAttitudeError     = 0;
-volatile float rollAttitudeErrorKdelta  = 0;
-volatile float lastRollAttitudeError    = 0;
-volatile float pitchAttitudeErrorKdelta = 0;
-volatile float lastPitchAttitudeError   = 0;
+volatile float yawAttitudeErrorKdelta   = 0.0f;
+volatile float lastYawAttitudeError     = 0.0f;
+volatile float rollAttitudeErrorKdelta  = 0.0f;
+volatile float lastRollAttitudeError    = 0.0f;
+volatile float pitchAttitudeErrorKdelta = 0.0f;
+volatile float lastPitchAttitudeError   = 0.0f;
 
-volatile uint32_t usedGa[AXIS_NUMBER];
+volatile uint32_t usedGa[AXIS_NUMBER]   = {0,};
 
 //these numbers change based on loop_control
 volatile loop_speed_record loopSpeed;
@@ -65,7 +64,7 @@ float AverageGyroADCbuffer(uint32_t axis, volatile float currentData);
 
 void ArmBoard(void)
 {
-	InitWatchdog(WATCHDOG_TIMEOUT_2S);
+	InitWatchdog(WATCHDOG_TIMEOUT_500MS);
 	boardArmed = 1;
 	timeSinceSelfLevelActivated = 0;
 }
@@ -677,25 +676,15 @@ inline void InlineFlightCode(float dpsGyroArray[])
 	if (gyroLoopCounter-- == 0)
 	{
 
-		gyroLoopCounter=loopSpeed.gyroDivider;
+		gyroLoopCounter = loopSpeed.gyroDivider;
 
 		//smooth the rx data between rx signals
 		InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
-
 		
 		//1st, find request rates regardless of modes
-		if ( (mainConfig.rcControlsConfig.rcSmoothingFactor < 0.1) || ModeActive(M_DIRECT) || (mainConfig.rcControlsConfig.useCurve[PITCH] == BETAFLOP_EXPO) || (mainConfig.rcControlsConfig.useCurve[PITCH] == KISS_EXPO) )
-		{
-			flightSetPoints[YAW]   = InlineGetSetPoint(curvedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
-			flightSetPoints[ROLL]  = InlineGetSetPoint(curvedRcCommandF[ROLL], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01, ROLL);
-			flightSetPoints[PITCH] = -InlineGetSetPoint(curvedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01, PITCH);
-		}
-		else
-		{
-			flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
-			flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01, ROLL);
-			flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01, PITCH);
-		}
+		flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
+		flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01, ROLL);
+		flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01, PITCH);
 
 		//get setpoint for PIDC for self level modes.
 		//TODO: move this to its own function in the IMU
@@ -804,12 +793,12 @@ inline void InlineFlightCode(float dpsGyroArray[])
 			if (threeDeeMode)
 			{
 				static uint32_t actuatorToUse = 0;
-				if (smoothedRcCommandF[THROTTLE] >= 0.1) //throttle above neutral latch
+				if (smoothCurvedThrottle0_1 > 0.6) //throttle above neutral latch
 				{
 					actuatorToUse = 1;
 
 				}
-				else if (smoothedRcCommandF[THROTTLE] <= -0.1) //throttle below neutral latch
+				else if (smoothCurvedThrottle0_1 <= 0.4) //throttle below neutral latch
 				{
 					actuatorToUse = 2;
 
@@ -817,22 +806,20 @@ inline void InlineFlightCode(float dpsGyroArray[])
 
 				if (actuatorToUse == 2)
 				{
-					smoothedRcCommandF[THROTTLE] = CONSTRAIN(smoothedRcCommandF[THROTTLE], -1.0f, -0.1f);
-					actuatorRange = InlineApplyMotorMixer3dInverted(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
+					actuatorRange = InlineApplyMotorMixer3dInverted(flightPids, CONSTRAIN(smoothCurvedThrottle0_1, 0.0f, 0.45f)); //put in PIDs and Throttle or passthru
 				}
 				else
 				{
-					smoothedRcCommandF[THROTTLE] = CONSTRAIN(smoothedRcCommandF[THROTTLE], 0.1f, 1.0f);
-					actuatorRange = InlineApplyMotorMixer3dUpright(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
+					actuatorRange = InlineApplyMotorMixer3dUpright(flightPids, CONSTRAIN(smoothCurvedThrottle0_1, 0.55f, 1.0f)); //put in PIDs and Throttle or passthru
 				}
 
 			}
 			else
 			{
 				if (mainConfig.mixerConfig.mixerStyle == 1) //race mixer
-					actuatorRange = InlineApplyMotorMixer1(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
+					actuatorRange = InlineApplyMotorMixer1(flightPids, smoothCurvedThrottle0_1); //put in PIDs and Throttle or passthru
 				else //freestyle mixer
-					actuatorRange = InlineApplyMotorMixer(flightPids, smoothedRcCommandF[THROTTLE]); //put in PIDs and Throttle or passthru
+					actuatorRange = InlineApplyMotorMixer(flightPids, smoothCurvedThrottle0_1); //put in PIDs and Throttle or passthru
 			}
 
 		}
@@ -884,7 +871,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 #endif
 
 			//check for fullKiLatched here
-			if ( (boardArmed) && (smoothedRcCommandF[THROTTLE] > -0.65) )
+			if ( (boardArmed) && (smoothCurvedThrottle0_1 > 0.15f) )
 			{
 				fullKiLatched = 1;
 			}
@@ -914,10 +901,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 	{
 		gyroAverager = 0;
 
-		if (boardArmed)
-			UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], gyroAdder[ROLL], gyroAdder[PITCH], gyroAdder[YAW]);
-		else
-			UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], gyroAdder[ROLL], gyroAdder[PITCH], gyroAdder[YAW]);
+		UpdateImu(filteredAccData[ACCX], filteredAccData[ACCY], filteredAccData[ACCZ], gyroAdder[ROLL], gyroAdder[PITCH], gyroAdder[YAW]);
 
 		gyroAdder[ROLL]  = 0.0f;
 		gyroAdder[PITCH] = 0.0f;
@@ -928,7 +912,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 }
 
 //return setpoint in degrees per second, this is after stick smoothing
-inline float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, float rates, float acroPlus, uint32_t axis)
+inline float InlineGetSetPoint(float rcCommandF, uint32_t curveToUse, float rates, float acroPlus, uint32_t axis)
 {
 	float returnValue;
 
@@ -936,21 +920,21 @@ inline float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, floa
 	switch(curveToUse)
 	{
 		case ACRO_PLUS:
-			returnValue = (curvedRcCommandF * ( rates + ( ABS(curvedRcCommandF) * rates * acroPlus ) ) );
+			returnValue = (rcCommandF * ( rates + ( ABS(rcCommandF) * rates * acroPlus ) ) );
 			break;
 		case BETAFLOP_EXPO:
-			returnValue = (curvedRcCommandF * maxFlopRate[axis]);
+			returnValue = (rcCommandF * maxFlopRate[axis]);
 			break;
 		case KISS_EXPO:
 		case KISS_EXPO2:
-			returnValue = (curvedRcCommandF * maxKissRate[axis]);
+			returnValue = (rcCommandF * maxKissRate[axis]);
 			break;
 		case TARANIS_EXPO:
 		case SKITZO_EXPO:
 		case FAST_EXPO:
 		case NO_EXPO:
 		default:
-			returnValue = (curvedRcCommandF * (rates + (rates * acroPlus) ) );
+			returnValue = (rcCommandF * (rates + (rates * acroPlus) ) );
 			break;
 
 	}

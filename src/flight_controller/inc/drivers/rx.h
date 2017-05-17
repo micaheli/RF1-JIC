@@ -24,6 +24,7 @@ typedef struct {
     uint32_t rxInvertPort;
     uint32_t rxInvertDirection;
     uint32_t bind;
+	uint32_t shortThrow;
     uint32_t armMethod;
 } rc_control_config;
 
@@ -125,6 +126,8 @@ enum
 #define USING_RFOSD            17
 #define USING_RX_END           18
 
+extern volatile float smoothCurvedThrottle0_1;
+extern volatile float trueCurvedThrottle0_1;
 extern uint32_t ppmPin;
 extern volatile float maxFlopRate[];
 extern volatile float maxKissRate[];
