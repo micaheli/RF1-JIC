@@ -29,7 +29,7 @@ uint32_t            boardSize;
 
 unsigned char serialRxBuffer[6][RXBUFFERSIZE];
 unsigned char serialTxBuffer[6][TXBUFFERSIZE];
-uint32_t motorOutputBuffer[8][1500];
+uint32_t motorOutputBuffer[4][1500];
 
 
 volatile function_pointer callbackFunctionArray[IRQH_FP_TOT];
