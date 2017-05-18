@@ -179,7 +179,10 @@ void SpmLaptimerCallback(uint32_t callbackNumber)
 			{
 				lap_timer.lapNumber++;
 				lap_timer.lastLapTime = currentTime;
+				lap_timer.gateNumber = (pulseCode >> PULSE_SHIFT & 0x0F); 
+				lap_timer.gateTime = currentTime;
 				lastTimeLap = currentTime;
+
 			}
 			else	//no lap. Disable update interrupt until a starting pulse is detected once again
 			{
