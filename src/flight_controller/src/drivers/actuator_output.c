@@ -236,15 +236,26 @@ inline void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle
 
 }
 
-void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
-//inline void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
+inline void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 {
 	(void)servoOutput;
 
 	uint32_t outputNumber;
 	uint32_t motorNum;
-	uint8_t serialOutBuffer[2];
+	uint8_t  serialOutBuffer[2];
+	int32_t  tempOutput;
+	float    tempOutputF;
 
+	if (mainConfig.mixerConfig.resRedux)
+	{
+		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+		{
+			//range 0 - 1 to 0 - 255 and round it to provide 256 bits of resolution
+			tempOutputF = roundf(outputNumber[motorNum] * 255.0f);
+			//change range back to 0 - 1
+			outputNumber[motorNum] = InlineChangeRangef(tempOutputF, 255.0f, 0.0f, 1.0f, 0.0f);
+		}
+	}
 	if (boardArmed) {
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
 			outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];

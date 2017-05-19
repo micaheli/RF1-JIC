@@ -1136,6 +1136,8 @@ Version 0.262.094 BETA:
 	Changed how throttle I/O works between rates
 	HWFS set to 500 ms
 
+Version 0.263.05 BETA:
+	
 #Features in current development:
 #	MAVlink compatibility
 

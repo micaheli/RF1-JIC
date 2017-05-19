@@ -26,6 +26,7 @@ typedef struct {
     uint32_t escUpdateFrequency;
     float    idlePercent;
     float    idlePercentInverted;
+    int32_t	 resRedux;
     uint32_t motorOutput[8];
 	float    throttleCurve[ATTENUATION_CURVE_SIZE];
 	float    tpaKpCurve[ATTENUATION_CURVE_SIZE];

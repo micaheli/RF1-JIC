@@ -79,9 +79,9 @@ uint32_t InitSmartAudio(void)
 	if (mainConfig.telemConfig.telemSport)
 		DeInitSoftSport();
 
-    baudrate = 4950;
+    baudrate = 4900;
 
-    for (x=4;x>=0;x--)
+    for (x=3;x>=0;x--)
     {
         if (usartPinType == ENUM_USART_RX_PIN)
 		    InitBlockingSoftSerialPort( baudrate, SERIAL_NORMAL, SERIAL_STOP_BITS_2_0, SERIAL_START_BIT_ON, board.serials[usartNumber].RXPort, board.serials[usartNumber].RXPin, SERIAL_LSB, TBS_HANDLING_ON );
@@ -90,12 +90,13 @@ uint32_t InitSmartAudio(void)
 
         returnValue = SmartAudioGetSettings();
 
-        if (returnValue)
+		DelayMs(50);
+
+		if (returnValue)
             return( returnValue );
 		
 		baudrate -=50;
 
-		DelayMs(50);
     }
 
     return( returnValue );
