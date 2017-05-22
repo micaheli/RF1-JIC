@@ -251,9 +251,9 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
 		{
 			//range 0 - 1 to 0 - 255 and round it to provide 256 bits of resolution
-			tempOutputF = roundf(outputNumber[motorNum] * 255.0f);
+			tempOutputF = roundf(motorOutput[motorNum] * 255.0f);
 			//change range back to 0 - 1
-			outputNumber[motorNum] = InlineChangeRangef(tempOutputF, 255.0f, 0.0f, 1.0f, 0.0f);
+			motorOutput[motorNum] = InlineChangeRangef(tempOutputF, 255.0f, 0.0f, 1.0f, 0.0f);
 		}
 	}
 	if (boardArmed) {
