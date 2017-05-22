@@ -64,7 +64,7 @@ float AverageGyroADCbuffer(uint32_t axis, volatile float currentData);
 
 void ArmBoard(void)
 {
-	InitWatchdog(WATCHDOG_TIMEOUT_500MS);
+	InitWatchdog(WATCHDOG_TIMEOUT_30MS);
 	boardArmed = 1;
 	timeSinceSelfLevelActivated = 0;
 }
