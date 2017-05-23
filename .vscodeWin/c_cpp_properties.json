@@ -1,0 +1,32 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:\\dev\\6-2017-q1-update\\lib\\gcc\\arm-none-eabi\\6.3.1\\include",
+                "C:\\dev\\6-2017-q1-update\\arm-none-eabi\\include",
+                "C:\\dev\\raceflightone\\src\\flight_controller\\inc",
+                "C:\\dev\\raceflightone\\src\\flight_controller\\inc\\usb",
+                "C:\\dev\\raceflightone\\lib\\STM32_USB_Device_Library\\Core\\Inc",
+                "C:\\dev\\raceflightone\\lib\\STM32_USB_Device_Library\\Class\\HID\\Inc",
+                "C:\\dev\\raceflightone\\src\\low_level_driver",
+                "C:\\dev\\raceflightone\\src\\low_level_driver\\stm32",
+                "C:\\dev\\raceflightone\\src\\low_level_driver\\stm32f4",
+                "C:\\dev\\raceflightone\\lib\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+                "C:\\dev\\raceflightone\\lib\\STM32F4xx_HAL_Driver\\Inc"
+            ],
+            "browse": {
+                "path": [
+                    "C:\\dev\\6-2017-q1-update\\lib\\gcc\\arm-none-eabi\\6.3.1\\include",
+                    "C:\\dev\\raceflightone\\src\\flight_controller\\inc",
+                    "C:\\dev\\raceflightone\\src\\flight_controller\\inc\\usb",
+                    "C:\\dev\\raceflightone\\lib\\STM32_USB_Device_Library\\Core\\Inc",
+                    "C:\\dev\\raceflightone\\lib\\STM32_USB_Device_Library\\Class\\HID\\Inc",
+                    "C:\\dev\\raceflightone\\src\\low_level_driver\\stm32f4",
+                    "C:\\dev\\raceflightone\\lib\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+                    "C:\\dev\\raceflightone\\lib\\STM32F4xx_HAL_Driver\\Inc"
+                ]
+            }
+        }
+    ]
+}
