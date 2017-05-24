@@ -14,3 +14,10 @@ extern float runningVoltage;
 extern float fullVoltage;
 extern float averageVoltage;
 extern float cellCutoff;
+
+typedef struct
+{
+	float voltage;
+	uint32_t storageTime;
+}VoltageStorageRec;
+
