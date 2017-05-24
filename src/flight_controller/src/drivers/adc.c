@@ -14,12 +14,11 @@
   #define LOW_RESISTOR 10.00
 #endif
 
+VoltageStorageRec voltageStorage[3];
 float adcVoltage=0;
 float adcCurrent=0;
 float adcMAh=0;
 uint32_t cellCount=0;
-//float cellCutoff=3.65f;
-//uint32_t lowVoltAlarm=0;
 float averageVoltage=0;
 float lowVoltage = 0;
 float runningVoltage = 0;
@@ -43,6 +42,38 @@ void PollAdc(void)
 	ConvertAdcVoltage( adcDmaBuffer[1], HIGH_RESISTOR, LOW_RESISTOR );
 }
 
+float ProcessVoltage() //takes adc voltage and returns usable voltage for telemtry
+{
+    for (int32_t x=2;x>=0;x--)
+    {
+        if (adcVoltage > voltageStorage[x].voltage)
+        {
+            voltageStorage[x].voltage = adcVoltage;
+            voltageStorage[x].storageTime = InlineMillis();
+        }
+    }
+
+    if (voltageStorage[2].storageTime < (InlineMillis() - 3000))
+    {
+        voltageStorage[2].storageTime = voltageStorage[1].storageTime;
+        voltageStorage[2].voltage = voltageStorage[1].voltage;
+    }
+
+    if (voltageStorage[1].storageTime < (InlineMillis() - 2000))
+    {
+        voltageStorage[1].storageTime = voltageStorage[0].storageTime;
+        voltageStorage[1].voltage = voltageStorage[0].voltage;
+    }
+
+    if (voltageStorage[0].storageTime < (InlineMillis() - 1000))
+    {
+        voltageStorage[0].storageTime = InlineMillis();
+        voltageStorage[0].voltage = adcVoltage;
+    }
+
+    return(voltageStorage[2].voltage);
+}
+
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage, float highResistor, float lowResistor)
 {
 	static uint32_t lastTime=0;
@@ -52,12 +83,12 @@ static void ConvertAdcVoltage(uint32_t rawAdcVoltage, float highResistor, float 
 	}
 	else
 	{
-		adcVoltage = ((((float)adcVoltage * (float)49.00) + ((float)rawAdcVoltage * (float)((float)NORMAL_VOLTAGE/4096.00) * (float)(((float)highResistor+(float)lowResistor)/(float)lowResistor))) * .02);
+		adcVoltage = (float)rawAdcVoltage * (float)((float)NORMAL_VOLTAGE/4096.00) * (float)(((float)highResistor+(float)lowResistor)/(float)lowResistor);
 
 		if (InlineMillis()-lastTime > 250 )
 		{
 			lastTime=InlineMillis();
-			averageVoltage = ((((float)averageVoltage * (float)19.00) + adcVoltage) * .05);
+			averageVoltage = ProcessVoltage();
 		}
 	}
 }
