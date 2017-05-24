@@ -44,6 +44,7 @@
 #include "telemetry/smartAudio.h"
 #include "telemetry/rfVtx.h"
 #include "telemetry/rfosdTelemetry.h"
+#include "telemetry/trampTelemetry.h"
 
 //all drivers
 #include "drivers/adc.h"

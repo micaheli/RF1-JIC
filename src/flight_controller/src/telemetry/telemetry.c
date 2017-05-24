@@ -162,12 +162,17 @@ uint32_t VtxTurnOn(void)
 			mutex = 0;
 			return( returnValue );
 			break;
+		case VTX_DEVICE_TRAMP:
+			returnValue = TrampGetSettings();
+			mutex = 0;
+			return( returnValue );
 		case VTX_DEVICE_NONE:
 		default:
 			return(0);
 			break;
 	}
 
+	mutex = 0;
 	return(0);
 
 }
@@ -369,6 +374,40 @@ void InitTelemtry(void)
 			break;
 		case TELEM_USART6:
 			InitMavlink(ENUM_USART6);
+			break;
+		default:
+			break;
+	}
+
+	switch(mainConfig.telemConfig.telemTramp)
+	{
+		//soft trsmp not supported right now
+		case TELEM_ACTUATOR1:
+		case TELEM_ACTUATOR2:
+		case TELEM_ACTUATOR3:
+		case TELEM_ACTUATOR4:
+		case TELEM_ACTUATOR5:
+		case TELEM_ACTUATOR6:
+		case TELEM_ACTUATOR7:
+		case TELEM_ACTUATOR8:
+			break;
+		case TELEM_USART1:
+			InitTrampTelemetry(ENUM_USART1);
+			break;
+		case TELEM_USART2:
+			InitTrampTelemetry(ENUM_USART2);
+			break;
+		case TELEM_USART3:
+			InitTrampTelemetry(ENUM_USART3);
+			break;
+		case TELEM_USART4:
+			InitTrampTelemetry(ENUM_USART4);
+			break;
+		case TELEM_USART5:
+			InitTrampTelemetry(ENUM_USART5);
+			break;
+		case TELEM_USART6:
+			InitTrampTelemetry(ENUM_USART6);
 			break;
 		default:
 			break;

@@ -124,7 +124,8 @@ enum
 #define USING_RFVTX            15
 #define USING_SMARTAUDIO       16
 #define USING_RFOSD            17
-#define USING_RX_END           18
+#define USING_TRAMP            18
+#define USING_RX_END           19
 
 extern volatile float smoothCurvedThrottle0_1;
 extern volatile float trueCurvedThrottle0_1;
