@@ -197,7 +197,7 @@ const config_variables_rec valueTable[] = {
  		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 0, 0.000, "" },
  		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 0, 0.000, "" },
 
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 31, 6, "" },
+		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 31, 4, "" },
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 31, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 31, 0, "" },
 
@@ -211,13 +211,13 @@ const config_variables_rec valueTable[] = {
 
 		{ "filter_type",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterType, 				0, 3, 0, "" },
 
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 75.000, "" },
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 40.000, "" },
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 40.000, "" },
+		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 60.000, "" },
+		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 30.000, "" },
+		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 30.000, "" },
 
- 		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 65.000, "" },
- 		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 65.000, "" },
- 		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 100, 65.000, "" },
+ 		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 90.000, "" },
+ 		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 90.000, "" },
+ 		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 100, 90.000, "" },
  
 		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 				0, 10, 2.0000, "" },
 		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 025.00, "" },
@@ -320,7 +320,7 @@ const config_variables_rec valueTable[] = {
 		{ "roll_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[ROLL],			0, 300, 140, "" },
 		{ "yaw_acrop", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[YAW],			0, 300, 140, "" },
 
-		{ "drunk", 				typeFLOAT, "filt", &mainConfig.filterConfig[0].gyro.p, 					0, 1, 0.01, "" },
+		{ "drunk", 				typeFLOAT, "filt", &mainConfig.filterConfig[0].gyro.p, 					0, 2.0, 1.0, "" },
 		{ "skunk", 				typeFLOAT, "filt", &mainConfig.filterConfig[1].gyro.p, 					0, 2.0, 2.0, "" },
 
 };

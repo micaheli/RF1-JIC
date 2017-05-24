@@ -243,7 +243,6 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 	uint32_t outputNumber;
 	uint32_t motorNum;
 	uint8_t  serialOutBuffer[2];
-	int32_t  tempOutput;
 	float    tempOutputF;
 
 	if (mainConfig.mixerConfig.resRedux)

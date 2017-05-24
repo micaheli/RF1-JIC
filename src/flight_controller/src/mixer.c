@@ -111,9 +111,14 @@ volatile float servoOutput[MAX_SERVO_NUMBER];
 int32_t activeMotorCounter = -1; //number of active motors minus 1
 
 static float throttleCurve[ATTENUATION_CURVE_SIZE]      = {0.000f, 0.125f, 0.250f, 0.375f, 0.500f, 0.625f, 0.750f, 0.875f, 1.000f};
-static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.000f, 1.000f, 1.000f, 0.950f, 0.900f, 0.850f, 0.800f, 0.800f, 0.800f};
-static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {0.800f, 0.800f, 0.800f, 0.850f, 0.900f, 0.950f, 1.000f, 1.000f, 1.000f};
-static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.000f, 1.000f, 1.000f, 0.950f, 0.900f, 0.850f, 0.800f, 0.800f, 0.800f};
+
+static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.40, 1.35, 1.28, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
+static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
+static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
+
+//static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.000f, 1.000f, 1.000f, 0.950f, 0.900f, 0.850f, 0.800f, 0.800f, 0.800f};
+//static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {0.800f, 0.800f, 0.800f, 0.850f, 0.900f, 0.950f, 1.000f, 1.000f, 1.000f};
+//static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.000f, 1.000f, 1.000f, 0.950f, 0.900f, 0.850f, 0.800f, 0.800f, 0.800f};
 
 static void PrintThrottleCurve(void);
 static void PrintTpaKp(void);
@@ -125,7 +130,7 @@ static void BuildThrottleLookupTableKi(void);
 static void BuildThrottleLookupTableKd(void);
 
 static float ApplyAttenuationCurve (float input, float curve[], uint32_t curveSize);
-//static float ApplyAttenuationOldCurve (float input, float curve[], uint32_t curveSize);
+static float ApplyAttenuationOldCurve (float input, float curve[], uint32_t curveSize);
 
 static void BuildThrottleLookupTable(void)
 {
@@ -143,7 +148,14 @@ static void BuildThrottleLookupTableKp(void)
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
-		throttleLookupKp[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE );
+		if (mainConfig.filterConfig[0].gyro.p > 0.5f)
+		{
+			throttleLookupKp[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE );
+		}
+		else
+		{
+			throttleLookupKp[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE );
+		}
 	}
 }
 static void BuildThrottleLookupTableKi(void)
@@ -152,7 +164,14 @@ static void BuildThrottleLookupTableKi(void)
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
-		throttleLookupKi[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE );
+		if (mainConfig.filterConfig[0].gyro.p > 0.5f)
+		{
+			throttleLookupKi[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE );
+		}
+		else
+		{
+			throttleLookupKi[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE );
+		}
 	}
 }
 static void BuildThrottleLookupTableKd(void)
@@ -161,7 +180,14 @@ static void BuildThrottleLookupTableKd(void)
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
-		throttleLookupKd[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE );
+		if (mainConfig.filterConfig[0].gyro.p > 0.5f)
+		{
+			throttleLookupKd[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE );
+		}
+		else
+		{
+			throttleLookupKd[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE );
+		}
 	}
 }
 void ResetTpaCurves(void)
@@ -519,7 +545,7 @@ static float ApplyAttenuationCurve (float inputAttn, float curve[], uint32_t cur
 		return(curve[position] + (((curve[position+1] - curve[position]) * remainder)));
 }
 
-/*
+
 static float ApplyAttenuationOldCurve (float inputAttn, float curve[], uint32_t curveSize)
 {
     uint32_t indexAttn;
@@ -537,7 +563,7 @@ static float ApplyAttenuationOldCurve (float inputAttn, float curve[], uint32_t 
         return (curve[indexAttn-1] + (curve[indexAttn] * remainderAttn));
     }
 }
-*/
+
 
 //just like the standard mixer, but optimized for speed since it runs at a much higher speed than normal servos
 inline float InlineApplyMotorMixer3dUpright(pid_output pids[], float throttleIn)

@@ -1136,7 +1136,12 @@ Version 0.262.094 BETA:
 	Changed how throttle I/O works between rates
 	HWFS set to 500 ms
 
-Version 0.263.05 BETA:
+Version 0.263.095 BETA:
+	lower hard fault detection time
+
+Version 0.264.096 ALPHA:
+	set skunk=1 to use old TPA curve method (default)
+	set skunk=0 to use current TPA curve method
 	
 #Features in current development:
 #	MAVlink compatibility
