@@ -1,3 +1,4 @@
+//#define STM32F405xx
 #include "includes.h"
 
 int main(void)

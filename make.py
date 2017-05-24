@@ -124,11 +124,8 @@ def configure_target(TARGET):
 
     elif TARGET == "stm32f301x8_nesc":
         if args.debug:
-            if platform.system() == 'Windows':
-                os.system("c:/dev/scripts/openocd.bat f3")
-            else:
-                os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
-                os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f3x.cfg &> redirection &")
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f3x.cfg &> redirection &")
         TARGET_DEVICE_LC = "stm32f301x8"
         PROJECT = "nesc"
         TARGET_DEVICE = "STM32F301x8"
@@ -224,11 +221,8 @@ def configure_target(TARGET):
 
     elif TARGET == "stm32f745xx":
         if args.debug:
-            if platform.system() == 'Windows':
-                os.system("c:/dev/scripts/openocd.bat f7")
-            else:
-                os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
-                os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f7x.cfg &> redirection &")
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f7x.cfg &> redirection &")
         TARGET_DEVICE_LC = "stm32f745xx"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F745xx"
@@ -849,4 +843,8 @@ if __name__ == "__main__":
     main()
 
 
-exit(0);
+
+
+
+
+
