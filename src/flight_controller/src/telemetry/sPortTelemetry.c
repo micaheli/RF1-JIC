@@ -487,24 +487,49 @@ void FillLuaPacket(void)
 								break;
 						}
 						itoa(vtxRequested.vtxChannel+1, &charMatrix[3][9], 10);
-						switch(vtxRequested.vtxPower)
+						if(vtxRecord.vtxDevice == VTX_DEVICE_TRAMP)
 						{
-							case 0:
-								strcpy(charMatrix[4], " Power 25mw");
-								break;
-							case 1:
-								strcpy(charMatrix[4], " Power 200mw");
-								break;
-							case 2:
-								strcpy(charMatrix[4], " Power 500mw");
-								break;
-							case 3:
-								strcpy(charMatrix[4], " Power 800mw");
-								break;
-							default:
-								strcpy(charMatrix[4], " Power Unknown");
-								break;
+							switch(vtxRequested.vtxPower)
+							{
+								case 0:
+									strcpy(charMatrix[4], " Power 25mw");
+									break;
+								case 1:
+									strcpy(charMatrix[4], " Power 100mw");
+									break;
+								case 2:
+									strcpy(charMatrix[4], " Power 200mw");
+									break;
+								case 3:
+									strcpy(charMatrix[4], " Power 400mw");
+									break;
+								default:
+									strcpy(charMatrix[4], " Power Unknown");
+									break;
+							}
 						}
+						else
+						{
+							switch(vtxRequested.vtxPower)
+							{
+								case 0:
+									strcpy(charMatrix[4], " Power 25mw");
+									break;
+								case 1:
+									strcpy(charMatrix[4], " Power 200mw");
+									break;
+								case 2:
+									strcpy(charMatrix[4], " Power 500mw");
+									break;
+								case 3:
+									strcpy(charMatrix[4], " Power 800mw");
+									break;
+								default:
+									strcpy(charMatrix[4], " Power Unknown");
+									break;
+							}
+						}
+						
 						charMatrix[programStatus.line+1][0] = cursor;
 					}
 					else

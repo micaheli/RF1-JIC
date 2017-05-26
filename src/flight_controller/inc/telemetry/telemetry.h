@@ -36,6 +36,17 @@ enum
 {
 	VTX_POWER_UN    = -1,
 	VTX_POWER_025MW =  0,
+	VTX_POWER_200MW =  1,
+	VTX_POWER_500MW =  2,
+	VTX_POWER_800MW =  3,
+	VTX_POWER_END   =  4,
+};
+
+/*
+enum
+{
+	VTX_POWER_UN    = -1,
+	VTX_POWER_025MW =  0,
 	VTX_POWER_050MW =  1,
 	VTX_POWER_100MW =  2,
 	VTX_POWER_200MW =  3,
@@ -45,6 +56,7 @@ enum
 	VTX_POWER_800MW =  7, 
 	VTX_POWER_END   =  8,
 };
+*/
 
 enum
 {

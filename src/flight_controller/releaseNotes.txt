@@ -1169,6 +1169,18 @@ Version 0.266.100 BETA:
 	tramp vtx can be placed into pit mode with the command (vtxpit)
 	tramp will still restart in the broadcasting state
 	
+Version 0.267.100 BETA:
+	Change tramp power settings to steps to make tramp play nice with spektrum, taranis lua and TBS device
+		vtxpower 0 = 25mw
+		vtxpower 1 = 100mw
+		vtxpower 2 = 200mw
+		vtxpower 3 = 400mw
+	Taranis and console will display actual VTX power setting for both Tramp and TBS,
+		but the following values will map like so on Spektrum Telemetry when using the Tramp:
+		25mw  = 25mw
+		200mw = 100mw
+		500mw = 200mw
+		800mw = 400mw
 
 
 #Features in current development:

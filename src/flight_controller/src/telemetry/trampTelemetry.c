@@ -173,9 +173,29 @@ int TrampGetSettings(void)
     vtxRecord.vtxFrequency   = trampInfo.trampCurFreq;
     vtxRecord.vtxRegion      = VTX_REGION_US;
     vtxRecord.vtxBandChannel = VtxFrequencyToBandChannel(trampInfo.trampCurFreq);
-    vtxRecord.vtxPower       = trampInfo.trampReqPower;
     VtxChannelToBandAndChannel(vtxRecord.vtxBandChannel, &vtxRecord.vtxBand, &vtxRecord.vtxChannel);
 
+    switch(trampInfo.trampReqPower)
+    {
+        case 25:
+            vtxRecord.vtxPower = 0;
+            break;
+        case 100:
+            vtxRecord.vtxPower = 1;
+            break;
+        case 200:
+            vtxRecord.vtxPower = 2;
+            break;
+        case 400:
+            vtxRecord.vtxPower = 3;
+            break;
+        case 600:
+            vtxRecord.vtxPower = 4;
+            break;
+        default:
+            vtxRecord.vtxPower = 0;
+            break;
+    }
 /*
     switch(trampInfo.trampReqPower)
     {
@@ -419,35 +439,32 @@ int TrampSetPower(int power)
 {
     int x;           //set
     int powerNumber; //set
-/*
+
     switch(power)
     {
-        case VTX_POWER_025MW:
-        case VTX_POWER_050MW:
-            powerNumber = 0;
+        case 0:
+            powerNumber = 25;
             break;
-        case VTX_POWER_100MW:
-            powerNumber = 1;
+        case 1:
+            powerNumber = 100;
             break;
-        case VTX_POWER_200MW:
-            powerNumber = 2;
+        case 2:
+            powerNumber = 200;
             break;
-        case VTX_POWER_400MW:
-        case VTX_POWER_500MW:
-            powerNumber = 3;
+        case 3:
+            powerNumber = 400;
             break;
-        case VTX_POWER_600MW:
-        case VTX_POWER_800MW:
-            powerNumber = 4;
+        case 4:
+            powerNumber = 600;
             break;
         default:
-            powerNumber = 0;
+            powerNumber = 25;
             break;
     }
-*/
+
     for (x=TRAMP_RETRIES;x>=0;x--)
     {
-        TrampSendRfPower(power);
+        TrampSendRfPower(powerNumber);
         if(TrampGetSettings())
         {
             if (vtxRecord.vtxPower == power)

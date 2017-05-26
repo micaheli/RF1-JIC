@@ -279,6 +279,10 @@ inline void RxUpdate(void) // hook for when rx updates
 			{
 				turnOnVtxNow = 1;
 			}
+			if( mainConfig.telemConfig.telemTramp && !ModeSet(M_VTXON) && (vtxRecord.vtxDevice !=  VTX_DEVICE_NONE))
+			{
+				turnOnVtxNow = 1;
+			}
 
 		}
 		else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (latchFirstArm == 2) && (!boardArmed) && (ModeActive(M_ARMED)) && (mainConfig.gyroConfig.boardCalibrated) && throttleIsSafe && !progMode)
@@ -304,7 +308,7 @@ inline void RxUpdate(void) // hook for when rx updates
 			if ( ABS((int32_t)rxCalibrationRecords[YAW].highestDataValue - (int32_t)mainConfig.rcControlsConfig.midRc[YAW]) < 30 )
 				mainConfig.rcControlsConfig.midRc[YAW] = rxCalibrationRecords[YAW].highestDataValue;
 
-			if( mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) )
+			if( (mainConfig.telemConfig.telemSmartAudio && !ModeSet(M_VTXON) ) || (mainConfig.telemConfig.telemTramp && !ModeSet(M_VTXON) ) )
 			{
 				armBoardAt = InlineMillis();
 			}
@@ -476,7 +480,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		//Check for vtx data
 		if (copiedBufferData[12] == 0xE0)
 		{
-			if (mainConfig.telemConfig.telemSmartAudio)
+			if (mainConfig.telemConfig.telemSmartAudio || mainConfig.telemConfig.telemTramp)
 			{
 				vtxRequested.vtxBandChannel = VtxSpektrumBandAndChannelToVtxBandChannel( (copiedBufferData[13] >> 5) & 0x07, (copiedBufferData[13] & 0x0F) + 1);
 				VtxChannelToBandAndChannel(vtxRequested.vtxBandChannel, &vtxRequested.vtxBand, &vtxRequested.vtxChannel);
@@ -489,7 +493,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 			  //Check channel slot 7 for vtx power, pit, and region data
 		if (copiedBufferData[14] == 0xE0)
 		{
-			if (mainConfig.telemConfig.telemSmartAudio)
+			if (mainConfig.telemConfig.telemSmartAudio || mainConfig.telemConfig.telemTramp)
 			{
 				vtxRequested.vtxPower  = (uint32_t)(copiedBufferData[15] & 0x03);
 				vtxRequested.vtxRegion = (uint32_t)((copiedBufferData[15] >> 3) & 0x01);
