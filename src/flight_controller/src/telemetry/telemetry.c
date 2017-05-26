@@ -158,8 +158,8 @@ int VtxBandAndChannelToBandChannel(volatile int vtxBand, volatile int channel)
 
 int VtxTurnOn(void)
 {
-	uint32_t returnValue;
-	static uint32_t mutex = 0;
+	int returnValue;
+	static int mutex = 0;
 	if (mutex)
 		return(0);
 	mutex = 1;
@@ -175,9 +175,10 @@ int VtxTurnOn(void)
 			return( returnValue );
 			break;
 		case VTX_DEVICE_TRAMP:
-			returnValue = TrampGetSettings();
+			returnValue = TrampSetPit(VTX_MODE_ACTIVE);
 			mutex = 0;
 			return( returnValue );
+			break;
 		case VTX_DEVICE_NONE:
 		default:
 			return(0);
@@ -204,6 +205,11 @@ int VtxTurnPit(void)
 			InitSmartAudio();
 			returnValue = SmartAudioVtxTurnPit();
 			DeInitSmartAudio();
+			mutex = 0;
+			return( returnValue );
+			break;
+		case VTX_DEVICE_TRAMP:
+			returnValue = TrampSetPit(VTX_MODE_PIT);
 			mutex = 0;
 			return( returnValue );
 			break;
@@ -242,6 +248,7 @@ int VtxBandChannel(uint32_t bandChannel)
 			break;
 		case VTX_DEVICE_NONE:
 		default:
+			mutex = 0;
 			return(0);
 			break;
 	}
@@ -250,10 +257,10 @@ int VtxBandChannel(uint32_t bandChannel)
 
 }
 
-int VtxPower(uint32_t power)
+int VtxPower(int power)
 {
-	uint32_t returnValue;
-	static uint32_t mutex = 0;
+	int returnValue;
+	static int mutex = 0;
 	if (mutex)
 		return(0);
 	mutex = 1;
@@ -268,8 +275,14 @@ int VtxPower(uint32_t power)
 			mutex = 0;
 			return( returnValue );
 			break;
+		case VTX_DEVICE_TRAMP:
+			returnValue = TrampSetPower(power);
+			mutex = 0;
+			return( returnValue );
+			break;
 		case VTX_DEVICE_NONE:
 		default:
+			mutex = 0;
 			return(0);
 			break;
 	}

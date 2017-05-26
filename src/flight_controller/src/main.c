@@ -34,8 +34,6 @@ int main(void)
 
     InitWatchdog(WATCHDOG_TIMEOUT_32S);
 
-    InitSpektrumTelemetry();
-
     buzzerStatus.status = STATE_BUZZER_STARTUP;
     ledStatus.status    = LEDS_SLOW_BLINK;
 

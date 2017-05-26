@@ -4,7 +4,6 @@
 #define TRAMP_BUFFER_SIZE 16
 
 static uint8_t  trampIoBuffer[TRAMP_BUFFER_SIZE];     //set
-static uint32_t trampIoBufferCount;                   //set
 
 static uint8_t  TrampChecksum(uint8_t trampBuffer[]);
 static void     TrampSendFreq(int frequency);
@@ -106,17 +105,16 @@ int TrampHandleResponse(uint8_t trampBuffer[])
                     //if(trampConfFreq == 0)  trampConfFreq  = trampCurFreq;
                     //if(trampConfPower == 0) trampConfPower = trampPower;
                     //return 'v';
+                    return(1);
                 }
                 break;
         }
     }
-    else
-    {
-        //bad crc, return 0
-        return(0);
-    }
-}
 
+    //bad crc or nonsensical data, return 0
+    return(0);
+
+}
 
 int TrampGetSettings(void)
 {
@@ -127,19 +125,31 @@ int TrampGetSettings(void)
     TrampResetInfoRecord();
 
 	if (TrampSendCommand('s', 0, 1))
+    {
         TrampHandleResponse(trampIoBuffer);
+    }
     else
+    {
         return(0);
+    }
 
 	if (TrampSendCommand('r', 0, 1))
+    {
         TrampHandleResponse(trampIoBuffer);
-     else
+    }
+    else
+    {
         return(0);
+    }
 
 	if (TrampSendCommand('v', 0, 1))
+    {
         TrampHandleResponse(trampIoBuffer);
-     else
+    }
+    else
+    {
         return(0);
+    }
 
     //all tramp querries were successful, fill vtx record here
     vtxRecord.vtxDevice      = VTX_DEVICE_TRAMP;
@@ -172,9 +182,13 @@ int TrampGetSettings(void)
     }
 
     if (trampInfo.trampPitMode)
+    {
         vtxRecord.vtxPit = VTX_MODE_PIT;
+    }
     else
+    {
         vtxRecord.vtxPit = VTX_MODE_ACTIVE;
+    }
 
 	return(1);
 
@@ -343,6 +357,28 @@ static void TrampSendRfPower(int power)
     TrampSendCommand('P', (uint16_t)power, 0);
 }
 
+int TrampSetPit(int pit)
+{
+    int x;
+    for (x=TRAMP_RETRIES;x>=0;x--)
+    {
+        if (pit == VTX_MODE_PIT)
+        {
+            TrampSetPitMode(1);
+        }
+        else
+        {
+            TrampSetPitMode(0);
+        }
+        if(TrampGetSettings())
+        {
+            if (vtxRecord.vtxPit == pit)
+                return(1);
+        }
+    }
+    return(0);
+}
+
 int TrampSetBandChannel(int bandChannel)
 {
     int x;
@@ -398,8 +434,4 @@ int TrampSetPower(int power)
         }
     }
     return(0);
-}
-
-void ProcessTrampTelemetry(void)
-{
 }
