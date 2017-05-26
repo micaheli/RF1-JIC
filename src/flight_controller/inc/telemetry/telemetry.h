@@ -34,12 +34,16 @@ enum
 
 enum
 {
-	VTX_POWER_025MW = 0x00,
-	VTX_POWER_200MW = 0x01,
-	VTX_POWER_500MW = 0x02,
-	VTX_POWER_800MW = 0x03,
-	VTX_POWER_END = 4,
-
+	VTX_POWER_UN    = -1,
+	VTX_POWER_025MW =  0,
+	VTX_POWER_050MW =  1,
+	VTX_POWER_100MW =  2,
+	VTX_POWER_200MW =  3,
+	VTX_POWER_400MW =  4,
+	VTX_POWER_500MW =  5,
+	VTX_POWER_600MW =  6,
+	VTX_POWER_800MW =  7, 
+	VTX_POWER_END   =  8,
 };
 
 enum
@@ -59,8 +63,9 @@ enum
 
 enum
 {
-	VTX_REGION_US   = 0,
-	VTX_REGION_EU   = 1,
+	VTX_REGION_UNKNOWN = -1,
+	VTX_REGION_US      = 0,
+	VTX_REGION_EU      = 1,
 };
 
 enum
@@ -88,6 +93,7 @@ enum
 
 enum
 {
+	VTX_CH_UN  = -1,
 	VTX_CH_A1  = 0,
 	VTX_CH_A2  = 1,
 	VTX_CH_A3  = 2,
@@ -148,14 +154,15 @@ typedef struct
 
 typedef struct
 {
-	uint32_t vtxDevice;
-	uint32_t vtxBand;
-	uint32_t vtxChannel;
-	uint32_t vtxBandChannel;
-	uint32_t vtxPower;
-	uint32_t vtxPit;
-	uint32_t vtxRegion;
-	uint32_t vtxFrequency;
+	int vtxDevice;
+	int vtxBand;
+	int vtxChannel;
+	int vtxBandChannel;
+	int vtxPower;
+	int vtxPit;
+	int vtxRegion;
+	int vtxFrequency;
+	int vtxTemp;
 } vtx_record;
 
 extern volatile vtx_record vtxRequested;
@@ -169,16 +176,17 @@ extern volatile uint32_t lastTimeSPort;
 extern volatile uint32_t okToSendSPort;
 extern volatile uint32_t sPortExtiSet;
 
-extern void     InitTelemtry(void);
-extern void     ProcessTelemtry(void);
-extern void     TelemtryRxCallback(uint8_t serialBuffer[], uint32_t outputLength);
-extern void     TelemtryTxCallback(uint8_t serialBuffer[], uint32_t outputLength);
-extern void     SportSoftSerialExtiCallback(uint32_t callbackNumber);
-extern void     SportSoftSerialDmaCallback(uint32_t callbackNumber);
-extern uint32_t VtxTurnOn(void);
-extern uint32_t VtxTurnPit(void);
-extern uint32_t VtxBandChannel(uint32_t bandChannel);
-extern uint32_t VtxPower(uint32_t power);
-extern uint32_t VtxBandChannelToFrequency(uint32_t bandChannel);
-extern void     VtxChannelToBandAndChannel(uint32_t inChannel, volatile uint32_t *vtxBand, volatile uint32_t *channel);
-extern uint32_t VtxBandAndChannelToBandChannel(volatile uint32_t vtxBand, volatile uint32_t channel);
+extern void InitTelemtry(void);
+extern void ProcessTelemtry(void);
+extern void TelemtryRxCallback(uint8_t serialBuffer[], uint32_t outputLength);
+extern void TelemtryTxCallback(uint8_t serialBuffer[], uint32_t outputLength);
+extern void SportSoftSerialExtiCallback(uint32_t callbackNumber);
+extern void SportSoftSerialDmaCallback(uint32_t callbackNumber);
+extern int  VtxTurnOn(void);
+extern int  VtxTurnPit(void);
+extern int  VtxBandChannel(uint32_t bandChannel);
+extern int  VtxPower(uint32_t power);
+extern int  VtxBandChannelToFrequency(uint32_t bandChannel);
+extern void VtxChannelToBandAndChannel(uint32_t inChannel, volatile uint32_t *vtxBand, volatile uint32_t *channel);
+extern int  VtxBandAndChannelToBandChannel(volatile uint32_t vtxBand, volatile uint32_t channel);
+extern int  VtxFrequencyToBandChannel(int frequency);

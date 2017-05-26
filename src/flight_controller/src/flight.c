@@ -225,7 +225,7 @@ int SetCalibrate2(void)
 
 }
 
-inline float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
+float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 {
 	float returnData;
 	if (usedGa[axis] > 1)
@@ -536,7 +536,7 @@ void InitFlightCode(void)
 	//InitKalman();
 }
 
-inline void InlineInitGyroFilters(void)
+void InlineInitGyroFilters(void)
 {
 
 	//first time init
@@ -552,7 +552,7 @@ inline void InlineInitGyroFilters(void)
 
 }
 
-inline void InlineInitKdFilters(void)
+void InlineInitKdFilters(void)
 {
 
 	//int32_t axis;
@@ -562,7 +562,7 @@ inline void InlineInitKdFilters(void)
 
 }
 
-inline void InlineInitSpectrumNoiseFilter(void)
+void InlineInitSpectrumNoiseFilter(void)
 {
 
 	//InitBiquad(075, &lpfFilterStateNoise[0], loopSpeed.accdT, FILTER_TYPE_PEEK, &lpfFilterStateNoise[0], 0.33333333333f);
@@ -574,7 +574,7 @@ inline void InlineInitSpectrumNoiseFilter(void)
 
 }
 
-inline void InlineInitAccFilters(void)
+void InlineInitAccFilters(void)
 {
 
 	int32_t vector;
@@ -584,7 +584,7 @@ inline void InlineInitAccFilters(void)
 
 }
 
-inline void InlineUpdateAttitude(float geeForceAccArray[])
+void InlineUpdateAttitude(float geeForceAccArray[])
 {
 
 	//update gyro filter
@@ -614,7 +614,7 @@ inline void InlineUpdateAttitude(float geeForceAccArray[])
 
 }
 
-inline void InlineFlightCode(float dpsGyroArray[])
+void InlineFlightCode(float dpsGyroArray[])
 // void InlineFlightCode(float dpsGyroArray[])
 {
 
@@ -912,7 +912,7 @@ inline void InlineFlightCode(float dpsGyroArray[])
 }
 
 //return setpoint in degrees per second, this is after stick smoothing
-inline float InlineGetSetPoint(float rcCommandF, uint32_t curveToUse, float rates, float acroPlus, uint32_t axis)
+float InlineGetSetPoint(float rcCommandF, uint32_t curveToUse, float rates, float acroPlus, uint32_t axis)
 {
 	float returnValue;
 
@@ -1012,12 +1012,6 @@ void InitFlight(void)
 
 	DeInitAllowedSoftOutputs();
 
-    if (board.flash[0].enabled)
-    {
-    	InitFlashChip();
-    	InitFlightLogger();
-    }
-
     InitVbusSensing();
     InitRcData();
     InitMixer();          //init mixders
@@ -1030,7 +1024,13 @@ void InitFlight(void)
 	InitAdc();            //init ADC functions
     InitModes();          //set flight modes mask to zero.
     InitBoardUsarts();    //most important thing is activated last, the ability to control the craft.
-	
+
+	if (board.flash[0].enabled && (mainConfig.rcControlsConfig.rxUsart != ENUM_USART4) )
+    {
+    	InitFlashChip();
+    	InitFlightLogger();
+    }
+
 #ifdef STM32F446xx
 	if (used1Wire == 0)
 	{

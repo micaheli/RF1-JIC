@@ -129,8 +129,7 @@ void UsartInit(uint32_t serialNumber)
 			break;
 		case USING_TRAMP:
 			board.serials[serialNumber].enabled          = 1;
-			board.serials[serialNumber].Protocol         = USING_TRAMP;
-			board.serials[serialNumber].FrameSize        = 14;
+			board.serials[serialNumber].FrameSize        = 16;
 			board.serials[serialNumber].BaudRate         = 9600;
 			board.serials[serialNumber].WordLength       = UART_WORDLENGTH_8B;
 			board.serials[serialNumber].StopBits         = UART_STOPBITS_1;
@@ -140,9 +139,9 @@ void UsartInit(uint32_t serialNumber)
 			board.serials[serialNumber].serialTxInverted = 0;
 			board.serials[serialNumber].serialRxInverted = 0;
 			txPin  = board.serials[serialNumber].TXPin;
-			rxPin  = board.serials[serialNumber].RXPin;
+			rxPin  = board.serials[serialNumber].TXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
-			rxPort = ports[board.serials[serialNumber].RXPort];
+			rxPort = ports[board.serials[serialNumber].TXPort];
 			break;
 		case USING_MSP:
 		case USING_RFOSD:

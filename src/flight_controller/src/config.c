@@ -1855,9 +1855,10 @@ void ProcessCommand(char *inString)
 				InitSmartAudio();
 				DeInitSmartAudio();
 			}
-
-			if (mainConfig.telemConfig.telemTramp)
+			else if (mainConfig.telemConfig.telemTramp)
+			{
 				TrampGetSettings();
+			}
 
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice=%lu\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand=%lu\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);

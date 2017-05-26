@@ -7,17 +7,18 @@ static uint8_t  trampIoBuffer[TRAMP_BUFFER_SIZE];     //set
 static uint32_t trampIoBufferCount;                   //set
 
 static uint8_t  TrampChecksum(uint8_t trampBuffer[]);
-static void     TrampSendFreq(uint16_t frequency);
-static void     TrampSendRfPower(uint16_t power);
-static void     TrampSendCommand(uint8_t cmd, uint16_t param);
+static void     TrampSendFreq(int frequency);
+static void     TrampSendRfPower(int power);
+static int      TrampSendCommand(uint8_t cmd, uint16_t param, int waitForResponse);
+static void     TrampResetInfoRecord(void);
 
 typedef enum
 {
 	TRAMP_ERROR  = -1,
-	TRAMP_OFF    = 0,
-	TRAMP_ON     = 1,
-	TRAMP_SET    = 2,
-	TRAMP_CHECK  = 3,
+	TRAMP_OFF    =  0,
+	TRAMP_ON     =  1,
+	TRAMP_SET    =  2,
+	TRAMP_CHECK  =  3,
 } tramp_status_record;
 
 typedef struct {
@@ -33,15 +34,14 @@ typedef struct {
     uint32_t trampCurPower;    //current power
     uint32_t trampReqPower;    //requested power
     uint32_t trampRetPower;    //retries for setting power
-    uint32_t trampTemp;
+    int      trampTemp;
     uint32_t trampPitMode;
 } tramp_info_record;
 
 tramp_info_record trampInfo;
 
-int InitTrampTelemetry(uint32_t usartNumber)
+static void TrampResetInfoRecord(void)
 {
-
     trampInfo.trampStatus     = TRAMP_OFF;
     trampInfo.trampRfFreqMin  = 0;
     trampInfo.trampRfFreqMax  = 0;
@@ -56,7 +56,14 @@ int InitTrampTelemetry(uint32_t usartNumber)
     trampInfo.trampRetPower   = 0;
     trampInfo.trampTemp       = 0;
     trampInfo.trampPitMode    = 0;
+}
 
+int InitTrampTelemetry(int usartNumber)
+{
+
+    TrampResetInfoRecord();
+
+    board.serials[usartNumber].Protocol = USING_TRAMP;
     //not using DMA
 	board.dmasSerial[board.serials[usartNumber].TXDma].enabled  = 0;
 	board.dmasSerial[board.serials[usartNumber].RXDma].enabled  = 0;
@@ -67,15 +74,110 @@ int InitTrampTelemetry(uint32_t usartNumber)
     return(1);
 }
 
+int TrampHandleResponse(uint8_t trampBuffer[])
+{
+
+    //is crc valid
+    if (trampBuffer[14] == TrampChecksum(trampBuffer))
+    {
+        switch(trampBuffer[1])
+        {
+            case 'r':
+                trampInfo.trampRfFreqMin = ( trampBuffer[2] |(trampBuffer[3] << 8) );
+                if(trampInfo.trampRfFreqMin)
+                {
+                    trampInfo.trampRfFreqMax  = ( trampBuffer[4] |(trampBuffer[5] << 8) );
+                    trampInfo.trampRfPowerMax = ( trampBuffer[6] |(trampBuffer[7] << 8) );
+                    return(1);
+                }
+                break;
+            case 's':
+                trampInfo.trampTemp = (int16_t)( trampBuffer[6] |(trampBuffer[7] << 8) );
+                return(1);
+                break;
+            case 'v':
+                trampInfo.trampCurFreq = ( trampBuffer[2] |(trampBuffer[3] << 8) );
+                if(trampInfo.trampCurFreq)
+                {
+                    trampInfo.trampCurPower = ( trampBuffer[4] |(trampBuffer[5] << 8) );
+                    trampInfo.trampPitMode  = trampBuffer[7];
+                    trampInfo.trampReqPower = ( trampBuffer[8] |(trampBuffer[9] << 8) );
+                    //vtx58_Freq2Bandchan(trampCurFreq, &trampBand, &trampChannel);
+                    //if(trampConfFreq == 0)  trampConfFreq  = trampCurFreq;
+                    //if(trampConfPower == 0) trampConfPower = trampPower;
+                    //return 'v';
+                }
+                break;
+        }
+    }
+    else
+    {
+        //bad crc, return 0
+        return(0);
+    }
+}
+
 
 int TrampGetSettings(void)
 {
-	TrampSendCommand('r', 0);
-	TrampSendCommand('v', 0);
-	TrampSendCommand('s', 0);
-	return(0);
+
 	if (boardArmed)
 		return(0);
+
+    TrampResetInfoRecord();
+
+	if (TrampSendCommand('s', 0, 1))
+        TrampHandleResponse(trampIoBuffer);
+    else
+        return(0);
+
+	if (TrampSendCommand('r', 0, 1))
+        TrampHandleResponse(trampIoBuffer);
+     else
+        return(0);
+
+	if (TrampSendCommand('v', 0, 1))
+        TrampHandleResponse(trampIoBuffer);
+     else
+        return(0);
+
+    //all tramp querries were successful, fill vtx record here
+    vtxRecord.vtxDevice      = VTX_DEVICE_TRAMP;
+    vtxRecord.vtxTemp        = trampInfo.trampTemp;
+    vtxRecord.vtxFrequency   = trampInfo.trampCurFreq;
+    vtxRecord.vtxRegion      = VTX_REGION_US;
+    vtxRecord.vtxBandChannel = VtxFrequencyToBandChannel(trampInfo.trampCurFreq);
+    VtxChannelToBandAndChannel(vtxRecord.vtxBandChannel, &vtxRecord.vtxBand, &vtxRecord.vtxChannel);
+
+    switch(trampInfo.trampReqPower)
+    {
+        case 25:
+            vtxRecord.vtxPower = VTX_POWER_025MW;
+            break;
+        case 100:
+            vtxRecord.vtxPower = VTX_POWER_100MW;
+            break;
+        case 200:
+            vtxRecord.vtxPower = VTX_POWER_200MW;
+            break;
+        case 400:
+            vtxRecord.vtxPower = VTX_POWER_400MW;
+            break;
+        case 600:
+            vtxRecord.vtxPower = VTX_POWER_600MW;
+            break;
+        default:
+            vtxRecord.vtxPower = VTX_POWER_UN;
+            break;
+    }
+
+    if (trampInfo.trampPitMode)
+        vtxRecord.vtxPit = VTX_MODE_PIT;
+    else
+        vtxRecord.vtxPit = VTX_MODE_ACTIVE;
+
+	return(1);
+
 /*
 	//fill buffer
 	rxBufferCount = 5;
@@ -171,13 +273,15 @@ static uint8_t TrampChecksum(uint8_t trampBuffer[])
 
 }
 
-static void TrampSendCommand(uint8_t cmd, uint16_t param)
+static int TrampSendCommand(uint8_t cmd, uint16_t param, int waitForResponse)
 {
 
-    int32_t x;            //set
-    int32_t serialNumber; //set
+    int x;            //set
+    int serialNumber; //set
+    int responseBack; //set
 
     bzero(trampIoBuffer, sizeof(trampIoBuffer));
+
     trampIoBuffer[0]  = 15;
     trampIoBuffer[1]  = cmd;
     trampIoBuffer[2]  = param & 0xff;
@@ -192,68 +296,110 @@ static void TrampSendCommand(uint8_t cmd, uint16_t param)
             {
                 if (board.serials[serialNumber].Protocol == USING_TRAMP)
                 {
-                    HAL_UART_Transmit(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)trampIoBuffer,TRAMP_BUFFER_SIZE, 20);
+
+                    responseBack = HAL_UART_Transmit(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)trampIoBuffer,TRAMP_BUFFER_SIZE, 30);
                     bzero(trampIoBuffer, sizeof(trampIoBuffer));
-                    HAL_UART_Receive(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)trampIoBuffer, TRAMP_BUFFER_SIZE, 60);
+
+                    if (responseBack == HAL_OK)
+                    {
+                        if (!waitForResponse)
+                        {
+                            return(1);
+                        }
+                        else
+                        {
+                            DelayMs(10);
+                            responseBack = HAL_UART_Receive(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)trampIoBuffer, TRAMP_BUFFER_SIZE, 300);
+                        }
+                    }
+
+                    if (responseBack != HAL_OK)
+                        return(0);
+
                 }
             }
         }
     }
 
-	volatile uint8_t aa1 =  trampIoBuffer[0];
-	volatile uint8_t aaa1 =  trampIoBuffer[1];
-	volatile uint8_t aaaa1 =  trampIoBuffer[2];
-	volatile uint8_t aaaaaa1 =  trampIoBuffer[3];
-	volatile uint8_t aaaaaaa1 =  trampIoBuffer[4];
-	volatile uint8_t aaaaaaaa1 =  trampIoBuffer[5];
-	volatile uint8_t aaaaaaaaa1 =  trampIoBuffer[6];
-	volatile uint8_t aaaaaaaaaa1 =  trampIoBuffer[7];
-	volatile uint8_t aaaaaaaaaaa1 =  trampIoBuffer[8];
-	volatile uint8_t aaaaaaaaaaaa1 =  trampIoBuffer[9];
-	volatile uint8_t aaaaaaaaaaaaa1 =  trampIoBuffer[10];
-	volatile uint8_t aaaaaaaaaaaaaa1 =  trampIoBuffer[11];
-	volatile uint8_t aaaaaaaaaaaaaaa1 =  trampIoBuffer[12];
-	volatile uint8_t aaaaaaaaaaaaaaaa1 =  trampIoBuffer[13];
-	volatile uint8_t aaaaaaaaaaaaaaaaa1 =  trampIoBuffer[14];
- //   if ( (trampIoBufferCount == 14) && CheckSmartAudioRxCrc(trampRespBuffer) )
- //   {
- //       return(1);
- //   }
+	return(0);
+
 }
 
-void TrampSetPitMode(uint32_t on)
+void TrampSetPitMode(int on)
 {
     if (on)
-        TrampSendCommand('I', 0);
+        TrampSendCommand('I', 0, 0);
     else
-        TrampSendCommand('I', 1);
+        TrampSendCommand('I', 1, 0);
 }
 
-void TrampSetFreq(uint16_t freq)
+static void TrampSendFreq(int frequency)
 {
-    trampInfo.trampReqFreq = freq;
-    if(trampInfo.trampReqFreq != trampInfo.trampCurFreq)
-        trampInfo.trampRetFreq = TRAMP_RETRIES;
+    TrampSendCommand('F', (uint16_t)frequency, 0);
 }
 
-static void TrampSendFreq(uint16_t frequency)
+static void TrampSendRfPower(int power)
 {
-    TrampSendCommand('F', frequency);
+    TrampSendCommand('P', (uint16_t)power, 0);
 }
-void TrampSetRfPower(uint16_t power)
+
+int TrampSetBandChannel(int bandChannel)
 {
-    trampInfo.trampReqPower = power;
-    if(trampInfo.trampReqPower != trampInfo.trampCurPower)
-        trampInfo.trampRetPower = TRAMP_RETRIES;
+    int x;
+    for (x=TRAMP_RETRIES;x>=0;x--)
+    {
+        TrampSendFreq(VtxBandChannelToFrequency(bandChannel));
+        if(TrampGetSettings())
+        {
+            if (vtxRecord.vtxBandChannel == bandChannel)
+                return(1);
+        }
+    }
+    return(0);
 }
-static void TrampSendRfPower(uint16_t power)
+
+int TrampSetPower(int power)
 {
-    TrampSendCommand('P', power);
+    int x;           //set
+    int powerNumber; //set
+
+    switch(power)
+    {
+        case VTX_POWER_025MW:
+        case VTX_POWER_050MW:
+            powerNumber = 25;
+            break;
+        case VTX_POWER_100MW:
+            powerNumber = 100;
+            break;
+        case VTX_POWER_200MW:
+            powerNumber = 200;
+            break;
+        case VTX_POWER_400MW:
+        case VTX_POWER_500MW:
+            powerNumber = 400;
+            break;
+        case VTX_POWER_600MW:
+        case VTX_POWER_800MW:
+            powerNumber = 600;
+            break;
+        default:
+            powerNumber = 25;
+            break;
+    }
+
+    for (x=TRAMP_RETRIES;x>=0;x--)
+    {
+        TrampSendRfPower(powerNumber);
+        if(TrampGetSettings())
+        {
+            if (vtxRecord.vtxPower == power)
+                return(1);
+        }
+    }
+    return(0);
 }
-void TrampSetBandChannel(uint32_t bandChannel)
-{
-    TrampSendFreq((uint16_t)VtxBandChannelToFrequency(bandChannel));
-}
+
 void ProcessTrampTelemetry(void)
 {
 }

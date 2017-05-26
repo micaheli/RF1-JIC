@@ -270,7 +270,50 @@ uint32_t SmartAudioGetSettings(void)
 			//set vtxFreqency from band and channel
 			vtxRecord.vtxFrequency = VtxBandChannelToFrequency(vtxRecord.vtxBandChannel);
 			//set vtx power
-			vtxRecord.vtxPower    = smartAudioTxRxBuffer[5];
+			switch(vtxRecord.vtxDevice)
+			{
+				case VTX_DEVICE_SMARTV1:
+					switch(smartAudioTxRxBuffer[5])
+					{
+						case 7:
+							vtxRecord.vtxPower = VTX_POWER_025MW;
+							break;
+						case 16:
+							vtxRecord.vtxPower = VTX_POWER_200MW;
+							break;
+						case 25:
+							vtxRecord.vtxPower = VTX_POWER_500MW;
+							break;
+						case 40:
+							vtxRecord.vtxPower = VTX_POWER_800MW;
+							break;
+						default:
+							vtxRecord.vtxPower = VTX_POWER_UN;
+							break;
+					}
+					break;
+				case VTX_DEVICE_SMARTV2:
+					switch(smartAudioTxRxBuffer[5])
+					{
+						case 0:
+							vtxRecord.vtxPower = VTX_POWER_025MW;
+							break;
+						case 1:
+							vtxRecord.vtxPower = VTX_POWER_200MW;
+							break;
+						case 2:
+							vtxRecord.vtxPower = VTX_POWER_500MW;
+							break;
+						case 3:
+							vtxRecord.vtxPower = VTX_POWER_800MW;
+							break;
+						default:
+							vtxRecord.vtxPower = VTX_POWER_UN;
+							break;
+					}
+					break;
+			}
+
 			//no region info, assume US:
 			vtxRecord.vtxRegion   = VTX_REGION_US;
 
@@ -327,34 +370,48 @@ uint32_t SmartAudioVtxPower(uint32_t powerLevel)
 			switch(powerLevel)
 			{
 				case VTX_POWER_025MW:
+				case VTX_POWER_050MW:
+				case VTX_POWER_100MW:
 					powerNumber = 7;
 					break;
 				case VTX_POWER_200MW:
+				case VTX_POWER_400MW:
 					powerNumber = 16;
 					break;
 				case VTX_POWER_500MW:
 					powerNumber = 25;
 					break;
+				case VTX_POWER_600MW:
 				case VTX_POWER_800MW:
 					powerNumber = 40;
 					break;
+				default:
+            		powerNumber = 7;
+            		break;
 			}
 			break;
 		case VTX_DEVICE_SMARTV2:
 			switch(powerLevel)
 			{
 				case VTX_POWER_025MW:
+				case VTX_POWER_050MW:
+				case VTX_POWER_100MW:
 					powerNumber = 0;
 					break;
 				case VTX_POWER_200MW:
+				case VTX_POWER_400MW:
 					powerNumber = 1;
 					break;
 				case VTX_POWER_500MW:
 					powerNumber = 2;
 					break;
+				case VTX_POWER_600MW:
 				case VTX_POWER_800MW:
 					powerNumber = 3;
 					break;
+				default:
+           			powerNumber = 0;
+            		break;
 			}
 			break;
 	}

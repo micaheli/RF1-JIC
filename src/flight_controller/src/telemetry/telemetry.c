@@ -119,15 +119,27 @@ void InitMavlink(uint32_t serialPort)
 	(void)(serialPort);
 }
 
-uint32_t VtxBandChannelToFrequency(uint32_t bandChannel)
+int VtxFrequencyToBandChannel(int frequency)
+{
+	//if frequency is not in table then -1 is returned which is unknown frequency
+	int x;
+	for (x=sizeof(vtxBandChannelToFrequencyLookup);x>=0;x--)
+	{
+		if(vtxBandChannelToFrequencyLookup[x] == frequency)
+			return(x);
+	}
+	return(-1);
+}
+
+int VtxBandChannelToFrequency(int bandChannel)
 {
 	return(vtxBandChannelToFrequencyLookup[bandChannel]);
 }
 
-void VtxChannelToBandAndChannel(uint32_t inChannel, volatile uint32_t *vtxBand, volatile uint32_t *channel)
+void VtxChannelToBandAndChannel(int inChannel, volatile int *vtxBand, volatile int *channel)
 {
 
-	uint32_t bandMultiplier;
+	int bandMultiplier;
 
 	bandMultiplier = (inChannel) / 8;
 
@@ -136,7 +148,7 @@ void VtxChannelToBandAndChannel(uint32_t inChannel, volatile uint32_t *vtxBand, 
 
 }
 
-uint32_t VtxBandAndChannelToBandChannel(volatile uint32_t vtxBand, volatile uint32_t channel)
+int VtxBandAndChannelToBandChannel(volatile int vtxBand, volatile int channel)
 {
 
 	return ( (channel + (8 * vtxBand)) );
@@ -144,7 +156,7 @@ uint32_t VtxBandAndChannelToBandChannel(volatile uint32_t vtxBand, volatile uint
 }
 
 
-uint32_t VtxTurnOn(void)
+int VtxTurnOn(void)
 {
 	uint32_t returnValue;
 	static uint32_t mutex = 0;
@@ -177,7 +189,7 @@ uint32_t VtxTurnOn(void)
 
 }
 
-uint32_t VtxTurnPit(void)
+int VtxTurnPit(void)
 {
 	uint32_t returnValue;
 	static uint32_t mutex = 0;
@@ -205,7 +217,7 @@ uint32_t VtxTurnPit(void)
 
 }
 
-uint32_t VtxBandChannel(uint32_t bandChannel)
+int VtxBandChannel(uint32_t bandChannel)
 {
 	uint32_t returnValue;
 	static uint32_t mutex = 0;
@@ -223,6 +235,11 @@ uint32_t VtxBandChannel(uint32_t bandChannel)
 			mutex = 0;
 			return( returnValue );
 			break;
+		case VTX_DEVICE_TRAMP:
+			returnValue = TrampSetBandChannel(bandChannel);
+			mutex = 0;
+			return( returnValue );
+			break;
 		case VTX_DEVICE_NONE:
 		default:
 			return(0);
@@ -233,7 +250,7 @@ uint32_t VtxBandChannel(uint32_t bandChannel)
 
 }
 
-uint32_t VtxPower(uint32_t power)
+int VtxPower(uint32_t power)
 {
 	uint32_t returnValue;
 	static uint32_t mutex = 0;
