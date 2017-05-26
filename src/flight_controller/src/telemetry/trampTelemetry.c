@@ -5,11 +5,12 @@
 
 static uint8_t  trampIoBuffer[TRAMP_BUFFER_SIZE];     //set
 
-static uint8_t  TrampChecksum(uint8_t trampBuffer[]);
-static void     TrampSendFreq(int frequency);
-static void     TrampSendRfPower(int power);
-static int      TrampSendCommand(uint8_t cmd, uint16_t param, int waitForResponse);
-static void     TrampResetInfoRecord(void);
+static uint8_t TrampChecksum(uint8_t trampBuffer[]);
+static void    TrampSendFreq(int frequency);
+static void    TrampSendRfPower(int power);
+static int     TrampSendCommand(uint8_t cmd, uint16_t param, int waitForResponse);
+static void    TrampResetInfoRecord(void);
+static void    TrampSetPitMode(int on);
 
 typedef enum
 {
@@ -339,7 +340,7 @@ static int TrampSendCommand(uint8_t cmd, uint16_t param, int waitForResponse)
 
 }
 
-void TrampSetPitMode(int on)
+static void TrampSetPitMode(int on)
 {
     if (on)
         TrampSendCommand('I', 0, 0);

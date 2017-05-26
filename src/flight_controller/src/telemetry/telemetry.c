@@ -12,7 +12,7 @@ volatile uint32_t telemEnabled = 1;
 volatile vtx_record vtxRequested;
 volatile vtx_record vtxRecord;
 
-static const uint32_t vtxBandChannelToFrequencyLookup[] = {
+static const int vtxBandChannelToFrequencyLookup[] = {
 	5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, //Boscam A
 	5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866, //Boscam B
 	5705, 5685, 5665, 5645, 5885, 5905, 5925, 5945, //Boscam E
@@ -223,7 +223,7 @@ int VtxTurnPit(void)
 
 }
 
-int VtxBandChannel(uint32_t bandChannel)
+int VtxBandChannel(int bandChannel)
 {
 	uint32_t returnValue;
 	static uint32_t mutex = 0;

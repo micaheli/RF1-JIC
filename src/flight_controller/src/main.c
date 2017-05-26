@@ -44,12 +44,6 @@ int main(void)
 
     	Scheduler(count--);
 
-        if (board.serials[2].Protocol != 18)
-        {
-            volatile dog1 = InlineMillis();
-            volatile dog2 = count;
-            volatile dog3 = count;
-        }
     	if (count == -1)
     		count = 16;
 
