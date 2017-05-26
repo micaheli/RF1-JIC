@@ -7,7 +7,8 @@ enum { SERVO1 = 0,SERVO2,SERVO3,SERVO4,SERVO5,SERVO6,SERVO7,SERVO8 };
 #define ATTENUATION_CURVE_SIZE 9
 
 
-typedef struct {
+typedef struct
+{
     float yaw;
     float roll;
     float pitch;
@@ -18,7 +19,8 @@ typedef struct {
     float aux4;
 } actuator_mixer;
 
-typedef struct {
+typedef struct
+{
     float    foreAftMixerFixer;
     uint32_t mixerType;
     uint32_t mixerStyle;
@@ -26,12 +28,15 @@ typedef struct {
     uint32_t escUpdateFrequency;
     float    idlePercent;
     float    idlePercentInverted;
-    int32_t	 resRedux;
+    int 	 resRedux;
     uint32_t motorOutput[8];
 	float    throttleCurve[ATTENUATION_CURVE_SIZE];
 	float    tpaKpCurve[ATTENUATION_CURVE_SIZE];
 	float    tpaKiCurve[ATTENUATION_CURVE_SIZE];
 	float    tpaKdCurve[ATTENUATION_CURVE_SIZE];
+	int      tpaKpCurveType;
+	int      tpaKiCurveType;
+	int      tpaKdCurveType;
 } mixer_config;
 
 enum {
@@ -57,14 +62,13 @@ enum {
 	ESC_DSHOT300=5,
 	ESC_DSHOT600=6,
 	ESC_DSHOT1200=7,
-	//ESC_SPOOKY_ACTION_AT_A_DISTANCE=7,
 	ESC_MULTISHOT25=8,
 	ESC_MULTISHOT125=9,
 	ESC_PROTOCOL_END=10,
 };
 
 
-extern uint32_t threeDeeMode;
+extern int threeDeeMode;
 extern int motorNumber;
 extern int servoNumber;
 extern volatile float motorOutput[];

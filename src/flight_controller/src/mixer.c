@@ -55,7 +55,7 @@ const actuator_mixer CONST_MIXER_PLUS1234[MAX_MOTOR_NUMBER] =  {
 	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
 	{ 1.0f,  0.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1 counter clockwise
 	{-1.0f, -1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2 clockwise
-	{ 1.0f, 0.0f,  -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3 counter clockwise
+	{ 1.0f,  0.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3 counter clockwise
 	{-1.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4 clockwise
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
@@ -67,7 +67,7 @@ const actuator_mixer CONST_MIXER_PLUS1234RY[MAX_MOTOR_NUMBER] =  {
 	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
 	{-1.0f,  0.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
 	{ 1.0f, -1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2
-	{-1.0f, 0.0f,  -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3
+	{-1.0f,  0.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3
 	{ 1.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
@@ -99,26 +99,27 @@ actuator_mixer servoMixer[MAX_SERVO_NUMBER] =  {
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //servo 8
 };
 
-uint32_t threeDeeMode;
-float    throttleLookup[1024];
-float    throttleLookupKp[1024];
-float    throttleLookupKi[1024];
-float    throttleLookupKd[1024];
-float    stabilizerAttenuation;
+int   threeDeeMode;
+float throttleLookup[1024];
+float throttleLookupKp[1024];
+float throttleLookupKi[1024];
+float throttleLookupKd[1024];
+float stabilizerAttenuation;
+int   activeMotorCounter = -1; //number of active motors minus 1
+
 volatile float motorOutput[MAX_MOTOR_NUMBER];
 volatile float servoOutput[MAX_SERVO_NUMBER];
 
-int32_t activeMotorCounter = -1; //number of active motors minus 1
+
+
+//static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.40, 1.35, 1.28, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
+//static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
+//static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
 
 static float throttleCurve[ATTENUATION_CURVE_SIZE]      = {0.000f, 0.125f, 0.250f, 0.375f, 0.500f, 0.625f, 0.750f, 0.875f, 1.000f};
-
-static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.40, 1.35, 1.28, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95};
-static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
-static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.35, 1.15, 1.00, 1.00, 0.90, 0.90, 0.85, 0.80, 0.75};
-
-//static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.000f, 1.000f, 1.000f, 0.950f, 0.900f, 0.850f, 0.800f, 0.800f, 0.800f};
-//static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {0.800f, 0.800f, 0.800f, 0.850f, 0.900f, 0.950f, 1.000f, 1.000f, 1.000f};
-//static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.000f, 1.000f, 1.000f, 0.950f, 0.900f, 0.850f, 0.800f, 0.800f, 0.800f};
+static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.000f, 1.000f, 1.000f, 0.950f, 0.900f, 0.850f, 0.800f, 0.800f, 0.800f};
+static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {0.800f, 0.800f, 0.800f, 0.850f, 0.900f, 0.950f, 1.000f, 1.000f, 1.000f};
+static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.000f, 1.000f, 1.000f, 0.950f, 0.900f, 0.850f, 0.800f, 0.800f, 0.800f};
 
 static void PrintThrottleCurve(void);
 static void PrintTpaKp(void);
@@ -134,7 +135,7 @@ static float ApplyAttenuationOldCurve (float input, float curve[], uint32_t curv
 
 static void BuildThrottleLookupTable(void)
 {
-	int32_t x;
+	int x;
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
@@ -144,11 +145,11 @@ static void BuildThrottleLookupTable(void)
 
 static void BuildThrottleLookupTableKp(void)
 {
-	int32_t x;
+	int x;
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
-		if (mainConfig.filterConfig[0].gyro.p > 0.5f)
+		if (mainConfig.mixerConfig.tpaKpCurveType)
 		{
 			throttleLookupKp[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE );
 		}
@@ -160,11 +161,11 @@ static void BuildThrottleLookupTableKp(void)
 }
 static void BuildThrottleLookupTableKi(void)
 {
-	int32_t x;
+	int x;
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
-		if (mainConfig.filterConfig[0].gyro.p > 0.5f)
+		if (mainConfig.mixerConfig.tpaKiCurveType)
 		{
 			throttleLookupKi[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE );
 		}
@@ -176,11 +177,11 @@ static void BuildThrottleLookupTableKi(void)
 }
 static void BuildThrottleLookupTableKd(void)
 {
-	int32_t x;
+	int x;
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
-		if (mainConfig.filterConfig[0].gyro.p > 0.5f)
+		if (mainConfig.mixerConfig.tpaKdCurveType)
 		{
 			throttleLookupKd[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE );
 		}
@@ -413,7 +414,7 @@ void AdjustKdTpa(char *modString)
 
 void AdjustThrottleCurve(char *modString)
 {
-	char tempString[8];
+	char  tempString[8];
 	float curve[9] = {0.0f,};
 	float tempFloat = 0.0f;
 	uint32_t x = 0;
@@ -464,7 +465,6 @@ void AdjustThrottleCurve(char *modString)
 
 void PrintTpaCurves(void)
 {
-	//uint32_t i;
 	PrintThrottleCurve();
 	PrintTpaKp();
 	PrintTpaKi();

@@ -124,7 +124,7 @@ void InitScheduler(void)
 	return;
 }
 
- void Scheduler(int32_t count)
+void Scheduler(int32_t count)
 {
 
 	switch (count) {
@@ -202,13 +202,7 @@ inline void TaskCheckVtx(void)
 {
 
 	static uint32_t modeLatch = 0;
-	static uint32_t lastCheckTime = 0;
 
-	if ( (InlineMillis() - lastCheckTime) > 2000)
-	{
-		lastCheckTime = InlineMillis();
-		TrampGetSettings();
-	}
 	//don't do this task unless board is disarmed
 	if (boardArmed)
 		return;

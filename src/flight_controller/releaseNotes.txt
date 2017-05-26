@@ -1143,9 +1143,15 @@ Version 0.264.096 ALPHA:
 	set skunk=1 to use old TPA curve method (default)
 	set skunk=0 to use current TPA curve method
 
-Version 0.265.096 ALPHA:
+Version 0.265.100 ALPHA:
 	Tramp vtx support fleshed out
 	when using tx4 logging will auto disable
+	added variables:
+		set tpa_kp_curve_type = 0 
+		set tpa_ki_curve_type = 0 
+		set tpa_kd_curve_type = 0
+			values 0 is default and is the new style TPA curve available since RC13
+			values 1 is old style TPA curve available since forever but removed in RC12
 
 #Features in current development:
 #	MAVlink compatibility

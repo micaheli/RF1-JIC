@@ -28,8 +28,8 @@ void DeInitActuators(void)  {
 	}
 }
 
-void InitActuators(void) {
-
+void InitActuators(void)
+{
 	float disarmUs;    // shortest pulse width (disarmed)
 	float disarmUs3d;  // shortest pulse width (disarmed)
 	float calibrateUs; // shortest pulse width (calibrate)
@@ -44,7 +44,8 @@ void InitActuators(void) {
 	uint32_t pwmHz;   // max update frequency for protocol
 	uint32_t walledPulseValue;
 
-	switch (mainConfig.mixerConfig.escProtocol) {
+	switch (mainConfig.mixerConfig.escProtocol)
+	{
 		case ESC_PWM:
 			disarmUs3d  = 1500;
 			disarmUs    = 990;
@@ -130,9 +131,11 @@ void InitActuators(void) {
 
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
-	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+	{
 		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
-		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+		{
 			InitActuatorTimer(board.motors[outputNumber], pwmHz, timerHz);
 		}
 	}
@@ -140,9 +143,11 @@ void InitActuators(void) {
 	DelayMs(2); //give timer time to stabilize.
 
 	// Start the timers
-	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+	{
 		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
-		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+		{
 			HAL_TIM_Base_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum]);
 			HAL_TIM_PWM_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum], board.motors[outputNumber].timChannel);
 		}
@@ -203,10 +208,12 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 
 }
 
-inline void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle) {
+inline void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle)
+{
 	uint32_t digitalThrottle;
-	int32_t  checksum = 0;
-	int32_t  checksumData;
+	int      checksum = 0;
+	int      checksumData;
+	int      i;
 	uint32_t currThrottle;
 
 	if (idle > 0) {
@@ -223,7 +230,8 @@ inline void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle
 
 	checksumData = digitalThrottle;
 
-    for (uint32_t i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++)
+	{
     	checksum ^=  checksumData;   // xor data by nibbles
     	checksumData >>= 4;
     }

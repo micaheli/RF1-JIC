@@ -123,7 +123,7 @@ int TrampGetSettings(void)
 	if (boardArmed)
 		return(0);
 
-    TrampResetInfoRecord();
+    //TrampResetInfoRecord();
 
 	if (TrampSendCommand('s', 0, 1))
     {
@@ -330,6 +330,8 @@ static int TrampSendCommand(uint8_t cmd, uint16_t param, int waitForResponse)
 
                     if (responseBack != HAL_OK)
                         return(0);
+                    else
+                        return(1);
 
                 }
             }

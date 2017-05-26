@@ -14,11 +14,12 @@ char rfCustomSendBufferAdder[RF_BUFFER_SIZE];
 char rfCustomSendBuffer[LARGE_RF_BUFFER_SIZE];
 unsigned char rfReplyBuffer[HID_EPIN_SIZE];
 
-static uint32_t ValidateConfig (uint32_t addresConfigStart);
-static void     SetValueOrString(uint32_t position, char *value);
-static void     SetValue(uint32_t position, char *value);
-static void     DlflStatusDump(void);
-static int32_t  GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray);
+static int  SetVariable(char *inString);
+static int  ValidateConfig(uint32_t addresConfigStart);
+static void SetValueOrString(int position, char *value);
+static void SetValue(int position, char *value);
+static void DlflStatusDump(void);
+static int  GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray);
 
 const string_comp_rec vtxStringCompTable[] = {
 		//telemetry.h.h
@@ -145,6 +146,9 @@ const config_variables_rec valueTable[] = {
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 6, "" },
 		{ "idle_percent_inv",	typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercentInverted,			0, 15.0, 8, "" },
 		{ "res_redux",			typeINT,   "mixr", &mainConfig.mixerConfig.resRedux,					0, 1, 0, "" },
+		{ "tpa_kp_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKpCurveType,				0, 1, 0, "" },
+		{ "tpa_ki_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKiCurveType,				0, 1, 0, "" },
+		{ "tpa_kd_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKdCurveType,				0, 1, 0, "" },
 
 		{ "mout1", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[0],				0, 7, 0, "" },
 		{ "mout2", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[1],				0, 7, 1, "" },
@@ -202,8 +206,8 @@ const config_variables_rec valueTable[] = {
 		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 31, 0, "" },
 		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 31, 0, "" },
 
-		{ "kd_limit", 			typeFLOAT,  "pids", &mainConfig.pidConfig[0].kdLimit, 					0.1, 1.0, 0.35, "" },
-		{ "ki_limit", 			typeFLOAT,  "pids", &mainConfig.pidConfig[0].kiLimit, 					0.1, 1.0, 0.15, "" },
+		{ "kd_limit", 			typeFLOAT, "pids", &mainConfig.pidConfig[0].kdLimit, 					0.1, 1.0, 0.35, "" },
+		{ "ki_limit", 			typeFLOAT, "pids", &mainConfig.pidConfig[0].kiLimit, 					0.1, 1.0, 0.15, "" },
 
 		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 05.0, "" },
 		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25.0, 00.1, "" },
@@ -560,7 +564,7 @@ void SaveConfig (uint32_t addresConfigStart)
 	SKIP_GYRO=0;
 }
 
-static uint32_t ValidateConfig (uint32_t addresConfigStart)
+static int ValidateConfig (uint32_t addresConfigStart)
 {
 
 	const main_config *temp = (main_config *) addresConfigStart; //ADDRESS_FLASH_START;
@@ -666,12 +670,12 @@ char *CleanupString(char *inString)
 }
 
 
-static int32_t GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray)
+static int GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray)
 {
-	uint32_t x;
+	int x;
 
 	//compare args with strings in stringCompTable
-	for (x=0;x<(sizeOfArray/sizeof(string_comp_rec));x++)
+	for (x=(sizeOfArray/sizeof(string_comp_rec));x>=0;x--)
 	{
 		if (!strcmp(thisStringCompTable[x].valueString, string))
 		{
@@ -682,15 +686,15 @@ static int32_t GetValueFromString(char *string, const string_comp_rec thisString
 	return(-1);
 }
 
-void SetValueOrString(uint32_t position, char *value)
+void SetValueOrString(int position, char *value)
 {
-	uint32_t x;
+	int  x;
 	char stringBuffer[10];
 
 	value = CleanupNumberString(value);
 
 	//compare args with strings in stringCompTable
-	for (x=0;x<(sizeof(stringCompTable)/sizeof(string_comp_rec));x++)
+	for (x=(sizeof(stringCompTable)/sizeof(string_comp_rec));x>=0;x--)
 	{
 		if (!strcmp(stringCompTable[x].valueString, value))
 		{
@@ -705,14 +709,16 @@ void SetValueOrString(uint32_t position, char *value)
 	SetValue(position, value);
 }
 
-void SetValue(uint32_t position, char *value)
+void SetValue(int position, char *value)
 {
 
 	switch (valueTable[position].type) {
 		//TODO used something better then atoi
 		case typeUINT:
-		case typeINT:
 			*(uint32_t *)valueTable[position].ptr = atoi(value);
+			break;
+		case typeINT:
+			*(int *)valueTable[position].ptr = atoi(value);
 			break;
 
 		case typeFLOAT:
@@ -728,10 +734,10 @@ void SendStatusReport(char *inString)
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
 
-int32_t SetVariable(char *inString)
+static int SetVariable(char *inString)
 {
-	uint32_t x;
-	uint32_t inStringLength;
+	int   x;
+	int   inStringLength;
 	char *args = NULL;
 	StripSpaces(inString);
 
@@ -748,10 +754,10 @@ int32_t SetVariable(char *inString)
 
 	inString[x] = 0;
 
-	for (x = 0; x < strlen(inString); x++)
+	for (x = strlen(inString); x >= 0; x--)
 		inString[x] = tolower((unsigned char)inString[x]);
 
-	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+	for (x=(sizeof(valueTable)/sizeof(config_variables_rec));x>=0;x--)
 	{
 		if (!strcmp(valueTable[x].name, inString))
 		{
@@ -2258,6 +2264,11 @@ void ProcessCommand(char *inString)
 		{
 			args = StripSpaces(args);
 			SetupModes(args);
+		}
+	else if (!strcmp("throttlecurve", inString))
+		{
+			args = StripSpaces(args);
+			AdjustThrottleCurve(args);
 		}
 	else if (!strcmp("tpakp", inString))
 		{
