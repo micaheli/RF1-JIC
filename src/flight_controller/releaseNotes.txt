@@ -1152,7 +1152,7 @@ Version 0.265.100 ALPHA:
 		set tpa_ki_curve_type = 0 
 		set tpa_kd_curve_type = 0
 			values 0 is default and is the new style TPA curve available since RC13
-			values 1 is old style TPA curve available since forever but removed in RC12
+			values 1 is old style TPA curve available since forever but removed in RC13
 
 Version 0.266.100 BETA:
 	Minor tramp bug fixes
