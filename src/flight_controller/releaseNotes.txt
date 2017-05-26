@@ -1140,10 +1140,11 @@ Version 0.263.095 BETA:
 	lower hard fault detection time
 
 Version 0.264.096 ALPHA:
-	set skunk=1 to use old TPA curve method (default)
-	set skunk=0 to use current TPA curve method
+	set drunk=1 to use old TPA curve method (default)
+	set drunk=0 to use current TPA curve method
 
 Version 0.265.100 ALPHA:
+	drunk no longer used
 	Tramp vtx support fleshed out
 	when using tx4 logging will auto disable
 	added variables:
@@ -1152,6 +1153,23 @@ Version 0.265.100 ALPHA:
 		set tpa_kd_curve_type = 0
 			values 0 is default and is the new style TPA curve available since RC13
 			values 1 is old style TPA curve available since forever but removed in RC12
+
+Version 0.266.100 BETA:
+	Minor tramp bug fixes
+	added command:
+		vtxpower
+			sets VTX power
+			tramp value is measured in milliwats
+				0 through 600 mw is selectable
+			smart audio devices are meassured in steps
+				0 = 25mw
+				1 = 200mw
+				2 = 500mw
+				3 = 800mw (Not supported on race version)
+	tramp vtx can be placed into pit mode with the command (vtxpit)
+	tramp will still restart in the broadcasting state
+	
+
 
 #Features in current development:
 #	MAVlink compatibility

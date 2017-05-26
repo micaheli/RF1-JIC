@@ -270,6 +270,29 @@ uint32_t SmartAudioGetSettings(void)
 			//set vtxFreqency from band and channel
 			vtxRecord.vtxFrequency = VtxBandChannelToFrequency(vtxRecord.vtxBandChannel);
 			//set vtx power
+			vtxRecord.vtxPower     = smartAudioTxRxBuffer[5];
+			if(vtxRecord.vtxDevice == VTX_DEVICE_SMARTV1)
+			{
+				switch(smartAudioTxRxBuffer[5])
+				{
+					case 7:
+						vtxRecord.vtxPower = 0;
+						break;
+					case 16:
+						vtxRecord.vtxPower = 1;
+						break;
+					case 25:
+						vtxRecord.vtxPower = 2;
+						break;
+					case 40:
+						vtxRecord.vtxPower = 3;
+						break;
+					default:
+						vtxRecord.vtxPower = 0;
+						break;
+				}
+			}
+			/*
 			switch(vtxRecord.vtxDevice)
 			{
 				case VTX_DEVICE_SMARTV1:
@@ -313,6 +336,7 @@ uint32_t SmartAudioGetSettings(void)
 					}
 					break;
 			}
+			*/
 
 			//no region info, assume US:
 			vtxRecord.vtxRegion   = VTX_REGION_US;
@@ -363,7 +387,7 @@ uint32_t SmartAudioVtxPower(uint32_t powerLevel)
 	}
 
 	powerNumber = 99;
-
+	/*
 	switch(vtxRecord.vtxDevice)
 	{
 		case VTX_DEVICE_SMARTV1:
@@ -407,6 +431,51 @@ uint32_t SmartAudioVtxPower(uint32_t powerLevel)
 					break;
 				case VTX_POWER_600MW:
 				case VTX_POWER_800MW:
+					powerNumber = 3;
+					break;
+				default:
+           			powerNumber = 0;
+            		break;
+			}
+			break;
+	}
+	*/
+
+	switch(vtxRecord.vtxDevice)
+	{
+		case VTX_DEVICE_SMARTV1:
+			switch(powerLevel)
+			{
+				case 0:
+					powerNumber = 7;
+					break;
+				case 1:
+					powerNumber = 16;
+					break;
+				case 2:
+					powerNumber = 25;
+					break;
+				case 3:
+					powerNumber = 40;
+					break;
+				default:
+            		powerNumber = 7;
+            		break;
+			}
+			break;
+		case VTX_DEVICE_SMARTV2:
+			switch(powerLevel)
+			{
+				case 0:
+					powerNumber = 0;
+					break;
+				case 1:
+					powerNumber = 1;
+					break;
+				case 2:
+					powerNumber = 2;
+					break;
+				case 3:
 					powerNumber = 3;
 					break;
 				default:

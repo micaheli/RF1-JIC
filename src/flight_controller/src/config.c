@@ -846,6 +846,26 @@ int RfCustomReply(char *rf_custom_out_buffer)
 
 }
 
+void PrintVtxInfo(void)
+{
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice=%i\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand=%i\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel=%i\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel=%s\n", vtxStringCompTable[vtxRecord.vtxBandChannel].valueString); RfCustomReplyBuffer(rf_custom_out_buffer);
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower=%i\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
+	if (vtxRecord.vtxPit == VTX_MODE_ACTIVE)
+	{
+		snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=VTX Broadcasting\n");
+		RfCustomReplyBuffer(rf_custom_out_buffer);
+	}
+	else
+	{
+		snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=VTX in Pit Mode\n");
+		RfCustomReplyBuffer(rf_custom_out_buffer);
+	}
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion=%i\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency=%i\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1866,14 +1886,7 @@ void ProcessCommand(char *inString)
 				TrampGetSettings();
 			}
 
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice=%i\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand=%i\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel=%i\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel=%i\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower=%i\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=%i\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion=%i\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency=%i\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+			PrintVtxInfo();
 			progMode=0;
 		}
 	else if (!strcmp("vtxon", inString))
@@ -1882,14 +1895,7 @@ void ProcessCommand(char *inString)
 
 			if (VtxTurnOn())
 			{
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice=%i\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand=%i\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel=%i\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel=%i\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower=%i\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=%i\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion=%i\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency=%i\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+				PrintVtxInfo();
 			}
 			else
 			{
@@ -1906,18 +1912,28 @@ void ProcessCommand(char *inString)
 
 			if (VtxTurnPit())
 			{
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice=%i\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand=%i\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel=%i\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel=%i\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower=%i\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=%i\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion=%i\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency=%i\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+				PrintVtxInfo();
 			}
 			else
 			{
 				RfCustomReplyBuffer("#me Error putting VTX into pit mode\n");
+			}
+
+			progMode=0;
+
+		}
+	else if (!strcmp("vtxpower", inString))
+		{
+
+			progMode=1;
+
+			if (VtxPower(atoi(args)))
+			{
+				PrintVtxInfo();
+			}
+			else
+			{
+				RfCustomReplyBuffer("#me Error changing VTX power\n");
 			}
 
 			progMode=0;
@@ -1930,14 +1946,7 @@ void ProcessCommand(char *inString)
 
 			if (VtxBandChannel( GetValueFromString(args, vtxStringCompTable, sizeof(vtxStringCompTable)) ))
 			{
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxDevice=%i\n",      vtxRecord.vtxDevice);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBand=%i\n",        vtxRecord.vtxBand);        RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxChannel=%i\n",     vtxRecord.vtxChannel);     RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxBandChannel=%i\n", vtxRecord.vtxBandChannel); RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPower=%i\n",       vtxRecord.vtxPower);       RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxPit=%i\n",         vtxRecord.vtxPit);         RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxRegion=%i\n",      vtxRecord.vtxRegion);      RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me vtx.vtxFrequency=%i\n",   vtxRecord.vtxFrequency);   RfCustomReplyBuffer(rf_custom_out_buffer);
+				PrintVtxInfo();
 			}
 			else
 			{

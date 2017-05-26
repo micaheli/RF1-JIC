@@ -61,6 +61,7 @@ static void TrampResetInfoRecord(void)
 int InitTrampTelemetry(int usartNumber)
 {
 
+    vtxRecord.vtxDevice      = VTX_DEVICE_TRAMP;
     TrampResetInfoRecord();
 
     board.serials[usartNumber].Protocol = USING_TRAMP;
@@ -76,32 +77,41 @@ int InitTrampTelemetry(int usartNumber)
 
 int TrampHandleResponse(uint8_t trampBuffer[])
 {
-
+    //uint8_t volatile crc1 = TrampChecksum(trampBuffer);
+    //uint8_t volatile crc2 = trampBuffer[13];
+    //uint8_t volatile crc3 = trampBuffer[14];
+    //uint8_t volatile crc4 = trampBuffer[15];
+    //uint8_t volatile crc5 = trampBuffer[15];
+    //uint8_t volatile crc6 = trampBuffer[0];
+    //uint8_t volatile crc7 = trampBuffer[1];
+    //uint8_t volatile crc8 = trampBuffer[2];
+    //uint8_t volatile crc9 = trampBuffer[3];
     //is crc valid
-    if (trampBuffer[14] == TrampChecksum(trampBuffer))
+    //if (trampBuffer[14] == TrampChecksum(trampBuffer))
+    if (trampBuffer[14+1] == trampBuffer[14+1])
     {
-        switch(trampBuffer[1])
+        switch(trampBuffer[1+1])
         {
             case 'r':
-                trampInfo.trampRfFreqMin = ( trampBuffer[2] |(trampBuffer[3] << 8) );
+                trampInfo.trampRfFreqMin = ( trampBuffer[2+1] |(trampBuffer[3+1] << 8) );
                 if(trampInfo.trampRfFreqMin)
                 {
-                    trampInfo.trampRfFreqMax  = ( trampBuffer[4] |(trampBuffer[5] << 8) );
-                    trampInfo.trampRfPowerMax = ( trampBuffer[6] |(trampBuffer[7] << 8) );
+                    trampInfo.trampRfFreqMax  = ( trampBuffer[4+1] |(trampBuffer[5+1] << 8) );
+                    trampInfo.trampRfPowerMax = ( trampBuffer[6+1] |(trampBuffer[7+1] << 8) );
                     return(1);
                 }
                 break;
             case 's':
-                trampInfo.trampTemp = (int16_t)( trampBuffer[6] |(trampBuffer[7] << 8) );
+                trampInfo.trampTemp = (int16_t)( trampBuffer[6+1] |(trampBuffer[7+1] << 8) );
                 return(1);
                 break;
             case 'v':
-                trampInfo.trampCurFreq = ( trampBuffer[2] |(trampBuffer[3] << 8) );
+                trampInfo.trampCurFreq = ( trampBuffer[2+1] |(trampBuffer[3+1] << 8) );
                 if(trampInfo.trampCurFreq)
                 {
-                    trampInfo.trampCurPower = ( trampBuffer[4] |(trampBuffer[5] << 8) );
-                    trampInfo.trampPitMode  = trampBuffer[7];
-                    trampInfo.trampReqPower = ( trampBuffer[8] |(trampBuffer[9] << 8) );
+                    trampInfo.trampCurPower = ( trampBuffer[4+1] |(trampBuffer[5+1] << 8) );
+                    trampInfo.trampPitMode  = trampBuffer[7+1];
+                    trampInfo.trampReqPower = ( trampBuffer[8+1] |(trampBuffer[9+1] << 8) );
                     //vtx58_Freq2Bandchan(trampCurFreq, &trampBand, &trampChannel);
                     //if(trampConfFreq == 0)  trampConfFreq  = trampCurFreq;
                     //if(trampConfPower == 0) trampConfPower = trampPower;
@@ -127,25 +137,30 @@ int TrampGetSettings(void)
 
 	if (TrampSendCommand('s', 0, 1))
     {
-        TrampHandleResponse(trampIoBuffer);
+        if (!TrampHandleResponse(trampIoBuffer))
+            return(0);
     }
     else
     {
         return(0);
     }
 
+    DelayMs(25);
 	if (TrampSendCommand('r', 0, 1))
     {
-        TrampHandleResponse(trampIoBuffer);
+        if (!TrampHandleResponse(trampIoBuffer))
+            return(0);
     }
     else
     {
         return(0);
     }
 
+    DelayMs(25);
 	if (TrampSendCommand('v', 0, 1))
     {
-        TrampHandleResponse(trampIoBuffer);
+        if (!TrampHandleResponse(trampIoBuffer))
+            return(0);
     }
     else
     {
@@ -158,29 +173,32 @@ int TrampGetSettings(void)
     vtxRecord.vtxFrequency   = trampInfo.trampCurFreq;
     vtxRecord.vtxRegion      = VTX_REGION_US;
     vtxRecord.vtxBandChannel = VtxFrequencyToBandChannel(trampInfo.trampCurFreq);
+    vtxRecord.vtxPower       = trampInfo.trampReqPower;
     VtxChannelToBandAndChannel(vtxRecord.vtxBandChannel, &vtxRecord.vtxBand, &vtxRecord.vtxChannel);
 
+/*
     switch(trampInfo.trampReqPower)
     {
-        case 25:
+        case 0:
             vtxRecord.vtxPower = VTX_POWER_025MW;
             break;
-        case 100:
+        case 1:
             vtxRecord.vtxPower = VTX_POWER_100MW;
             break;
-        case 200:
+        case 2:
             vtxRecord.vtxPower = VTX_POWER_200MW;
             break;
-        case 400:
+        case 3:
             vtxRecord.vtxPower = VTX_POWER_400MW;
             break;
-        case 600:
+        case 4:
             vtxRecord.vtxPower = VTX_POWER_600MW;
             break;
         default:
             vtxRecord.vtxPower = VTX_POWER_UN;
             break;
     }
+*/
 
     if (trampInfo.trampPitMode)
     {
@@ -323,8 +341,8 @@ static int TrampSendCommand(uint8_t cmd, uint16_t param, int waitForResponse)
                         }
                         else
                         {
-                            DelayMs(10);
-                            responseBack = HAL_UART_Receive(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)trampIoBuffer, TRAMP_BUFFER_SIZE, 300);
+                            DelayMs(15);
+                            responseBack = HAL_UART_Receive(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)trampIoBuffer, TRAMP_BUFFER_SIZE, 150);
                         }
                     }
 
@@ -401,35 +419,35 @@ int TrampSetPower(int power)
 {
     int x;           //set
     int powerNumber; //set
-
+/*
     switch(power)
     {
         case VTX_POWER_025MW:
         case VTX_POWER_050MW:
-            powerNumber = 25;
+            powerNumber = 0;
             break;
         case VTX_POWER_100MW:
-            powerNumber = 100;
+            powerNumber = 1;
             break;
         case VTX_POWER_200MW:
-            powerNumber = 200;
+            powerNumber = 2;
             break;
         case VTX_POWER_400MW:
         case VTX_POWER_500MW:
-            powerNumber = 400;
+            powerNumber = 3;
             break;
         case VTX_POWER_600MW:
         case VTX_POWER_800MW:
-            powerNumber = 600;
+            powerNumber = 4;
             break;
         default:
-            powerNumber = 25;
+            powerNumber = 0;
             break;
     }
-
+*/
     for (x=TRAMP_RETRIES;x>=0;x--)
     {
-        TrampSendRfPower(powerNumber);
+        TrampSendRfPower(power);
         if(TrampGetSettings())
         {
             if (vtxRecord.vtxPower == power)
