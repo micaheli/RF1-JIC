@@ -1,6 +1,6 @@
 #include "includes.h"
 
-#define TRAMP_RETRIES 3
+#define TRAMP_RETRIES 2
 #define TRAMP_BUFFER_SIZE 16
 
 static uint8_t  trampIoBuffer[TRAMP_BUFFER_SIZE];     //set
@@ -61,7 +61,6 @@ static void TrampResetInfoRecord(void)
 int InitTrampTelemetry(int usartNumber)
 {
 
-    vtxRecord.vtxDevice      = VTX_DEVICE_TRAMP;
     TrampResetInfoRecord();
 
     board.serials[usartNumber].Protocol = USING_TRAMP;
@@ -227,6 +226,19 @@ int TrampGetSettings(void)
     else
     {
         vtxRecord.vtxPit = VTX_MODE_ACTIVE;
+    }
+
+    //only set first time
+    if (vtxRequested.vtxDevice == VTX_DEVICE_NONE)
+    {
+        vtxRequested.vtxDevice      = vtxRecord.vtxDevice;
+        vtxRequested.vtxBand        = vtxRecord.vtxBand;
+        vtxRequested.vtxChannel     = vtxRecord.vtxChannel;
+        vtxRequested.vtxBandChannel = vtxRecord.vtxBandChannel;
+        vtxRequested.vtxPower       = vtxRecord.vtxPower;
+        vtxRequested.vtxPit         = vtxRecord.vtxPit;
+        vtxRequested.vtxRegion      = vtxRecord.vtxRegion;
+        vtxRequested.vtxFrequency   = vtxRecord.vtxFrequency;
     }
 
 	return(1);

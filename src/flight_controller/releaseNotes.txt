@@ -1182,6 +1182,9 @@ Version 0.267.100 BETA:
 		500mw = 200mw
 		800mw = 400mw
 
+Version 0.268.100 BETA:
+	Fixed issue with VTX not updating when it should
+	Changed VTX communication startup
 
 #Features in current development:
 #	MAVlink compatibility

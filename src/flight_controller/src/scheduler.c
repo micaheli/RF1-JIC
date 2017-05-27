@@ -203,52 +203,43 @@ inline void TaskCheckVtx(void)
 
 	static uint32_t modeLatch = 0;
 
-	//don't do this task unless board is disarmed
-	if (boardArmed)
-		return;
-
-	if (!mainConfig.telemConfig.telemSmartAudio)
-		return;
-
-	//don't change channel until prog mode is done
-	if (progMode)
-		return;
-
-	if (ModeSet(M_VTXON) && ModeActive(M_VTXON) && !modeLatch)
+	if ( (!boardArmed) && (!progMode) && ((mainConfig.telemConfig.telemSmartAudio) || (mainConfig.telemConfig.telemTramp)) )
 	{
-		//only try turning on the VTX once per mode enabling
-		turnOnVtxNow = 1;
-		modeLatch = 1;
-	}
-	else if (ModeSet(M_VTXON) && !ModeActive(M_VTXON))
-	{
-		modeLatch = 0;
-	}
 
-	if (turnOnVtxNow)
-	{
-		turnOnVtxNow = 0;
-		VtxTurnOn(); //blocking of scheduler during send and receive
-	}
+		if (ModeSet(M_VTXON) && ModeActive(M_VTXON) && !modeLatch)
+		{
+			turnOnVtxNow = 1;
+			modeLatch = 1;
+		}
+		else if (ModeSet(M_VTXON) && !ModeActive(M_VTXON))
+		{
+			modeLatch = 0;
+		}
 
-	if (vtxRequested.vtxBandChannel != vtxRecord.vtxBandChannel)
-	{
-		VtxBandChannel(vtxRequested.vtxBandChannel);
-	}
+		if (turnOnVtxNow)
+		{
+			turnOnVtxNow = 0;
+			VtxTurnOn(); //blocking of scheduler during send and receive
+		}
 
-	if (vtxRequested.vtxPit != vtxRecord.vtxPit)
-	{
-		//if (vtxRecord.vtxPit == VTX_MODE_ACTIVE)
-		//	VtxTurnOn();
-		//else
-		//	VtxTurnPit();
-	}
+		if (vtxRequested.vtxBandChannel != vtxRecord.vtxBandChannel)
+		{
+			VtxBandChannel(vtxRequested.vtxBandChannel);
+		}
 
-	if (vtxRequested.vtxPower != vtxRecord.vtxPower)
-	{
-		VtxPower(vtxRequested.vtxPower);
-	}
+		if (vtxRequested.vtxPit != vtxRecord.vtxPit)
+		{
+			//if (vtxRecord.vtxPit == VTX_MODE_ACTIVE)
+			//	VtxTurnOn();
+			//else
+			//	VtxTurnPit();
+		}
 
+		if (vtxRequested.vtxPower != vtxRecord.vtxPower)
+		{
+			VtxPower(vtxRequested.vtxPower);
+		}
+	}
 }
 
 inline void TaskAdc(void)

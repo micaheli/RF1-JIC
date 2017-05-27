@@ -12,7 +12,8 @@ static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle
 
 //motor_output_array motorOutputArray[MAX_MOTOR_NUMBER];
 
-void DeInitActuators(void)  {
+void DeInitActuators(void)
+{
 	uint32_t motorNum;
 	uint32_t outputNumber;
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)

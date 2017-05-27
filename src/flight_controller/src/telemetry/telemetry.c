@@ -294,6 +294,7 @@ int VtxPower(int power)
 void InitTelemtry(void)
 {
 
+	int temp;
 	vtxRecord.vtxDevice      = VTX_DEVICE_NONE;
 	vtxRequested.vtxDevice   = VTX_DEVICE_NONE;
 
@@ -409,41 +410,54 @@ void InitTelemtry(void)
 			break;
 	}
 
-	switch(mainConfig.telemConfig.telemTramp)
+	if(mainConfig.telemConfig.telemTramp)
 	{
-		//soft trsmp not supported right now
-		case TELEM_ACTUATOR1:
-		case TELEM_ACTUATOR2:
-		case TELEM_ACTUATOR3:
-		case TELEM_ACTUATOR4:
-		case TELEM_ACTUATOR5:
-		case TELEM_ACTUATOR6:
-		case TELEM_ACTUATOR7:
-		case TELEM_ACTUATOR8:
-			break;
-		case TELEM_USART1:
-			InitTrampTelemetry(ENUM_USART1);
-			break;
-		case TELEM_USART2:
-			InitTrampTelemetry(ENUM_USART2);
-			break;
-		case TELEM_USART3:
-			InitTrampTelemetry(ENUM_USART3);
-			break;
-		case TELEM_USART4:
-			InitTrampTelemetry(ENUM_USART4);
-			break;
-		case TELEM_USART5:
-			InitTrampTelemetry(ENUM_USART5);
-			break;
-		case TELEM_USART6:
-			InitTrampTelemetry(ENUM_USART6);
-			break;
-		default:
-			break;
+		temp = -1;
+		switch(mainConfig.telemConfig.telemTramp)
+		{
+			//soft trsmp not supported right now
+			case TELEM_ACTUATOR1:
+			case TELEM_ACTUATOR2:
+			case TELEM_ACTUATOR3:
+			case TELEM_ACTUATOR4:
+			case TELEM_ACTUATOR5:
+			case TELEM_ACTUATOR6:
+			case TELEM_ACTUATOR7:
+			case TELEM_ACTUATOR8:
+				break;
+			case TELEM_USART1:
+				temp = ENUM_USART1;
+				break;
+			case TELEM_USART2:
+				temp = TELEM_USART2;
+				break;
+			case TELEM_USART3:
+				temp = TELEM_USART3;
+				break;
+			case TELEM_USART4:
+				temp = TELEM_USART4;
+				break;
+			case TELEM_USART5:
+				temp = TELEM_USART5;
+				break;
+			case TELEM_USART6:
+				temp = TELEM_USART6;
+				break;
+			default:
+				break;
+		}
+
+		if (temp > -1)
+		{
+			InitTrampTelemetry(temp);
+		}
+		else
+		{
+			mainConfig.telemConfig.telemTramp = 0;
+		}
+
 	}
 
-	//not needed
 	if (mainConfig.telemConfig.telemSpek)
 		InitSpektrumTelemetry();
 
