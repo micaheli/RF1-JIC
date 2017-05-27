@@ -206,6 +206,14 @@ inline void TaskCheckVtx(void)
 	if ( (!boardArmed) && (!progMode) && ((mainConfig.telemConfig.telemSmartAudio) || (mainConfig.telemConfig.telemTramp)) )
 	{
 
+		if (mainConfig.telemConfig.telemTramp && vtxRecord.vtxDevice != VTX_DEVICE_TRAMP)
+		{
+			//check every four seconds for VTX if there's supposed to be one
+			if (InlineMillis() % 4000 == 0)
+			{
+				TrampGetSettings();
+			}
+		}
 		if (ModeSet(M_VTXON) && ModeActive(M_VTXON) && !modeLatch)
 		{
 			turnOnVtxNow = 1;
