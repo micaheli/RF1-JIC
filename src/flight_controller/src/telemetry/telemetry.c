@@ -164,9 +164,6 @@ int VtxTurnOn(void)
 		return(0);
 	mutex = 1;
 
-	if (mainConfig.telemConfig.telemTramp && vtxRecord.vtxDevice == VTX_DEVICE_NONE)
-		TrampGetSettings(); //check for first time communication
-
 	switch(vtxRecord.vtxDevice)
 	{
 		case VTX_DEVICE_SMARTV1:
@@ -201,9 +198,6 @@ int VtxTurnPit(void)
 		return(0);
 	mutex = 1;
 
-	if (mainConfig.telemConfig.telemTramp && vtxRecord.vtxDevice == VTX_DEVICE_NONE)
-		TrampGetSettings(); //check for first time communication
-
 	switch(vtxRecord.vtxDevice)
 	{
 		case VTX_DEVICE_SMARTV1:
@@ -236,9 +230,6 @@ int VtxBandChannel(int bandChannel)
 	if (mutex)
 		return(0);
 	mutex = 1;
-
-	if (mainConfig.telemConfig.telemTramp && vtxRecord.vtxDevice == VTX_DEVICE_NONE)
-		TrampGetSettings(); //check for first time communication
 
 	switch(vtxRecord.vtxDevice)
 	{
@@ -274,9 +265,6 @@ int VtxPower(int power)
 		return(0);
 	mutex = 1;
 
-	if (mainConfig.telemConfig.telemTramp && vtxRecord.vtxDevice == VTX_DEVICE_NONE)
-		TrampGetSettings(); //check for first time communication
-
 	switch(vtxRecord.vtxDevice)
 	{
 		case VTX_DEVICE_SMARTV1:
@@ -311,8 +299,12 @@ void InitTelemtry(void)
 	vtxRequested.vtxDevice   = VTX_DEVICE_NONE;
 
 	//try twice to init smart audi if it's enabled
-	
-    if(mainConfig.telemConfig.telemSmartAudio && vtxRecord.vtxDevice == VTX_DEVICE_NONE)
+	InitSmartAudio();
+    if(mainConfig.telemConfig.telemSmartAudio && !vtxRecord.vtxDevice)
+    {
+    	DelayMs(1500);
+    	InitSmartAudio();
+    }
 
 	InitAllSport();
 
@@ -457,7 +449,6 @@ void InitTelemtry(void)
 
 		if (temp > -1)
 		{
-			mainConfig.telemConfig.telemSmartAudio = 0;
 			InitTrampTelemetry(temp);
 		}
 		else
