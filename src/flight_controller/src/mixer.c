@@ -453,7 +453,7 @@ void AdjustThrottleCurve(char *modString)
 	if (x == 9)
 	{
 		for (x=0;x<9;x++)
-			mainConfig.mixerConfig.tpaKdCurve[x] = curve[x];
+			mainConfig.mixerConfig.throttleCurve[x] = curve[x];
 		RfCustomReplyBuffer("#me New Curve Set\n");
 		PrintThrottleCurve();
 		return;

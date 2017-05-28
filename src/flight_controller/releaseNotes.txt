@@ -1186,6 +1186,10 @@ Version 0.268.100 BETA:
 	Fixed issue with VTX not updating when it should
 	Changed VTX communication startup
 
+Version 0.269.100 BETA:
+	Fix Throttle curve
+	minor changes to vtx code
+
 #Features in current development:
 #	MAVlink compatibility
 

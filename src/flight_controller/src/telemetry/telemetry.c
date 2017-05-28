@@ -181,6 +181,7 @@ int VtxTurnOn(void)
 			break;
 		case VTX_DEVICE_NONE:
 		default:
+			mutex = 0;
 			return(0);
 			break;
 	}
@@ -215,10 +216,12 @@ int VtxTurnPit(void)
 			break;
 		case VTX_DEVICE_NONE:
 		default:
+			mutex = 0;
 			return(0);
 			break;
 	}
 
+	mutex = 0;
 	return(0);
 
 }
@@ -253,6 +256,7 @@ int VtxBandChannel(int bandChannel)
 			break;
 	}
 
+	mutex = 0;
 	return(0);
 
 }
@@ -287,6 +291,7 @@ int VtxPower(int power)
 			break;
 	}
 
+	mutex = 0;
 	return(0);
 
 }

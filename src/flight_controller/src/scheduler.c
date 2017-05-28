@@ -208,8 +208,8 @@ inline void TaskCheckVtx(void)
 
 		if (mainConfig.telemConfig.telemTramp && vtxRecord.vtxDevice != VTX_DEVICE_TRAMP)
 		{
-			//check every four seconds for VTX if there's supposed to be one
-			if (InlineMillis() % 4000 == 0)
+			//check every two seconds for VTX if there's supposed to be one
+			if (InlineMillis() % 2000 == 0)
 			{
 				TrampGetSettings();
 			}
