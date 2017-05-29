@@ -1138,6 +1138,7 @@ Version 0.262.094 BETA:
 
 Version 0.263.095 BETA:
 	lower hard fault detection time
+	Fix smart audio driver
 
 Version 0.264.096 ALPHA:
 	set drunk=1 to use old TPA curve method (default)
@@ -1189,6 +1190,7 @@ Version 0.268.100 BETA:
 Version 0.269.100 BETA:
 	Fix Throttle curve
 	minor changes to vtx code
+	Updated esc firmware to 16.71
 
 #Features in current development:
 #	MAVlink compatibility
