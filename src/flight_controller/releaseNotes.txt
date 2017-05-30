@@ -1191,6 +1191,12 @@ Version 0.269.100 BETA:
 	Fix Throttle curve
 	minor changes to vtx code
 	Updated esc firmware to 16.71
+	Only limitation is you can't use tramp on TX3 with s.port due to DMA constraints.
+	Revolt 1 can use TX1, TX3 and TX5 (or other TX pins if you use the breakouts below)
+	Revolt 2 can use TX1, TX3, TX4, TX6 (or other TX pins if you use the breakouts below) for tramp 1wire
+
+Version 0.270.100 BETA:
+	Added variables for configurator usage.
 
 #Features in current development:
 #	MAVlink compatibility
