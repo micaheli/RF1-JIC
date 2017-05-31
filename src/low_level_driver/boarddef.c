@@ -263,7 +263,7 @@ void GetBoardHardwareDefs(void)
 	//Buzzer Settings
 	board.buzzerPort = BUZZER_GPIO_Port;	//Port C
 	board.buzzerPin  = BUZZER_GPIO_Pin;
-
+	board.buzzerPolarity = BUZZER_POLARITY;
 
 
 	//Motor output assignments

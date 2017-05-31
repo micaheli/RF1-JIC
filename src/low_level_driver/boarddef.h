@@ -449,6 +449,7 @@ typedef struct {
 
 	uint32_t				buzzerPort;
 	uint32_t				buzzerPin;
+	uint32_t				buzzerPolarity;
 
 	
 

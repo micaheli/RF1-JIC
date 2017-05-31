@@ -29,9 +29,20 @@ void InitializeBuzzerPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
+
+	if (board.buzzerPolarity == TIM_OCPOLARITY_HIGH)
+	{
+		GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+		GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
+		GPIO_InitStructure.Pull = GPIO_NOPULL;
+	}
+		
     HAL_GPIO_Init(GPIOx, &GPIO_InitStructure);
 
-    HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
+	if (board.buzzerPolarity == TIM_OCPOLARITY_HIGH)
+		HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
+	else
+		HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
 
     buzzerStatus.status = STATE_BUZZER_OFF;
 
@@ -42,11 +53,17 @@ void DoBuzz(int on)
 {
 	if (on)
 	{
-    	HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_RESET);
+		if (board.buzzerPolarity == TIM_OCPOLARITY_HIGH)
+			HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_SET);
+		else
+    		HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_RESET);
 	}
 	else
 	{
-    	HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_SET);
+		if (board.buzzerPolarity == TIM_OCPOLARITY_HIGH)
+			HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_RESET);
+		else
+			HAL_GPIO_WritePin(ports[board.buzzerPort], board.buzzerPin, GPIO_PIN_SET);
 	}
 }
 

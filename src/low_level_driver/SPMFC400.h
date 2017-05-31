@@ -40,7 +40,7 @@
 #define BUZZER_ALTERNATE		0
 #define BUZZER_TIM_CH			0
 #define BUZZER_TIM_CCR			0
-#define BUZZER_POLARITY			0
+#define BUZZER_POLARITY			TIM_OCPOLARITY_HIGH
 
 //Gyro Config
 #define GYRO_SPI_NUMBER			ENUM_SPI2
