@@ -92,71 +92,31 @@ void BoardInit(void)
     //__HAL_RCC_GPIOI_CLK_ENABLE();
 
     __HAL_RCC_ADC1_CLK_ENABLE();
-#ifdef _ADC2_
     __HAL_RCC_ADC2_CLK_ENABLE();
-#endif
-#ifdef _ADC2_
-     __HAL_RCC_ADC3_CLK_ENABLE();
-#endif
+    __HAL_RCC_ADC3_CLK_ENABLE();
 
     __HAL_RCC_DMA1_CLK_ENABLE();
     __HAL_RCC_DMA2_CLK_ENABLE();
 
-#ifdef _USART1_
     __USART1_CLK_ENABLE();
-#endif
-#ifdef _USART2_
     __USART2_CLK_ENABLE();
-#endif
-#ifdef _USART3_
     __USART3_CLK_ENABLE();
-#endif
-#ifdef _USART4_
     __UART4_CLK_ENABLE();
-#endif
-#ifdef _USART5_
     __UART5_CLK_ENABLE();
-#endif
-#ifdef _USART6_
     __USART6_CLK_ENABLE();
-#endif
 
-#ifdef _TIM1_
     __HAL_RCC_TIM1_CLK_ENABLE();
-#endif
-#ifdef _TIM2_
     __HAL_RCC_TIM2_CLK_ENABLE();
-#endif
-#ifdef _TIM3_
     __HAL_RCC_TIM3_CLK_ENABLE();
-#endif
-#ifdef _TIM4_
     __HAL_RCC_TIM4_CLK_ENABLE();
-#endif
-#ifdef _TIM5_
     __HAL_RCC_TIM5_CLK_ENABLE();
-#endif
-#ifdef _TIM6_
     __HAL_RCC_TIM6_CLK_ENABLE();
-#endif
-#ifdef _TIM7_
     __HAL_RCC_TIM7_CLK_ENABLE();
-#endif
-#ifdef _TIM8_
     __HAL_RCC_TIM8_CLK_ENABLE();
-#endif
-#ifdef _TIM9_
     __HAL_RCC_TIM9_CLK_ENABLE();
-    #endif
-#ifdef _TIM10_
     __HAL_RCC_TIM10_CLK_ENABLE();
-#endif
-#ifdef _TIM11_
     __HAL_RCC_TIM11_CLK_ENABLE();
-#endif
-#ifdef _TIM12_
     __HAL_RCC_TIM12_CLK_ENABLE();
-#endif
 }
 
 void USBInit(void)

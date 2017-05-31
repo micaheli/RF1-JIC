@@ -111,14 +111,14 @@ def configure_target(TARGET):
         PROJECT = "esc"
         TARGET_DEVICE = "STM32F051x8"
         TARGET_SCRIPT = "stm32_flash_f051_32k.ld"
-        TARGET_PROCESSOR_TYPE  = "f0"
+        TARGET_PROCESSOR_TYPE = "f0"
         OPTIMIZE_FLAGS = "-O3"
 
     elif TARGET == "stm32f103xb":
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F103xB"
         TARGET_SCRIPT = "stm32_flash_f103_128k.ld"
-        TARGET_PROCESSOR_TYPE  = "f1"
+        TARGET_PROCESSOR_TYPE = "f1"
         FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
@@ -130,7 +130,7 @@ def configure_target(TARGET):
         PROJECT = "nesc"
         TARGET_DEVICE = "STM32F301x8"
         TARGET_SCRIPT = "stm32_flash_f301_64k.ld"
-        TARGET_PROCESSOR_TYPE  = "f3"
+        TARGET_PROCESSOR_TYPE = "f3"
         OPTIMIZE_FLAGS = "-Og"
 
     elif TARGET == "stm32f303xc":
@@ -138,7 +138,7 @@ def configure_target(TARGET):
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F303xC"
         TARGET_SCRIPT = "stm32_flash_f303_256k.ld"
-        TARGET_PROCESSOR_TYPE  = "f3"
+        TARGET_PROCESSOR_TYPE = "f3"
         FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
@@ -147,7 +147,7 @@ def configure_target(TARGET):
         PROJECT = "boot_loader"
         TARGET_DEVICE = "STM32F303xC"
         TARGET_SCRIPT = "stm32_flash_f303_256k_rfbl.ld"
-        TARGET_PROCESSOR_TYPE  = "f3"
+        TARGET_PROCESSOR_TYPE = "f3"
         FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
@@ -156,7 +156,7 @@ def configure_target(TARGET):
         PROJECT = "recovery_loader"
         TARGET_DEVICE = "STM32F303xC"
         TARGET_SCRIPT = "stm32_flash_f303_256k_recovery.ld"
-        TARGET_PROCESSOR_TYPE  = "f3"
+        TARGET_PROCESSOR_TYPE = "f3"
         FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
@@ -168,7 +168,7 @@ def configure_target(TARGET):
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
+        TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
         STM32F4_ARCH_FLAGS_ADD = ""
@@ -179,17 +179,17 @@ def configure_target(TARGET):
         PROJECT = "passthru"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_passthru.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
+        TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
-        STM32F4_ARCH_FLAGS_ADD  = ""
+        STM32F4_ARCH_FLAGS_ADD = ""
 
     elif TARGET == "stm32f405xx_temp":
         TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "template"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_template.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
+        TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
@@ -198,7 +198,7 @@ def configure_target(TARGET):
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
+        TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
@@ -207,17 +207,45 @@ def configure_target(TARGET):
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F405xx"
         TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
+        TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
     elif TARGET == "stm32f411xe":
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        TARGET_DEVICE_LC = "stm32f411xe"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F411xE"
         TARGET_SCRIPT = "stm32_flash_f411.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
+        TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
+
+    elif TARGET == "stm32f411xe_nrfbl":
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f411xe"
+        PROJECT = "new_bootloader"
+        TARGET_DEVICE = "STM32F411xE"
+        TARGET_SCRIPT = "stm32_flash_f411_rfbl.ld"
+        TARGET_PROCESSOR_TYPE = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Og"
+
+    elif TARGET == "stm32f411xe_nrecovery":
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        TARGET_DEVICE_LC = "stm32f411xe"
+        PROJECT = "new_bootloader"
+        TARGET_DEVICE = "STM32F411xE"
+        TARGET_SCRIPT = "stm32_flash_f411_recovery.ld"
+        TARGET_PROCESSOR_TYPE = "f4"
+        FEATURES.extend(["usb_otg_fs"])
+        OPTIMIZE_FLAGS = "-Og"
 
     elif TARGET == "stm32f745xx":
         if args.debug:
@@ -227,7 +255,7 @@ def configure_target(TARGET):
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745.ld"
-        TARGET_PROCESSOR_TYPE  = "f7"
+        TARGET_PROCESSOR_TYPE = "f7"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
         STM32F7_ARCH_FLAGS_ADD = ""
@@ -237,10 +265,10 @@ def configure_target(TARGET):
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_rfbl.ld"
-        TARGET_PROCESSOR_TYPE  = "f7"
+        TARGET_PROCESSOR_TYPE = "f7"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
-        STM32F7_ARCH_FLAGS_ADD  = ""
+        STM32F7_ARCH_FLAGS_ADD = ""
         #STM32F7_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
@@ -249,10 +277,10 @@ def configure_target(TARGET):
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F745xx"
         TARGET_SCRIPT = "stm32_flash_f745_recovery.ld"
-        TARGET_PROCESSOR_TYPE  = "f7"
+        TARGET_PROCESSOR_TYPE = "f7"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
-        STM32F7_ARCH_FLAGS_ADD  = ""
+        STM32F7_ARCH_FLAGS_ADD = ""
         #STM32F7_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
@@ -261,7 +289,7 @@ def configure_target(TARGET):
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
+        TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
@@ -270,21 +298,21 @@ def configure_target(TARGET):
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_rfbl.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
+        TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
-        STM32F4_ARCH_FLAGS_ADD  = ""
+        STM32F4_ARCH_FLAGS_ADD = ""
 
     elif TARGET == "stm32f446xx_nrecovery":
         TARGET_DEVICE_LC = "stm32f446xx"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F446xx"
         TARGET_SCRIPT = "stm32_flash_f446_recovery.ld"
-        TARGET_PROCESSOR_TYPE  = "f4"
+        TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
-        STM32F4_ARCH_FLAGS_ADD  = ""
-    
+        STM32F4_ARCH_FLAGS_ADD = ""
+
     else:
         print("ERROR: NOT VALID TARGET: ", TARGET, file=sys.stderr)
         sys.exit(1)
@@ -292,51 +320,56 @@ def configure_target(TARGET):
     ################################################################################
     # Set per target compilation options
 
-    STM32F0_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM0 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    STM32F0_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM0 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F0_ARCH_FLAGS = "-mthumb -mcpu=cortex-m0"
 
-    STM32F1_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM3 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    STM32F1_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM3 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F1_ARCH_FLAGS = "-mthumb -mcpu=cortex-m3"
 
-    #STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    #STM32F3_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     #STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-    STM32F3_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    STM32F3_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16"
 
     if TARGET_DEVICE == "STM32F446xx":
-        STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=12000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+        STM32F4_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=12000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
         STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -mtune=cortex-m4"
     else:
-        STM32F4_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+        STM32F4_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
         STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -mtune=cortex-m4" + " " + STM32F4_ARCH_FLAGS_ADD
 
-    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7 -DUSE_HAL_DRIVER -D__FPU_PRESENT -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    STM32F7_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7 -DUSE_HAL_DRIVER -D__FPU_PRESENT -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
 #    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -fsingle-precision-constant -mtune=cortex-m7"
 
     if TARGET_PROCESSOR_TYPE == "f0":
-        DEF_FLAGS  = STM32F0_DEF_FLAGS
+        DEF_FLAGS = STM32F0_DEF_FLAGS
         ARCH_FLAGS = STM32F0_ARCH_FLAGS
         MCU_FAMILY = "stm32"
 
     elif TARGET_PROCESSOR_TYPE == "f1":
-        DEF_FLAGS  = STM32F1_DEF_FLAGS
+        DEF_FLAGS = STM32F1_DEF_FLAGS
         ARCH_FLAGS = STM32F1_ARCH_FLAGS
         MCU_FAMILY = "stm32"
 
     elif TARGET_PROCESSOR_TYPE == "f3":
-        DEF_FLAGS  = STM32F3_DEF_FLAGS
+        DEF_FLAGS = STM32F3_DEF_FLAGS
         ARCH_FLAGS = STM32F3_ARCH_FLAGS
         MCU_FAMILY = "stm32"
 
     elif TARGET_PROCESSOR_TYPE == "f4":
-        DEF_FLAGS  = STM32F4_DEF_FLAGS
+        DEF_FLAGS = STM32F4_DEF_FLAGS
+        ARCH_FLAGS = STM32F4_ARCH_FLAGS
+        MCU_FAMILY = "stm32"
+
+    elif TARGET_PROCESSOR_TYPE == "f411":
+        DEF_FLAGS = STM32F4_DEF_FLAGS
         ARCH_FLAGS = STM32F4_ARCH_FLAGS
         MCU_FAMILY = "stm32"
 
     elif TARGET_PROCESSOR_TYPE == "f7":
-        DEF_FLAGS  = STM32F7_DEF_FLAGS
+        DEF_FLAGS = STM32F7_DEF_FLAGS
         ARCH_FLAGS = STM32F7_ARCH_FLAGS
         MCU_FAMILY = "stm32"
 
@@ -402,18 +435,6 @@ def configure_target(TARGET):
         excluded_files.append("stm32f3xx_spi_msp.c")
         excluded_files.append("stm32f4xx_spi_msp.c")
         excluded_files.append("stm32f7xx_spi_msp.c")
-    elif PROJECT == "boot_loader":
-        FEATURES.extend(["leds"])
-        excluded_files.append("stm32f3xx_spi_msp.c")
-        excluded_files.append("stm32f4xx_spi_msp.c")
-        excluded_files.append("stm32f7xx_spi_msp.c")
-        excluded_files.append("boarddef.c")
-    elif PROJECT == "recovery_loader":
-        FEATURES.extend(["leds"])
-        excluded_files.append("stm32f3xx_spi_msp.c")
-        excluded_files.append("stm32f4xx_spi_msp.c")
-        excluded_files.append("stm32f7xx_spi_msp.c")
-        excluded_files.append("boarddef.c")
     else:
         print("ERROR: NOT VALID PROJECT TYPE, CHECK MAKE FILE CODE", file=sys.stderr)
         sys.exit(1)

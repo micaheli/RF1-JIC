@@ -235,11 +235,13 @@ enum {
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
-
+//TODO: Should use better defines
 #if defined(STM32F745xx)
 	#include "REVOLTF7.h"
 #elif defined(STM32F405xx)
 	#include "REVOLT.h"
+#elif defined(STM32F411xE)
+	#include "MICROVOLT.h"
 #elif defined(STM32F446xx)
 	#include "SPMFC400.h"
 #endif

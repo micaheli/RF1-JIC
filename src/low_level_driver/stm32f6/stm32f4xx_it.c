@@ -157,72 +157,72 @@ void TIM7_IRQHandler(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 
-	if(htim->Instance == _TIM1)
+	if(htim->Instance == TIM1)
 	{
 		if (callbackFunctionArray[FP_TIM1])
 			callbackFunctionArray[FP_TIM1](FP_TIM1);
 	}
-	else if(htim->Instance == _TIM2)
+	else if(htim->Instance == TIM2)
 	{
 		if (callbackFunctionArray[FP_TIM2])
 			callbackFunctionArray[FP_TIM2](FP_TIM2);
 	}
-	else if(htim->Instance == _TIM3)
+	else if(htim->Instance == TIM3)
 	{
 		if (callbackFunctionArray[FP_TIM3])
 			callbackFunctionArray[FP_TIM3](FP_TIM3);
 	}
-	else if(htim->Instance == _TIM4)
+	else if(htim->Instance == TIM4)
 	{
 		if (callbackFunctionArray[FP_TIM4])
 			callbackFunctionArray[FP_TIM4](FP_TIM4);
 	}
-	else if(htim->Instance == _TIM5)
+	else if(htim->Instance == TIM5)
 	{
 		if (callbackFunctionArray[FP_TIM5])
 			callbackFunctionArray[FP_TIM5](FP_TIM5);
 	}
-	else if(htim->Instance == _TIM6)
+	else if(htim->Instance == TIM6)
 	{
 		if (callbackFunctionArray[FP_TIM6])
 			callbackFunctionArray[FP_TIM6](FP_TIM6);
 	}
-	else if(htim->Instance == _TIM7)
+	else if(htim->Instance == TIM7)
 	{
 		if (callbackFunctionArray[FP_TIM7])
 			callbackFunctionArray[FP_TIM7](FP_TIM7);
 	}
-	else if(htim->Instance == _TIM8)
+	else if(htim->Instance == TIM8)
 	{
 		if (callbackFunctionArray[FP_TIM8])
 			callbackFunctionArray[FP_TIM8](FP_TIM8);
 	}
-	else if(htim->Instance == _TIM9)
+	else if(htim->Instance == TIM9)
 	{
 		if (callbackFunctionArray[FP_TIM9])
 			callbackFunctionArray[FP_TIM9](FP_TIM9);
 	}
-	else if(htim->Instance == _TIM10)
+	else if(htim->Instance == TIM10)
 	{
 		if (callbackFunctionArray[FP_TIM10])
 			callbackFunctionArray[FP_TIM10](FP_TIM10);
 	}
-	else if(htim->Instance == _TIM11)
+	else if(htim->Instance == TIM11)
 	{
 		if (callbackFunctionArray[FP_TIM11])
 			callbackFunctionArray[FP_TIM11](FP_TIM11);
 	}
-	else if(htim->Instance == _TIM12)
+	else if(htim->Instance == TIM12)
 	{
 		if (callbackFunctionArray[FP_TIM12])
 			callbackFunctionArray[FP_TIM12](FP_TIM12);
 	}
-	else if(htim->Instance == _TIM13)
+	else if(htim->Instance == TIM13)
 	{
 		if (callbackFunctionArray[FP_TIM13])
 			callbackFunctionArray[FP_TIM13](FP_TIM13);
 	}
-	else if(htim->Instance == _TIM14)
+	else if(htim->Instance == TIM14)
 	{
 		if (callbackFunctionArray[FP_TIM14])
 			callbackFunctionArray[FP_TIM14](FP_TIM14);

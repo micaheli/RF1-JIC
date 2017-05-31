@@ -80,7 +80,7 @@ uint32_t GetFlashSector(uint32_t flashAddress) {
 	{
 		return (FLASH_SECTOR_7);
 	}
-#if defined(STM32F405xx) 
+#ifndef STM32F446xx
     else if ((flashAddress < ADDR_FLASH_SECTOR_9) && (flashAddress >= ADDR_FLASH_SECTOR_8))
     {
         return (FLASH_SECTOR_8);
