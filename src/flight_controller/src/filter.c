@@ -266,6 +266,10 @@ void OldPafUpdate(paf_state *state, float measurement)
 void InitPaf(paf_state *state, float q, float r, float p, float intial_value)
 {
 	(void)(p);
+	if (mainConfig.filterConfig[0].filterType)
+	{
+		state->q *= 6.0f;
+	}
 	state->q = (float)q * 0.000001f;
 	//state->r = r * 0.001;
 	state->r = (float)r;

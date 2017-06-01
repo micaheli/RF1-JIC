@@ -186,17 +186,17 @@ const config_variables_rec valueTable[] = {
 		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
 
 		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 0, 0.000, "" },
  		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 0, 0.000, "" },
@@ -889,7 +889,7 @@ void ProcessCommand(char *inString)
 	if (rfCustomReplyBufferPointerSent < rfCustomReplyBufferPointer)
 	{
 		//four second more timeout
-		if (Micros() - lastTimeMore < 4000000)
+		if (Micros() - lastTimeMore < 6000000)
 		{
 			SendRfCustomReplyBuffer();
 			return;
@@ -1688,26 +1688,48 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("realpids", inString))
 		{
 			char fString[20];
+
+			if (!mainConfig.pidConfig[YAW].kp)
+				mainConfig.pidConfig[YAW].kp = 0.001f;
+			if (!mainConfig.pidConfig[ROLL].kp)
+				mainConfig.pidConfig[ROLL].kp = 0.001f;
+			if (!mainConfig.pidConfig[PITCH].kp)
+				mainConfig.pidConfig[PITCH].kp = 0.001f;
+
+			if (!mainConfig.pidConfig[YAW].ki)
+				mainConfig.pidConfig[YAW].ki = 0.001f;
+			if (!mainConfig.pidConfig[ROLL].ki)
+				mainConfig.pidConfig[ROLL].ki = 0.001f;
+			if (!mainConfig.pidConfig[PITCH].ki)
+				mainConfig.pidConfig[PITCH].ki = 0.001f;
+
+			if (!mainConfig.pidConfig[YAW].kd)
+				mainConfig.pidConfig[YAW].kd = 0.001f;
+			if (!mainConfig.pidConfig[ROLL].kd)
+				mainConfig.pidConfig[ROLL].kd = 0.001f;
+			if (!mainConfig.pidConfig[PITCH].kd)
+				mainConfig.pidConfig[PITCH].kd = 0.001f;
+
 			ftoa( ( mainConfig.pidConfig[YAW].kp / (DEFAULT_PID_CONFIG_VALUE / DEFAULT_YAW_KP) ), fString); StripSpaces(fString);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me yaw_kp_real %s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me yaw_kp_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 			ftoa( ( mainConfig.pidConfig[ROLL].kp / (DEFAULT_PID_CONFIG_VALUE / DEFAULT_ROLL_KP) ), fString); StripSpaces(fString);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me roll_kp_real %s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me roll_kp_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 			ftoa( ( mainConfig.pidConfig[PITCH].kp / (DEFAULT_PID_CONFIG_VALUE / DEFAULT_PITCH_KP) ), fString); StripSpaces(fString);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me pitch_kp_real %s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me pitch_kp_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			ftoa( ( mainConfig.pidConfig[YAW].ki / (DEFAULT_PID_CONFIG_VALUE / DEFAULT_YAW_KI) ), fString); StripSpaces(fString);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me yaw_ki_real %s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me yaw_ki_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 			ftoa( ( mainConfig.pidConfig[ROLL].ki / (DEFAULT_PID_CONFIG_VALUE / DEFAULT_ROLL_KI) ), fString); StripSpaces(fString);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me roll_ki_real %s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me roll_ki_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 			ftoa( ( mainConfig.pidConfig[PITCH].ki / (DEFAULT_PID_CONFIG_VALUE / DEFAULT_PITCH_KI) ), fString); StripSpaces(fString);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me pitch_ki_real %s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me pitch_ki_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			ftoa( ( mainConfig.pidConfig[YAW].kd / (DEFAULT_PID_CONFIG_VALUE / DEFAULT_YAW_KD) ), fString); StripSpaces(fString);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me yaw_kd_real %s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me yaw_kd_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 			ftoa( ( mainConfig.pidConfig[ROLL].kd / (DEFAULT_PID_CONFIG_VALUE / DEFAULT_ROLL_KD) ), fString); StripSpaces(fString);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me roll_kd_real %s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me roll_kd_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 			ftoa( ( mainConfig.pidConfig[PITCH].kd / (DEFAULT_PID_CONFIG_VALUE / DEFAULT_PITCH_KD) ), fString); StripSpaces(fString);
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me pitch_kd_real %s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me pitch_kd_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("dump", inString))
 		{

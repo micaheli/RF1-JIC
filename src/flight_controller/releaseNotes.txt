@@ -1196,7 +1196,11 @@ Version 0.269.100 BETA:
 	Revolt 2 can use TX1, TX3, TX4, TX6 (or other TX pins if you use the breakouts below) for tramp 1wire
 
 Version 0.270.100 BETA:
-	Added variables for configurator usage.
+	Added variables for configurator usage
+
+Version 0.271.100 BETA:
+	Added variables for configurator usage
+	Changed how filter types above 0 opperate slightly
 
 #Features in current development:
 #	MAVlink compatibility
