@@ -9,6 +9,8 @@
 #define RFBL_HID_PRODUCT_STRING "RaceFlight Boot Loader"
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
+#define FC_NAME "RaceFlight Microvolt"
+
 //MCU config
 #define FC_PLLM	8
 #define FC_PLLN	384
