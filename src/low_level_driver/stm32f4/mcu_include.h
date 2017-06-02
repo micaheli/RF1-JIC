@@ -151,7 +151,6 @@
 #define _USART4_ 
 #define _USART5_ 
 #define _USART6_ 
-#define _USART7_ 
 
 #define _USART1 USART1
 #define _USART1s 1
@@ -222,7 +221,6 @@
 #define _USART4_ 
 #define _USART5_ 
 #define _USART6_ 
-#define _USART7_ 
 
 #define _USART1 USART1
 #define _USART1s 0

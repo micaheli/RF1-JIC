@@ -253,30 +253,42 @@ void UsartDeInit(uint32_t serialNumber) {
 	/*##-1- Reset peripherals ##################################################*/
 
 	switch (board.serials[serialNumber].SerialInstance) {
+#ifdef _USART1_
 		case ENUM_USART1:
 					__USART1_FORCE_RESET();
 					__USART1_RELEASE_RESET();
 					break;
+#endif
+#ifdef _USART2_
 		case ENUM_USART2:
 					__USART2_FORCE_RESET();
 					__USART2_RELEASE_RESET();
 					break;
+#endif
+#ifdef _USART3_
 		case ENUM_USART3:
 					__USART3_FORCE_RESET();
 					__USART3_RELEASE_RESET();
 					break;
+#endif
+#ifdef _USART4_
 		case ENUM_USART4:
 					__UART4_FORCE_RESET();
 					__UART4_RELEASE_RESET();
 					break;
+#endif
+#ifdef _USART5_
 		case ENUM_USART5:
 					__UART5_FORCE_RESET();
 					__UART5_RELEASE_RESET();
 					break;
+#endif
+#ifdef _USART6_
 		case ENUM_USART6:
 					__USART6_FORCE_RESET();
 					__USART6_RELEASE_RESET();
 					break;
+#endif
 	}
 
 	/*##-2- Disable peripherals and GPIO Clocks #################################*/
