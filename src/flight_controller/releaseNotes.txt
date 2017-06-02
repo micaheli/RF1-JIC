@@ -1206,6 +1206,7 @@ Version 0.271.101 BETA:
 
 Version 0.272.102 BETA:
 	Adjust default TPA
+	Cleanup
 
 #Features in current development:
 #	MAVlink compatibility

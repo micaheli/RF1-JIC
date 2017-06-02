@@ -6,12 +6,8 @@ uint32_t inputChannelMapped[MAXCHANNELS];
 rc_control_config tempRc;
 wizard_record wizardStatus;
 
-//static int32_t  FindRxCenter(void);
-//static int32_t  FindRxMinMax(void);
 static void     ResetChannelCheck(void);
 static uint32_t CheckSafeMotors(uint32_t time, uint32_t deviationAllowed);
-//static int32_t  CheckAndSetChannel(uint32_t outChannel);
-
 static void     PrepareRcWizard(void);
 static void     WizRcCheckMinMax(void);
 static void     WizRcCheckCenter(void);
@@ -19,12 +15,10 @@ static void     WizRcCheckAndSendDirection(void);
 static int32_t  WizRcWhichInChannelChange(void);
 static int32_t  WizRcSetChannelMapAndDirection(uint32_t inChannel, uint32_t outChannel);
 static void     WizRcSetRestOfMap(void);
-
 static void     HandleWizRx(void);
 static uint32_t WizRxCheckRxDataLooksValid(void);
-static void WizRcCheckArmSwitchDisarmed(void);
+static void     WizRcCheckArmSwitchDisarmed(void);
 static uint32_t WizRcCheckArmSwitchArmed(void);
-
 
 static void ResetChannelCheck(void)
 {

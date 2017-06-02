@@ -1,8 +1,6 @@
 #include "includes.h"
 
-__IO ITStatus UartReady = RESET;
-
-uint8_t dmaRxBuffer = '\000';
+uint8_t  dmaRxBuffer = '\000';
 uint32_t dmaIndex[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 6 usarts
 uint32_t dmaTxCallbackToUsartHandle[IRQH_FP_TOT] =  { 0 };
 volatile int32_t processRxCodeNow = -1;
