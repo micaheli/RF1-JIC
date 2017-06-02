@@ -1204,6 +1204,9 @@ Version 0.271.101 BETA:
 	Changed how filter types above 0 opperate slightly
 	Fixed bf rates
 
+Version 0.272.102 BETA:
+	Adjust default TPA
+
 #Features in current development:
 #	MAVlink compatibility
 
