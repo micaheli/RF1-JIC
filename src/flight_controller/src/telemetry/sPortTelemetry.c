@@ -689,32 +689,32 @@ void SendSmartPort(void)
 	switch(sPortTelemCount++)
 	{
 		case 0:
-			SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0700, (int32_t)(filteredAccData[ACCX] * 100), sPortPacket );
+			SmartPortCreatePacket(SPORT_FRAME_HEADER, VFAS_FIRST_ID, (int32_t)(averageVoltage * 100), sPortPacket );
+			//SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0700, (int32_t)(filteredAccData[ACCX] * 100), sPortPacket );
 			break;
 		case 1:
-			SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0710, (int32_t)(filteredAccData[ACCY] * 100), sPortPacket );
+			//SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0710, (int32_t)(filteredAccData[ACCY] * 100), sPortPacket );
 			break;
 		case 2:
-			SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0720, (int32_t)(filteredAccData[ACCZ] * 100), sPortPacket );
+			SmartPortCreatePacket(SPORT_FRAME_HEADER, CURR_FIRST_ID, (int32_t)(adcCurrent * 100), sPortPacket );
+			//SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0720, (int32_t)(filteredAccData[ACCZ] * 100), sPortPacket );
 			break;
 		case 3:
-			SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0701, (int32_t)(filteredGyroData[PITCH]), sPortPacket );
+			//SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0701, (int32_t)(filteredGyroData[PITCH]), sPortPacket );
 			break;
 		case 4:
-			SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0711, (int32_t)(filteredGyroData[ROLL]), sPortPacket );
+			SmartPortCreatePacket(SPORT_FRAME_HEADER, FUEL_FIRST_ID, (int32_t)(adcMAh), sPortPacket );
+			//SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0711, (int32_t)(filteredGyroData[ROLL]), sPortPacket );
 			break;
 		case 5:
-			SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0721, (int32_t)(filteredGyroData[YAW]), sPortPacket );
+			sPortTelemCount = 0;
+			//SmartPortCreatePacket(SPORT_FRAME_HEADER, 0x0721, (int32_t)(filteredGyroData[YAW]), sPortPacket );
 			break;
 		case 6:
-			SmartPortCreatePacket(SPORT_FRAME_HEADER, VFAS_FIRST_ID, (int32_t)(averageVoltage * 100), sPortPacket );
 			break;
 		case 7:
-			SmartPortCreatePacket(SPORT_FRAME_HEADER, CURR_FIRST_ID, (int32_t)(adcCurrent * 100), sPortPacket );
 			break;
 		case 8:
-			SmartPortCreatePacket(SPORT_FRAME_HEADER, FUEL_FIRST_ID, (int32_t)(adcMAh), sPortPacket );
-			sPortTelemCount = 0;
 			break;
 		default:
 			sPortTelemCount = 0;

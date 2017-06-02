@@ -1202,6 +1202,7 @@ Version 0.271.101 BETA:
 	Added variables for configurator usage
 	Minor default changes
 	Changed how filter types above 0 opperate slightly
+	Fixed bf rates
 
 #Features in current development:
 #	MAVlink compatibility

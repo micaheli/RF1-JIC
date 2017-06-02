@@ -954,7 +954,7 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 	flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
 
 	if (flopRcRate > 2.0f)
-		flopRcRate = flopRcRate + (14.55f * (flopRcRate - 1997.0f));
+		flopRcRate = flopRcRate + (14.55f * (flopRcRate - 2.0f));
 
 	if (flopExpo != 0.0f)
 		rcCommand = rcCommand * Powerf(ABS(rcCommand), 3) * flopExpo + rcCommand * (1.0f-flopExpo);
@@ -1020,7 +1020,7 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 			flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
 
 			if (flopRcRate > 2.0f)
-				flopRcRate = flopRcRate + (14.55f * (flopRcRate - 1997.0f));
+				flopRcRate = flopRcRate + (14.55f * (flopRcRate - 2.0f));
 
 			if (flopExpo != 0.0f)
 				rcCommand = rcCommand * Powerf(ABS(rcCommand), 3) * flopExpo + rcCommand * (1.0f-flopExpo);
