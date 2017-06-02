@@ -145,10 +145,10 @@ const config_variables_rec valueTable[] = {
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 6, "" },
 		{ "idle_percent_inv",	typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercentInverted,			0, 15.0, 8, "" },
-		{ "res_redux",			typeINT,   "mixr", &mainConfig.mixerConfig.resRedux,					0, 1, 0, "" },
-		{ "tpa_kp_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKpCurveType,				0, 1, 0, "" },
-		{ "tpa_ki_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKiCurveType,				0, 1, 0, "" },
-		{ "tpa_kd_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKdCurveType,				0, 1, 0, "" },
+		{ "res_redux",			typeINT,   "mixr", &mainConfig.mixerConfig.resRedux,					0, 1, 1, "" },
+		{ "tpa_kp_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKpCurveType,				0, 1, 1, "" },
+		{ "tpa_ki_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKiCurveType,				0, 1, 1, "" },
+		{ "tpa_kd_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKdCurveType,				0, 1, 1, "" },
 
 		{ "mout1", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[0],				0, 7, 0, "" },
 		{ "mout2", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[1],				0, 7, 1, "" },
@@ -315,7 +315,7 @@ const config_variables_rec valueTable[] = {
 		{ "aux4_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX4],		0, 100, 0, "" },
 
 		{ "bind", 	            typeUINT,  "rccf", &mainConfig.rcControlsConfig.bind, 	                0, 32, 0, "" },
-		{ "short_throw", 	    typeUINT,  "rccf", &mainConfig.rcControlsConfig.shortThrow, 	        0, 32, 0, "" },
+		{ "short_throw", 	    typeUINT,  "rccf", &mainConfig.rcControlsConfig.shortThrow, 	        0, 1, 1, "" },
 
 		{ "pitch_rate", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.rates[PITCH],			0, 1500, 400, "" },
 		{ "roll_rate", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.rates[ROLL],			0, 1500, 400, "" },

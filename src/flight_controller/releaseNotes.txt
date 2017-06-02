@@ -1198,8 +1198,9 @@ Version 0.269.100 BETA:
 Version 0.270.100 BETA:
 	Added variables for configurator usage
 
-Version 0.271.100 BETA:
+Version 0.271.101 BETA:
 	Added variables for configurator usage
+	Minor default changes
 	Changed how filter types above 0 opperate slightly
 
 #Features in current development:
