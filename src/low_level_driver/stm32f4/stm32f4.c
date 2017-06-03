@@ -20,6 +20,8 @@
   * @param  None
   * @retval None
   */
+static void StartSystemClocks(void);
+
 void SystemClock_Config(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct;
@@ -69,94 +71,9 @@ void SystemClock_Config(void)
 
 void BoardInit(void)
 {
-
 	HAL_Init();
-
     SystemClock_Config();
-
-    __HAL_RCC_PWR_CLK_ENABLE();
-
-    /* The voltage scaling allows optimizing the power consumption when the device is
-       clocked below the maximum system frequency, to update the voltage scaling value
-       regarding system frequency refer to product datasheet.  */
-    //__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOD_CLK_ENABLE();
-    __HAL_RCC_GPIOE_CLK_ENABLE();
-    //__HAL_RCC_GPIOF_CLK_ENABLE();
-    //__HAL_RCC_GPIOG_CLK_ENABLE();
-    //__HAL_RCC_GPIOH_CLK_ENABLE();
-    //__HAL_RCC_GPIOI_CLK_ENABLE();
-
-    __HAL_RCC_ADC1_CLK_ENABLE();
-#ifdef _ADC2_
-    __HAL_RCC_ADC2_CLK_ENABLE();
-#endif
-#ifdef _ADC2_
-     __HAL_RCC_ADC3_CLK_ENABLE();
-#endif
-
-    __HAL_RCC_DMA1_CLK_ENABLE();
-    __HAL_RCC_DMA2_CLK_ENABLE();
-
-#ifdef _USART1_
-    __USART1_CLK_ENABLE();
-#endif
-#ifdef _USART2_
-    __USART2_CLK_ENABLE();
-#endif
-#ifdef _USART3_
-    __USART3_CLK_ENABLE();
-#endif
-#ifdef _USART4_
-    __UART4_CLK_ENABLE();
-#endif
-#ifdef _USART5_
-    __UART5_CLK_ENABLE();
-#endif
-#ifdef _USART6_
-    __USART6_CLK_ENABLE();
-#endif
-
-#ifdef _TIM1_
-    __HAL_RCC_TIM1_CLK_ENABLE();
-#endif
-#ifdef _TIM2_
-    __HAL_RCC_TIM2_CLK_ENABLE();
-#endif
-#ifdef _TIM3_
-    __HAL_RCC_TIM3_CLK_ENABLE();
-#endif
-#ifdef _TIM4_
-    __HAL_RCC_TIM4_CLK_ENABLE();
-#endif
-#ifdef _TIM5_
-    __HAL_RCC_TIM5_CLK_ENABLE();
-#endif
-#ifdef _TIM6_
-    __HAL_RCC_TIM6_CLK_ENABLE();
-#endif
-#ifdef _TIM7_
-    __HAL_RCC_TIM7_CLK_ENABLE();
-#endif
-#ifdef _TIM8_
-    __HAL_RCC_TIM8_CLK_ENABLE();
-#endif
-#ifdef _TIM9_
-    __HAL_RCC_TIM9_CLK_ENABLE();
-    #endif
-#ifdef _TIM10_
-    __HAL_RCC_TIM10_CLK_ENABLE();
-#endif
-#ifdef _TIM11_
-    __HAL_RCC_TIM11_CLK_ENABLE();
-#endif
-#ifdef _TIM12_
-    __HAL_RCC_TIM12_CLK_ENABLE();
-#endif
+    StartSystemClocks();
 }
 
 void USBInit(void)
@@ -222,3 +139,80 @@ uint32_t TimerPrescalerDivisor(uint32_t timer)
 			break;
 	}
 }
+
+
+#if defined(STM32F405xx) || defined(stm32f405xx) || defined(STM32F446xx) || defined(stm32f446xx)
+
+static void StartSystemClocks(void)
+{
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+
+    __HAL_RCC_ADC1_CLK_ENABLE();
+    __HAL_RCC_ADC2_CLK_ENABLE();
+    __HAL_RCC_ADC3_CLK_ENABLE();
+
+    __HAL_RCC_DMA1_CLK_ENABLE();
+    __HAL_RCC_DMA2_CLK_ENABLE();
+
+    __USART1_CLK_ENABLE();
+    __USART2_CLK_ENABLE();
+    __USART3_CLK_ENABLE();
+    __UART4_CLK_ENABLE();
+    __UART5_CLK_ENABLE();
+    __USART6_CLK_ENABLE();
+
+    __HAL_RCC_TIM1_CLK_ENABLE();
+    __HAL_RCC_TIM2_CLK_ENABLE();
+    __HAL_RCC_TIM3_CLK_ENABLE();
+    __HAL_RCC_TIM4_CLK_ENABLE();
+    __HAL_RCC_TIM5_CLK_ENABLE();
+    __HAL_RCC_TIM6_CLK_ENABLE();
+    __HAL_RCC_TIM7_CLK_ENABLE();
+    __HAL_RCC_TIM8_CLK_ENABLE();
+    __HAL_RCC_TIM9_CLK_ENABLE();
+    __HAL_RCC_TIM10_CLK_ENABLE();
+    __HAL_RCC_TIM11_CLK_ENABLE();
+    __HAL_RCC_TIM12_CLK_ENABLE();
+    __HAL_RCC_TIM13_CLK_ENABLE();
+    __HAL_RCC_TIM14_CLK_ENABLE();
+
+}
+
+#endif
+
+
+#if defined(STM32F411xE) || defined(stm32f411xe)
+
+static void StartSystemClocks(void)
+{
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+
+    __HAL_RCC_ADC1_CLK_ENABLE();
+
+    __HAL_RCC_DMA1_CLK_ENABLE();
+    __HAL_RCC_DMA2_CLK_ENABLE();
+
+    __USART1_CLK_ENABLE();
+    __USART2_CLK_ENABLE();
+
+    __HAL_RCC_TIM1_CLK_ENABLE();
+    __HAL_RCC_TIM2_CLK_ENABLE();
+    __HAL_RCC_TIM3_CLK_ENABLE();
+    __HAL_RCC_TIM4_CLK_ENABLE();
+    __HAL_RCC_TIM5_CLK_ENABLE();
+    __HAL_RCC_TIM9_CLK_ENABLE();
+    __HAL_RCC_TIM10_CLK_ENABLE();
+    __HAL_RCC_TIM11_CLK_ENABLE();
+}
+
+#endif
