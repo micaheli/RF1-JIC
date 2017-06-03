@@ -1,6 +1,6 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint32_t)(1U)
+#define CONFIG_VERSION			(uint8_t)(1U)
 #define CONFIG_VERSION_STR		"1"
 #define FIRMWARE_VERSION		"0.273.001 BETA" //RC18
 #define FIRMWARE_NAME			"RaceFlight One"
