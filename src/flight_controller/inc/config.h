@@ -2,13 +2,12 @@
 
 #define CONFIG_VERSION			(uint8_t)(104U)
 #define CONFIG_VERSION_STR		"104"
-#define FIRMWARE_VERSION		"0.274.004 BETA" //RC18
+#define FIRMWARE_VERSION		"0.274.104 BETA" //RC18
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n"
 
 #define RF_BUFFER_SIZE HID_EPIN_SIZE-1
 #define FLIGHT_MODE_ARRAY_SIZE 96
-// 32 flight modes listed from 0 to 31. first value is channel, second and third value is min and max
 
 typedef struct
 {
