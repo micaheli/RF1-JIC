@@ -115,85 +115,85 @@ int InitializeMCUSettings(void)
 	timers[13]=_TIM14;
 
 	bzero(ccr, sizeof(ccr));
-#ifdef _TIM1_
+#ifdef TIM1
 	ccr[0] = &_TIM1->CCR1;
 	ccr[1] = &_TIM1->CCR2;
 	ccr[2] = &_TIM1->CCR3;
 	ccr[3] = &_TIM1->CCR4;
 #endif
-#ifdef _TIM2_
+#ifdef TIM2
 	ccr[4] = &_TIM2->CCR1;
 	ccr[5] = &_TIM2->CCR2;
 	ccr[6] = &_TIM2->CCR3;
 	ccr[7] = &_TIM2->CCR4;
 #endif
-#ifdef _TIM3_
+#ifdef TIM3
 	ccr[8] = &_TIM3->CCR1;
 	ccr[9] = &_TIM3->CCR2;
 	ccr[10] = &_TIM3->CCR3;
 	ccr[11] = &_TIM3->CCR4;
 #endif
-#ifdef _TIM4_
+#ifdef TIM4
 	ccr[12] = &_TIM4->CCR1;
 	ccr[13] = &_TIM4->CCR2;
 	ccr[14] = &_TIM4->CCR3;
 	ccr[15] = &_TIM4->CCR4;
 #endif
-#ifdef _TIM5_
+#ifdef TIM5
 	ccr[16] = &_TIM5->CCR1;
 	ccr[17] = &_TIM5->CCR2;
 	ccr[18] = &_TIM5->CCR3;
 	ccr[19] = &_TIM5->CCR4;
 #endif
-#ifdef _TIM6_
+#ifdef TIM6
 	ccr[20] = &_TIM6->CCR1;
 	ccr[21] = &_TIM6->CCR2;
 	ccr[22] = &_TIM6->CCR3;
 	ccr[23] = &_TIM6->CCR4;
 #endif
-#ifdef _TIM7_
+#ifdef TIM7
 	ccr[24] = &_TIM7->CCR1;
 	ccr[25] = &_TIM7->CCR2;
 	ccr[26] = &_TIM7->CCR3;
 	ccr[27] = &_TIM7->CCR4;
 #endif
-#ifdef _TIM8_
+#ifdef TIM8
 	ccr[28] = &_TIM8->CCR1;
 	ccr[29] = &_TIM8->CCR2;
 	ccr[30] = &_TIM8->CCR3;
 	ccr[31] = &_TIM8->CCR4;
 #endif
-#ifdef _TIM9_
+#ifdef TIM9
 	ccr[32] = &_TIM9->CCR1;
 	ccr[33] = &_TIM9->CCR2;
 	ccr[34] = &_TIM9->CCR3;
 	ccr[35] = &_TIM9->CCR4;
 #endif
-#ifdef _TIM10_
+#ifdef TIM10
 	ccr[36] = &_TIM10->CCR1;
 	ccr[37] = &_TIM10->CCR2;
 	ccr[38] = &_TIM10->CCR3;
 	ccr[39] = &_TIM10->CCR4;
 #endif
-#ifdef _TIM11_
+#ifdef TIM11
 	ccr[40] = &_TIM11->CCR1;
 	ccr[41] = &_TIM11->CCR2;
 	ccr[42] = &_TIM11->CCR3;
 	ccr[43] = &_TIM11->CCR4;
 #endif
-#ifdef _TIM12_
+#ifdef TIM12
 	ccr[44] = &_TIM12->CCR1;
 	ccr[45] = &_TIM12->CCR2;
 	ccr[46] = &_TIM12->CCR3;
 	ccr[47] = &_TIM12->CCR4;
 #endif
-#ifdef _TIM13_
+#ifdef TIM13
 	ccr[48] = &_TIM13->CCR1;
 	ccr[49] = &_TIM13->CCR2;
 	ccr[50] = &_TIM13->CCR3;
 	ccr[51] = &_TIM13->CCR4;
 #endif
-#ifdef _TIM14_
+#ifdef TIM14
 	ccr[52] = &_TIM14->CCR1;
 	ccr[53] = &_TIM14->CCR2;
 	ccr[54] = &_TIM14->CCR3;

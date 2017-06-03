@@ -1208,6 +1208,16 @@ Version 0.272.102 BETA:
 	Adjust default TPA
 	Cleanup
 
+Version 0.273.103 BETA:
+	Cleanup
+
+Version 0.274.104 BETA:
+	Cleanup
+
+Version 0.275.104 BETA:
+	Cleanup
+	Fix timer output
+
 #Features in current development:
 #	MAVlink compatibility
 

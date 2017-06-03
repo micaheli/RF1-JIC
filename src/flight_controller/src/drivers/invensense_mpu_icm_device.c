@@ -191,7 +191,7 @@ int AccGyroDeviceDetect(void)
 				break;
 #endif
             case ICM20602_WHO_AM_I:
-#if defined(REVOLT) || defined(REVOLTF7)
+#if defined(REVOLT) || defined(REVOLTF7) || defined(MICROVOLT)
             	deviceWhoAmI = data;
                 return data;
                 break;

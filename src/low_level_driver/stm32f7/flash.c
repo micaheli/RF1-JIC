@@ -1,27 +1,33 @@
 #include "includes.h"
 
-void PrepareFlash() {
+void PrepareFlash()
+{
 	HAL_FLASH_Unlock();
 }
 
-void FinishFlash() {
+void FinishFlash()
+{
 	HAL_FLASH_Lock();
 }
 
-int WriteFlash(uint32_t data32, uint32_t flashAddress ) {
+int WriteFlash(uint32_t data32, uint32_t flashAddress )
+{
 
-	if (HAL_FLASH_Program(TYPEPROGRAM_WORD, flashAddress, data32) == HAL_OK) {
-	} else {
+	if (HAL_FLASH_Program(TYPEPROGRAM_WORD, flashAddress, data32) == HAL_OK)
+	{
+		return 1;
+	}
+	else
+	{
 		//FLASH_ErrorTypeDef errorcode = HAL_FLASH_GetError();
 		//todo: return error code.
 		return 0;
 	}
-
-	return 1;
 }
 
 
-int EraseFlash(uint32_t flashStart, uint32_t flashEnd) {
+int EraseFlash(uint32_t flashStart, uint32_t flashEnd)
+{
 
     static FLASH_EraseInitTypeDef EraseInitStruct;
     uint32_t SectorError = 0;
@@ -49,21 +55,36 @@ int EraseFlash(uint32_t flashStart, uint32_t flashEnd) {
 
 uint32_t GetFlashSector(uint32_t flashAddress) {
 
-    if ((flashAddress < ADDR_FLASH_SECTOR_1) && (flashAddress >= ADDR_FLASH_SECTOR_0)) {
+    if ((flashAddress < ADDR_FLASH_SECTOR_1) && (flashAddress >= ADDR_FLASH_SECTOR_0))
+	{
         return (FLASH_SECTOR_0);
-    } else if ((flashAddress < ADDR_FLASH_SECTOR_2) && (flashAddress >= ADDR_FLASH_SECTOR_1)) {
+    }
+	else if ((flashAddress < ADDR_FLASH_SECTOR_2) && (flashAddress >= ADDR_FLASH_SECTOR_1))
+	{
         return (FLASH_SECTOR_1);
-    } else if ((flashAddress < ADDR_FLASH_SECTOR_3) && (flashAddress >= ADDR_FLASH_SECTOR_2)) {
+    }
+	else if ((flashAddress < ADDR_FLASH_SECTOR_3) && (flashAddress >= ADDR_FLASH_SECTOR_2))
+	{
         return (FLASH_SECTOR_2);
-    } else if ((flashAddress < ADDR_FLASH_SECTOR_4) && (flashAddress >= ADDR_FLASH_SECTOR_3)) {
+    }
+	else if ((flashAddress < ADDR_FLASH_SECTOR_4) && (flashAddress >= ADDR_FLASH_SECTOR_3))
+	{
         return (FLASH_SECTOR_3);
-    } else if ((flashAddress < ADDR_FLASH_SECTOR_5) && (flashAddress >= ADDR_FLASH_SECTOR_4)) {
+    }
+	else if ((flashAddress < ADDR_FLASH_SECTOR_5) && (flashAddress >= ADDR_FLASH_SECTOR_4))
+	{
         return (FLASH_SECTOR_4);
-    } else if ((flashAddress < ADDR_FLASH_SECTOR_6) && (flashAddress >= ADDR_FLASH_SECTOR_5)) {
+    }
+	else if ((flashAddress < ADDR_FLASH_SECTOR_6) && (flashAddress >= ADDR_FLASH_SECTOR_5))
+	{
         return (FLASH_SECTOR_5);
-    } else if ((flashAddress < ADDR_FLASH_SECTOR_7) && (flashAddress >= ADDR_FLASH_SECTOR_6)) {
+    }
+	else if ((flashAddress < ADDR_FLASH_SECTOR_7) && (flashAddress >= ADDR_FLASH_SECTOR_6))
+	{
         return (FLASH_SECTOR_6);
-    } else {
+    }
+	else
+	{
         return (FLASH_SECTOR_7);
     }
 

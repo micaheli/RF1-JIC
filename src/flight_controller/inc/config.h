@@ -2,7 +2,7 @@
 
 #define CONFIG_VERSION			(uint8_t)(104U)
 #define CONFIG_VERSION_STR		"104"
-#define FIRMWARE_VERSION		"0.274.104 BETA" //RC18
+#define FIRMWARE_VERSION		"0.275.104 BETA" //RC18
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n"
 
@@ -24,7 +24,13 @@ typedef struct
 	uint8_t           czechsum;
 } main_config;
 
-enum {typeINT=0,typeUINT,typeFLOAT,typeSTRING,};
+enum
+{
+	typeINT    = 0,
+	typeUINT   = 1,
+	typeFLOAT  = 2,
+	typeSTRING = 3,
+};
 
 typedef struct
 {
