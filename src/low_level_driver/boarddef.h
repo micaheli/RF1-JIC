@@ -247,7 +247,8 @@ enum {
 
 //TODO: Should use better defines
 #if defined(STM32F745xx)
-	#include "REVOLTF7.h"
+	//#include "REVOLTF7.h"
+	#include "RVTF7.h"
 #elif defined(STM32F405xx)
 	#include "REVOLT.h"
 #elif defined(STM32F411xE)
