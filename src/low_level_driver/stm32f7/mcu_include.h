@@ -16,16 +16,28 @@
 		      );\
 } while(0)
 
+#define NothingFunction() return;
 
-#define _TIM1 TIM1
-#define _TIM2 TIM2
-#define _TIM3 TIM3
-#define _TIM4 TIM4
-#define _TIM5 TIM5
-#define _TIM6 TIM6
-#define _TIM7 TIM7
-#define _TIM8 TIM8
-#define _TIM9 TIM9
+#define ResetReleaseUsart1() NothingFunction();
+#define ResetReleaseUsart2() NothingFunction();
+#define ResetReleaseUsart3() NothingFunction();
+#define ResetReleaseUsart4() NothingFunction();
+#define ResetReleaseUsart5() NothingFunction();
+#define ResetReleaseUsart6() NothingFunction();
+
+#define _ADC1  ADC1
+#define _ADC2  ADC2
+#define _ADC3  ADC3
+
+#define _TIM1  TIM1
+#define _TIM2  TIM2
+#define _TIM3  TIM3
+#define _TIM4  TIM4
+#define _TIM5  TIM5
+#define _TIM6  TIM6
+#define _TIM7  TIM7
+#define _TIM8  TIM8
+#define _TIM9  TIM9
 #define _TIM10 TIM10
 #define _TIM11 TIM11
 #define _TIM12 TIM12

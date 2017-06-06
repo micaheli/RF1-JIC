@@ -12,10 +12,13 @@
 #define FC_NAME "RaceFlight Revolt TF7"
 
 //MCU config
-#define FC_PLLM	8
-#define FC_PLLN	384
-#define FC_PLLP	2
-#define FC_PLLQ	8
+#define FC_PLLM 8
+#define FC_PLLN 432
+#define FC_PLLP RCC_PLLP_DIV2
+#define FC_PLLQ 9
+#define FC_PLL_SAIN 384
+#define FC_PLL_SAIQ 7
+#define FC_PLL_SAIP RCC_PLLSAIP_DIV8
 
 //LED config
 #define LED1_ENABLED			1
