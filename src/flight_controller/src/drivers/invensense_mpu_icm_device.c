@@ -179,6 +179,11 @@ int AccGyroDeviceDetect(void)
 			case MPU9250_WHO_AM_I:
             case ICM20689_WHO_AM_I:
             case ICM20608G_WHO_AM_I:
+#if defined(RVTF7)
+            	deviceWhoAmI = data;
+                return data;
+				break;
+#endif
 				return -1;
 				break;
 			case MPU6500_WHO_AM_I:
