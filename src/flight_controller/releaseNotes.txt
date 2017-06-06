@@ -1217,6 +1217,7 @@ Version 0.274.104 BETA:
 Version 0.275.104 BETA:
 	Cleanup
 	Fix timer output
+	Added 16.71 blheli_s binaries to RF1 binary
 
 #Features in current development:
 #	MAVlink compatibility

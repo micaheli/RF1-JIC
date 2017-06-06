@@ -83,6 +83,12 @@ void HandleRfOsd(void)
     if (!telemEnabled)
 		return;
 
+	if (currentLine == 4)
+		currentLine = 0;
+
+	bzero(rfOsdTxBuffer, sizeof(rfOsdTxBuffer));
+	bzero(rfOsdLineBuffer, sizeof(rfOsdLineBuffer));
+
     switch(currentLine++)
     {
         case 0:

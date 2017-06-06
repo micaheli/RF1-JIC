@@ -101,6 +101,9 @@ static void ConvertAdcCurrent(uint32_t rawAdcVoltage, float adcCurrFactor)
 
 	adcCurrent = (float)rawAdcVoltage * (float)((float)NORMAL_VOLTAGE/4096.00) * adcCurrFactor;
 
+	if(adcCurrent < 1.0f)
+		adcCurrent = 0.0f;
+
 	if (lastTime > 0)
 	{
 		//ma / hour
