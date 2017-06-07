@@ -144,6 +144,17 @@ void SystemClock_Config(void)
 
 }
 
+void VectorIrqInit(uint32_t address)
+{
+	SCB->VTOR = address; //set vector register to firmware start
+	__enable_irq(); // enable interrupts
+
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+	DWT->LAR = 0xC5ACCE55; 
+	DWT->CYCCNT = 0;
+	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
 void BoardInit(void)
 {
 	//SCB->VTOR = ADDRESS_FLASH_START; //set vector register to firmware start

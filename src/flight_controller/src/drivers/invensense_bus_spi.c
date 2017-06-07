@@ -105,7 +105,7 @@ uint32_t AccGyroInit(loopCtrl_e loopCtrl)
 uint32_t popcorn = 0;
 void GyroExtiCallback(uint32_t callbackNumber)
 {
-    popcorn = Micros();
+    //popcorn = Micros();
 	static int gyroLoopCounter = 0;
 	HAL_GPIO_EXTI_IRQHandler(board.gyros[0].extiPin);
 
@@ -128,20 +128,32 @@ void GyroRxDmaCallback(uint32_t callbackNumber)
 {
     volatile HAL_DMA_StateTypeDef pop;
 	(void)(callbackNumber);
+    //volatile static int count1 = 0;
+    //volatile static int count2 = 0;
+    //volatile static int count3 = 0;
 
-    volatile uint32_t popcornTime = Micros() - popcorn;
+    
+
+    //count1++;
+    //if (count1 > 256000)
+    //{
+    //    count1 = 0;
+    //}
     pop = HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]);
     //while(HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_BUSY);
-    if (pop == pop) {
+    if (pop == HAL_DMA_STATE_READY) {
         // reset chip select line
+        //volatile uint32_t popcornTime = Micros() - popcorn;
 	    inlineDigitalHi(ports[board.gyros[0].csPort], board.gyros[0].csPin);
 
+    //    count2++;
         // run callback for completed gyro read
         accgyroDeviceReadComplete();
     }
     else
     {
-        inlineDigitalHi(ports[board.gyros[0].csPort], board.gyros[0].csPin);
+    //    count3++;
+        //inlineDigitalHi(ports[board.gyros[0].csPort], board.gyros[0].csPin);
     }
 }
 

@@ -83,25 +83,33 @@ void HandleRfOsd(void)
     if (!telemEnabled)
 		return;
 
-	if (currentLine == 4)
+	if (currentLine == 13)
 		currentLine = 0;
 
 	bzero(rfOsdTxBuffer, sizeof(rfOsdTxBuffer));
 	bzero(rfOsdLineBuffer, sizeof(rfOsdLineBuffer));
 
+
     switch(currentLine++)
     {
-        case 0:
-            sprintf(rfOsdLineBuffer, " RaceFlight FTW!");
-            break;
         case 1:
-            sprintf(rfOsdLineBuffer, " Time On: %lu: ms", InlineMillis());
+            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " Garz Time: %lu", (armedTime / 1000));
             break;
-        case 2:
-            sprintf(rfOsdLineBuffer, " Voltage: %lu: mV", (uint32_t)(averageVoltage * 100) );
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+			break;
+        case 11:
+            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " Volt: %lu", (uint32_t)(averageVoltage * 1) );
             break;
-        case 3:
-            sprintf(rfOsdLineBuffer, " Current: %lu: mA", (uint32_t)(adcCurrent * 1000) );
+        case 12:
+            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " Curr: %lu", (uint32_t)(adcCurrent) );
             break;
         default:
             currentLine = 0;

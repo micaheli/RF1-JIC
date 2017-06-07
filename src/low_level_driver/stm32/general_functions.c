@@ -5,19 +5,21 @@ static volatile uint32_t millisClock;
 volatile uint32_t systemUsTicks;
 volatile uint32_t usbStarted = 0;
 
-inline uint32_t InlineMillis(void) {
+inline uint32_t InlineMillis(void)
+{
 	return HAL_GetTick();
 }
 
-inline void InlineUpdateMillisClock (void) {
+inline void InlineUpdateMillisClock (void)
+{
 	millisClock = DWT->CYCCNT;
 }
 
-uint32_t Micros(void) {
+uint32_t Micros(void)
+{
 
 	volatile uint32_t baseMillis;
 	volatile uint32_t baseClock;
-	volatile uint32_t catfish = DWT->CYCCNT;
 
     int is = __get_PRIMASK();
     __disable_irq();
@@ -27,7 +29,8 @@ uint32_t Micros(void) {
 
     uint32_t elapsedSinceMillis = ( (DWT->CYCCNT-baseClock) / systemUsTicks );
 
-    if ((is & 1) == 0) {
+    if ((is & 1) == 0)
+	{
         __enable_irq();
     }
 
@@ -94,16 +97,6 @@ inline int inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
 		return 0; //pin is set, so it is not reset, which means it is off, so the statement is false
 	}
 	return 1; //pin is reset, so it is not set, which means it is on, so the statement is true
-}
-
-void VectorIrqInit(uint32_t address) {
-	SCB->VTOR = address; //set vector register to firmware start
-	__enable_irq(); // enable interrupts
-
-	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-	DWT->LAR = 0xC5ACCE55; 
-	DWT->CYCCNT = 0;
-	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
 void DeInitializeGpio(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)

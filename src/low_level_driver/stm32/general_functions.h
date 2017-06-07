@@ -23,8 +23,6 @@ extern int       inlineIsPinStatusHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 extern void      InlineUpdateMillisClock (void);
 
-extern void      VectorIrqInit(uint32_t address);
-
 extern void      SystemReset(void);
 extern void      SystemResetToDfuBootloader(void);
 

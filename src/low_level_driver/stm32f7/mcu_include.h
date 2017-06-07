@@ -6,6 +6,8 @@
 #include "stm32f7xx_hal_conf.h"
 #include "flash.h"
 
+extern void VectorIrqInit(uint32_t address);
+
 //asm delay used for not so accurate delays needed before the board is initialized
 #define simpleDelay_ASM(us) do {\
 	asm volatile (	"MOV R0,%[loops]\n\t"\

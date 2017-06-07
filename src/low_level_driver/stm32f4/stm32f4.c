@@ -69,6 +69,16 @@ void SystemClock_Config(void)
     systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
 }
 
+void VectorIrqInit(uint32_t address)
+{
+	SCB->VTOR = address; //set vector register to firmware start
+	__enable_irq(); // enable interrupts
+
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+	DWT->CYCCNT = 0;
+	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
 void BoardInit(void)
 {
 	HAL_Init();

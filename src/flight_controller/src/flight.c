@@ -31,6 +31,7 @@ float slpUsed;
 float sliUsed;
 float sldUsed;
 float usedSkunk;
+uint32_t armedTime;
 
 uint32_t khzLoopCounter                 = 0;
 uint32_t gyroLoopCounter                = 0;
@@ -249,6 +250,7 @@ void InitFlightCode(void)
 	uint32_t loopUsed = mainConfig.gyroConfig.loopCtrl;
 	uint32_t validLoopConfig = 0;
 
+	armedTime = 0;
 	//biquad doesn't work unless we do this
 	//kdFiltUsed[YAW]   = mainConfig.filterConfig[YAW].kd.r;
 	//kdFiltUsed[ROLL]  = mainConfig.filterConfig[ROLL].kd.r;
@@ -857,6 +859,8 @@ void InlineFlightCode(float dpsGyroArray[])
 			khzLoopCounter=loopSpeed.khzDivider;
 
 			CheckFailsafe();
+			if(boardArmed)
+				armedTime++; //armed time in ms
 
 #ifndef LOG32
 			//update blackbox here
