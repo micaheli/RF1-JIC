@@ -26,6 +26,7 @@ enum {
 	TIMER_INPUT_INIT_FAILIURE         =  (1 << 22),
 	ADC_INIT_FAILIURE                 =  (1 << 23),
 	ADC_DMA_INIT_FAILIURE             =  (1 << 24),
+	OSD_SPI_INIT_FAILIURE             =  (1 << 25),
 };
 
 #define SOFT_SERIAL_BIT_TIME_ARRAY_SIZE	80

@@ -246,14 +246,15 @@ enum {
 #define RFRC_HID_PRODUCT_STRING "RaceFlight Recovery"
 
 //TODO: Should use better defines
-#if defined(STM32F745xx)
-	//#include "REVOLTF7.h"
+#if defined(RVTF7)
 	#include "RVTF7.h"
-#elif defined(STM32F405xx)
+#elif defined(REVOLTF7)
+	#include "REVOLTF7.h"
+#elif defined(REVOLT)
 	#include "REVOLT.h"
-#elif defined(STM32F411xE)
+#elif defined(MICROVOLT)
 	#include "MICROVOLT.h"
-#elif defined(STM32F446xx)
+#elif defined(SPMFC400)
 	#include "SPMFC400.h"
 #endif
 
@@ -452,10 +453,9 @@ typedef struct {
 	uint32_t				buzzerPin;
 	uint32_t				buzzerPolarity;
 
-	
-
-	gyro_type				gyros[3];
-	gyro_type				flash[3];
+	gyro_type				gyros[2];
+	gyro_type				flash[1];
+	gyro_type				maxOsd[1];
 	
 	motor_type				motors[MAX_MOTOR_NUMBER];
 	motor_type				servos[MAX_SERVO_NUMBER];

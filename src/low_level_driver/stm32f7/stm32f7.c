@@ -81,10 +81,10 @@ void SystemClock_Config(void)
 	PeriphClkInitStruct.Usart6ClockSelection = RCC_USART6CLKSOURCE_PCLK2;
 	PeriphClkInitStruct.Uart7ClockSelection  = RCC_UART7CLKSOURCE_PCLK1;
 	PeriphClkInitStruct.Uart8ClockSelection  = RCC_UART8CLKSOURCE_PCLK1;
-	PeriphClkInitStruct.I2c1ClockSelection   = RCC_I2C1CLKSOURCE_PCLK1;
-	PeriphClkInitStruct.I2c2ClockSelection   = RCC_I2C2CLKSOURCE_PCLK1;
-	PeriphClkInitStruct.I2c3ClockSelection   = RCC_I2C3CLKSOURCE_PCLK1;
-	PeriphClkInitStruct.I2c4ClockSelection   = RCC_I2C4CLKSOURCE_PCLK1;
+	PeriphClkInitStruct.I2c1ClockSelection   = RCC_I2C1CLKSOURCE_SYSCLK;
+	PeriphClkInitStruct.I2c2ClockSelection   = RCC_I2C2CLKSOURCE_SYSCLK;
+	PeriphClkInitStruct.I2c3ClockSelection   = RCC_I2C3CLKSOURCE_SYSCLK;
+	PeriphClkInitStruct.I2c4ClockSelection   = RCC_I2C4CLKSOURCE_SYSCLK;
 	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
 	{
 	   while(1);
@@ -96,17 +96,29 @@ void SystemClock_Config(void)
   SystemCoreClockUpdate();
 
 
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
+    HAL_InitTick(0);
+
+
+    volatile int poo = HAL_RCC_GetHCLKFreq()/1000;
+    //HAL_SYSTICK_Config(poo);
+    volatile int cat = SysTick_Config(poo);
+    //HAL_NVIC_SetPriority(SysTick_IRQn, 0 ,0);
+  
     /* SysTick_IRQn interrupt configuration */
-   // HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-   // HAL_NVIC_EnableIRQ(SysTick_IRQn);
+    //HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+    //HAL_NVIC_EnableIRQ(SysTick_IRQn);
 
 //HAL_InitTick(TICK_INT_PRIORITY);
 //    systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
     systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);
 
+//    SysTick->CTRL = 0;
+//    SysTick->VAL = 0; /* Load the SysTick Counter Value */
+//    SysTick->CTRL = (SysTick_CTRL_TICKINT_Msk   |  /* Enable SysTick exception */
+//                     SysTick_CTRL_ENABLE_Msk) |    /* Enable SysTick system timer */
+//                     SysTick_CTRL_CLKSOURCE_Msk;   /* Use processor clock source */
 
 
 //SystemCoreClockUpdate();

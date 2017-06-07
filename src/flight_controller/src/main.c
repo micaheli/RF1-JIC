@@ -5,7 +5,7 @@ int main(void)
 {
 	//Absolutely no MCU specific code to go here.
 
-    int32_t count = 16;
+    int count = 16;
 
     //TODO: Make automatic
 	VectorIrqInit(ADDRESS_RFFW_START);

@@ -56,6 +56,7 @@
 #include "drivers/buzzer.h"
 #include "drivers/rx.h"
 #include "drivers/flash_chip.h"
+#include "drivers/maxOsd.h"
 #include "drivers/actuator_output.h"
 #include "drivers/invensense_bus.h"
 #include "drivers/invensense_device.h"

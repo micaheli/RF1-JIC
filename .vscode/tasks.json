@@ -6,40 +6,40 @@
     "args": ["/C"],
     "tasks": [
         {
-            "taskName": "Flight stm32f405xx",
+            "taskName": "Flight REVOLT",
             "suppressTaskName": true,
             "isBuildCommand": true,
-            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f4'\" & cd c:\\dev\\raceflightone & python.exe make.py -Tstm32f405xx -D" ]
+            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f4'\" & cd c:\\dev\\raceflightone & python.exe make.py -TREVOLT -D" ]
         },
         {
-            "taskName": "Rfbl stm32f405xx",
+            "taskName": "Rfbl REVOLT",
             "suppressTaskName": true,
             "isBuildCommand": true,
-            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f4'\" & cd c:\\dev\\raceflightone & python.exe make.py -Tstm32f405xx_nrfbl -D" ]
+            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f4'\" & cd c:\\dev\\raceflightone & python.exe make.py -TREVOLT_nrfbl -D" ]
         },
         {
-            "taskName": "Recovery stm32f405xx",
+            "taskName": "Recovery REVOLT",
             "suppressTaskName": true,
             "isBuildCommand": true,
-            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f4'\" & cd c:\\dev\\raceflightone & python.exe make.py -Tstm32f405xx_nrecovery -D" ]
+            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f4'\" & cd c:\\dev\\raceflightone & python.exe make.py -TREVOLT_nrecovery -D" ]
         },
         {
-            "taskName": "Flight stm32f745xx",
+            "taskName": "Flight REVOLTF7",
             "suppressTaskName": true,
             "isBuildCommand": true,
-            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f7'\" & cd c:\\dev\\raceflightone & python.exe make.py -Tstm32f745xx -D" ]
+            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f7'\" & cd c:\\dev\\raceflightone & python.exe make.py -TREVOLTF7 -D" ]
         },
         {
-            "taskName": "RFBL stm32f745xx",
+            "taskName": "RFBL REVOLTF7",
             "suppressTaskName": true,
             "isBuildCommand": true,
-            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f7'\" & cd c:\\dev\\raceflightone & python.exe make.py -Tstm32f745xx_nrfbl -D" ]
+            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f7'\" & cd c:\\dev\\raceflightone & python.exe make.py -TREVOLTF7_nrfbl -D" ]
         },
         {
-            "taskName": "Recover stm32f745xx",
+            "taskName": "Recover REVOLTF7",
             "suppressTaskName": true,
             "isBuildCommand": true,
-            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f7'\" & cd c:\\dev\\raceflightone & python.exe make.py -Tstm32f745xx_nrecovery -D" ]
+            "args": [ "powershell -Command \"Start-Process 'cmd' -Verb RunAs -ArgumentList '/c C:\\dev\\scripts\\openocd.bat f7'\" & cd c:\\dev\\raceflightone & python.exe make.py -TREVOLTF7_nrecovery -D" ]
         },
         {
             "taskName": "Esc stm32f301x8",

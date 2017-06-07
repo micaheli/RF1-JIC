@@ -19,7 +19,7 @@ void ResetGyroCalibration(void)
 
 }
 
-static inline void InlineUpdateCalibration(int32_t *rawGyro)
+static void InlineUpdateCalibration(int32_t *rawGyro)
 {
 
 	int32_t gyroCalibration[3];
@@ -41,7 +41,7 @@ static inline void InlineUpdateCalibration(int32_t *rawGyro)
     }
 }
 
-inline void InlineUpdateAcc(int32_t rawAcc[], float scale)
+void InlineUpdateAcc(int32_t rawAcc[], float scale)
 {
 
     InlineApplyGyroAccRotationAndScale(rawAcc, geeForceAccArray, scale);
@@ -49,7 +49,7 @@ inline void InlineUpdateAcc(int32_t rawAcc[], float scale)
     InlineUpdateAttitude(geeForceAccArray);
 }
 
-inline void InlineUpdateGyro(int32_t rawGyro[], float scale)
+void InlineUpdateGyro(int32_t rawGyro[], float scale)
 {
 
 	float swapArray[3];
@@ -108,7 +108,7 @@ void BuildRotationMatrix(uint32_t x, uint32_t y, uint32_t z)
     rotationMatrix[2][Z] = cosy * cosx;
 }
 
- void InlineApplyGyroAccRotationAndScale (int32_t rawData[], float dataArray[], float scale )
+void InlineApplyGyroAccRotationAndScale (int32_t rawData[], float dataArray[], float scale )
 {
 
 	uint32_t nonNinety;

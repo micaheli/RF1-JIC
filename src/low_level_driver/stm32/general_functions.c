@@ -17,6 +17,7 @@ uint32_t Micros(void) {
 
 	volatile uint32_t baseMillis;
 	volatile uint32_t baseClock;
+	volatile uint32_t catfish = DWT->CYCCNT;
 
     int is = __get_PRIMASK();
     __disable_irq();
@@ -100,7 +101,7 @@ void VectorIrqInit(uint32_t address) {
 	__enable_irq(); // enable interrupts
 
 	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-	//DWT->LAR = 0xC5ACCE55; 
+	DWT->LAR = 0xC5ACCE55; 
 	DWT->CYCCNT = 0;
 	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }

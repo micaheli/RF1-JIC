@@ -160,10 +160,11 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
-    elif TARGET == "stm32f405xx":
+    elif TARGET == "REVOLT":
         if args.debug:
             os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
             os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        FC_NAME = "REVOLT"
         TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F405xx"
@@ -174,7 +175,11 @@ def configure_target(TARGET):
         STM32F4_ARCH_FLAGS_ADD = ""
         #STM32F4_ARCH_FLAGS_ADD = "-s -fdata-sections -ffunction-sections -flto"
 
-    elif TARGET == "stm32f405xx_pt":
+    elif TARGET == "REVOLT_pt":
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        FC_NAME = "REVOLT"
         TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "passthru"
         TARGET_DEVICE = "STM32F405xx"
@@ -184,7 +189,11 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-Og"
         STM32F4_ARCH_FLAGS_ADD = ""
 
-    elif TARGET == "stm32f405xx_temp":
+    elif TARGET == "REVOLT_temp":
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        FC_NAME = "REVOLT"
         TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "template"
         TARGET_DEVICE = "STM32F405xx"
@@ -193,7 +202,11 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
-    elif TARGET == "stm32f405xx_nrfbl":
+    elif TARGET == "REVOLT_nrfbl":
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        FC_NAME = "REVOLT"
         TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f405xx"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F405xx"
@@ -202,7 +215,11 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
-    elif TARGET == "stm32f405xx_nrecovery":
+    elif TARGET == "REVOLT_nrecovery":
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        FC_NAME = "REVOLT"
         TARGET_DEVICE_LC = "stm32f405xx"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F405xx"
@@ -211,10 +228,11 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
-    elif TARGET == "stm32f411xe":
+    elif TARGET == "MICROVOLT":
         if args.debug:
             os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
             os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        FC_NAME = "MICROVOLT"
         TARGET_DEVICE_LC = "stm32f411xe"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F411xE"
@@ -223,10 +241,11 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
-    elif TARGET == "stm32f411xe_nrfbl":
+    elif TARGET == "MICROVOLT_nrfbl":
         if args.debug:
             os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
             os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        FC_NAME = "MICROVOLT"
         TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f411xe"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F411xE"
@@ -235,10 +254,11 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
-    elif TARGET == "stm32f411xe_nrecovery":
+    elif TARGET == "MICROVOLT_nrecovery":
         if args.debug:
             os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
             os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg &> redirection &")
+        FC_NAME = "MICROVOLT"
         TARGET_DEVICE_LC = "stm32f411xe"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F411xE"
@@ -247,10 +267,14 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-Og"
 
-    elif TARGET == "stm32f745xx":
+    elif (TARGET == "REVOLTF7") or (TARGET == "RVTF7"):
         if args.debug:
             os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
             os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f7x.cfg &> redirection &")
+        if (TARGET == "REVOLTF7"):
+            FC_NAME = "REVOLTF7"
+        else:
+            FC_NAME = "RVTF7"
         TARGET_DEVICE_LC = "stm32f745xx"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F745xx"
@@ -260,7 +284,14 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-O3"
         STM32F7_ARCH_FLAGS_ADD = ""
 
-    elif TARGET == "stm32f745xx_nrfbl":
+    elif (TARGET == "REVOLTF7_nrfbl") or (TARGET == "RVTF7_nrfbl"):
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f7x.cfg &> redirection &")
+        if (TARGET == "REVOLTF7"):
+            FC_NAME = "REVOLTF7"
+        else:
+            FC_NAME = "RVTF7"
         TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f745xx"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F745xx"
@@ -272,7 +303,14 @@ def configure_target(TARGET):
         #STM32F7_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
-    elif TARGET == "stm32f745xx_nrecovery":
+    elif (TARGET == "REVOLTF7_nrecovery") or (TARGET == "RVTF7_nrecovery"):
+        if args.debug:
+            os.system("PID=\"$(ps -elf | grep  openocd | grep -v 'grep' | sed -e 's/    / /g' | sed -e 's/   / /g' | sed -e 's/  / /g' | cut -d ' ' -f 3)\";kill $PID")
+            os.system("openocd -s ~/dev -s /usr/local/share/openocd/scripts -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f7x.cfg &> redirection &")
+        if (TARGET == "REVOLTF7"):
+            FC_NAME = "REVOLTF7"
+        else:
+            FC_NAME = "RVTF7"
         TARGET_DEVICE_LC = "stm32f745xx"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F745xx"
@@ -284,7 +322,8 @@ def configure_target(TARGET):
         #STM32F7_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
 
-    elif TARGET == "stm32f446xx":
+    elif TARGET == "SPMFC400":
+        FC_NAME = "SPMFC400"
         TARGET_DEVICE_LC = "stm32f446xx"
         PROJECT = "flight_controller"
         TARGET_DEVICE = "STM32F446xx"
@@ -293,7 +332,8 @@ def configure_target(TARGET):
         FEATURES.extend(["usb_otg_fs"])
         OPTIMIZE_FLAGS = "-O3"
 
-    elif TARGET == "stm32f446xx_nrfbl":
+    elif TARGET == "SPMFC400_nrfbl":
+        FC_NAME = "SPMFC400"
         TARGET_DEVICE_LC = "RFBLTARGET -Dstm32f446xx"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F446xx"
@@ -303,7 +343,8 @@ def configure_target(TARGET):
         OPTIMIZE_FLAGS = "-Og"
         STM32F4_ARCH_FLAGS_ADD = ""
 
-    elif TARGET == "stm32f446xx_nrecovery":
+    elif TARGET == "SPMFC400_nrecovery":
+        FC_NAME = "SPMFC400"
         TARGET_DEVICE_LC = "stm32f446xx"
         PROJECT = "new_bootloader"
         TARGET_DEVICE = "STM32F446xx"
@@ -320,26 +361,26 @@ def configure_target(TARGET):
     ################################################################################
     # Set per target compilation options
 
-    STM32F0_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM0 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    STM32F0_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + FC_NAME +" -D" + TARGET_DEVICE + " -DARM_MATH_CM0 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F0_ARCH_FLAGS = "-mthumb -mcpu=cortex-m0"
 
-    STM32F1_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM3 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    STM32F1_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + FC_NAME +" -D" + TARGET_DEVICE + " -DARM_MATH_CM3 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F1_ARCH_FLAGS = "-mthumb -mcpu=cortex-m3"
 
-    #STM32F3_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    #STM32F3_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + FC_NAME +" -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     #STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant"
 
-    STM32F3_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    STM32F3_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + FC_NAME +" -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F3_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16"
 
     if TARGET_DEVICE == "STM32F446xx":
-        STM32F4_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=12000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+        STM32F4_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=12000000 -D" + FC_NAME +" -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
         STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -mtune=cortex-m4"
     else:
-        STM32F4_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+        STM32F4_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + FC_NAME +" -D" + TARGET_DEVICE + " -DARM_MATH_CM4 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
         STM32F4_ARCH_FLAGS = "-mthumb -mcpu=cortex-m4 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -mtune=cortex-m4" + " " + STM32F4_ARCH_FLAGS_ADD
 
-    STM32F7_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7 -DUSE_HAL_DRIVER -D__FPU_PRESENT -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
+    STM32F7_DEF_FLAGS = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + FC_NAME +" -D" + TARGET_DEVICE + " -DARM_MATH_CM7 -DUSE_HAL_DRIVER -D__FPU_PRESENT -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
 #    STM32F7_DEF_FLAGS  = "-DUSE_HAL_DRIVER -DHSE_VALUE=8000000 -D" + TARGET_DEVICE + " -DARM_MATH_CM7=1 -D" + TARGET + " -D" + TARGET_DEVICE_LC + " -D" + TARGET_PROCESSOR_TYPE
     STM32F7_ARCH_FLAGS = "-mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -fsingle-precision-constant -mtune=cortex-m7"
 
