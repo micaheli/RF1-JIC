@@ -696,13 +696,13 @@ void InlineFlightCode(float dpsGyroArray[])
 		if (ModeActive(M_ANGLELOCK))
 		{
 			//if roll or pitch go over 80 degrees we pull the quad back
-			if ( rollAttitude >= 80.0f )
+			if ( rollAttitude >= 65.0f )
 			{
 				failTimes[0]--;
 				failTimes[0] = CONSTRAIN(failTimes[0], -500, 0);
 				flightSetPoints[ROLL] = InlineConstrainf(flightSetPoints[ROLL], -500.0f, (float)failTimes[0] );
 			}
-			else if ( rollAttitude <= -80.0f )
+			else if ( rollAttitude <= -65.0f )
 			{
 				failTimes[1]++;
 				failTimes[1] = CONSTRAIN(failTimes[1], 0, 500);
@@ -714,13 +714,13 @@ void InlineFlightCode(float dpsGyroArray[])
 				failTimes[1] = 0;
 			}
 
-			if ( pitchAttitude >= 75.0f )
+			if ( pitchAttitude >= 45.0f )
 			{
 				failTimes[2]--;
 				failTimes[2] = CONSTRAIN(failTimes[2], -500, 0);
 				flightSetPoints[PITCH] = InlineConstrainf(flightSetPoints[PITCH], -500.0f, (float)failTimes[2]);
 			}
-			else if ( pitchAttitude <= -75.0f )
+			else if ( pitchAttitude <= -45.0f )
 			{
 				failTimes[3]++;
 				failTimes[3] = CONSTRAIN(failTimes[3], 0, 500);
