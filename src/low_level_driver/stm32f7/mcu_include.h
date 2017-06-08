@@ -8,6 +8,8 @@
 
 extern void VectorIrqInit(uint32_t address);
 
+extern int FULL_32;
+
 //asm delay used for not so accurate delays needed before the board is initialized
 #define simpleDelay_ASM(us) do {\
 	asm volatile (	"MOV R0,%[loops]\n\t"\

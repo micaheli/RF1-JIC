@@ -83,33 +83,78 @@ void HandleRfOsd(void)
     if (!telemEnabled)
 		return;
 
-	if (currentLine == 13)
+	if (currentLine == 12)
 		currentLine = 0;
 
 	bzero(rfOsdTxBuffer, sizeof(rfOsdTxBuffer));
 	bzero(rfOsdLineBuffer, sizeof(rfOsdLineBuffer));
 
+	uint32_t temp;
+	uint32_t remainderUsed;
 
     switch(currentLine++)
     {
-        case 1:
-            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " Garz Time: %lu", (armedTime / 1000));
+        case 0:
+            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " Garz FT %lu          ", (armedTime / 1000));
+            break;
+		case 1:
+            sprintf(rfOsdLineBuffer, "                              ");
             break;
 		case 2:
+            sprintf(rfOsdLineBuffer, "                              ");
+            break;
 		case 3:
+            sprintf(rfOsdLineBuffer, "                              ");
+            break;
 		case 4:
+            sprintf(rfOsdLineBuffer, "                              ");
+            break;
 		case 5:
+            sprintf(rfOsdLineBuffer, "                              ");
+            break;
 		case 6:
+            sprintf(rfOsdLineBuffer, "                              ");
+            break;
 		case 7:
+            sprintf(rfOsdLineBuffer, "                              ");
+            break;
 		case 8:
+            sprintf(rfOsdLineBuffer, "                              ");
+            break;
 		case 9:
+            sprintf(rfOsdLineBuffer, "                              ");
+            break;
 		case 10:
-			break;
+			if (averageVoltage < 0.5)
+			{
+				temp = 0;
+				remainderUsed = 0;
+			}
+			else
+			{
+				temp = (uint32_t)(averageVoltage);
+				remainderUsed = (uint32_t)((averageVoltage - (float)temp) * 100);
+			}
+            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " Volt: %lu.%lu     ", temp, remainderUsed );
+            break;
         case 11:
-            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " Volt: %lu", (uint32_t)(averageVoltage * 1) );
+			if (adcCurrent < 0.5)
+			{
+				temp = 0;
+				remainderUsed = 0;
+			}
+			else
+			{
+				temp = (uint32_t)(adcCurrent);
+				remainderUsed = (uint32_t)((adcCurrent - (float)temp) * 100);
+			}
+            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " Curr: %lu.%lu     ", temp, remainderUsed );
             break;
         case 12:
-            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " Curr: %lu", (uint32_t)(adcCurrent) );
+            sprintf(rfOsdLineBuffer, "                              ");
+            break;
+        case 13:
+            sprintf(rfOsdLineBuffer, "                              ");
             break;
         default:
             currentLine = 0;

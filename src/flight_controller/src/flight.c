@@ -679,6 +679,8 @@ void InlineFlightCode(float dpsGyroArray[])
 	if (gyroLoopCounter-- == 0)
 	{
 
+		static int failTimes[4] = {0,};
+
 		gyroLoopCounter = loopSpeed.gyroDivider;
 
 		//smooth the rx data between rx signals
@@ -690,8 +692,49 @@ void InlineFlightCode(float dpsGyroArray[])
 		flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01, PITCH);
 
 		//get setpoint for PIDC for self level modes.
-		//TODO: move this to its own function in the IMU
-		if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || ModeActive(M_GLUE)) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
+		//TODO: move these to its own function in the IMU
+		if (ModeActive(M_ANGLELOCK))
+		{
+			//if roll or pitch go over 80 degrees we pull the quad back
+			if ( rollAttitude >= 80.0f )
+			{
+				failTimes[0]--;
+				failTimes[0] = CONSTRAIN(failTimes[0], -500, 0);
+				flightSetPoints[ROLL] = InlineConstrainf(flightSetPoints[ROLL], -500.0f, (float)failTimes[0] );
+			}
+			else if ( rollAttitude <= -80.0f )
+			{
+				failTimes[1]++;
+				failTimes[1] = CONSTRAIN(failTimes[1], 0, 500);
+				flightSetPoints[ROLL] = InlineConstrainf(flightSetPoints[ROLL], (float)failTimes[1], 500.0f);
+			}
+			else
+			{
+				failTimes[0] = 0;
+				failTimes[1] = 0;
+			}
+
+			if ( pitchAttitude >= 80.0f )
+			{
+				failTimes[2]--;
+				failTimes[2] = CONSTRAIN(failTimes[2], -500, 0);
+				flightSetPoints[PITCH] = InlineConstrainf(flightSetPoints[PITCH], -500.0f, (float)failTimes[2]);
+			}
+			else if ( pitchAttitude <= -80.0f )
+			{
+				failTimes[3]++;
+				failTimes[3] = CONSTRAIN(failTimes[3], 0, 500);
+				flightSetPoints[PITCH] = InlineConstrainf(flightSetPoints[PITCH], (float)failTimes[3], 500.0f);
+			}
+			else
+			{
+				failTimes[2] = 0;
+				failTimes[3] = 0;
+			}
+
+			
+		}
+		else if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || ModeActive(M_GLUE)) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
 		{
 			if (!timeSinceSelfLevelActivated)
 				timeSinceSelfLevelActivated = InlineMillis();
@@ -997,14 +1040,19 @@ void InitFlight(void)
 	CheckRxToModes(); //check which modes are set whether or not they're enabled
 
 	usedSkunk = mainConfig.filterConfig[1].gyro.p;
-	if ( 
-		ModeSet(M_ATTITUDE) || 
-		ModeSet(M_HORIZON)  || 
-		ModeSet(M_GLUE)
-	   )
+	if (FULL_32)
 	{
-		//set skunk to 0 which is 16 KHz w/ACC if ACC mode is needed
-		usedSkunk = 0.0f; 
+		//16 KHz on F4s if quaternions are needed.
+		if ( 
+			ModeSet(M_ATTITUDE) || 
+			ModeSet(M_HORIZON)  || 
+			ModeSet(M_GLUE)     ||
+			ModeSet(M_ANGLELOCK)
+		)
+		{
+			//set skunk to 0 which is 16 KHz w/ACC if ACC mode is needed
+			usedSkunk = 0.0f; 
+		}
 	}
 
 	DeInitAllowedSoftOutputs();

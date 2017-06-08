@@ -6,6 +6,7 @@
 #include "stm32f4xx_hal_conf.h"
 #include "flash.h"
 
+extern int FULL_32;
 extern uint32_t TimerPrescalerDivisor(uint32_t timer);
 extern void     VectorIrqInit(uint32_t address);
 

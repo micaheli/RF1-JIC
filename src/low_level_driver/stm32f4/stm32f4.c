@@ -20,6 +20,9 @@
   * @param  None
   * @retval None
   */
+
+int FULL_32 = 0;
+
 static void StartSystemClocks(void);
 
 void SystemClock_Config(void)

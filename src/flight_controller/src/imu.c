@@ -555,7 +555,15 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 	//inlineDigitalHi(ports[ENUM_PORTB], GPIO_PIN_1);
 	//it takes 1.41 us to multiply a quaternion
 
-
+/*
+	if ( 
+			ModeSet(M_ATTITUDE) || 
+			ModeSet(M_HORIZON)  || 
+			ModeSet(M_GLUE)     ||
+			ModeSet(M_ANGLELOCK)
+		)
+	{
+*/
 	if (ModeActive(M_GLUE))
 	{
 		//the command quat is used to find the difference between the attitude quad and where we want the qwuad to be

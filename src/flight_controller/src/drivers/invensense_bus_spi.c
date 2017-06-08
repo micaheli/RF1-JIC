@@ -102,11 +102,12 @@ uint32_t AccGyroInit(loopCtrl_e loopCtrl)
     return 1;
 }
 
-uint32_t popcorn = 0;
+//uint32_t popcorn = 0;
 void GyroExtiCallback(uint32_t callbackNumber)
 {
-    //popcorn = Micros();
+//    popcorn = Micros();
 	static int gyroLoopCounter = 0;
+
 	HAL_GPIO_EXTI_IRQHandler(board.gyros[0].extiPin);
 
 	(void)(callbackNumber);
@@ -128,31 +129,31 @@ void GyroRxDmaCallback(uint32_t callbackNumber)
 {
     volatile HAL_DMA_StateTypeDef pop;
 	(void)(callbackNumber);
-    //volatile static int count1 = 0;
-    //volatile static int count2 = 0;
-    //volatile static int count3 = 0;
+//    volatile static int count1 = 0;
+//    volatile static int count2 = 0;
+//    volatile static int count3 = 0;
 
     
 
-    //count1++;
-    //if (count1 > 256000)
-    //{
-    //    count1 = 0;
-    //}
+//    count1++;
+//    if (count1 > 256000)
+//    {
+//        count1 = 0;
+//    }
     pop = HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]);
     //while(HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_BUSY);
     if (pop == HAL_DMA_STATE_READY) {
         // reset chip select line
-        //volatile uint32_t popcornTime = Micros() - popcorn;
+//        volatile uint32_t popcornTime = Micros() - popcorn;
 	    inlineDigitalHi(ports[board.gyros[0].csPort], board.gyros[0].csPin);
 
-    //    count2++;
+//        count2++;
         // run callback for completed gyro read
         accgyroDeviceReadComplete();
     }
     else
     {
-    //    count3++;
+//        count3++;
         //inlineDigitalHi(ports[board.gyros[0].csPort], board.gyros[0].csPin);
     }
 }
@@ -259,8 +260,8 @@ uint32_t AccGyroDMAReadWriteData(uint8_t *txData, uint8_t *rxData, uint8_t lengt
     volatile HAL_DMA_StateTypeDef dmaState = HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.gyros[0].spiNumber].RXDma].dmaHandle]);
     volatile HAL_SPI_StateTypeDef spiState = HAL_SPI_GetState(&spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle]);
     // ensure that both SPI and DMA resources are available, but don't block if they are not
-    //if (dmaState == HAL_DMA_STATE_READY && spiState == HAL_SPI_STATE_READY) {
-    if (1 == 1 && 1 == 1) {
+    if (dmaState == HAL_DMA_STATE_READY && spiState == HAL_SPI_STATE_READY) {
+    //if (1 == 1 && 1 == 1) {
     	inlineDigitalLo(ports[board.gyros[0].csPort], board.gyros[0].csPin);
 
         HAL_SPI_TransmitReceive_DMA(&spiHandles[board.spis[board.gyros[0].spiNumber].spiHandle], txData, rxData, length);

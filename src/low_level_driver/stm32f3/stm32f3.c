@@ -1,6 +1,6 @@
 #include "includes.h"
 
-
+int FULL_32 = 0;
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follow :
@@ -80,6 +80,17 @@ void BoardInit(void)
   __HAL_RCC_TIM6_CLK_ENABLE();
 
 }
+
+void VectorIrqInit(uint32_t address)
+{
+	SCB->VTOR = address; //set vector register to firmware start
+	__enable_irq(); // enable interrupts
+
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+	DWT->CYCCNT = 0;
+	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
 
 void USB_DEVICE_Init(void)
 {

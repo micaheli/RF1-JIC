@@ -20,6 +20,8 @@
 } while(0)
 
 extern uint32_t TimerPrescalerDivisor(uint32_t timer);
+extern void VectorIrqInit(uint32_t address);
+extern int FULL_32;
 
 
 void USB_DEVICE_Init(void);

@@ -1220,6 +1220,9 @@ Version 0.275.104 BETA:
 	Added 16.71 blheli_s binaries to RF1 binary
 	New battery voltage algorithm
 
+Version 0.276.104 BETA:
+	OSD additions
+	Angle Lock mode
 
 #Features in current development:
 #	MAVlink compatibility

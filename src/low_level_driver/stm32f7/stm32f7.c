@@ -1,5 +1,6 @@
 #include "includes.h"
 
+int FULL_32 = 1;
 /**
 * @brief  System Clock Configuration
 *         The system Clock is configured as follow :
