@@ -714,13 +714,13 @@ void InlineFlightCode(float dpsGyroArray[])
 				failTimes[1] = 0;
 			}
 
-			if ( pitchAttitude >= 80.0f )
+			if ( pitchAttitude >= 75.0f )
 			{
 				failTimes[2]--;
 				failTimes[2] = CONSTRAIN(failTimes[2], -500, 0);
 				flightSetPoints[PITCH] = InlineConstrainf(flightSetPoints[PITCH], -500.0f, (float)failTimes[2]);
 			}
-			else if ( pitchAttitude <= -80.0f )
+			else if ( pitchAttitude <= -75.0f )
 			{
 				failTimes[3]++;
 				failTimes[3] = CONSTRAIN(failTimes[3], 0, 500);
@@ -1040,7 +1040,7 @@ void InitFlight(void)
 	CheckRxToModes(); //check which modes are set whether or not they're enabled
 
 	usedSkunk = mainConfig.filterConfig[1].gyro.p;
-	if (FULL_32)
+	if (!FULL_32)
 	{
 		//16 KHz on F4s if quaternions are needed.
 		if ( 
