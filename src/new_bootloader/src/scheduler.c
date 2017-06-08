@@ -48,3 +48,8 @@ void FlashDmaRxCallback (uint32_t callbackNumber)
 {
 	(void)(callbackNumber);
 }
+
+void MaxOsdDmaRxCallback (uint32_t callbackNumber)
+{
+	(void)(callbackNumber);
+}
