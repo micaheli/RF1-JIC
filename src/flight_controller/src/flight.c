@@ -629,7 +629,7 @@ void InlineFlightCode(float dpsGyroArray[])
 	int32_t axis;
 	volatile float averagedGyro;
 
-	//inlineDigitalHi(ports[ENUM_PORTB], GPIO_PIN_0);
+//	inlineDigitalHi(ports[ENUM_PORTB], GPIO_PIN_0);
 
 	//Gyro routine:
 	//gyro interrupts
@@ -645,6 +645,7 @@ void InlineFlightCode(float dpsGyroArray[])
 	//mixer is applied and outputs it's status as actuatorRange
 	//output to motors
 
+	//SKIP_GYRO = 1;
 	if (SKIP_GYRO)
 	{
 		FeedTheDog();
