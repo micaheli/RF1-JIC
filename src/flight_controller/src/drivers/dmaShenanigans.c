@@ -21,7 +21,57 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 #define LO_PULSE 1
 #define HI_PULSE 2
 
-void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_type actuator, uint32_t msb, uint32_t sendFrame, uint32_t noEndPadding) {
+uint32_t ddshot48To49[16] = 
+{
+	8,
+	16,
+	25,
+	33,
+	41,
+	49,
+	57,
+	65,
+	74,
+	82,
+	90,
+	98,
+	106,
+	114,
+	123,
+	131
+};
+
+//THROTTLE 11, THROTTLE 10, THROTTLE 9, THROTTLE 8,         THROTTLE 7, THROTTLE 6, THROTTLE 5, THROTTLE 4,                THROTTLE 3, THROTTLE 2, Unused bit, Direction Bit,              CRC 3, CRC 2, CRC 1, CRC 0
+//void OutputDDShotDma(motor_type actuator, uint32_t reverse, float throttle)
+void OutputDDShotDma(motor_type actuator, int reverse, int digitalThrottle)
+{
+	//volatile uint32_t digitalThrottle = CONSTRAIN(lrintf(throttle * 1023.0f), 0, 1023);
+	digitalThrottle = CONSTRAIN(digitalThrottle, 0, 1023);
+	volatile uint32_t nibble;         //set
+	volatile uint32_t crcNibble = 0;
+
+	//digitalThrottle holds throttle like 11 1111 1111
+	//sends like 1111, 1111, 11xx
+
+	//11 1111 1111 to 1111 
+	motorOutputBuffer[actuator.actuatorArrayNum][0] = 0;
+	nibble = ( (digitalThrottle >> 6) & 0x0F );
+	crcNibble += nibble;
+	motorOutputBuffer[actuator.actuatorArrayNum][1] = ddshot48To49[nibble];
+	nibble = ( (digitalThrottle >> 2) & 0x0F );
+	crcNibble += nibble;
+	motorOutputBuffer[actuator.actuatorArrayNum][2] = ddshot48To49[nibble];
+	nibble = ( (digitalThrottle << 2) & 0x0C ) | (reverse & 0x01);
+	crcNibble += nibble;
+	motorOutputBuffer[actuator.actuatorArrayNum][3] = ddshot48To49[nibble];
+	motorOutputBuffer[actuator.actuatorArrayNum][4] = ddshot48To49[(crcNibble & 0x0F)];
+	motorOutputBuffer[actuator.actuatorArrayNum][5] = 0;
+
+	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], 6);
+}
+
+void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_type actuator, uint32_t msb, uint32_t sendFrame, uint32_t noEndPadding)
+{
 
 	int32_t  bitIdx;
 	uint32_t bufferIdx = 0;
@@ -269,7 +319,7 @@ void InitDmaInputOnMotors(motor_type actuator) {
 }
 
 uint32_t IsDshotEnabled() {
-	if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) ) {
+	if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) ) {
 		return(1);
 	}
 	return(0);
@@ -544,6 +594,27 @@ void InitDshotOutputOnMotors(uint32_t usedFor)
 	uint32_t inverted;
 	uint32_t outputNumber;
 
+	if (usedFor == ESC_DDSHOT)
+	{
+		//32 steps per nibble
+		//first half data, second half spacing
+		//20.83333 ns per count cycle * 8 count cycles per step]
+		//166.66664 ns per step * 32 steps
+		//5.333333248 us per nibble * 4 nibbles
+		//21.33333299 us per packet
+		//at 31.25 cycle time that gives about 10us for packet sync
+		//48MHz timer, broken down into 256 steps is 187500 Hz
+		//bit rate is 187.5 KHz Baud rate is 751.168 Khz
+
+		timerHz     = 48000000;
+		pwmHz       = 187500;
+		normalPulse = 15;
+		alonePulse  = 15;
+		endPulse    = 15;
+		loPulse     = 30;
+		inverted    = 1;
+
+	}
 	if (usedFor == ESC_DSHOT1200)
 	{
 

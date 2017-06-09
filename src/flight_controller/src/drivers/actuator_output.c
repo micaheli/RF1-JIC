@@ -9,6 +9,7 @@ volatile uint32_t pulseValueRange;
 
 static void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz);
 static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle);
+static uint32_t ThrottleToDDshot(float throttle, float idle);
 
 //motor_output_array motorOutputArray[MAX_MOTOR_NUMBER];
 
@@ -74,6 +75,7 @@ void InitActuators(void)
 		case ESC_DSHOT300:
 		case ESC_DSHOT600:
 		case ESC_DSHOT1200:
+		case ESC_DDSHOT:
 			disarmUs    = 0;
 			calibrateUs = 0;
 			walledUs    = 2000;
@@ -209,7 +211,7 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 
 }
 
-inline void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle)
+static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle)
 {
 	uint32_t digitalThrottle;
 	int      checksum = 0;
@@ -245,7 +247,21 @@ inline void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle
 
 }
 
-inline void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
+static uint32_t ThrottleToDDshot(float throttle, float idle)
+{
+
+	if (idle > 0)
+	{
+		return(lrintf(InlineChangeRangef(throttle, 1.0, 0.0, 1023.0f, (1023.0f * idle * 0.01f))));
+	}
+	else
+	{
+		return(0);
+	}
+
+}
+
+void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 {
 	(void)servoOutput;
 
@@ -268,7 +284,11 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
 			outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
 			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-				if ( IsDshotEnabled() ) {
+				if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
+				{
+					OutputDDShotDma(board.motors[outputNumber], 0, ThrottleToDDshot(motorOutput[motorNum], mainConfig.mixerConfig.idlePercent) );
+				} 
+				else if ( IsDshotEnabled() ) {
 					ThrottleToDshot(serialOutBuffer, motorOutput[motorNum], mainConfig.mixerConfig.idlePercent);
 					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
 				} else {
@@ -300,10 +320,17 @@ inline void OutputActuators(volatile float motorOutput[], volatile float servoOu
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
 			outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
 			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-				if ( IsDshotEnabled() ) {
+				if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
+				{
+					OutputDDShotDma(board.motors[outputNumber], 0, ThrottleToDDshot(0, 0) );
+				} 
+				else if ( IsDshotEnabled() )
+				{
 					ThrottleToDshot(serialOutBuffer, 0, 0);
 					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
-				} else {
+				}
+				else
+				{
 					if (threeDeeMode)
 						*ccr[board.motors[outputNumber].timCCR] = disarmPulseValue3d;
 					else
@@ -319,7 +346,7 @@ void ZeroActuators(uint32_t delayUs)
 {
 
 	uint32_t outputNumber;
-	uint8_t serialOutBuffer[2];
+	uint8_t  serialOutBuffer[2];
 
 	if ( (mainConfig.mixerConfig.escProtocol != ESC_DSHOT1200) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT150) )
 		__disable_irq();
@@ -362,9 +389,13 @@ void IdleActuator(uint32_t motorNum)
 
 	if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 	{
-		if ( IsDshotEnabled() )
+		if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
 		{
-			ThrottleToDshot(serialOutBuffer, motorOutput[outputNumber], mainConfig.mixerConfig.idlePercent);
+			OutputDDShotDma(board.motors[outputNumber], 0, ThrottleToDDshot(0.001f, mainConfig.mixerConfig.idlePercent) );
+		} 
+		else if ( IsDshotEnabled() )
+		{
+			ThrottleToDshot(serialOutBuffer, 0.001, mainConfig.mixerConfig.idlePercent);
 			OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
 		}
 		else

@@ -281,7 +281,7 @@ void InitFlightCode(void)
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 32000;
 		mainConfig.gyroConfig.loopCtrl = LOOP_UH32;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
@@ -290,7 +290,7 @@ void InitFlightCode(void)
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 16000;
 		loopUsed = LOOP_UH16;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
@@ -299,7 +299,7 @@ void InitFlightCode(void)
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 8000;
 		loopUsed = LOOP_UH8;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
@@ -308,7 +308,7 @@ void InitFlightCode(void)
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 4000;
 		loopUsed = LOOP_UH4;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
@@ -317,7 +317,7 @@ void InitFlightCode(void)
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 2000;
 		loopUsed = LOOP_UH2;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
@@ -326,7 +326,7 @@ void InitFlightCode(void)
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 1000;
 		loopUsed = LOOP_UH1;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
@@ -335,7 +335,7 @@ void InitFlightCode(void)
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 500;
 		loopUsed = LOOP_UH_500;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
@@ -344,7 +344,7 @@ void InitFlightCode(void)
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 250;
 		loopUsed = LOOP_UH_250;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
@@ -353,7 +353,7 @@ void InitFlightCode(void)
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 62;
 		loopUsed = LOOP_UH_062;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
@@ -1037,6 +1037,7 @@ void InitFlight(void)
 
     //TODO: move the check into the init functions.
 
+	InitOrientation();
 	CheckRxToModes(); //check which modes are set whether or not they're enabled
 
 	usedSkunk = mainConfig.filterConfig[1].gyro.p;

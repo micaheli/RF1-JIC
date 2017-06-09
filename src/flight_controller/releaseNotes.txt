@@ -1224,6 +1224,17 @@ Version 0.276.104 BETA:
 	OSD additions
 	Angle Lock mode
 
+Version 0.277.107 BETA:
+	Changed how sml_board_rot works:
+		for sml_board_rot to work you need to set gyro_rotation to 0
+		set these numbers based on the orientation of the board as it sits on the level frame in 1 degree increments
+			set gyro_rotation=0
+			set man_gy_pitch_angle=-360 through 360 (pitching up is positive, down is negative, 0, 360 and -360 are the same point, a board upright and level with the horizon is 0)
+			set man_gy_roll_angle=-360 through 360 (rolling right is positive, left is negative, 0, 360 and -360 are the same point, a board upright and level with the horizon is 0)
+			set man_gy_yaw_angle=-360 through 360 (yawing right is positive, left is negative, 0, 360 and -360 are the same point, a board facing directly foward in relation to direction of travel is 0)
+	Allow dds and ds motor idling
+		digital idle happens at 1KHz
+
 #Features in current development:
 #	MAVlink compatibility
 

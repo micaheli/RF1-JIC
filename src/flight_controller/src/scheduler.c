@@ -9,6 +9,9 @@ volatile uint32_t errorMask   = 0;
 //scheduler timer
 TIM_HandleTypeDef schedulerTimer;
 
+volatile int taskIdleActuators[8];
+volatile int taskDdsActuators;
+
 //soft serial buffer handling. TODO: make a structure
 volatile uint32_t softSerialEnabled = 0;
 volatile uint32_t softSerialBuf[2][SOFT_SERIAL_BIT_TIME_ARRAY_SIZE];
@@ -29,6 +32,7 @@ static void TaskWizard(void);
 static void TaskHandlePcComm(void);
 static void TaskLed(void);
 static void TaskBuzzer(void);
+static void TaskIdleActuators(void);
 static void TaskAdc(void);
 static void TaskCheckVtx(void);
 static void TaskCheckDelayedArming(void);
@@ -111,6 +115,15 @@ void InitFakeGyroExti(void)
 
 void InitScheduler(void)
 {
+	taskDdsActuators = 0;
+	taskIdleActuators[0]=0;
+	taskIdleActuators[1]=0;
+	taskIdleActuators[2]=0;
+	taskIdleActuators[3]=0;
+	taskIdleActuators[4]=0;
+	taskIdleActuators[5]=0;
+	taskIdleActuators[6]=0;
+	taskIdleActuators[7]=0;
 	//DeInit the fake Gyro EXTI and attempt to reenable the actual EXTI, this checks that the gyro is interrupting and will init the fake EXTI if necessary.
 	DelayMs(2);
 	gyroInterrupting = 0;
@@ -160,6 +173,7 @@ void Scheduler(int32_t count)
 			TaskProcessArmingStructure();
 			break;
 		case 10:
+			TaskIdleActuators();
 			break;
 		case 11:
 			break;
@@ -172,12 +186,12 @@ void Scheduler(int32_t count)
 
 }
 
-inline void TaskProcessArmingStructure(void)
+void TaskProcessArmingStructure(void)
 {
 	ProcessArmingStructure();
 }
 
-inline void TaskCheckDelayedArming(void)
+void TaskCheckDelayedArming(void)
 {
 
  	//handles VTX enabling as well
@@ -198,7 +212,7 @@ inline void TaskCheckDelayedArming(void)
  	}
 }
 
-inline void TaskCheckVtx(void)
+void TaskCheckVtx(void)
 {
 
 	static uint32_t modeLatch = 0;
@@ -250,7 +264,7 @@ inline void TaskCheckVtx(void)
 	}
 }
 
-inline void TaskAdc(void)
+void TaskAdc(void)
 {
 	if (progMode)
 		return;
@@ -258,13 +272,13 @@ inline void TaskAdc(void)
 	CheckBatteryCellCount();
 }
 
-inline void TaskProcessSoftSerial(void)
+void TaskProcessSoftSerial(void)
 {
 	 if (oneWireActive)
 		 FeedTheDog();
 }
 
-inline void TaskWizard(void)
+void TaskWizard(void)
 {
 	switch(wizardStatus.currentWizard)
 	{
@@ -279,12 +293,12 @@ inline void TaskWizard(void)
 	}
 }
 
-inline void TaskTelemtry(void)
+void TaskTelemtry(void)
 {
 	ProcessTelemtry();
 }
 
-inline void TaskHandlePcComm(void)
+void TaskHandlePcComm(void)
 {
 	uint32_t x;
 
@@ -300,13 +314,42 @@ inline void TaskHandlePcComm(void)
 
 }
 
-inline void TaskLed(void)
+void TaskLed(void)
 {
 	UpdateLeds(); //update status LEDs
 	UpdateWs2812Leds();
 }
 
-inline void TaskBuzzer(void)
+void TaskIdleActuators(void)
+{
+	int x;
+	static uint32_t runEveryMs = 0;
+
+	if (boardArmed)
+		return;
+	
+	if (InlineMillis() > runEveryMs)
+	{
+		runEveryMs = InlineMillis();
+		if (taskDdsActuators)
+		{
+			OutputDDShotDma(board.motors[0], 0, taskDdsActuators);
+			OutputDDShotDma(board.motors[1], 0, taskDdsActuators);
+			OutputDDShotDma(board.motors[2], 0, taskDdsActuators);
+			OutputDDShotDma(board.motors[3], 0, taskDdsActuators);
+		}
+		else
+		{
+			for (x=0;x<8;x++)
+			{
+				if(taskIdleActuators[x])
+					IdleActuator( x );
+			}
+		}
+	}
+}
+
+void TaskBuzzer(void)
 {
 	UpdateBuzzer();
 }

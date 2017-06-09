@@ -37,7 +37,7 @@ typedef struct {
 	motor_type ws2812Actuator;
 } ws2812_led_record;
 
-
+extern uint32_t ddshot48To49[];
 extern ws2812_led_record ws2812LedRecord;
 
 
@@ -45,6 +45,7 @@ extern motor_type ws2812Actuator;
 extern ws2812Led_t WS2812_IO_colors[];
 
 
+extern void OutputDDShotDma(motor_type actuator, int reverse, int digitalThrottle);
 extern void InitDshotOutputOnMotors(uint32_t usedFor);
 extern void InitDmaInputOnMotors(motor_type actuator);
 extern void InitDmaOutputOnMotors(uint32_t usedFor);

@@ -81,7 +81,8 @@ const string_comp_rec stringCompTable[] = {
 		{"ESC_DSHOT150",     ESC_DSHOT150 },
 		{"ESC_MULTISHOT25",  ESC_MULTISHOT25 },
 		{"ESC_MULTISHOT125", ESC_MULTISHOT125 },
-//		{"ESC_MEGAVOLT",  ESC_MEGAVOLT },
+		{"ESC_DDSHOT",       ESC_DDSHOT },
+//		{"ESC_MEGAVOLT",     ESC_MEGAVOLT },
 
 		//mixer.h
 		{"MIXER_X1234",     MIXER_X1234 },
@@ -141,6 +142,7 @@ const config_variables_rec valueTable[] = {
 
 		{ "famx", 				typeFLOAT, "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0.9, 1.1, 1, "" },
 		{ "mixer_style", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerStyle,					0, 1, 0, "" },
+		//{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtocol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtocol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 6, "" },
@@ -181,9 +183,9 @@ const config_variables_rec valueTable[] = {
 
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, CW315_INV, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1,  0, "" },
-		{ "sml_board_rot_x", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],		-180, 180, 0, "" },
-		{ "sml_board_rot_y", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Y],		-180, 180, 0, "" },
-		{ "sml_board_rot_z", 	typeINT,   "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-180, 180, 0, "" },
+		{ "man_gy_roll_angle",  typeFLOAT, "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],		-360.0f, 360.0f, 0, "" },
+		{ "man_gy_pitch_angle", typeFLOAT, "gyro", &mainConfig.gyroConfig.minorBoardRotation[Y],		-360.0f, 360.0f, 0, "" },
+		{ "man_gy_yaw_angle", 	typeFLOAT, "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-360.0f, 360.0f, 0, "" },
 		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
 		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
@@ -478,7 +480,7 @@ void ValidateConfigSettings(void)
 	}
 
 
-	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
 	{
 		switch(valueTable[x].type)
 		{
@@ -510,7 +512,7 @@ void GenerateConfig(void)
 	bzero(&mainConfig, sizeof(mainConfig));
 	ResetTpaCurves();
 
-	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
 	{
 		switch(valueTable[x].type)
 		{
@@ -623,6 +625,7 @@ char *StripSpaces(char *inString)
 
 char *CleanupNumberString(char *inString)
 {
+	int firstRun = 1;
 	uint16_t head = 0;
 	uint16_t position = 0;
 	uint16_t inStringLength = strlen(inString);
@@ -632,9 +635,14 @@ char *CleanupNumberString(char *inString)
 		if (inString[position] == ' ') // removes multiple spaces in a row
 			continue;
 
-		if (isdigit((unsigned char)inString[position]) || (unsigned char)inString[position] == '.' )
+		if (isdigit((unsigned char)inString[position]) || (unsigned char)inString[position] == '.' || (unsigned char)inString[position] == '-' )
 		{
-			inString[head++] = inString[position];
+				//only allow a negative sign on first pass
+			if (firstRun && (unsigned char)inString[position] == '-')
+				inString[head++] = inString[position];
+			else if ((unsigned char)inString[position] != '-')
+				inString[head++] = inString[position];
+			firstRun=0;
 		}
 	}
 
@@ -675,7 +683,7 @@ static int GetValueFromString(char *string, const string_comp_rec thisStringComp
 	int x;
 
 	//compare args with strings in stringCompTable
-	for (x=(sizeOfArray/sizeof(string_comp_rec));x>=0;x--)
+	for (x=(sizeOfArray/sizeof(string_comp_rec))-1;x>=0;x--)
 	{
 		if (!strcmp(thisStringCompTable[x].valueString, string))
 		{
@@ -694,7 +702,7 @@ void SetValueOrString(int position, char *value)
 	value = CleanupNumberString(value);
 
 	//compare args with strings in stringCompTable
-	for (x=(sizeof(stringCompTable)/sizeof(string_comp_rec));x>=0;x--)
+	for (x=(sizeof(stringCompTable)/sizeof(string_comp_rec))-1;x>=0;x--)
 	{
 		if (!strcmp(stringCompTable[x].valueString, value))
 		{
@@ -743,12 +751,14 @@ static int SetVariable(char *inString)
 
 	inStringLength = strlen(inString);
 
-	for (x = 0; x < inStringLength; x++) {
+	for (x = 0; x < inStringLength; x++)
+	{
 		if (inString[x] == '=')
 			break;
 	}
 
-	if (inStringLength > x) {
+	if (inStringLength > x)
+	{
 		args = inString + x + 1;
 	}
 
@@ -757,7 +767,7 @@ static int SetVariable(char *inString)
 	for (x = strlen(inString); x >= 0; x--)
 		inString[x] = tolower((unsigned char)inString[x]);
 
-	for (x=(sizeof(valueTable)/sizeof(config_variables_rec));x>=0;x--)
+	for (x=(sizeof(valueTable)/sizeof(config_variables_rec))-1;x>=0;x--)
 	{
 		if (!strcmp(valueTable[x].name, inString))
 		{
@@ -969,6 +979,14 @@ void ProcessCommand(char *inString)
 				SKIP_GYRO=0;
 				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me idlestop\n" );
 				RfCustomReplyBuffer(rf_custom_out_buffer);
+				taskIdleActuators[0]=0;
+				taskIdleActuators[1]=0;
+				taskIdleActuators[2]=0;
+				taskIdleActuators[3]=0;
+				taskIdleActuators[4]=0;
+				taskIdleActuators[5]=0;
+				taskIdleActuators[6]=0;
+				taskIdleActuators[7]=0;
 			}
 			else
 			{
@@ -980,6 +998,7 @@ void ProcessCommand(char *inString)
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 
 				DelayMs(10);
+				taskIdleActuators[motorToSpin]=1;
 				IdleActuator( motorToSpin );
 			}
 		}
@@ -1605,6 +1624,37 @@ void ProcessCommand(char *inString)
 				testModeAproved = 1;
 
 		}
+	else if (!strcmp("dds", inString))
+		{
+
+			if (mainConfig.mixerConfig.escProtocol != ESC_DDSHOT)
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Please enable DDSHOT like so first:\n");
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me set esc_protocol=10\n");
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			else
+			{
+				DisarmBoard();
+				ZeroActuators( 1000 );
+				SKIP_GYRO=1;
+				args = StripSpaces(args);
+				taskDdsActuators=atoi(args);
+
+				if (taskDdsActuators == 0)
+				{
+					OutputDDShotDma(board.motors[0], 0, taskDdsActuators);
+					OutputDDShotDma(board.motors[1], 0, taskDdsActuators);
+					OutputDDShotDma(board.motors[2], 0, taskDdsActuators);
+					OutputDDShotDma(board.motors[3], 0, taskDdsActuators);
+					SKIP_GYRO=0;
+				}
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me DDSHOTTING motors \n");
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+
+		}
 	else if (!strcmp("propsarenowoff", inString))
 		{
 			if (testModeAproved)
@@ -1749,7 +1799,7 @@ void ProcessCommand(char *inString)
 				PrintModes();
 				PrintTpaCurves();
 
-				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
 				{
 					OutputVarSet(x);
 					argsOutputted++;
@@ -1761,7 +1811,7 @@ void ProcessCommand(char *inString)
 
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s\n", FULL_VERSION_STRING);
 				RfCustomReplyBuffer(rf_custom_out_buffer);
-				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
 				{
 					if (!strcmp(valueTable[x].group, args))
 					{

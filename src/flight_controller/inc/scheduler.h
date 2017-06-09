@@ -31,6 +31,8 @@ enum {
 
 #define SOFT_SERIAL_BIT_TIME_ARRAY_SIZE	80
 
+extern volatile int      taskIdleActuators[];
+extern volatile int      taskDdsActuators;
 extern volatile uint8_t  tOutBuffer[];
 extern volatile uint8_t  tInBuffer[];
 extern volatile uint32_t errorMask;

@@ -5,6 +5,8 @@
 
 #include "includes.h"
 
+void BuildRotationMatrix(int x, int y, int z);
+
 float dpsGyroArray[3] = {0.0f, 0.0f, 0.0f};
 float geeForceAccArray[3] = {0.0f, 0.0f, 0.0f};
 static int32_t gyroSum[3] = {0, 0, 0};
@@ -72,10 +74,10 @@ void InlineUpdateGyro(int32_t rawGyro[], float scale)
     InlineFlightCode(dpsGyroArray);
 }
 
-static float    rotationMatrix[3][3];
-static uint32_t matrixFormed = 0;
+static float rotationMatrix[3][3];
+static int   matrixFormed = -1;
 
-void BuildRotationMatrix(uint32_t x, uint32_t y, uint32_t z)
+void BuildRotationMatrix(int x, int y, int z)
 {
     float cosx, sinx, cosy, siny, cosz, sinz;
     float coszcosx, sinzcosx, coszsinx, sinzsinx;
@@ -108,6 +110,11 @@ void BuildRotationMatrix(uint32_t x, uint32_t y, uint32_t z)
     rotationMatrix[2][Z] = cosy * cosx;
 }
 
+void InitOrientation(void)
+{
+	matrixFormed =-1;
+}
+
 void InlineApplyGyroAccRotationAndScale (int32_t rawData[], float dataArray[], float scale )
 {
 
@@ -115,16 +122,22 @@ void InlineApplyGyroAccRotationAndScale (int32_t rawData[], float dataArray[], f
 	//from gyro, x, y, z (0, 1, 2)
 	// x is roll, y is pitch, z is yaw
 
+	int x = 0;
+	int y = 0;
+	int z = 0;
+	x = -lrintf(mainConfig.gyroConfig.minorBoardRotation[X]);
+	y = lrintf(mainConfig.gyroConfig.minorBoardRotation[Y]);
+	z = lrintf(mainConfig.gyroConfig.minorBoardRotation[Z]);
 	nonNinety = 0;
     switch (mainConfig.gyroConfig.gyroRotation)
     {
 
 		case CW0:
-	    	if (mainConfig.gyroConfig.minorBoardRotation[X] || mainConfig.gyroConfig.minorBoardRotation[Y] || mainConfig.gyroConfig.minorBoardRotation[Z])
+	    	if (x || y || z)
 	    	{
 				if (matrixFormed != CW0) {
 					matrixFormed = CW0;
-					BuildRotationMatrix(mainConfig.gyroConfig.minorBoardRotation[X],mainConfig.gyroConfig.minorBoardRotation[Y],mainConfig.gyroConfig.minorBoardRotation[Z]); //x, y, z, pitch, roll, yaw
+					BuildRotationMatrix(x,y,z); //x, y, z, pitch, roll, yaw
 				}
 				nonNinety = 1;
 	    	}
