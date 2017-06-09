@@ -48,6 +48,9 @@ int main(void)
     	if (count == -1)
     		count = 16;
 
+		//If 1wire is run, the gyro is disabled for the SPMFCF400.  This prevents the watchdog from ever resetting, causing the board to reset.
+	    if (oneWireHasRun)
+		    FeedTheDog();
     }
 
 }

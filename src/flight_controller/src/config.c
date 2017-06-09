@@ -176,7 +176,7 @@ const config_variables_rec valueTable[] = {
 		{ "telem_tramp",	 	typeUINT,  "telm", &mainConfig.telemConfig.telemTramp,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		
 		{ "telem_mavlink", 		typeUINT,  "telm", &mainConfig.telemConfig.telemMav,					0, TELEM_NUM-1, TELEM_OFF, "" },
-		{ "adc_current_factor", typeFLOAT, "telm", &mainConfig.telemConfig.adcCurrFactor,				0, 50.0, 34.2, "" },
+		{ "adc_current_factor", typeFLOAT, "telm", &mainConfig.telemConfig.adcCurrFactor,				0, 60.0, 34.2, "" },
 		{ "vtx_pitmode_type",	typeUINT,  "telm", &mainConfig.telemConfig.vtxPitmodeType,				0, 1, 0, "" },
 		{ "vbat_buzzer",		typeUINT,  "telm", &mainConfig.telemConfig.vbatbuzzer,					0, 1, 1, "" },
 		{ "vbat_cutoff",		typeFLOAT, "telm", &mainConfig.telemConfig.vbatCutoff,					0, 4.0f, 3.8f, "" },
