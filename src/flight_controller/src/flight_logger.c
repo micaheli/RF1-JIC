@@ -172,7 +172,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	(void)(filteredAccData);
 #endif
 
-	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (ModeActive(M_LOGGING)) && (flashInfo.enabled == FLASH_ENABLED) )
+	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (ModeActive(M_LOGGING)) && (flashInfo.enabled == STAT_FLASH_ENABLED) )
 	{
 		ledStatus.status    = LEDS_FASTER_BLINK;
 		LoggingEnabled      = 1;
@@ -180,7 +180,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 		disarmLast          = 25;
 		recordJunkData      = 0;
 	}
-	else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (!ModeSet(M_LOGGING)) && (flashInfo.enabled == FLASH_ENABLED) )
+	else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (!ModeSet(M_LOGGING)) && (flashInfo.enabled == STAT_FLASH_ENABLED) )
 	{
 		ledStatus.status    = LEDS_FASTER_BLINK;
 		LoggingEnabled      = 1;
@@ -219,7 +219,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	}
 
 
-	if ( (LoggingEnabled) && (flashInfo.enabled == FLASH_ENABLED) )
+	if ( (LoggingEnabled) && (flashInfo.enabled == STAT_FLASH_ENABLED) )
 	{
 		logItteration++;
 

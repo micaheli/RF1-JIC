@@ -23,7 +23,7 @@ int FULL_32 = 1;
 
 void SystemClock_Config(void)
 {
-  SystemCoreClock = 240000000;
+  //SystemCoreClock = 240000000;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
@@ -41,9 +41,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM       = 8;
-  RCC_OscInitStruct.PLL.PLLN       = 480;
+  RCC_OscInitStruct.PLL.PLLN       = 432;
   RCC_OscInitStruct.PLL.PLLP       = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ       = 10;
+  RCC_OscInitStruct.PLL.PLLQ       = 9;
   
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {

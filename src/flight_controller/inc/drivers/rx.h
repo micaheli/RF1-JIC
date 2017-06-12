@@ -49,6 +49,7 @@ typedef struct
 	uint32_t activeFailsafe;
 } arming_structure;
 
+extern volatile uint32_t throttleIsSafe;
 extern volatile arming_structure armingStructure;
 
 #define RX_CHECK_AMOUNT 24

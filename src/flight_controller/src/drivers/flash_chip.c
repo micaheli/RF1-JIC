@@ -281,7 +281,7 @@ int FindFirstEmptyPage(void)
 
 			if (allFFs && (x == 0) )
 			{
-				flashInfo.enabled = FLASH_ENABLED;
+				flashInfo.enabled = STAT_FLASH_ENABLED;
 				flashInfo.currentWriteAddress = 0;
 				return (1);
 			}
@@ -324,7 +324,7 @@ int FindFirstEmptyPage(void)
 
 						if (allFFsTotal == 4)
 						{
-							flashInfo.enabled = FLASH_ENABLED;
+							flashInfo.enabled = STAT_FLASH_ENABLED;
 							flashInfo.currentWriteAddress = (z - ( flashInfo.pageSize  * 3 ) );
 							return (1);
 						}
@@ -553,7 +553,7 @@ int MassEraseDataFlash(int blocking)
 					return 0;
 			}
 			flashInfo.currentWriteAddress = 0;
-			flashInfo.enabled = FLASH_ENABLED;
+			flashInfo.enabled = STAT_FLASH_ENABLED;
 			return 1;
 		}
 		else
@@ -562,7 +562,7 @@ int MassEraseDataFlash(int blocking)
 			if ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS))
 			{
 				flashInfo.currentWriteAddress = 0;
-				flashInfo.enabled = FLASH_ENABLED;
+				flashInfo.enabled = STAT_FLASH_ENABLED;
 				return 1;
 			}
 		}

@@ -266,6 +266,7 @@ void TaskCheckVtx(void)
 
 void TaskAdc(void)
 {
+	return;
 	if (progMode)
 		return;
 	PollAdc();

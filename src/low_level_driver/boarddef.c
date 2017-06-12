@@ -498,7 +498,7 @@ void GetBoardHardwareDefs(void)
 	board.maxOsd[0].extiIRQn    = 0;
 	board.maxOsd[0].spiFastBaud = MAX_OSD_SPI_FAST_BAUD;
 	board.maxOsd[0].spiSlowBaud = MAX_OSD_SPI_SLOW_BAUD;
-	callbackFunctionArray[MAX_OSD_RX_DMA_FP] = MaxOsdDmaRxCallback;
+	callbackFunctionArray[MAX_OSD_TX_DMA_FP] = MaxOsdDmaTxCallback;
 
 	//SPI settings ------------------------------------------------------------------------------------------------------------------------------------------------------------
 	board.spis[ENUM_SPI1].enabled                                 = SPI1_ENABLE;

@@ -20,6 +20,7 @@ static void SetValueOrString(int position, char *value);
 static void SetValue(int position, char *value);
 static void DlflStatusDump(void);
 static int  GetValueFromString(char *string, const string_comp_rec thisStringCompTable[], uint32_t sizeOfArray);
+static void DoIdleStop(void);
 
 const string_comp_rec vtxStringCompTable[] = {
 		//telemetry.h.h
@@ -142,8 +143,11 @@ const config_variables_rec valueTable[] = {
 
 		{ "famx", 				typeFLOAT, "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0.9, 1.1, 1, "" },
 		{ "mixer_style", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerStyle,					0, 1, 0, "" },
-		//{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtocol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtocol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
+		{ "bit_reverse_esc_1",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[0],			0, 1, 0, "" },
+		{ "bit_reverse_esc_2",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[1],			0, 1, 0, "" },
+		{ "bit_reverse_esc_3",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[2],			0, 1, 0, "" },
+		{ "bit_reverse_esc_4",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[3],			0, 1, 0, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 6, "" },
 		{ "idle_percent_inv",	typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercentInverted,			0, 15.0, 8, "" },
@@ -503,6 +507,22 @@ void ValidateConfigSettings(void)
 
 	}
 
+}
+
+static void DoIdleStop(void)
+{
+	ZeroActuators( 1000 );
+	SKIP_GYRO=0;
+	snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me idlestop\n" );
+	RfCustomReplyBuffer(rf_custom_out_buffer);
+	taskIdleActuators[0]=0;
+	taskIdleActuators[1]=0;
+	taskIdleActuators[2]=0;
+	taskIdleActuators[3]=0;
+	taskIdleActuators[4]=0;
+	taskIdleActuators[5]=0;
+	taskIdleActuators[6]=0;
+	taskIdleActuators[7]=0;
 }
 
 void GenerateConfig(void)
@@ -974,19 +994,7 @@ void ProcessCommand(char *inString)
 		{
 			if (!strcmp("stop", args))
 			{
-				DisarmBoard();
-				ZeroActuators( 1000 );
-				SKIP_GYRO=0;
-				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me idlestop\n" );
-				RfCustomReplyBuffer(rf_custom_out_buffer);
-				taskIdleActuators[0]=0;
-				taskIdleActuators[1]=0;
-				taskIdleActuators[2]=0;
-				taskIdleActuators[3]=0;
-				taskIdleActuators[4]=0;
-				taskIdleActuators[5]=0;
-				taskIdleActuators[6]=0;
-				taskIdleActuators[7]=0;
+				DoIdleStop();
 			}
 			else
 			{
@@ -1004,11 +1012,7 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("idlestop", inString))
 		{
-			DisarmBoard();
-			ZeroActuators( 1000 );
-			SKIP_GYRO=0;
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me idlestop\n" );
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			DoIdleStop();
 		}
 	else if (!strcmp("error", inString))
 		{
@@ -1614,11 +1618,12 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("testmotors", inString))
 		{
 
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me WARNING! WARNING! WARNING! \n");RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Your motors will be spun up one at a time to high throttle.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me You MUST remove your props to continue the test.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Or serious injury or damage can occur during the test.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me To continue the test, please run the command propsarenowoff.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me WARNING! WARNING! WARNING! \n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me Your motors will be spun up to high throttle\n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me You MUST remove your props to continue the test\n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me Or serious injury or damage can occur during the test\n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me To continue the test, please run propsarenowoff\n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me before running this command\n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
 	
 			if (!testModeAproved)
 				testModeAproved = 1;
@@ -1727,12 +1732,13 @@ void ProcessCommand(char *inString)
 			else
 			{
 				testModeAproved = 0;
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me WARNING! WARNING! WARNING! \n");RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Your motors will be spun up one at a time to high throttle.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me You MUST remove your props to continue the test.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Or serious injury or damage can occur during the test.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me To continue the test, please run the command testmotors\n");RfCustomReplyBuffer(rf_custom_out_buffer);
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me before running this command.\n");RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me WARNING! WARNING! WARNING! \n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me Your motors will be spun up to high throttle\n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me You MUST remove your props to continue the test\n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me Or serious injury or damage can occur during the test\n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me To continue the test, please run propsarenowoff\n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+				snprintf(rf_custom_out_buffer, (RF_BUFFER_SIZE-1), "#me before running this command\n");  rf_custom_out_buffer[RF_BUFFER_SIZE-1]=0;  RfCustomReplyBuffer(rf_custom_out_buffer);
+
 			}
 		}
 	else if (!strcmp("realpids", inString))

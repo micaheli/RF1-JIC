@@ -34,22 +34,22 @@ void ErrorHandler(uint32_t error)
 }
 
 //unused functions
-void GyroExtiCallback (uint32_t callbackNumber)
+void GyroExtiCallback(uint32_t callbackNumber)
 {
 	(void)(callbackNumber);
 }
 
-void GyroRxDmaCallback (uint32_t callbackNumber)
+void GyroRxDmaCallback(uint32_t callbackNumber)
 {
 	(void)(callbackNumber);
 }
 
-void FlashDmaRxCallback (uint32_t callbackNumber)
+void FlashDmaRxCallback(uint32_t callbackNumber)
 {
 	(void)(callbackNumber);
 }
 
-void MaxOsdDmaRxCallback (uint32_t callbackNumber)
+void MaxOsdDmaTxCallback(uint32_t callbackNumber)
 {
 	(void)(callbackNumber);
 }

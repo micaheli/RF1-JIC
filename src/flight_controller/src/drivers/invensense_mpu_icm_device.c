@@ -256,7 +256,6 @@ void accgyroDeviceReadGyro(void)
 
     accelUpdate = false;
     AccGyroDMAReadWriteData(&gyroTxFrame.gyroAddress, &gyroRxFrame.gyroAddress, 7);
-
 }
 
 void accgyroDeviceReadComplete(void)

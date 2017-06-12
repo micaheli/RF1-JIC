@@ -8,7 +8,7 @@ volatile uint32_t pulseValueRange;
 
 
 static void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz);
-static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle);
+static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int reverse);
 static uint32_t ThrottleToDDshot(float throttle, float idle);
 
 //motor_output_array motorOutputArray[MAX_MOTOR_NUMBER];
@@ -211,7 +211,7 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 
 }
 
-static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle)
+static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int reverse)
 {
 	uint32_t digitalThrottle;
 	int      checksum = 0;
@@ -219,16 +219,16 @@ static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle
 	int      i;
 	uint32_t currThrottle;
 
-	if (idle > 0) {
+	(void)(reverse);
 
+	if (idle > 0)
+	{
 		currThrottle = (uint32_t)InlineChangeRangef(throttle, 1.0, 0.0, 2047, (2000.0 * idle * 0.01)+48.0);
-
 		digitalThrottle = ( ( (uint32_t)( currThrottle ) << 1 ) | 0); //0 is no telem request, 1 is telem request
-
-	} else {
-
+	}
+	else
+	{
 		digitalThrottle = 0;
-
 	}
 
 	checksumData = digitalThrottle;
@@ -286,10 +286,10 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 				if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
 				{
-					OutputDDShotDma(board.motors[outputNumber], 0, ThrottleToDDshot(motorOutput[motorNum], mainConfig.mixerConfig.idlePercent) );
+					OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(motorOutput[motorNum], mainConfig.mixerConfig.idlePercent) );
 				} 
 				else if ( IsDshotEnabled() ) {
-					ThrottleToDshot(serialOutBuffer, motorOutput[motorNum], mainConfig.mixerConfig.idlePercent);
+					ThrottleToDshot(serialOutBuffer, motorOutput[motorNum], mainConfig.mixerConfig.idlePercent, mainConfig.mixerConfig.bitReverseEsc[motorNum]);
 					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
 				} else {
 					*ccr[board.motors[outputNumber].timCCR] = (uint16_t)(motorOutput[motorNum] * (float)pulseValueRange) + idlePulseValue;
@@ -322,11 +322,11 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
 				if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
 				{
-					OutputDDShotDma(board.motors[outputNumber], 0, ThrottleToDDshot(0, 0) );
+					OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(0, 0) );
 				} 
 				else if ( IsDshotEnabled() )
 				{
-					ThrottleToDshot(serialOutBuffer, 0, 0);
+					ThrottleToDshot(serialOutBuffer, 0, 0, 0);
 					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
 				}
 				else
@@ -348,7 +348,7 @@ void ZeroActuators(uint32_t delayUs)
 	uint32_t outputNumber;
 	uint8_t  serialOutBuffer[2];
 
-	if ( (mainConfig.mixerConfig.escProtocol != ESC_DSHOT1200) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT150) )
+	if ( (mainConfig.mixerConfig.escProtocol != ESC_DDSHOT) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT1200) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT150) )
 		__disable_irq();
 
 	for (uint32_t motorNum=0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
@@ -356,9 +356,13 @@ void ZeroActuators(uint32_t delayUs)
 		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
 		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 		{
-			if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) )
+			if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
 			{
-				ThrottleToDshot(serialOutBuffer, 0, 0);
+				OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(0, 0) );
+			} 
+			else if ( IsDshotEnabled() )
+			{
+				ThrottleToDshot(serialOutBuffer, 0, 0, 0);
 				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
 			}
 			else
@@ -374,7 +378,7 @@ void ZeroActuators(uint32_t delayUs)
 	if (delayUs)
 		simpleDelay_ASM(delayUs);
 
-	if ( (mainConfig.mixerConfig.escProtocol != ESC_DSHOT1200) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT150) )
+	if ( (mainConfig.mixerConfig.escProtocol != ESC_DDSHOT) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT1200) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT600) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT300) && (mainConfig.mixerConfig.escProtocol != ESC_DSHOT150) )
 		__enable_irq();
 
 }
@@ -391,11 +395,11 @@ void IdleActuator(uint32_t motorNum)
 	{
 		if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
 		{
-			OutputDDShotDma(board.motors[outputNumber], 0, ThrottleToDDshot(0.001f, mainConfig.mixerConfig.idlePercent) );
+			OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(0.001f, mainConfig.mixerConfig.idlePercent) );
 		} 
 		else if ( IsDshotEnabled() )
 		{
-			ThrottleToDshot(serialOutBuffer, 0.001, mainConfig.mixerConfig.idlePercent);
+			ThrottleToDshot(serialOutBuffer, 0.001, mainConfig.mixerConfig.idlePercent, mainConfig.mixerConfig.bitReverseEsc[motorNum]);
 			OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
 		}
 		else

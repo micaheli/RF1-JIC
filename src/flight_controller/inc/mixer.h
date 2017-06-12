@@ -25,6 +25,7 @@ typedef struct
     uint32_t mixerType;
     uint32_t mixerStyle;
     uint32_t escProtocol;
+	int      bitReverseEsc[8];
     uint32_t escUpdateFrequency;
     float    idlePercent;
     float    idlePercentInverted;

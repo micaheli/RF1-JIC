@@ -11,7 +11,7 @@ volatile SPM_VTX_DATA vtxData;
 
 volatile arming_structure armingStructure;
 
-uint32_t throttleIsSafe    = 0;
+volatile uint32_t throttleIsSafe = 0;
 static uint32_t packetTime = 11;
 static float packetTimeInv = (11.0f / 1000.0f);
 

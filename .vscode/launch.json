@@ -21,7 +21,7 @@
                 "mon version",
                 "file c://dev//raceflightone//output//REVOLT.elf",
                 "load",
-                "monitor reset",
+                "monitor reset init",
                 "break main"
             ],
             "gdbpath": "arm-none-eabi-gdb"
@@ -64,13 +64,16 @@
                 "set confirm off",
                 "set mem inaccessible-by-default off",
                 "interrupt",
+                "monitor sleep 100",
                 "monitor reset halt",
+                "monitor sleep 100",
                 "set debug remote 0",
                 "mon version",
                 "file c://dev//raceflightone//output//REVOLT_nrecovery.elf",
                 "load",
-                "monitor reset",
+                "monitor reset init",
                 "break main"
+
             ],
             "gdbpath": "arm-none-eabi-gdb"
         },

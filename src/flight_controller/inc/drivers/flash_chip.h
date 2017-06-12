@@ -26,7 +26,7 @@ enum {
 #define BUFFER_STATUS_FILLING_B 2
 
 #define FLASH_DISABLED 0
-#define FLASH_ENABLED 1
+#define STAT_FLASH_ENABLED 1
 #define FLASH_FULL 2
 
 typedef struct {

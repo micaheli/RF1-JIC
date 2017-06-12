@@ -21,7 +21,8 @@ typedef enum
 	TRAMP_CHECK  =  3,
 } tramp_status_record;
 
-typedef struct {
+typedef struct
+{
     tramp_status_record trampStatus;
     uint32_t trampRfFreqMin;
     uint32_t trampRfFreqMax;
@@ -86,8 +87,8 @@ int TrampHandleResponse(uint8_t trampBuffer[])
     //uint8_t volatile crc8 = trampBuffer[2];
     //uint8_t volatile crc9 = trampBuffer[3];
     //is crc valid
-    //if (trampBuffer[14] == TrampChecksum(trampBuffer))
-    if (trampBuffer[14+1] == trampBuffer[14+1])
+    //if (trampBuffer[14+1] == trampBuffer[14+1])
+    if (trampBuffer[14+1] == TrampChecksum(trampBuffer+1))
     {
         switch(trampBuffer[1+1])
         {
@@ -335,7 +336,6 @@ static uint8_t TrampChecksum(uint8_t trampBuffer[])
         checksum += trampBuffer[x];
 
     return(checksum);
-
 }
 
 static int TrampSendCommand(uint8_t cmd, uint16_t param, int waitForResponse)

@@ -38,4 +38,4 @@ void gpioClockInit(void);
 extern void GyroExtiCallback(uint32_t callbackNumber);
 extern void GyroRxDmaCallback(uint32_t callbackNumber);
 extern void FlashDmaRxCallback(uint32_t callbackNumber);
-extern void MaxOsdDmaRxCallback(uint32_t callbackNumber);
+extern void MaxOsdDmaTxCallback(uint32_t callbackNumber);
