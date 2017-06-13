@@ -43,6 +43,7 @@ extern volatile uint32_t softSerialCurBuf;
 extern volatile uint32_t softSerialLastByteProcessedLocation;
 extern volatile uint32_t softSerialSwitchBuffer;
 extern volatile uint32_t turnOnVtxNow;
+extern volatile uint32_t safeLoopCounter;
 
 extern void InitScheduler(void);
 extern void ErrorHandler(uint32_t error);

@@ -469,7 +469,7 @@
 #define ACTUATOR8_EXTICALLBACK			FP_EXTI15_10
 
 //Max OSD Config
-#define MAX_OSD_ENABLED                 1
+#define MAX_OSD_ENABLED                 0
 #define MAX_OSD_SPI_NUMBER				ENUM_SPI3
 #define MAX_OSD_SPI_CS_GPIO_Pin			GPIO_PIN_15
 #define MAX_OSD_SPI_CS_GPIO_Port		ENUM_PORTA
@@ -488,7 +488,7 @@
 #define MAX_OSD_SPI_SLOW_BAUD			SPI_BAUDRATEPRESCALER_8
 
 //Flash Config
-#define FLASH_ENABLED                   0
+#define FLASH_ENABLED                   1
 #define FLASH_SPI_NUMBER				ENUM_SPI3
 #define FLASH_SPI_CS_GPIO_Pin			GPIO_PIN_3
 #define FLASH_SPI_CS_GPIO_Port			ENUM_PORTB

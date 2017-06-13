@@ -1,5 +1,6 @@
 #include "includes.h"
 
+volatile uint32_t safeLoopCounter;
 //this doesn't really belong here
 volatile uint8_t tInBuffer[HID_EPIN_SIZE], tOutBuffer[HID_EPOUT_SIZE-1];
 
@@ -39,7 +40,7 @@ static void TaskCheckDelayedArming(void);
 static void TaskProcessArmingStructure(void);
 static void InitGeneralInterruptTimer(uint32_t pwmHz, uint32_t timerHz);
 static void DeInitGeneralInterruptTimer(void);
-
+static void TaskeSafeLoopCounter(void);
 
 static void DeInitGeneralInterruptTimer(void)
 {
@@ -115,6 +116,7 @@ void InitFakeGyroExti(void)
 
 void InitScheduler(void)
 {
+	safeLoopCounter  = 0;
 	taskDdsActuators = 0;
 	taskIdleActuators[0]=0;
 	taskIdleActuators[1]=0;
@@ -176,12 +178,54 @@ void Scheduler(int32_t count)
 			TaskIdleActuators();
 			break;
 		case 11:
+			TaskeSafeLoopCounter();
 			break;
 		case 12:
 			break;
 		default:
 			break;
 
+	}
+
+}
+
+static void TaskeSafeLoopCounter(void)
+{
+	static int failiureLatch = 0;
+	static uint32_t lastTimeMs = 0;
+	static uint32_t currTimeMs = 0;
+
+	currTimeMs = InlineMillis();
+
+	safeLoopCounter++;
+
+	if (failiureLatch)
+	{
+		ledStatus.status = LEDS_FAST_BLINK;
+		if (!boardArmed)
+		{
+			SKIP_GYRO = 1;
+		}
+	}
+
+	//don't start checking until after 5 seconds
+	if (currTimeMs > 5000)
+	{
+		//one second since last check has happened
+		if (currTimeMs - lastTimeMs >= 1000)
+		{
+			if(safeLoopCounter > 32000)
+			{
+				//CPU load is okay
+			}
+			else
+			{
+				//CPU load is too high
+				failiureLatch = 1;
+			}
+			safeLoopCounter = 0;
+			lastTimeMs = currTimeMs;
+		}
 	}
 
 }

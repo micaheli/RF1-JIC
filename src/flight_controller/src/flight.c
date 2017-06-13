@@ -235,8 +235,10 @@ float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 	{
 		averagedGyroData[axis][averagedGyroDataPointer[axis]++] = currentData;
 		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] += currentData;
+
 		if (averagedGyroDataPointer[axis] == usedGa[axis])
 			averagedGyroDataPointer[axis] = 0;
+
 		returnData = (averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] * averagedGyroDataPointerMultiplier[axis]);
 		averagedGyroData[axis][GYRO_AVERAGE_MAX_SUM-1] -= averagedGyroData[axis][averagedGyroDataPointer[axis]];
 		return(returnData);
@@ -257,12 +259,13 @@ void InitFlightCode(void)
 	//kdFiltUsed[PITCH] = mainConfig.filterConfig[PITCH].kd.r;
 
 	//bzero(lpfFilterStateNoise,sizeof(lpfFilterStateNoise));
-	bzero(lpfFilterState,sizeof(lpfFilterState));
-	bzero(lpfFilterStateKd,sizeof(lpfFilterStateKd));
-	bzero(averagedGyroData,sizeof(averagedGyroData));
-	bzero(averagedGyroDataPointer,sizeof(averagedGyroDataPointer));
-	bzero(filteredGyroData,sizeof(filteredGyroData));
-	bzero(&flightPids,sizeof(flightPids));
+	bzero(lpfFilterState,          sizeof(lpfFilterState));
+	bzero(lpfFilterStateKd,        sizeof(lpfFilterStateKd));
+	bzero(averagedGyroData,        sizeof(averagedGyroData));
+	bzero(averagedGyroDataPointer, sizeof(averagedGyroDataPointer));
+	bzero(filteredGyroData,        sizeof(filteredGyroData));
+	bzero(&flightPids,             sizeof(flightPids));
+
 	timeSinceSelfLevelActivated = 0;
 	slpUsed = 0.0f;
 	sliUsed = 0.0f;
@@ -276,6 +279,7 @@ void InitFlightCode(void)
 	usedGa[1] = mainConfig.pidConfig[1].ga;
 	usedGa[2] = mainConfig.pidConfig[2].ga;
 
+	validLoopConfig = 1;
 	//Sanity Check!: make sure ESC Frequency, protocol and looptime gel:
 	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 32000) )
 	{
@@ -380,6 +384,7 @@ void InitFlightCode(void)
 		case LOOP_H32:
 			loopSpeed.gyrodT      = 0.00003125f;
 			loopSpeed.dT          = 0.00003125f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 24000;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 32;
@@ -390,6 +395,7 @@ void InitFlightCode(void)
 		case LOOP_H16:
 			loopSpeed.gyrodT      = 0.00003125f;
 			loopSpeed.dT          = 0.00006250f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 12000;
 			loopSpeed.gyroDivider = 2;
 			loopSpeed.khzDivider  = 16;
@@ -399,6 +405,7 @@ void InitFlightCode(void)
 		case LOOP_UH8:
 			loopSpeed.gyrodT      = 0.00003125f;
 			loopSpeed.dT          = 0.00012500f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 4;
 			loopSpeed.khzDivider  = 8;
@@ -407,8 +414,9 @@ void InitFlightCode(void)
 			break;
 		case LOOP_H8:
 		case LOOP_M8:
-			loopSpeed.gyrodT      = 0.00012500;
-			loopSpeed.dT          = 0.00012500;
+			loopSpeed.gyrodT      = 0.00012500f;
+			loopSpeed.dT          = 0.00012500f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 6000;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 8;
@@ -416,8 +424,9 @@ void InitFlightCode(void)
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH4:
-			loopSpeed.gyrodT      = 0.00003125;
-			loopSpeed.dT          = 0.00025000;
+			loopSpeed.gyrodT      = 0.00003125f;
+			loopSpeed.dT          = 0.00025000f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 8;
 			loopSpeed.khzDivider  = 4;
@@ -426,8 +435,9 @@ void InitFlightCode(void)
 			break;
 		case LOOP_H4:
 		case LOOP_M4:
-			loopSpeed.gyrodT      = 0.00012500;
-			loopSpeed.dT          = 0.00025000;
+			loopSpeed.gyrodT      = 0.00012500f;
+			loopSpeed.dT          = 0.00025000f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 3000;
 			loopSpeed.gyroDivider = 2;
 			loopSpeed.khzDivider  = 4;
@@ -435,8 +445,9 @@ void InitFlightCode(void)
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH2:
-			loopSpeed.gyrodT      = 0.00003125;
-			loopSpeed.dT          = 0.00050000;
+			loopSpeed.gyrodT      = 0.00003125f;
+			loopSpeed.dT          = 0.00050000f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 16;
 			loopSpeed.khzDivider  = 2;
@@ -444,8 +455,9 @@ void InitFlightCode(void)
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 		case LOOP_H2:
 		case LOOP_M2:
-			loopSpeed.gyrodT      = 0.00012500;
-			loopSpeed.dT          = 0.00050000;
+			loopSpeed.gyrodT      = 0.00012500f;
+			loopSpeed.dT          = 0.00050000f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 1500;
 			loopSpeed.gyroDivider = 4;
 			loopSpeed.khzDivider  = 2;
@@ -453,8 +465,9 @@ void InitFlightCode(void)
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH1:
-			loopSpeed.gyrodT      = 0.00003125;
-			loopSpeed.dT          = 0.00100000;
+			loopSpeed.gyrodT      = 0.00003125f;
+			loopSpeed.dT          = 0.00100000f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 32;
 			loopSpeed.khzDivider  = 1;
@@ -462,8 +475,9 @@ void InitFlightCode(void)
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 		case LOOP_UH_500:
-			loopSpeed.gyrodT      = 0.00003125;
-			loopSpeed.dT          = 0.00200000;
+			loopSpeed.gyrodT      = 0.00003125f;
+			loopSpeed.dT          = 0.00200000f;
+			loopSpeed.accdT       = 0.00200000f;
 			loopSpeed.uhohNumber  = 375;
 			loopSpeed.gyroDivider = 64;
 			loopSpeed.khzDivider  = 1;
@@ -471,8 +485,9 @@ void InitFlightCode(void)
 			loopSpeed.fsCount     = 250; //failsafe count for khzdivider
 			break;
 		case LOOP_UH_250:
-			loopSpeed.gyrodT      = 0.00003125;
-			loopSpeed.dT          = 0.00400000;
+			loopSpeed.gyrodT      = 0.00003125f;
+			loopSpeed.dT          = 0.00400000f;
+			loopSpeed.accdT       = 0.00400000f;
 			loopSpeed.uhohNumber  = 187;
 			loopSpeed.gyroDivider = 128;
 			loopSpeed.khzDivider  = 1;
@@ -480,8 +495,9 @@ void InitFlightCode(void)
 			loopSpeed.fsCount     = 125; //failsafe count for khzdivider
 			break;
 		case LOOP_UH_062:
-			loopSpeed.gyrodT      = 0.00003125;
-			loopSpeed.dT          = 0.01600000;
+			loopSpeed.gyrodT      = 0.00003125f;
+			loopSpeed.dT          = 0.01600000f;
+			loopSpeed.accdT       = 0.01600000f;
 			loopSpeed.uhohNumber  = 94;
 			loopSpeed.gyroDivider = 512;
 			loopSpeed.khzDivider  = 1;
@@ -490,8 +506,9 @@ void InitFlightCode(void)
 			break;
 		case LOOP_H1:
 		case LOOP_M1:
-			loopSpeed.gyrodT      = 0.00012500;
-			loopSpeed.dT          = 0.00100000;
+			loopSpeed.gyrodT      = 0.00012500f;
+			loopSpeed.dT          = 0.00100000f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 8;
 			loopSpeed.khzDivider  = 1;
@@ -500,8 +517,9 @@ void InitFlightCode(void)
 			break;
 		case LOOP_L1:
 		default:
-			loopSpeed.gyrodT      = 0.00100000;
-			loopSpeed.dT          = 0.00100000;
+			loopSpeed.gyrodT      = 0.00100000f;
+			loopSpeed.dT          = 0.00100000f;
+			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 750;
 			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 1;
@@ -518,7 +536,7 @@ void InitFlightCode(void)
 	loopSpeed.halfGyrodT         = loopSpeed.gyrodT * 0.5f;
 	loopSpeed.halfGyrodTSquared  = loopSpeed.gyrodT * loopSpeed.gyrodT * 0.5f;
 	loopSpeed.halfGyrodTSquaredI = 1.0f/loopSpeed.halfGyrodTSquared;
-	loopSpeed.accdT              = loopSpeed.gyrodT * (float)loopSpeed.gyroAccDiv;
+	//loopSpeed.accdT              = loopSpeed.gyrodT * (float)loopSpeed.gyroAccDiv;
 	loopSpeed.InversedT          = (1/loopSpeed.dT);
 	loopSpeed.truedT             = loopSpeed.dT * 2.0f;
 
@@ -602,9 +620,12 @@ void InlineUpdateAttitude(float geeForceAccArray[])
 	//if (!boardArmed)
 	//{
 		//inlineDigitalHi(ports[ENUM_PORTB], GPIO_PIN_1);
-		filteredAccData[ACCX] = BiquadUpdate(geeForceAccArray[ACCX], &lpfFilterStateAcc[ACCX]);
-		filteredAccData[ACCY] = BiquadUpdate(geeForceAccArray[ACCY], &lpfFilterStateAcc[ACCY]);
-		filteredAccData[ACCZ] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateAcc[ACCZ]);
+		//filteredAccData[ACCX] = BiquadUpdate(geeForceAccArray[ACCX], &lpfFilterStateAcc[ACCX]);
+		//filteredAccData[ACCY] = BiquadUpdate(geeForceAccArray[ACCY], &lpfFilterStateAcc[ACCY]);
+		//filteredAccDataXACCZ] = BiquadUpdate(geeForceAccArray[ACCZ], &lpfFilterStateAcc[ACCZ]);
+	filteredAccData[ACCX] = geeForceAccArray[ACCX];
+	filteredAccData[ACCY] = geeForceAccArray[ACCY];
+	filteredAccData[ACCZ] = geeForceAccArray[ACCZ];
 		//inlineDigitalLo(ports[ENUM_PORTB], GPIO_PIN_1);
 	//}
 
@@ -618,7 +639,6 @@ void InlineUpdateAttitude(float geeForceAccArray[])
 }
 
 void InlineFlightCode(float dpsGyroArray[])
-// void InlineFlightCode(float dpsGyroArray[])
 {
 
 	//used for IMU
@@ -851,12 +871,10 @@ void InlineFlightCode(float dpsGyroArray[])
 				if (smoothCurvedThrottle0_1 > 0.6) //throttle above neutral latch
 				{
 					actuatorToUse = 1;
-
 				}
 				else if (smoothCurvedThrottle0_1 <= 0.4) //throttle below neutral latch
 				{
 					actuatorToUse = 2;
-
 				}
 
 				if (actuatorToUse == 2)
@@ -881,7 +899,6 @@ void InlineFlightCode(float dpsGyroArray[])
 		else
 		{
 			//otherwise we keep Ki zeroed.
-
 			flightPids[YAW].ki   = 0;
 			flightPids[ROLL].ki  = 0;
 			flightPids[PITCH].ki = 0;
@@ -898,10 +915,9 @@ void InlineFlightCode(float dpsGyroArray[])
 		//this code is less important that stabilization, so it happens AFTER stabilization.
 		//Anything changed here can happen after the next iteration without any drawbacks. Stabilization above all else!
 
-
 #ifdef LOG32
-			//update blackbox here
-			UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
+		//update blackbox here
+		UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
 #endif
 
 		if (khzLoopCounter-- == 0)
@@ -925,7 +941,6 @@ void InlineFlightCode(float dpsGyroArray[])
 				fullKiLatched = 1;
 			}
 
-
 			if (RfblDisasterPreventionCheck)
 			{
 				if (InlineMillis() > 5000)
@@ -946,7 +961,7 @@ void InlineFlightCode(float dpsGyroArray[])
 	gyroAdder[PITCH] += filteredGyroData[PITCH];
 	gyroAdder[YAW]   += filteredGyroData[YAW];
 
-	if (gyroAverager++ == 8)
+	if (gyroAverager++ == 16)
 	{
 		gyroAverager = 0;
 
