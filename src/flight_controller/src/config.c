@@ -1598,8 +1598,19 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("dpmode", inString))
 		{
-			mainConfig.mixerConfig.escProtocol  = ESC_DSHOT600;
-			mainConfig.mixerConfig.escUpdateFrequency = 16000;
+			mainConfig.rcControlsConfig.rcSmoothingFactor = 0;
+			mainConfig.filterConfig[YAW].gyro.q           = 85;
+			mainConfig.filterConfig[ROLL].gyro.q          = 60;
+			mainConfig.filterConfig[PITCH].gyro.q         = 60;
+			mainConfig.pidConfig[YAW].ga                  = 0;
+			mainConfig.pidConfig[ROLL].ga                 = 0;
+			mainConfig.pidConfig[PITCH].ga                = 0;
+			mainConfig.gyroConfig.loopCtrl                = 4;
+			mainConfig.mixerConfig.tpaKpCurveType         = 0;
+			mainConfig.mixerConfig.tpaKiCurveType         = 1;
+			mainConfig.mixerConfig.tpaKdCurveType         = 0;
+			mainConfig.mixerConfig.escProtocol            = ESC_DSHOT600;
+			mainConfig.mixerConfig.escUpdateFrequency     = 8000;
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Digital Mode Enabled\n");

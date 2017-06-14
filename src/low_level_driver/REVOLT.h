@@ -488,7 +488,7 @@
 #define MAX_OSD_SPI_SLOW_BAUD			SPI_BAUDRATEPRESCALER_8
 
 //Flash Config
-#define FLASH_ENABLED                   1
+#define FLASH_ENABLED                   0
 #define FLASH_SPI_NUMBER				ENUM_SPI3
 #define FLASH_SPI_CS_GPIO_Pin			GPIO_PIN_3
 #define FLASH_SPI_CS_GPIO_Port			ENUM_PORTB

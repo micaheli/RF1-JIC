@@ -279,12 +279,12 @@ void InitFlightCode(void)
 	usedGa[1] = mainConfig.pidConfig[1].ga;
 	usedGa[2] = mainConfig.pidConfig[2].ga;
 
-	validLoopConfig = 1;
+	//validLoopConfig = 1;
 	//Sanity Check!: make sure ESC Frequency, protocol and looptime gel:
 	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 32000) )
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 32000;
-		mainConfig.gyroConfig.loopCtrl = LOOP_UH32;
+		mainConfig.gyroConfig.loopCtrl            = LOOP_UH32;
 		if ( (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
@@ -294,7 +294,7 @@ void InitFlightCode(void)
 	{
 		mainConfig.mixerConfig.escUpdateFrequency = 16000;
 		loopUsed = LOOP_UH16;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
