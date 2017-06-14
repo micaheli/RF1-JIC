@@ -23,7 +23,7 @@
 #define DEFAULT_ROLL_KI          800.0f
 #define DEFAULT_PITCH_KI         850.0f
 
-#define DEFAULT_YAW_KD           1200.0f
+#define DEFAULT_YAW_KD           0300.0f
 #define DEFAULT_ROLL_KD          1200.0f
 #define DEFAULT_PITCH_KD         1300.0f
 

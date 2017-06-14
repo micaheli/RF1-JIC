@@ -80,6 +80,31 @@ void InitPid (void)
 		pidsUsed[PITCH].wc = mainConfig.pidConfig[PITCH].wc  = (mainConfig.pidConfig[PITCH].ga * 0.333);
 	}
 
+	if (loopSpeed.khzDivider == 32)
+	{
+		pidsUsed[0].kd *= 1.0f;
+		pidsUsed[1].kd *= 1.0f;
+		pidsUsed[2].kd *= 1.0f;
+	}
+	else if (loopSpeed.khzDivider == 16)
+	{
+		pidsUsed[0].kd *= 2.0f;
+		pidsUsed[1].kd *= 2.0f;
+		pidsUsed[2].kd *= 2.0f;
+	}
+	else if (loopSpeed.khzDivider == 8)
+	{
+		pidsUsed[0].kd *= 4.0f;
+		pidsUsed[1].kd *= 4.0f;
+		pidsUsed[2].kd *= 4.0f;
+	}
+	else if (loopSpeed.khzDivider == 4)
+	{
+		pidsUsed[0].kd *= 8.0f;
+		pidsUsed[1].kd *= 8.0f;
+		pidsUsed[2].kd *= 8.0f;
+	}
+
 	for (axis = 2; axis >= 0; --axis)
 	{
 		InitKdFilter(&kdFilter[axis]);
