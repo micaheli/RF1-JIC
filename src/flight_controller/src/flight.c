@@ -961,7 +961,7 @@ void InlineFlightCode(float dpsGyroArray[])
 	gyroAdder[PITCH] += filteredGyroData[PITCH];
 	gyroAdder[YAW]   += filteredGyroData[YAW];
 
-	if (gyroAverager++ == 16)
+	if (gyroAverager++ ==  loopSpeed.gyroAccDiv)
 	{
 		gyroAverager = 0;
 
