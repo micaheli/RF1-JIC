@@ -1235,6 +1235,13 @@ Version 0.277.107 BETA:
 	Allow dds and ds motor idling
 		digital idle happens at 1KHz
 
+Version 0.277.107 ALPHA through 282.109 ALPHA:
+	OSD Changes
+	F7 Changes
+	F4 Changes
+	flight code changes
+	defaults changes
+
 #Features in current development:
 #	MAVlink compatibility
 
