@@ -21,7 +21,7 @@ string_modes_rec stringModes[] = {
 		{"VTXON",       9,  M_VTXON },
 		{"GLUE",       10,  M_GLUE },
 		{"BRAINDRAIN", 11,  M_BRAINDRAIN },
-		{"ANGLELOCK",  12,  M_ANGLELOCK },
+		{"CATMODE",    12,  M_CATMODE },
 };
 
 

@@ -714,7 +714,7 @@ void InlineFlightCode(float dpsGyroArray[])
 
 		//get setpoint for PIDC for self level modes.
 		//TODO: move these to its own function in the IMU
-		if (ModeActive(M_ANGLELOCK))
+		if (ModeActive(M_CATMODE))
 		{
 			float angle1 = 65.0f;
 			float angle2 = 45.0f;
@@ -1072,7 +1072,7 @@ void InitFlight(void)
 			ModeSet(M_ATTITUDE) || 
 			ModeSet(M_HORIZON)  || 
 			ModeSet(M_GLUE)     ||
-			ModeSet(M_ANGLELOCK)
+			ModeSet(M_CATMODE)
 		)
 		{
 			//set skunk to 0 which is 16 KHz w/ACC if ACC mode is needed

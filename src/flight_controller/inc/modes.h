@@ -23,7 +23,7 @@ enum {
 	M_VTXON      = (1 << 9),
 	M_GLUE       = (1 << 10),
 	M_BRAINDRAIN = (1 << 11),
-	M_ANGLELOCK  = (1 << 12),
+	M_CATMODE    = (1 << 12),
 };
 
 extern string_modes_rec stringModes[];

@@ -560,7 +560,7 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 			ModeSet(M_ATTITUDE) || 
 			ModeSet(M_HORIZON)  || 
 			ModeSet(M_GLUE)     ||
-			ModeSet(M_ANGLELOCK)
+			ModeSet(M_CATMODE)
 		)
 	{
 */
