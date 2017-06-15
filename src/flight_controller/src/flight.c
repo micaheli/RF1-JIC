@@ -6,7 +6,6 @@ pid_output   flightPids[AXIS_NUMBER];
 biquad_state lpfFilterState[AXIS_NUMBER];
 biquad_state lpfFilterStateKd[AXIS_NUMBER];
 biquad_state lpfFilterStateAcc[AXIS_NUMBER];
-//biquad_state lpfFilterStateNoise[6];
 biquad_state hpfFilterStateAcc[6];
 
 float gyroFiltUsed[AXIS_NUMBER];
