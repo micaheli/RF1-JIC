@@ -1099,11 +1099,11 @@ void InitFlight(void)
 
 	if (board.flash[0].enabled && (mainConfig.rcControlsConfig.rxUsart != ENUM_USART4) )
     {
- //   	InitFlashChip();
- //   	InitFlightLogger();
+    	InitFlashChip();
+    	InitFlightLogger();
     }
 
-//	InitMaxOsd();
+	InitMaxOsd();
 
 #ifdef STM32F446xx
 	if (used1Wire == 0)

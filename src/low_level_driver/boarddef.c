@@ -489,16 +489,19 @@ void GetBoardHardwareDefs(void)
 	callbackFunctionArray[FLASH_RX_DMA_FP] = FlashDmaRxCallback;
 
 	//Max OSD connection settings	------------------------------------------------------------------------------------------------------------------------------------------------------------
-	board.maxOsd[0].enabled     = MAX_OSD_ENABLED;
-	board.maxOsd[0].spiNumber   = MAX_OSD_SPI_NUMBER;
-	board.maxOsd[0].csPin       = MAX_OSD_SPI_CS_GPIO_Pin;
-	board.maxOsd[0].csPort      = MAX_OSD_SPI_CS_GPIO_Port;
-	board.maxOsd[0].extiPin     = 0;
-	board.maxOsd[0].extiPort    = 0;
-	board.maxOsd[0].extiIRQn    = 0;
-	board.maxOsd[0].spiFastBaud = MAX_OSD_SPI_FAST_BAUD;
-	board.maxOsd[0].spiSlowBaud = MAX_OSD_SPI_SLOW_BAUD;
-	callbackFunctionArray[MAX_OSD_TX_DMA_FP] = MaxOsdDmaTxCallback;
+	if (MAX_OSD_ENABLED)
+	{
+		board.maxOsd[0].enabled     = MAX_OSD_ENABLED;
+		board.maxOsd[0].spiNumber   = MAX_OSD_SPI_NUMBER;
+		board.maxOsd[0].csPin       = MAX_OSD_SPI_CS_GPIO_Pin;
+		board.maxOsd[0].csPort      = MAX_OSD_SPI_CS_GPIO_Port;
+		board.maxOsd[0].extiPin     = 0;
+		board.maxOsd[0].extiPort    = 0;
+		board.maxOsd[0].extiIRQn    = 0;
+		board.maxOsd[0].spiFastBaud = MAX_OSD_SPI_FAST_BAUD;
+		board.maxOsd[0].spiSlowBaud = MAX_OSD_SPI_SLOW_BAUD;
+		callbackFunctionArray[MAX_OSD_TX_DMA_FP] = MaxOsdDmaTxCallback;
+	}
 
 	//SPI settings ------------------------------------------------------------------------------------------------------------------------------------------------------------
 	board.spis[ENUM_SPI1].enabled                                 = SPI1_ENABLE;

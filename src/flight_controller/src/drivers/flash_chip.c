@@ -221,8 +221,16 @@ static unsigned int M25p16ReadIdSetFlashRecordDma(void)
 static void SpiInit(uint32_t baudRatePrescaler)
 {
 
+	GPIO_InitTypeDef GPIO_InitStruct;
+
 	spiHandles[board.spis[board.flash[0].spiNumber].spiHandle].Instance               = spiInstance[board.flash[0].spiNumber];
     HAL_SPI_DeInit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]);
+
+	GPIO_InitStruct.Pin   = board.flash[0].csPin;
+	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull  = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+	HAL_GPIO_Init(ports[board.flash[0].csPort], &GPIO_InitStruct);
 
     spiHandles[board.spis[board.flash[0].spiNumber].spiHandle].Init.Mode              = SPI_MODE_MASTER;
     spiHandles[board.spis[board.flash[0].spiNumber].spiHandle].Init.Direction         = SPI_DIRECTION_2LINES;
