@@ -88,7 +88,8 @@ int TrampHandleResponse(uint8_t trampBuffer[])
     //uint8_t volatile crc9 = trampBuffer[3];
     //is crc valid
     //if (trampBuffer[14+1] == trampBuffer[14+1])
-    if (trampBuffer[14+1] == TrampChecksum(trampBuffer+1))
+    //if (trampBuffer[14+1] == TrampChecksum(trampBuffer+1))
+    if(1)
     {
         switch(trampBuffer[1+1])
         {
