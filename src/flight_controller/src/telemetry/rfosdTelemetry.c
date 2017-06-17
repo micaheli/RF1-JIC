@@ -95,7 +95,7 @@ void HandleRfOsd(void)
     switch(currentLine++)
     {
         case 0:
-            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " Garz FT %lu          ", (armedTime / 1000));
+            snprintf(rfOsdLineBuffer, RFOSD_LINE_SIZE, " RF1 FT %lu          ", (armedTime / 1000));
             break;
 		case 1:
             sprintf(rfOsdLineBuffer, "                              ");
