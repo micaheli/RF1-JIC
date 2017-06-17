@@ -95,7 +95,8 @@ void ImuUpdateCommandQuat(float rollDps, float pitchDps, float yawDps, float hal
 	vector_record     commandVector;
 	quaternion_record commandQuatChange;
 
-	if (ModeActive(M_GLUE))
+	//if (ModeActive(M_GLUE))
+	if (0)
 	{
 		EulerToVector( &commandVector, ( rollDps ), ( pitchDps ), ( -yawDps ) );
 		GenerateQuaternionFromGyroVector(&commandQuatChange, commandVector, halfdT * 16.0f);
@@ -564,7 +565,8 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 		)
 	{
 */
-	if (ModeActive(M_GLUE))
+	//if (ModeActive(M_GLUE))
+	if (0)
 	{
 		//the command quat is used to find the difference between the attitude quad and where we want the qwuad to be
 		errorQuat = MultiplyQuaternionByQuaternion( commandQuat, QuaternionConjugate(&attitudeFrameQuat) );

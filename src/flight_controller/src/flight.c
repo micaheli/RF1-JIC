@@ -674,7 +674,11 @@ void InlineFlightCode(float dpsGyroArray[])
 		return;
 	}
 
-	if (!ModeActive(M_GLUE) || !boardArmed) //if not M_GLUE mode or armed we reset the requesteds values.
+	//if (!ModeActive(M_GLUE) || !boardArmed) //if not M_GLUE mode or armed we reset the requesteds values.
+	//{
+	//	ImuResetCommandQuat();
+	//}
+	if (!boardArmed) //if not M_GLUE mode or armed we reset the requesteds values.
 	{
 		ImuResetCommandQuat();
 	}
@@ -715,7 +719,8 @@ void InlineFlightCode(float dpsGyroArray[])
 
 		//get setpoint for PIDC for self level modes.
 		//TODO: move these to its own function in the IMU
-		if (ModeActive(M_CATMODE))
+		//if (ModeActive(M_CATMODE))
+		if ((0))
 		{
 			float angle1 = 65.0f;
 			float angle2 = 45.0f;
@@ -764,7 +769,7 @@ void InlineFlightCode(float dpsGyroArray[])
 
 			
 		}
-		else if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || ModeActive(M_GLUE)) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
+		else if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON)) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
 		{
 			if (!timeSinceSelfLevelActivated)
 				timeSinceSelfLevelActivated = InlineMillis();
@@ -784,7 +789,8 @@ void InlineFlightCode(float dpsGyroArray[])
 				sldUsed = mainConfig.pidConfig[PITCH].sld;
 			}
 
-			if (!ModeActive(M_GLUE)) //if M_GLUE mode
+			//if (!ModeActive(M_GLUE)) //if M_GLUE mode
+			if (0) //if M_GLUE mode
 			{
 				rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.pidConfig[PITCH].sla ) - rollAttitude  );
 				pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla ) - pitchAttitude );
@@ -798,7 +804,8 @@ void InlineFlightCode(float dpsGyroArray[])
 				lastPitchAttitudeError   = pitchAttitudeError;
 			}
 
-			if (ModeActive(M_GLUE)) //if M_GLUE mode
+			//if (ModeActive(M_GLUE)) //if M_GLUE mode
+			if (0) //if M_GLUE mode
 			{
 
 				//current attitude is stored here:
@@ -1071,9 +1078,10 @@ void InitFlight(void)
 		//16 KHz on F4s if quaternions are needed.
 		if ( 
 			ModeSet(M_ATTITUDE) || 
-			ModeSet(M_HORIZON)  || 
-			ModeSet(M_GLUE)     ||
-			ModeSet(M_CATMODE)
+			ModeSet(M_HORIZON)
+			//ModeSet(M_HORIZON)  || 
+			//ModeSet(M_GLUE)     ||
+			//ModeSet(M_CATMODE)
 		)
 		{
 			//set skunk to 0 which is 16 KHz w/ACC if ACC mode is needed

@@ -21,9 +21,8 @@ enum {
 	M_LEDCOLOR   = (1 << 7),
 	M_DIRECT     = (1 << 8),
 	M_VTXON      = (1 << 9),
-	M_GLUE       = (1 << 10),
-	M_BRAINDRAIN = (1 << 11),
-	M_CATMODE    = (1 << 12),
+	M_BRAINDRAIN = (1 << 10),
+	//M_CATMODE    = (1 << 11),
 };
 
 extern string_modes_rec stringModes[];
