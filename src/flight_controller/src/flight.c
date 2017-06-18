@@ -790,7 +790,7 @@ void InlineFlightCode(float dpsGyroArray[])
 			}
 
 			//if (!ModeActive(M_GLUE)) //if M_GLUE mode
-			if (0) //if M_GLUE mode
+			if (1) //if M_GLUE mode
 			{
 				rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.pidConfig[PITCH].sla ) - rollAttitude  );
 				pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla ) - pitchAttitude );

@@ -204,7 +204,7 @@ static void TaskeSafeLoopCounter(void)
 		ledStatus.status = LEDS_FAST_BLINK;
 		if (!boardArmed)
 		{
-			SKIP_GYRO = 1;
+			//SKIP_GYRO = 1;
 		}
 	}
 
