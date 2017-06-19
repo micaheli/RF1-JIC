@@ -1596,6 +1596,23 @@ void ProcessCommand(char *inString)
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#serial: %lu%lu%lu\n", STM32_UUID[0], STM32_UUID[1], STM32_UUID[2] );
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
+	else if (!strcmp("msmode", inString))
+		{
+			mainConfig.pidConfig[YAW].ga                  = 0;
+			mainConfig.pidConfig[ROLL].ga                 = 0;
+			mainConfig.pidConfig[PITCH].ga                = 0;
+			mainConfig.mixerConfig.tpaKpCurveType         = 0;
+			mainConfig.mixerConfig.tpaKiCurveType         = 1;
+			mainConfig.mixerConfig.tpaKdCurveType         = 0;
+			mainConfig.mixerConfig.escProtocol            = ESC_MULTISHOT;
+			mainConfig.mixerConfig.escUpdateFrequency     = 32000;
+			resetBoard = 1;
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Digital Mode Enabled\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			SaveAndSend();
+		}
 	else if (!strcmp("dpmode", inString))
 		{
 			mainConfig.rcControlsConfig.rcSmoothingFactor = 0;
@@ -1605,7 +1622,6 @@ void ProcessCommand(char *inString)
 			mainConfig.pidConfig[YAW].ga                  = 0;
 			mainConfig.pidConfig[ROLL].ga                 = 0;
 			mainConfig.pidConfig[PITCH].ga                = 0;
-			mainConfig.gyroConfig.loopCtrl                = 4;
 			mainConfig.mixerConfig.tpaKpCurveType         = 0;
 			mainConfig.mixerConfig.tpaKiCurveType         = 1;
 			mainConfig.mixerConfig.tpaKdCurveType         = 0;
