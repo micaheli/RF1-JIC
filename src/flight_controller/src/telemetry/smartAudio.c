@@ -21,6 +21,10 @@ uint32_t InitSmartAudio(void)
 	if (boardArmed)
 		return(0);
 
+#ifdef SPMFC400
+	if (mainConfig.telemConfig.telemSmartAudio)
+		mainConfig.telemConfig.telemSmartAudio = TELEM_SS1W_USART4T;
+#endif
 	switch(mainConfig.telemConfig.telemSmartAudio)
 	{
 		case TELEM_SS1W_USART1R:
