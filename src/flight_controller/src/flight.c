@@ -310,7 +310,7 @@ void InitFlightCode(void)
 			{
 				if (mainConfig.mixerConfig.escUpdateFrequency > 16000)
 				{
-					mainConfig.mixerConfig.escUpdateFrequency == 16000;
+					mainConfig.mixerConfig.escUpdateFrequency = 16000;
 				}
 			}
 		}
