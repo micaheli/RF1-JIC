@@ -1,5 +1,7 @@
 #pragma once
 
+extern volatile int escFrequency;
+
 extern void DeInitActuators(void);
 extern void InitActuators(void);
 extern void OutputActuators(volatile float motorOutputHere[], volatile float servoOutput[]);

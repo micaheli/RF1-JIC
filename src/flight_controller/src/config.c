@@ -1610,7 +1610,7 @@ void ProcessCommand(char *inString)
 			mainConfig.mixerConfig.tpaKiCurveType         = 1;
 			mainConfig.mixerConfig.tpaKdCurveType         = 0;
 			mainConfig.mixerConfig.escProtocol            = ESC_DSHOT600;
-			mainConfig.mixerConfig.escUpdateFrequency     = 8000;
+			mainConfig.mixerConfig.escUpdateFrequency     = 16000;
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Digital Mode Enabled\n");

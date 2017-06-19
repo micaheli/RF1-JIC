@@ -5,7 +5,7 @@ volatile uint32_t disarmPulseValue;
 volatile uint32_t calibratePulseValue;
 volatile uint32_t idlePulseValue;
 volatile uint32_t pulseValueRange;
-
+volatile int escFrequency = 0;
 
 static void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz);
 static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int reverse);
