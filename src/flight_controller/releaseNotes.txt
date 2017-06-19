@@ -1247,6 +1247,12 @@ Version 295.110 BETA:
 	Update defaults
 	Minor OSD change
 
+Version 296.110 BETA:
+	Fix self leveling
+	Fix minor rearm bug
+
+Version 297.110 BETA:
+	Correct dshot frequency
 
 #Features in current development:
 #	MAVlink compatibility
