@@ -822,6 +822,7 @@ void OneWire(char *inString) {
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "No ESCs detected. Is your battery connected?\n");
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 				DelayMs(5);
+				return;
 			}
 
 		}

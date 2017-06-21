@@ -413,3 +413,73 @@ void IdleActuator(uint32_t motorNum)
 
 }
 
+//
+void DirectActuator(uint32_t motorNum, float throttle)
+{
+
+	uint32_t outputNumber;
+	uint8_t serialOutBuffer[2];
+
+	outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
+
+	if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+	{
+		if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
+		{
+			if (throttle < 0.0f)
+			{
+				//zero
+				OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(0.0f, 0.0f) );
+			}
+			else if (throttle >= 0.001f)
+			{
+				//throttle
+				OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(throttle, mainConfig.mixerConfig.idlePercent) );
+			}
+			else
+			{
+				//idle
+				OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(0.001f, mainConfig.mixerConfig.idlePercent) );
+			}
+		} 
+		else if ( IsDshotEnabled() )
+		{
+			if (throttle < 0.0f)
+			{
+				//zero
+				ThrottleToDshot(serialOutBuffer, 0, 0, 0);
+				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
+			}
+			else if (throttle >= 0.001f)
+			{
+				//throttle
+				ThrottleToDshot(serialOutBuffer, throttle, mainConfig.mixerConfig.idlePercent, mainConfig.mixerConfig.bitReverseEsc[motorNum]);
+				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
+			}
+			else
+			{
+				//idle
+				ThrottleToDshot(serialOutBuffer, 0.001f, mainConfig.mixerConfig.idlePercent, mainConfig.mixerConfig.bitReverseEsc[motorNum]);
+				OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
+			}
+		}
+		else
+		{
+			if (throttle < 0.0f)
+			{
+				//zero
+				*ccr[board.motors[outputNumber].timCCR] = (uint16_t)disarmPulseValue;
+			}
+			else if (throttle >= 0.001f)
+			{
+				//throttle
+				*ccr[board.motors[outputNumber].timCCR] = (uint16_t)(throttle * (float)pulseValueRange) + idlePulseValue;
+			}
+			else
+			{
+				//idle
+				*ccr[board.motors[outputNumber].timCCR] = (uint16_t)idlePulseValue;
+			}
+		}
+	}
+}

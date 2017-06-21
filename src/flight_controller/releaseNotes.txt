@@ -1254,6 +1254,18 @@ Version 296.110 BETA:
 Version 297.110 BETA:
 	Correct dshot frequency
 
+Version 298.110 BETA:
+	Increment version
+	Git force pull
+
+Version 299.110 BETA:
+	Increment version
+	Git force pull
+
+Version 300.110 BETA:
+	Prevent 1wire auto hardfault
+	testmotors function only spins one motor at a time now
+
 #Features in current development:
 #	MAVlink compatibility
 

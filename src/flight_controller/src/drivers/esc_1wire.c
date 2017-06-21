@@ -310,23 +310,28 @@ uint32_t OneWireInit(void)
 			outputNumber = mainConfig.mixerConfig.motorOutput[x];
 			InitDmaOutputForSoftSerial(DMA_OUTPUT_ESC_1WIRE, board.motors[outputNumber]);
 			DelayMs(10);
+			FeedTheDog();
 		}
 
 		DelayMs(1500);
 
 		for (x = 0; x < MAX_MOTOR_NUMBER; x++)
 		{
+			FeedTheDog();
 			outputNumber = mainConfig.mixerConfig.motorOutput[x];
 			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 			{
+				FeedTheDog();
 				escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled = 0;
 				if (ConnectToBlheliBootloader(board.motors[outputNumber], 35))
 				{
+					FeedTheDog();
 					dataCount = escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].esc1WireProtocol->ReadEEprom(board.motors[outputNumber], inBuffer, 150);
 					if ( ProcessEEprom ( board.motors[outputNumber], inBuffer, dataCount) )
 					{
 						if (tries > 1)
 						{
+							FeedTheDog();
 							sprintf((char *)reportOut, "ESC:%lu Read Successful", board.motors[outputNumber].actuatorArrayNum);
 							SendStatusReport((char *)reportOut);
 						}
@@ -336,12 +341,14 @@ uint32_t OneWireInit(void)
 					{
 						if (tries > 1)
 						{
+							FeedTheDog();
 							sprintf((char *)reportOut, "ESC:%lu Read Failure", board.motors[outputNumber].actuatorArrayNum);
 							SendStatusReport((char *)reportOut);
 						}
 						allWork = 0;
 					}
 				}
+				FeedTheDog();
 				DeInitDmaOutputForSoftSerial(board.motors[outputNumber]);
 			}
 		}
@@ -358,6 +365,7 @@ uint32_t OneWireInit(void)
 			SendStatusReport((char *)reportOut);
 			DelayMs(3500);
 			DeInitActuators();
+			FeedTheDog();
 		}
 		else if (atLeastOneWorks == 0 && tries == 2 ) //tried twice, not a single ESC detected
 		{

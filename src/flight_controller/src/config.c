@@ -1626,7 +1626,7 @@ void ProcessCommand(char *inString)
 			mainConfig.mixerConfig.tpaKiCurveType         = 1;
 			mainConfig.mixerConfig.tpaKdCurveType         = 0;
 			mainConfig.mixerConfig.escProtocol            = ESC_DSHOT600;
-			mainConfig.mixerConfig.escUpdateFrequency     = 16000;
+			mainConfig.mixerConfig.escUpdateFrequency     = 32000;
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Digital Mode Enabled\n");
@@ -1695,13 +1695,19 @@ void ProcessCommand(char *inString)
 				boardArmed=1;
 				SKIP_GYRO=1;
 				//run test here:
+				motorOutput[0] = 0.0f;
+				motorOutput[1] = 0.0f;
+				motorOutput[2] = 0.0f;
+				motorOutput[3] = 0.0f;
+
+				DirectActuator(0, -1.0f);
+				DirectActuator(1, -1.0f);
+				DirectActuator(2, -1.0f);
+				DirectActuator(3, -1.0f);
 				for (uint32_t x=0;x<4;x++)
 				{
-					motorOutput[0] = 0.0f;
-					motorOutput[1] = 0.0f;
-					motorOutput[2] = 0.0f;
-					motorOutput[3] = 0.0f;
-					OutputActuators(motorOutput, servoOutput);
+
+					DirectActuator(x, 0);
 					DelayMs(1000);
 					boardArmed=1;
 					SKIP_GYRO=1;
@@ -1710,20 +1716,14 @@ void ProcessCommand(char *inString)
 						float stdDeviation[50];
 						bzero(stdDeviation, sizeof(stdDeviation));
 
-						motorOutput[0] = 0.0f;
-						motorOutput[1] = 0.0f;
-						motorOutput[2] = 0.0f;
-						motorOutput[3] = 0.0f;
-
 						if (y == 11)
 						{
-							motorOutput[x] = 0.0f;
+							DirectActuator(x, 0.0f);
 						}
 						else
 						{
-							motorOutput[x] = (y / 10.0f);
+							DirectActuator(x, (y / 10.0f));
 						}
-						OutputActuators(motorOutput, servoOutput);
 						DelayMs(10);
 						for (uint32_t simpleCouter=0;simpleCouter < 50;simpleCouter++)
 						{
@@ -1746,14 +1746,18 @@ void ProcessCommand(char *inString)
 							snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Motor %lu noise level at %lu percent: %lu\n", x, (uint32_t)(y * 10), (uint32_t)(CalculateSDSize(stdDeviation, 50) * 1000.0f));RfCustomReplyBuffer(rf_custom_out_buffer);
 						}
 					}
+					DirectActuator(0, -1.0f);
+					DirectActuator(1, -1.0f);
+					DirectActuator(2, -1.0f);
+					DirectActuator(3, -1.0f);
+					DelayMs(500);
 				}
-				motorOutput[0] = 0.0f;
-				motorOutput[1] = 0.0f;
-				motorOutput[2] = 0.0f;
-				motorOutput[3] = 0.0f;
-				OutputActuators(motorOutput, servoOutput);
-				boardArmed=0;
-				SKIP_GYRO=0;
+				DirectActuator(0, -1.0f);
+				DirectActuator(1, -1.0f);
+				DirectActuator(2, -1.0f);
+				DirectActuator(3, -1.0f);
+				boardArmed      = 0;
+				SKIP_GYRO       = 0;
 				testModeAproved = 0;
 			}
 			else
