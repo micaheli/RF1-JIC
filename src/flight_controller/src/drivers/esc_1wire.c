@@ -211,7 +211,7 @@ uint32_t ListAllEscHexesInFlash(void) {
 				firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
 			}
 			firmwareFinderByteData[16] = 0;
-			sprintf((char *)reportOut, "ESC POSITION:%lu HEX:%s", found, (char *)firmwareFinderByteData);
+			snprintf((char *)reportOut, 49, "ESC POSITION:%lu HEX:%s", found, (char *)firmwareFinderByteData);
 			SendStatusReport((char *)reportOut);
 			escHexByPosition[found].startAddress = wordOffset;
 			escHexByPosition[found].endAddress = wordOffset + 0x1A6F;
@@ -332,7 +332,7 @@ uint32_t OneWireInit(void)
 						if (tries > 1)
 						{
 							FeedTheDog();
-							sprintf((char *)reportOut, "ESC:%lu Read Successful", board.motors[outputNumber].actuatorArrayNum);
+							snprintf((char *)reportOut, 49, "ESC:%lu Read Successful", board.motors[outputNumber].actuatorArrayNum);
 							SendStatusReport((char *)reportOut);
 						}
 						atLeastOneWorks++;
@@ -342,7 +342,7 @@ uint32_t OneWireInit(void)
 						if (tries > 1)
 						{
 							FeedTheDog();
-							sprintf((char *)reportOut, "ESC:%lu Read Failure", board.motors[outputNumber].actuatorArrayNum);
+							snprintf((char *)reportOut, 49, "ESC:%lu Read Failure", board.motors[outputNumber].actuatorArrayNum);
 							SendStatusReport((char *)reportOut);
 						}
 						allWork = 0;
@@ -361,7 +361,7 @@ uint32_t OneWireInit(void)
 		{
 			InitActuators();
 			DelayMs(3500);
-			sprintf((char *)reportOut, "Reading ESCs...");
+			snprintf((char *)reportOut, 49, "Reading ESCs...");
 			SendStatusReport((char *)reportOut);
 			DelayMs(3500);
 			DeInitActuators();
@@ -650,7 +650,7 @@ uint32_t BuiltInUpgradeSiLabsBLHeli(motor_type actuator, esc_hex_location escHex
 		//page size is 512 bytes, which is hex 0x200
 		pageAddress = 0x200 * (y / 0x200) + 1;
 		if (pageAddress > currentPage) {
-			sprintf((char *)reportOut, "Flashing ESC:%lu: %lu percent done", actuator.actuatorArrayNum, (uint32_t)(( (float)y / (float)(endAddress - startAddress) ) * 100)  );
+			snprintf((char *)reportOut, 49, "Flashing ESC:%lu: %lu percent done", actuator.actuatorArrayNum, (uint32_t)(( (float)y / (float)(endAddress - startAddress) ) * 100)  );
 			SendStatusReport((char *)reportOut);
 			if ( !escOneWireStatus[actuator.actuatorArrayNum].esc1WireProtocol->PageErase(actuator, y, 1000) ) {
 				retry--;

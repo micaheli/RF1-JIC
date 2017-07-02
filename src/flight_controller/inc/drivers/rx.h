@@ -11,13 +11,8 @@ typedef struct {
     uint32_t midRc[MAXCHANNELS];
     uint32_t minRc[MAXCHANNELS];
     uint32_t maxRc[MAXCHANNELS];
-    uint32_t useCurve[MAXCHANNELS];
-    float    curveExpo[MAXCHANNELS];
     uint32_t channelMap[MAXCHANNELS];
-    float    rates[3];
-    float    acroPlus[3];
     uint32_t rcCalibrated;
-	float    rcSmoothingFactor;
     uint32_t rxProtcol;
     uint32_t rxUsart;
     uint32_t rxInvertPin;
@@ -27,6 +22,15 @@ typedef struct {
 	uint32_t shortThrow;
     uint32_t armMethod;
 } rc_control_config;
+
+typedef struct
+{
+	int   useCurve;
+	float rcSmoothingFactor;
+	float rates[3];
+	float acroPlus[3];
+	float curveExpo[3];
+} rc_rate;
 
 typedef struct
 {

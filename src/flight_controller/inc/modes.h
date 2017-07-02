@@ -22,6 +22,8 @@ enum {
 	M_DIRECT     = (1 << 8),
 	M_VTXON      = (1 << 9),
 	M_BRAINDRAIN = (1 << 10),
+	M_PROFILE2   = (1 << 12),
+ 	M_PROFILE3   = (1 << 12),
 	//M_CATMODE    = (1 << 11),
 };
 

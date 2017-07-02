@@ -29,7 +29,7 @@ uint32_t timeSinceSelfLevelActivated;
 float slpUsed;
 float sliUsed;
 float sldUsed;
-float usedSkunk;
+int   usedSkunk;
 uint32_t armedTime;
 
 uint32_t khzLoopCounter                 = 0;
@@ -270,13 +270,13 @@ void InitFlightCode(void)
 	sliUsed = 0.0f;
 	sldUsed = 0.0f;
 
-	averagedGyroDataPointerMultiplier[YAW]   = (1.0 / (float)mainConfig.pidConfig[YAW].ga);
-	averagedGyroDataPointerMultiplier[ROLL]  = (1.0 / (float)mainConfig.pidConfig[ROLL].ga);
-	averagedGyroDataPointerMultiplier[PITCH] = (1.0 / (float)mainConfig.pidConfig[PITCH].ga);
+	averagedGyroDataPointerMultiplier[YAW]   = (1.0 / (float)mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga);
+	averagedGyroDataPointerMultiplier[ROLL]  = (1.0 / (float)mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga);
+	averagedGyroDataPointerMultiplier[PITCH] = (1.0 / (float)mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga);
 
-	usedGa[0] = mainConfig.pidConfig[0].ga;
-	usedGa[1] = mainConfig.pidConfig[1].ga;
-	usedGa[2] = mainConfig.pidConfig[2].ga;
+	usedGa[0] = mainConfig.tuneProfile[activeProfile].filterConfig[0].ga;
+	usedGa[1] = mainConfig.tuneProfile[activeProfile].filterConfig[1].ga;
+	usedGa[2] = mainConfig.tuneProfile[activeProfile].filterConfig[2].ga;
 
 	//validLoopConfig = 1;
 	//Sanity Check!: make sure ESC Frequency, protocol and looptime gel:
@@ -371,7 +371,7 @@ void InitFlightCode(void)
 	}
 
 	//skunk below 0.5f will set 32 KHz to 16 KHz operation
-	if(usedSkunk < 0.5f)
+	if(usedSkunk == 0)
 	{
 		//true 32Khz
 		if (loopUsed == LOOP_UH32)
@@ -554,9 +554,9 @@ void InitFlightCode(void)
 	fullKiLatched       = 0;
 	flightcodeTime      = 0.0f;
 
-	gyroFiltUsed[YAW]   = (100.0f - mainConfig.filterConfig[YAW].gyro.q);
-	gyroFiltUsed[ROLL]  = (100.0f - mainConfig.filterConfig[ROLL].gyro.q);
-	gyroFiltUsed[PITCH] = (100.0f - mainConfig.filterConfig[PITCH].gyro.q);
+	gyroFiltUsed[YAW]   = (100.0f - mainConfig.tuneProfile[activeProfile].filterConfig[YAW].gyro.q);
+	gyroFiltUsed[ROLL]  = (100.0f - mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].gyro.q);
+	gyroFiltUsed[PITCH] = (100.0f - mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].gyro.q);
 	
 	InlineInitGyroFilters();
 	//InlineInitKdFilters();
@@ -573,7 +573,7 @@ void InlineInitGyroFilters(void)
 
 	for (axis = 2; axis >= 0; --axis)
 	{
-		if (mainConfig.filterConfig[0].filterType == 0)
+		if (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 0)
 			OldInitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], 88.0f, 0.0f, filteredGyroData[axis]);
 		else 
 			InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], 0.088f, 0.0f, filteredGyroData[axis]);
@@ -609,7 +609,7 @@ void InlineInitAccFilters(void)
 	int32_t vector;
 
 	for (vector = 2; vector >= 0; --vector)
-		InitBiquad(mainConfig.filterConfig[vector].acc.r, &lpfFilterStateAcc[vector], loopSpeed.accdT, FILTER_TYPE_LOWPASS, &lpfFilterStateAcc[vector], mainConfig.filterConfig[vector].acc.q);
+		InitBiquad(mainConfig.tuneProfile[activeProfile].filterConfig[vector].acc.r, &lpfFilterStateAcc[vector], loopSpeed.accdT, FILTER_TYPE_LOWPASS, &lpfFilterStateAcc[vector], mainConfig.tuneProfile[activeProfile].filterConfig[vector].acc.q);
 
 }
 
@@ -694,7 +694,7 @@ void InlineFlightCode(float dpsGyroArray[])
 	for (axis = 2; axis >= 0; --axis)
 	{
 
-		if (mainConfig.filterConfig[0].filterType == 0)
+		if (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 0)
 		{
 			averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
 			OldPafUpdate(&pafGyroStates[axis], averagedGyro );
@@ -720,9 +720,9 @@ void InlineFlightCode(float dpsGyroArray[])
 		InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
 		
 		//1st, find request rates regardless of modes
-		flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[YAW], mainConfig.rcControlsConfig.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
-		flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[ROLL], mainConfig.rcControlsConfig.acroPlus[ROLL] * 0.01, ROLL);
-		flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.rcControlsConfig.useCurve[PITCH], mainConfig.rcControlsConfig.rates[PITCH], mainConfig.rcControlsConfig.acroPlus[PITCH] * 0.01, PITCH);
+		flightSetPoints[YAW]   = InlineGetSetPoint(smoothedRcCommandF[YAW], mainConfig.tuneProfile[activeProfile].rcRates.useCurve, mainConfig.tuneProfile[activeProfile].rcRates.rates[YAW], mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[YAW] * 0.01, YAW); //yaw is backwards for some reason
+		flightSetPoints[ROLL]  = InlineGetSetPoint(smoothedRcCommandF[ROLL], mainConfig.tuneProfile[activeProfile].rcRates.useCurve, mainConfig.tuneProfile[activeProfile].rcRates.rates[ROLL], mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[ROLL] * 0.01, ROLL);
+		flightSetPoints[PITCH] = -InlineGetSetPoint(smoothedRcCommandF[PITCH], mainConfig.tuneProfile[activeProfile].rcRates.useCurve, mainConfig.tuneProfile[activeProfile].rcRates.rates[PITCH], mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[PITCH] * 0.01, PITCH);
 
 		//get setpoint for PIDC for self level modes.
 		//TODO: move these to its own function in the IMU
@@ -785,22 +785,22 @@ void InlineFlightCode(float dpsGyroArray[])
 			//slowly ramp up self leveling over 100 milliseconds
 			if ((InlineMillis() - timeSinceSelfLevelActivated) < 300)
 			{
-				slpUsed = mainConfig.pidConfig[PITCH].slp * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
-				sliUsed = mainConfig.pidConfig[PITCH].sli * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
-				sldUsed = mainConfig.pidConfig[PITCH].sld * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
+				slpUsed = mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].slp * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
+				sliUsed = mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sli * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
+				sldUsed = mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sld * (float)(InlineMillis() - timeSinceSelfLevelActivated) * 0.003333f;
 			}
 			else
 			{
-				slpUsed = mainConfig.pidConfig[PITCH].slp;
-				sliUsed = mainConfig.pidConfig[PITCH].sli;
-				sldUsed = mainConfig.pidConfig[PITCH].sld;
+				slpUsed = mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].slp;
+				sliUsed = mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sli;
+				sldUsed = mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sld;
 			}
 
 			//if (!ModeActive(M_GLUE)) //if M_GLUE mode
 			if (1) //if M_GLUE mode
 			{
-				rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.pidConfig[PITCH].sla ) - rollAttitude  );
-				pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.pidConfig[PITCH].sla ) - pitchAttitude );
+				rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sla ) - rollAttitude  );
+				pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sla ) - pitchAttitude );
 
 				rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.truedT);
 				pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.truedT);
@@ -864,7 +864,7 @@ void InlineFlightCode(float dpsGyroArray[])
 		}
 
 		//Run PIDC
-		InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange, mainConfig.pidConfig);
+		InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange);
 
 		if ( boardArmed || PreArmFilterCheck )
 		{
@@ -969,7 +969,7 @@ void InlineFlightCode(float dpsGyroArray[])
 
 	}
 
-	if(usedSkunk > 1.5f)
+	if(usedSkunk == 2)
 		return;
 
 	gyroAdder[ROLL]  += filteredGyroData[ROLL];
@@ -1079,7 +1079,7 @@ void InitFlight(void)
 	InitOrientation();
 	CheckRxToModes(); //check which modes are set whether or not they're enabled
 
-	usedSkunk = mainConfig.filterConfig[1].gyro.p;
+	usedSkunk = mainConfig.gyroConfig.skunk;
 	if (!FULL_32)
 	{
 		//16 KHz on F4s if quaternions are needed.
@@ -1092,7 +1092,7 @@ void InitFlight(void)
 		)
 		{
 			//set skunk to 0 which is 16 KHz w/ACC if ACC mode is needed
-			usedSkunk = 0.0f; 
+			usedSkunk = 0; 
 		}
 	}
 

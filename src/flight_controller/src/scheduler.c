@@ -233,6 +233,38 @@ static void TaskeSafeLoopCounter(void)
 void TaskProcessArmingStructure(void)
 {
 	ProcessArmingStructure();
+	if (!boardArmed)
+ 	{
+ 		return; //profile switching is disabled
+	
+ 		if (ModeActive(M_PROFILE3)) // is profile 3 active?
+ 		{
+ 			if (activeProfile != PROFILE3 )
+ 			{
+ 				DeinitFlight();
+ 				activeProfile = PROFILE3;
+ 				InitFlight();
+ 			}
+ 		}
+ 		else if (ModeActive(M_PROFILE2))  // is profile 2 active?
+ 		{
+ 			if (activeProfile != PROFILE2 )
+ 			{
+ 				DeinitFlight();
+ 				activeProfile = PROFILE2;
+ 				InitFlight();
+ 			}
+ 		}
+ 		else  // then profile 1 is active?
+ 		{
+ 			if (activeProfile != PROFILE1 )
+ 			{
+ 				DeinitFlight();
+ 				activeProfile = PROFILE1;
+ 				InitFlight();
+ 			}
+ 		}
+ 	}
 }
 
 void TaskCheckDelayedArming(void)

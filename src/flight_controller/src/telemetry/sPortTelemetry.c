@@ -417,12 +417,12 @@ void FillLuaPacket(void)
 					strcpy(charMatrix[4], " Kd");
 					strcpy(charMatrix[5], " Save");
 					charMatrix[programStatus.line+1][0] = cursor;
-					itoa(lrint(mainConfig.pidConfig[ROLL].kp), &charMatrix[2][4], 10);
-					itoa(lrint(mainConfig.pidConfig[ROLL].ki), &charMatrix[3][4], 10);
-					itoa(lrint(mainConfig.pidConfig[ROLL].kd), &charMatrix[4][4], 10);
-					programStatus.value[0] = &mainConfig.pidConfig[ROLL].kp;
-					programStatus.value[1] = &mainConfig.pidConfig[ROLL].ki;
-					programStatus.value[2] = &mainConfig.pidConfig[ROLL].kd;
+					itoa(lrint(mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].kp), &charMatrix[2][4], 10);
+					itoa(lrint(mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].ki), &charMatrix[3][4], 10);
+					itoa(lrint(mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].kd), &charMatrix[4][4], 10);
+					programStatus.value[0] = &mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].kp;
+					programStatus.value[1] = &mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].ki;
+					programStatus.value[2] = &mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].kd;
 					break;
 				case PROG_STAT_MENU_PITCH_PID:
 					//fill pitch pids
@@ -433,12 +433,12 @@ void FillLuaPacket(void)
 					strcpy(charMatrix[4], " Kd");
 					strcpy(charMatrix[5], " Save");
 					charMatrix[programStatus.line+1][0] = cursor;
-					itoa(lrint(mainConfig.pidConfig[PITCH].kp), &charMatrix[2][4], 10);
-					itoa(lrint(mainConfig.pidConfig[PITCH].ki), &charMatrix[3][4], 10);
-					itoa(lrint(mainConfig.pidConfig[PITCH].kd), &charMatrix[4][4], 10);
-					programStatus.value[0] = &mainConfig.pidConfig[PITCH].kp;
-					programStatus.value[1] = &mainConfig.pidConfig[PITCH].ki;
-					programStatus.value[2] = &mainConfig.pidConfig[PITCH].kd;
+					itoa(lrint(mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].kp), &charMatrix[2][4], 10);
+					itoa(lrint(mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].ki), &charMatrix[3][4], 10);
+					itoa(lrint(mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].kd), &charMatrix[4][4], 10);
+					programStatus.value[0] = &mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].kp;
+					programStatus.value[1] = &mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].ki;
+					programStatus.value[2] = &mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].kd;
 					break;
 				case PROG_STAT_MENU_YAW_PID:
 					//fill yaw pids
@@ -449,12 +449,12 @@ void FillLuaPacket(void)
 					strcpy(charMatrix[4], " Kd");
 					strcpy(charMatrix[5], " Save");
 					charMatrix[programStatus.line+1][0] = cursor;
-					itoa(lrint(mainConfig.pidConfig[YAW].kp), &charMatrix[2][4], 10);
-					itoa(lrint(mainConfig.pidConfig[YAW].ki), &charMatrix[3][4], 10);
-					itoa(lrint(mainConfig.pidConfig[YAW].kd), &charMatrix[4][4], 10);
-					programStatus.value[0] = &mainConfig.pidConfig[YAW].kp;
-					programStatus.value[1] = &mainConfig.pidConfig[YAW].ki;
-					programStatus.value[2] = &mainConfig.pidConfig[YAW].kd;
+					itoa(lrint(mainConfig.tuneProfile[activeProfile].pidConfig[YAW].kp), &charMatrix[2][4], 10);
+					itoa(lrint(mainConfig.tuneProfile[activeProfile].pidConfig[YAW].ki), &charMatrix[3][4], 10);
+					itoa(lrint(mainConfig.tuneProfile[activeProfile].pidConfig[YAW].kd), &charMatrix[4][4], 10);
+					programStatus.value[0] = &mainConfig.tuneProfile[activeProfile].pidConfig[YAW].kp;
+					programStatus.value[1] = &mainConfig.tuneProfile[activeProfile].pidConfig[YAW].ki;
+					programStatus.value[2] = &mainConfig.tuneProfile[activeProfile].pidConfig[YAW].kd;
 					break;
 				case PROG_STAT_MENU_VTX:
 					if (vtxRecord.vtxDevice)

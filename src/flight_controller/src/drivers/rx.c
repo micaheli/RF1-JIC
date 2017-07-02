@@ -785,9 +785,6 @@ void InitRcData(void)
 	int32_t axis  = 0;
 
 	rxUpdateCount = 0;
-	//pitch yaw and roll must all use the same curve. We make sure that's set here.
-	mainConfig.rcControlsConfig.useCurve[YAW]  = mainConfig.rcControlsConfig.useCurve[PITCH];
-	mainConfig.rcControlsConfig.useCurve[ROLL] = mainConfig.rcControlsConfig.useCurve[PITCH];
 
 	//precalculate max angles for RC Curves for the three stick axis
 	for (axis = 3; axis >= 0; axis--)
@@ -887,7 +884,7 @@ inline void InlineCollectRcCommand (void)
 		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis])
 		{
 			trueRcCommandF[axis]   = InlineConstrainf( rangedRx, -1.0f, 1.0f);
-			curvedRcCommandF[axis] = InlineApplyRcCommandCurve(trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis], axis);
+			curvedRcCommandF[axis] = InlineApplyRcCommandCurve(trueRcCommandF[axis], mainConfig.tuneProfile[activeProfile].rcRates.useCurve, mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[axis], axis);
 		}
 		else
 		{
@@ -918,9 +915,9 @@ static float GetKissMaxRates(float rcCommand, uint32_t axis)
 		negative  = 1;
 	}
 
-	kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
-	kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis] * 1.1f);
-	kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
+	kissUseCurve = (mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[axis]);
+	kissRate     = (mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[axis] * 1.1f);
+	kissGRate    = (mainConfig.tuneProfile[activeProfile].rcRates.rates[axis]);
 	kissSetpoint = rcCommand;
 
 	kissRpyUseRates = 1.0f - ABS(rcCommand) * kissGRate;
@@ -949,9 +946,9 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 		negative  = 1;
 	}
 
-	flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
-	flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
-	flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
+	flopExpo      = (mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[axis]);
+	flopRcRate    = (mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[axis]);
+	flopSuperRate = (mainConfig.tuneProfile[activeProfile].rcRates.rates[axis]);
 
 	if (flopRcRate > 2.0f)
 		flopRcRate = flopRcRate + (14.55f * (flopRcRate - 2.0f));
@@ -1015,9 +1012,9 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 			if (rcCommand>0.98f)
 				rcCommand = 0.98f;
 
-			flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
-			flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
-			flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
+			flopExpo      = (mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[axis]);
+			flopRcRate    = (mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[axis]);
+			flopSuperRate = (mainConfig.tuneProfile[activeProfile].rcRates.rates[axis]);
 
 			if (flopRcRate > 2.0f)
 				flopRcRate = flopRcRate + (14.55f * (flopRcRate - 2.0f));
@@ -1047,9 +1044,9 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 			if (rcCommand>0.98f)
 				rcCommand = 0.98f;
 
-			kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
-			kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis] * 1.1f);
-			kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
+			kissUseCurve = (mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[axis]);
+			kissRate     = (mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[axis] * 1.1f);
+			kissGRate    = (mainConfig.tuneProfile[activeProfile].rcRates.rates[axis]);
 			kissSetpoint = rcCommand;
 
 			kissRpyUseRates = 1.0f - ABS(rcCommand) * kissGRate;
@@ -1078,7 +1075,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     static int32_t factor              = 0;
     int32_t        channel             = 0;
 
-	if ( (mainConfig.rcControlsConfig.rcSmoothingFactor < 0.1f) || ModeActive(M_DIRECT) || (mainConfig.rcControlsConfig.useCurve[PITCH] == BETAFLOP_EXPO) || (mainConfig.rcControlsConfig.useCurve[PITCH] == KISS_EXPO) )
+	if ( (mainConfig.tuneProfile[activeProfile].rcRates.rcSmoothingFactor < 0.1f) || ModeActive(M_DIRECT) || (mainConfig.tuneProfile[activeProfile].rcRates.useCurve == BETAFLOP_EXPO) || (mainConfig.tuneProfile[activeProfile].rcRates.useCurve == KISS_EXPO) )
 	{
 		for (channel=3; channel >= 0; channel--)
 		{
@@ -1089,7 +1086,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 		return;
 	}
 
-	smoothingInterval = lrintf((float)loopSpeed.khzDivider * (float)packetTime * mainConfig.rcControlsConfig.rcSmoothingFactor ); //todo: calculate this number to be number of loops between PID loops
+	smoothingInterval = lrintf((float)loopSpeed.khzDivider * (float)packetTime * mainConfig.tuneProfile[activeProfile].rcRates.rcSmoothingFactor ); //todo: calculate this number to be number of loops between PID loops
 	//smoothingIntervalThrottle = lrintf((float)loopSpeed.khzDivider * (float)packetTime ); //todo: calculate this number to be number of loops between PID loops
 
     if (isRxDataNew)

@@ -121,19 +121,19 @@ static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.100f, 1.050f, 1.000
 static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.050f, 1.000f, 0.950f, 0.900f, 0.900f, 0.900f, 0.950f, 1.000f, 1.050f};
 static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.100f, 1.050f, 1.000f, 0.900f, 0.800f, 0.900f, 1.000f, 1.100f, 1.200f};
 
-static void PrintThrottleCurve(void);
-static void PrintTpaKp(void);
-static void PrintTpaKi(void);
-static void PrintTpaKd(void);
-static void BuildThrottleLookupTable(void);
-static void BuildThrottleLookupTableKp(void);
-static void BuildThrottleLookupTableKi(void);
-static void BuildThrottleLookupTableKd(void);
+static void  PrintThrottleCurve(void);
+static void  PrintTpaKp(void);
+static void  PrintTpaKi(void);
+static void  PrintTpaKd(void);
+static void  BuildThrottleLookupTable(void);
+static void  BuildThrottleLookupTableKp(void);
+static void  BuildThrottleLookupTableKi(void);
+static void  BuildThrottleLookupTableKd(void);
 
 static float ApplyAttenuationCurve (float input, float curve[], uint32_t curveSize);
 static float ApplyAttenuationOldCurve (float input, float curve[], uint32_t curveSize);
 
-static void BuildThrottleLookupTable(void)
+static void  BuildThrottleLookupTable(void)
 {
 	int x;
 	for (x=1023;x>=0;x--)
