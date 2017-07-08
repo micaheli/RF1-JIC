@@ -193,7 +193,7 @@ inline void CheckFailsafe(void)
 	{
 		buzzerStatus.status = STATE_BUZZER_ON;
 	}
-	else if ( ModeSet(M_BUZZER) && (buzzerStatus.status != STATE_BUZZER_FAILSAFE) && (buzzerStatus.status == STATE_BUZZER_ON) )
+	else if ( ModeSet(M_BUZZER) && (buzzerStatus.status == STATE_BUZZER_ON) )
 	{
 		buzzerStatus.status = STATE_BUZZER_OFF;
 	}
