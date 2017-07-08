@@ -38,6 +38,7 @@ typedef struct
 	int      tpaKpCurveType;
 	int      tpaKiCurveType;
 	int      tpaKdCurveType;
+	float    spinRecoveryStrength;
 } mixer_config;
 
 enum {

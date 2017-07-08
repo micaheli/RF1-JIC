@@ -226,12 +226,16 @@ inline uint32_t SpinStopper(int32_t axis, float pidError)
 	if (!uhOhRecover)
 	{
 		uhOhRecoverCounter = 0;
-		if (ABS(pidError) > 500.0f) {
+		if (ABS(pidError) > mainConfig.mixerConfig.spinRecoveryStrength)
+		{
 			countErrorUhoh[axis]++;
-		} else {
+		}
+		else
+		{
 			countErrorUhoh[axis] = 0;
 		}
-		if (countErrorUhoh[axis] > loopSpeed.uhohNumber ) {
+		if (countErrorUhoh[axis] > loopSpeed.uhohNumber )
+		{
 			uhOhRecover = 1;
 		}
 	}
