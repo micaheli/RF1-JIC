@@ -77,9 +77,13 @@ typedef struct
 	paf_filter_config_record kd;
 	paf_filter_config_record gyro;
 	paf_filter_config_record acc;
+	float                    throttleCurve[ATTENUATION_CURVE_SIZE];
 	float                    tpaKpCurve[ATTENUATION_CURVE_SIZE];
 	float                    tpaKiCurve[ATTENUATION_CURVE_SIZE];
 	float                    tpaKdCurve[ATTENUATION_CURVE_SIZE];
+	int                      tpaKpCurveType;
+	int                      tpaKiCurveType;
+	int                      tpaKdCurveType;
 } filter_device;
 
 typedef struct

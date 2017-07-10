@@ -154,9 +154,6 @@ const config_variables_rec valueTable[] = {
 		{ "idle_percent_inv",	typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercentInverted,			0, 15.0, 8, "" },
 		{ "res_redux",			typeINT,   "mixr", &mainConfig.mixerConfig.resRedux,					0, 1, 1, "" },
 		{ "spin_rec_str",		typeFLOAT, "mixr", &mainConfig.mixerConfig.spinRecoveryStrength,		0, 1500.0, 750.0, "" },
-		{ "tpa_kp_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKpCurveType,				0, 1, 1, "" },
-		{ "tpa_ki_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKiCurveType,				0, 1, 1, "" },
-		{ "tpa_kd_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKdCurveType,				0, 1, 1, "" },
 
 		{ "mout1", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[0],				0, 7, 0, "" },
 		{ "mout2", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[1],				0, 7, 1, "" },
@@ -247,7 +244,9 @@ const config_variables_rec valueTable[] = {
  		{ "y_vector_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCY].acc.r, 	0, 10, 025.00, "" },
  		{ "z_vector_quick1", 	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCZ].acc.q, 	0, 10, 2.0000, "" },
  		{ "z_vector_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCZ].acc.r, 	0, 10, 025.00, "" },
- 
+ 		{ "tpa_kp_curve_type1",	typeINT,   "mixr", &mainConfig.tuneProfile[0].filterConfig[0].tpaKpCurveType,				0, 1, 1, "" },
+		{ "tpa_ki_curve_type1",	typeINT,   "mixr", &mainConfig.tuneProfile[0].filterConfig[0].tpaKiCurveType,				0, 1, 1, "" },
+		{ "tpa_kd_curve_type1",	typeINT,   "mixr", &mainConfig.tuneProfile[0].filterConfig[0].tpaKdCurveType,				0, 1, 1, "" },
  
  		{ "pname2", 			typeSTRING, "rate", &mainConfig.tuneProfile[1].profileName,				 	0, 0, 0, "Profile2" },
  		{ "stick_curve2", 		typeINT,    "rate", &mainConfig.tuneProfile[1].rcRates.useCurve, 			0, EXPO_CURVE_END, ACRO_PLUS, "" },
@@ -297,6 +296,9 @@ const config_variables_rec valueTable[] = {
  		{ "y_vector_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCY].acc.r, 	0, 10, 025.00, "" },
  		{ "z_vector_quick2", 	typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCZ].acc.q, 	0, 10, 2.0000, "" },
  		{ "z_vector_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCZ].acc.r, 	0, 10, 025.00, "" },
+		{ "tpa_kp_curve_type2",	typeINT,   "mixr", &mainConfig.tuneProfile[1].filterConfig[0].tpaKpCurveType,				0, 1, 1, "" },
+		{ "tpa_ki_curve_type2",	typeINT,   "mixr", &mainConfig.tuneProfile[1].filterConfig[0].tpaKiCurveType,				0, 1, 1, "" },
+		{ "tpa_kd_curve_type2",	typeINT,   "mixr", &mainConfig.tuneProfile[1].filterConfig[0].tpaKdCurveType,				0, 1, 1, "" },
  
  
  		{ "pname3", 			typeSTRING, "rate", &mainConfig.tuneProfile[2].profileName,				 	0, 0, 0, "Profile3" },
@@ -347,6 +349,10 @@ const config_variables_rec valueTable[] = {
  		{ "y_vector_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCY].acc.r, 	0, 10, 025.00, "" },
  		{ "z_vector_quick3", 	typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCZ].acc.q, 	0, 10, 2.0000, "" },
  		{ "z_vector_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCZ].acc.r, 	0, 10, 025.00, "" },
+		{ "tpa_kp_curve_type3",	typeINT,   "mixr", &mainConfig.tuneProfile[2].filterConfig[0].tpaKpCurveType,				0, 1, 1, "" },
+		{ "tpa_ki_curve_type3",	typeINT,   "mixr", &mainConfig.tuneProfile[2].filterConfig[0].tpaKiCurveType,				0, 1, 1, "" },
+		{ "tpa_kd_curve_type3",	typeINT,   "mixr", &mainConfig.tuneProfile[2].filterConfig[0].tpaKdCurveType,				0, 1, 1, "" },
+ 
 
 #ifdef STM32F446xx	//TODO remove target specific ifdefs
 		{ "rx_protocol",		typeUINT, "rccf", &mainConfig.rcControlsConfig.rxProtcol,				0, USING_RX_END - 1, USING_SPEK_T, "" },
@@ -605,36 +611,30 @@ static void DoIdleStop(void)
 
 void GenerateConfig(void)
 {
-	uint32_t x;
-
+	uint32_t  x;
+	char     *c;
 	bzero(&mainConfig, sizeof(mainConfig));
 	ResetTpaCurves();
-
-	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
+	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 	{
 		switch(valueTable[x].type)
 		{
 		case typeUINT:
 			*(uint32_t *)valueTable[x].ptr = (uint32_t)valueTable[x].Default;
 			break;
-
 		case typeINT:
-			*(int32_t *)valueTable[x].ptr = (int32_t)valueTable[x].Default;
+			*(int32_t *)valueTable[x].ptr  = (int32_t)valueTable[x].Default;
 			break;
-
 		case typeFLOAT:
-			*(float *)valueTable[x].ptr = (float)valueTable[x].Default;
+			*(float *)valueTable[x].ptr    = (float)valueTable[x].Default;
 			break;
-/*
 		case typeSTRING:
+			c = valueTable[x].ptr;
+			strncpy(c,valueTable[x].strDefault,15);
+			c[15] = 0;
 			break;
-*/
-
 		}
-
 	}
-
-
 }
 
 void SaveConfig (uint32_t addresConfigStart)
@@ -794,44 +794,44 @@ static int GetValueFromString(char *string, const string_comp_rec thisStringComp
 
 void SetValueOrString(int position, char *value)
 {
-	int  x;
+	uint32_t x;
 	char stringBuffer[10];
-
-	value = CleanupNumberString(value);
-
-	//compare args with strings in stringCompTable
-	for (x=(sizeof(stringCompTable)/sizeof(string_comp_rec))-1;x>=0;x--)
+	if (valueTable[position].type != typeSTRING)
 	{
-		if (!strcmp(stringCompTable[x].valueString, value))
+		value = CleanupNumberString(value);
+		//compare args with strings in stringCompTable
+		for (x=0;x<(sizeof(stringCompTable)/sizeof(string_comp_rec));x++)
 		{
-
-			//snprintf(buffer, 10, "%d", value);
-			snprintf(stringBuffer, 10, "%ld", stringCompTable[x].valueInt);
-			SetValue(position, stringBuffer);
-			return;
+			if (!strcmp(stringCompTable[x].valueString, value))
+			{
+				//snprintf(buffer, 10, "%d", value);
+				snprintf(stringBuffer, 10, "%ld", stringCompTable[x].valueInt);
+				SetValue(position, stringBuffer);
+				return;
+			}
 		}
 	}
-
 	SetValue(position, value);
 }
 
 void SetValue(int position, char *value)
 {
-
+	char *c;
+		
 	switch (valueTable[position].type) {
 		//TODO used something better then atoi
 		case typeUINT:
+		case typeINT:
 			*(uint32_t *)valueTable[position].ptr = atoi(value);
 			break;
-		case typeINT:
-			*(int *)valueTable[position].ptr = atoi(value);
-			break;
-
 		case typeFLOAT:
 			*(float *)valueTable[position].ptr = atof(value);
 			break;
+		case typeSTRING:
+			c = valueTable[position].ptr;
+			strncpy(c,value,35);
+			break;
 	}
-
 }
 
 void SendStatusReport(char *inString)
@@ -889,54 +889,54 @@ static int SetVariable(char *inString)
 void OutputVarSet(uint32_t position)
 {
 	char fString[20];
-
-	switch (valueTable[position].type) {
-
-	case typeUINT:
-		sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
-		RfCustomReplyBuffer(rf_custom_out_buffer);
-		break;
-
-
-	case typeINT:
-		sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
-		RfCustomReplyBuffer(rf_custom_out_buffer);
-		break;
-
-
-	case typeFLOAT:
-		ftoa(*(float *)valueTable[position].ptr, fString);
-		StripSpaces(fString);
-		sprintf(rf_custom_out_buffer, "set %s=%s\n", valueTable[position].name, fString);
-		RfCustomReplyBuffer(rf_custom_out_buffer);
-		break;
+	char *c;
+	switch (valueTable[position].type)
+	{
+		case typeUINT:
+			sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			break;
+		case typeINT:
+			sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			break;
+		case typeFLOAT:
+			ftoa(*(float *)valueTable[position].ptr, fString);
+			StripSpaces(fString);
+			sprintf(rf_custom_out_buffer, "set %s=%s\n", valueTable[position].name, fString);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			break;
+		case typeSTRING:
+			c = valueTable[position].ptr;
+			sprintf(rf_custom_out_buffer, "set %s=%s\n", valueTable[position].name, c);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			break;
 	}
-
 }
 
 void OutputVar(uint32_t position)
 {
 	char fString[20];
-
-	switch (valueTable[position].type) {
-
-	case typeUINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
-		break;
-
-
-	case typeINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
-		break;
-
-
-	case typeFLOAT:
-		ftoa(*(float *)valueTable[position].ptr, fString);
-		StripSpaces(fString);
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%s\n", valueTable[position].name, fString);
-		break;
+	char *c;
+	switch (valueTable[position].type)
+	{
+		case typeUINT:
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+			break;
+		case typeINT:
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+			break;
+		case typeFLOAT:
+			ftoa(*(float *)valueTable[position].ptr, fString);
+			StripSpaces(fString);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%s\n", valueTable[position].name, fString);
+			break;
+		case typeSTRING:
+			c = valueTable[position].ptr;
+			sprintf(rf_custom_out_buffer, "%s=%s\n", valueTable[position].name, c);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			break;
 	}
-
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
 /**********************************************************************************************************************/
@@ -1674,9 +1674,6 @@ void ProcessCommand(char *inString)
 			mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga   = 0;
 			mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga  = 0;
 			mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga = 0;
-			mainConfig.mixerConfig.tpaKpCurveType            = 0;
-			mainConfig.mixerConfig.tpaKiCurveType            = 1;
-			mainConfig.mixerConfig.tpaKdCurveType            = 0;
 			mainConfig.mixerConfig.escProtocol               = ESC_MULTISHOT;
 			mainConfig.mixerConfig.escUpdateFrequency        = 32000;
 			resetBoard = 1;
@@ -1695,9 +1692,6 @@ void ProcessCommand(char *inString)
 			mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga                  = 0;
 			mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga                 = 0;
 			mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga                = 0;
-			mainConfig.mixerConfig.tpaKpCurveType         = 0;
-			mainConfig.mixerConfig.tpaKiCurveType         = 1;
-			mainConfig.mixerConfig.tpaKdCurveType         = 0;
 			mainConfig.mixerConfig.escProtocol            = ESC_DSHOT600;
 			mainConfig.mixerConfig.escUpdateFrequency     = 32000;
 			resetBoard = 1;
@@ -2073,25 +2067,65 @@ void ProcessCommand(char *inString)
 			args = StripSpaces(args);
 			SetupModes(args);
 		}
-	else if (!strcmp("throttlecurve", inString))
+	else if (!strcmp("throttlecurve1", inString))
 		{
 			args = StripSpaces(args);
-			AdjustThrottleCurve(args);
+			AdjustTpa(args, "throttlecurve1 ", mainConfig.tuneProfile[0].filterConfig[0].throttleCurve);
 		}
-	else if (!strcmp("tpakp", inString))
+	else if (!strcmp("throttlecurve2", inString))
 		{
 			args = StripSpaces(args);
-			AdjustKpTpa(args);
+			AdjustTpa(args, "throttlecurve2 ", mainConfig.tuneProfile[1].filterConfig[0].throttleCurve);
 		}
-	else if (!strcmp("tpaki", inString))
+	else if (!strcmp("throttlecurve3", inString))
 		{
 			args = StripSpaces(args);
-			AdjustKiTpa(args);
+			AdjustTpa(args, "throttlecurve3 ", mainConfig.tuneProfile[2].filterConfig[0].throttleCurve);
 		}
-	else if (!strcmp("tpakd", inString))
+	else if (!strcmp("tpakp1", inString))
 		{
 			args = StripSpaces(args);
-			AdjustKdTpa(args);
+			AdjustTpa(args, "tpakp1 ", mainConfig.tuneProfile[0].filterConfig[0].tpaKpCurve);
+		}
+	else if (!strcmp("tpaki1", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpaki1 ", mainConfig.tuneProfile[0].filterConfig[0].tpaKiCurve);
+		}
+	else if (!strcmp("tpakd1", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpakd1 ", mainConfig.tuneProfile[0].filterConfig[0].tpaKdCurve);
+		}
+	else if (!strcmp("tpakp2", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpakp2 ", mainConfig.tuneProfile[1].filterConfig[0].tpaKpCurve);
+		}
+	else if (!strcmp("tpaki2", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpaki2 ", mainConfig.tuneProfile[1].filterConfig[0].tpaKiCurve);
+		}
+	else if (!strcmp("tpakd2", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpakd2 ", mainConfig.tuneProfile[1].filterConfig[0].tpaKdCurve);
+		}
+	else if (!strcmp("tpakp3", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpakp3 ", mainConfig.tuneProfile[2].filterConfig[0].tpaKpCurve);
+		}
+	else if (!strcmp("tpaki3", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpaki3 ", mainConfig.tuneProfile[2].filterConfig[0].tpaKiCurve);
+		}
+	else if (!strcmp("tpakd3", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpakd3 ", mainConfig.tuneProfile[2].filterConfig[0].tpaKdCurve);
 		}
 	else if (!strcmp("save", inString))
 		{
