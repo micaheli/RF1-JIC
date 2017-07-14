@@ -573,7 +573,7 @@ void ValidateConfigSettings(void)
 			mainConfig.tuneProfile[x].pidConfig[PITCH].kd = DEFAULT_PID_CONFIG_VALUE;
 		}
 	}
-	for (x=(sizeof(valueTable)/sizeof(config_variables_rec));x>=0;x--)
+	for (x=(sizeof(valueTable)/sizeof(config_variables_rec))-1;x>=0;x--)
 	{
 		switch(valueTable[x].type)
 		{
@@ -1882,7 +1882,7 @@ void ProcessCommand(char *inString)
 				PrintModes();
 				PrintTpaCurves();
 
-				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
+				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
 					OutputVarSet(x);
 					argsOutputted++;
@@ -1894,7 +1894,7 @@ void ProcessCommand(char *inString)
 
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s\n", FULL_VERSION_STRING);
 				RfCustomReplyBuffer(rf_custom_out_buffer);
-				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
+				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
 					if (!strcmp(valueTable[x].group, args))
 					{
