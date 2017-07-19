@@ -235,7 +235,6 @@ void TaskProcessArmingStructure(void)
 	ProcessArmingStructure();
 	if (!boardArmed)
  	{
- 		return; //profile switching is disabled
 	
  		if (ModeActive(M_PROFILE3)) // is profile 3 active?
  		{

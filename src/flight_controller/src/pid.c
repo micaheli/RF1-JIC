@@ -163,7 +163,10 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 			if ( fullKiLatched )
 			{
 
-				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit); //prevent insane windup
+				if (axis == YAW)
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0); //prevent insane windup
+				else
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit); //prevent insane windup
 
 				if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
 				{
@@ -223,6 +226,10 @@ inline uint32_t SpinStopper(int32_t axis, float pidError)
 
     static uint32_t countErrorUhoh[AXIS_NUMBER]  = {0, 0, 0};
     static uint32_t uhOhRecoverCounter = 0;
+	int multiplier = 1;
+
+	if (axis == YAW)
+		multiplier = 2;
 
 	if (!uhOhRecover)
 	{
@@ -235,7 +242,7 @@ inline uint32_t SpinStopper(int32_t axis, float pidError)
 		{
 			countErrorUhoh[axis] = 0;
 		}
-		if (countErrorUhoh[axis] > loopSpeed.uhohNumber )
+		if (countErrorUhoh[axis] > (loopSpeed.uhohNumber * multiplier) )
 		{
 			uhOhRecover = 1;
 		}

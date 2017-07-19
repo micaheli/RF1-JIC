@@ -1262,9 +1262,17 @@ Version 299.110 BETA:
 	Increment version
 	Git force pull
 
-Version 300.110 BETA:
+Version 300.110 RC18:
 	Prevent 1wire auto hardfault
 	testmotors function only spins one motor at a time now
+
+Version 0.302.114 BETA:
+	Added profile support
+
+Version 0.303.114 BETA
+	Fix minor drift issue
+	Improve spin stipper
+
 
 #Features in current development:
 #	MAVlink compatibility

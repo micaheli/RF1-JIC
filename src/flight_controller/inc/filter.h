@@ -69,6 +69,7 @@ typedef struct
 
 typedef struct
 {
+	int						 resRedux;
 	int                      filterMod;
 	int                      filterType;
 	int                      ga;

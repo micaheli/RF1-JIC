@@ -29,7 +29,6 @@ typedef struct
     uint32_t escUpdateFrequency;
     float    idlePercent;
     float    idlePercentInverted;
-    int 	 resRedux;
     uint32_t motorOutput[8];
 	float    spinRecoveryStrength;
 } mixer_config;
