@@ -166,11 +166,11 @@ static void BuildThrottleLookupTableKi(void)
 		//range throttle 0 through 1023
 		if (mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKiCurveType)
 		{
-			throttleLookupKp[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKiCurve, ATTENUATION_CURVE_SIZE );
+			throttleLookupKi[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKiCurve, ATTENUATION_CURVE_SIZE );
 		}
 		else
 		{
-			throttleLookupKp[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKiCurve, ATTENUATION_CURVE_SIZE );
+			throttleLookupKi[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKiCurve, ATTENUATION_CURVE_SIZE );
 		}
 	}
 }
@@ -183,11 +183,11 @@ static void BuildThrottleLookupTableKd(void)
 		//range throttle 0 through 1023
 		if (mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKdCurveType)
 		{
-			throttleLookupKp[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKdCurve, ATTENUATION_CURVE_SIZE );
+			throttleLookupKd[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKdCurve, ATTENUATION_CURVE_SIZE );
 		}
 		else
 		{
-			throttleLookupKp[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKdCurve, ATTENUATION_CURVE_SIZE );
+			throttleLookupKd[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKdCurve, ATTENUATION_CURVE_SIZE );
 		}
 	}
 }

@@ -873,14 +873,24 @@ inline void InlineCollectRcCommand (void)
 	for (axis = 0; axis < MAXCHANNELS; axis++)
 	{
 
+		//range with deadband in mind to produce smooth movement
 		if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.00f, -1.0f); //-1 to 0
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.00f + mainConfig.rcControlsConfig.deadBand[axis], -1.0f); //-1 to 0
 		else if ( (axis == THROTTLE) && (!mainConfig.rcControlsConfig.shortThrow) ) //add 5% deadband to top of throttle
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.05f, 0.0f); //0 to +1.05
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.05f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1.05
 		else if ( (axis == THROTTLE) ) //add 10% deadband to top of throttle
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.10f, 0.0f); //0 to +1.10
-		else //positive range
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.00f, 0.0f); //0 to +1
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.10f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1.10
+		else
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.00f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
+
+		//if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
+		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.00f, -1.0f); //-1 to 0
+		//else if ( (axis == THROTTLE) && (!mainConfig.rcControlsConfig.shortThrow) ) //add 5% deadband to top of throttle
+		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.05f, 0.0f); //0 to +1.05
+		//else if ( (axis == THROTTLE) ) //add 10% deadband to top of throttle
+		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.10f, 0.0f); //0 to +1.10
+		//else //positive range
+		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.00f, 0.0f); //0 to +1
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
 		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis])

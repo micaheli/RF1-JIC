@@ -1271,8 +1271,10 @@ Version 0.302.114 BETA:
 
 Version 0.303.114 BETA
 	Fix minor drift issue
-	Improve spin stipper
+	Improve spin stopper
 
+Version 0.304.114 BETA
+	Fix minor drift issue caused by profile changes to mixer
 
 #Features in current development:
 #	MAVlink compatibility
