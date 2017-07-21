@@ -326,9 +326,9 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				BlackboxWriteSignedVB( (int32_t)( ((smoothedRcCommandF[THROTTLE] + 1) * 500) + 1000) ); //26
 
 				//-2000.0 to 2000.0 DPS
-				BlackboxWriteSignedVB( (int32_t)(currFlightSetPoints[YAW]    * 16.4) ); //28
-				BlackboxWriteSignedVB( (int32_t)(currFlightSetPoints[ROLL]   * 16.4) ); //30
-				BlackboxWriteSignedVB( (int32_t)(currFlightSetPoints[PITCH]  * 16.4) ); //32
+				BlackboxWriteSignedVB( (int32_t)(currFlightSetPoints[YAW]    * 16.4f) ); //28
+				BlackboxWriteSignedVB( (int32_t)(currFlightSetPoints[ROLL]   * 16.4f) ); //30
+				BlackboxWriteSignedVB( (int32_t)(currFlightSetPoints[PITCH]  * -16.4f) ); //32
 
 				//-2000.0 to 2000.0 DPS
 				//BlackboxWriteSignedVB( (int32_t)(currDpsGyroArray[YAW]       * 16.4) ); //34
