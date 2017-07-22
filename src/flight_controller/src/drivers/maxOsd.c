@@ -2344,7 +2344,7 @@ int InitMaxOsd(void)
                 maxOsdRecord.status = OSD_STATUS_DISABLED;
                 maxOsdRecord.type   = OSD_TYPE_SPI;
                 //should return 0
-                DelayMs(100);
+                DelayMs(80);
                 if (!mainConfig.gyroConfig.boardCalibrated)
                 {
                     maxOsdRecord.status = OSD_STATUS_LOADING_CHAR_MAP;

@@ -194,20 +194,20 @@ static void BuildThrottleLookupTableKd(void)
 
 void ResetTpaCurves(void)
 {
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[0].throttleCurve, throttleCurve,      sizeof(throttleCurve));
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKpCurve,    kpAttenuationCurve, sizeof(kpAttenuationCurve));
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKiCurve,    kiAttenuationCurve, sizeof(kiAttenuationCurve));
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKdCurve,    kdAttenuationCurve, sizeof(kdAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[0].filterConfig[0].throttleCurve, throttleCurve,      sizeof(throttleCurve));
+	memcpy(mainConfig.tuneProfile[0].filterConfig[0].tpaKpCurve,    kpAttenuationCurve, sizeof(kpAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[0].filterConfig[0].tpaKiCurve,    kiAttenuationCurve, sizeof(kiAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[0].filterConfig[0].tpaKdCurve,    kdAttenuationCurve, sizeof(kdAttenuationCurve));
 
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[1].throttleCurve, throttleCurve,      sizeof(throttleCurve));
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[1].tpaKpCurve,    kpAttenuationCurve, sizeof(kpAttenuationCurve));
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[1].tpaKiCurve,    kiAttenuationCurve, sizeof(kiAttenuationCurve));
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[1].tpaKdCurve,    kdAttenuationCurve, sizeof(kdAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[1].filterConfig[0].throttleCurve, throttleCurve,      sizeof(throttleCurve));
+	memcpy(mainConfig.tuneProfile[1].filterConfig[0].tpaKpCurve,    kpAttenuationCurve, sizeof(kpAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[1].filterConfig[0].tpaKiCurve,    kiAttenuationCurve, sizeof(kiAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[1].filterConfig[0].tpaKdCurve,    kdAttenuationCurve, sizeof(kdAttenuationCurve));
 
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[2].throttleCurve, throttleCurve,      sizeof(throttleCurve));
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[2].tpaKpCurve,    kpAttenuationCurve, sizeof(kpAttenuationCurve));
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[2].tpaKiCurve,    kiAttenuationCurve, sizeof(kiAttenuationCurve));
-	memcpy(mainConfig.tuneProfile[activeProfile].filterConfig[2].tpaKdCurve,    kdAttenuationCurve, sizeof(kdAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[2].filterConfig[0].throttleCurve, throttleCurve,      sizeof(throttleCurve));
+	memcpy(mainConfig.tuneProfile[2].filterConfig[0].tpaKpCurve,    kpAttenuationCurve, sizeof(kpAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[2].filterConfig[0].tpaKiCurve,    kiAttenuationCurve, sizeof(kiAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[2].filterConfig[0].tpaKdCurve,    kdAttenuationCurve, sizeof(kdAttenuationCurve));
 }
 
 void AdjustTpa(char *modString, char *outText, float inCurve[])

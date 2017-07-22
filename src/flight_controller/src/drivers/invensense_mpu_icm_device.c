@@ -113,7 +113,7 @@ int AccGyroDeviceInit(loopCtrl_e gyroLoop)
 
     // reset gyro
 	AccGyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
-	DelayMs(150);
+	DelayMs(80);
 
     // set gyro clock to Z axis gyro
     AccGyroVerifyWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_CLK_Z);
@@ -160,13 +160,13 @@ int AccGyroDeviceDetect(void)
 
     // reset gyro
     AccGyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
-    DelayMs(151);
+    DelayMs(80);
     AccGyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
 
     // poll for the who am i register while device resets
     for (attempt = 0; attempt < 100; attempt++)
     {
-        DelayMs(151);
+        DelayMs(80);
 
         AccGyroReadData(INVENS_RM_WHO_AM_I, &data, 1);
         switch (data)

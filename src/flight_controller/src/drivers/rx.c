@@ -223,7 +223,7 @@ void ProcessArmingStructure(void)
 
 inline void CheckThrottleSafe(void)
 {
-	uint32_t trueRangedThrottleU   = 0;
+	uint32_t trueRangedThrottleU; //set
 
 	trueRangedThrottleU = lrintf( InlineChangeRangef(trueRcCommandF[THROTTLE], 1.0f, -1.0f, 1023.0f, 0.0f) );
 

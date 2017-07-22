@@ -1105,7 +1105,7 @@ void InitFlight(void)
     InitPid();            //Relies on InitFlightCode for proper activations.
     DeInitActuators();    //Deinit before Init is a shotgun startup
     InitActuators();      //Actuator init should happen after soft serial init.
-    ZeroActuators(5000);  //output actuators to idle after timers are stable;
+    ZeroActuators(1000);  //output actuators to idle after timers are stable;
 
 	InitAdc();            //init ADC functions
     InitModes();          //set flight modes mask to zero.
@@ -1148,7 +1148,7 @@ void InitFlight(void)
 
     DeInitActuators();    //Deinit before Init is a shotgun startup
     InitActuators();      //Actuator init should happen after soft serial init.
-    ZeroActuators(5000);  //output actuators to idle after timers are stable;
+    ZeroActuators(1000);  //output actuators to idle after timers are stable;
 
 	//InitTransponderTimer();
 	DelayMs(2);

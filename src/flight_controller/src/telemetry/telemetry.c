@@ -300,6 +300,7 @@ int VtxPower(int power)
 void InitTelemtry(void)
 {
 
+	static int firstTimeInit = 1;
 	int temp;
 	vtxRecord.vtxDevice      = VTX_DEVICE_NONE;
 	vtxRequested.vtxDevice   = VTX_DEVICE_NONE;
@@ -308,8 +309,11 @@ void InitTelemtry(void)
 	InitSmartAudio();
     if(mainConfig.telemConfig.telemSmartAudio && !vtxRecord.vtxDevice)
     {
-    	DelayMs(1500);
-    	InitSmartAudio();
+		if(firstTimeInit)
+		{
+    		DelayMs(1500);
+    		InitSmartAudio();
+		}
     }
 
 	InitAllSport();
@@ -467,6 +471,7 @@ void InitTelemtry(void)
 	if (mainConfig.telemConfig.telemSpek)
 		InitSpektrumTelemetry();
 
+	firstTimeInit = 0;
 }
 
 

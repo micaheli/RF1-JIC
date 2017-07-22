@@ -232,12 +232,12 @@ static void TaskeSafeLoopCounter(void)
 
 void TaskProcessArmingStructure(void)
 {
-	static uint32_t lastSwitch = 2000;
+	static uint32_t lastSwitch = 5000;
 
 	ProcessArmingStructure();
 	if (!boardArmed)
  	{
-		if ( (InlineMillis() - lastSwitch) < 1000 )
+		if ( (InlineMillis() - lastSwitch) < 2000 )
 			return;
 
  		if (ModeActive(M_PROFILE3)) // is profile 3 active?
