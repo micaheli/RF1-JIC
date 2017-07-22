@@ -349,8 +349,13 @@ void TaskAdc(void)
 
 void TaskProcessSoftSerial(void)
 {
-	 if (oneWireActive)
-		 FeedTheDog();
+	//feed the dog if oneWire is active to prevent WD restart
+	if (oneWireActive)
+		FeedTheDog();
+
+	//feed the dog if dshot is active to prevent WD restart
+	if(dShotFeedTheDog)
+		FeedTheDog();
 }
 
 void TaskWizard(void)
