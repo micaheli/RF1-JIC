@@ -1278,7 +1278,11 @@ Version 0.304.115 BETA
 
 Version 0.305.115 BETA
 	Revise deadband to be smoother
+	Inverse logged pitch output
 	Fix hot motor issue some people are having
+
+Version 0.306.115 BETA
+	Fix profiling switching hang
 
 #Features in current development:
 #	MAVlink compatibility

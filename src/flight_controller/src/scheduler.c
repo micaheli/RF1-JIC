@@ -232,10 +232,14 @@ static void TaskeSafeLoopCounter(void)
 
 void TaskProcessArmingStructure(void)
 {
+	static uint32_t lastSwitch = 0;
+
 	ProcessArmingStructure();
 	if (!boardArmed)
  	{
-	
+		if ( (InlineMillis() - lastSwitch) < 1000 )
+			return;
+
  		if (ModeActive(M_PROFILE3)) // is profile 3 active?
  		{
  			if (activeProfile != PROFILE3 )
@@ -243,6 +247,7 @@ void TaskProcessArmingStructure(void)
  				DeinitFlight();
  				activeProfile = PROFILE3;
  				InitFlight();
+				lastSwitch = InlineMillis();
  			}
  		}
  		else if (ModeActive(M_PROFILE2))  // is profile 2 active?
@@ -252,6 +257,7 @@ void TaskProcessArmingStructure(void)
  				DeinitFlight();
  				activeProfile = PROFILE2;
  				InitFlight();
+				lastSwitch = InlineMillis();
  			}
  		}
  		else  // then profile 1 is active?
@@ -261,6 +267,7 @@ void TaskProcessArmingStructure(void)
  				DeinitFlight();
  				activeProfile = PROFILE1;
  				InitFlight();
+				lastSwitch = InlineMillis();
  			}
  		}
  	}
