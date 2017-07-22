@@ -31,7 +31,7 @@ typedef struct
 
 typedef struct
 {
-	tune_profile      tuneProfile[PROFILE_COUNT];
+	tune_profile      tuneProfile[PROFILE_COUNT+1];
 	rc_control_config rcControlsConfig;
 	gyro_config       gyroConfig;
 	mixer_config      mixerConfig;

@@ -124,7 +124,7 @@ int VtxFrequencyToBandChannel(int frequency)
 {
 	//if frequency is not in table then -1 is returned which is unknown frequency
 	int x;
-	for (x=sizeof(vtxBandChannelToFrequencyLookup);x>=0;x--)
+	for (x=sizeof(vtxBandChannelToFrequencyLookup)-1;x>=0;x--)
 	{
 		if(vtxBandChannelToFrequencyLookup[x] == frequency)
 			return(x);

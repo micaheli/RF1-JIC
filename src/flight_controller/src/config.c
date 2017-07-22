@@ -281,7 +281,7 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_rap2", 			typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.r, 	0, 0, 0.000, "" },
  		{ "roll_rap2", 			typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.r, 	0, 0, 0.000, "" },
  		{ "pitch_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.r, 	0, 0, 0.000, "" },
- 		{ "yaw_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].ga, 		0, 31, 6, "" },
+ 		{ "yaw_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].ga, 		0, 31, 0, "" },
  		{ "roll_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].ga, 		0, 31, 0, "" },
  		{ "filter_type2",		typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[0].filterType, 	0, 3, 0, "" },
@@ -335,7 +335,7 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_rap3", 			typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.r, 	0, 0, 0.000, "" },
  		{ "roll_rap3", 			typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.r, 	0, 0, 0.000, "" },
  		{ "pitch_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.r, 	0, 0, 0.000, "" },
- 		{ "yaw_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].ga, 		0, 31, 6, "" },
+ 		{ "yaw_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].ga, 		0, 31, 0, "" },
  		{ "roll_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].ga, 		0, 31, 0, "" },
  		{ "filter_type3",		typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[0].filterType, 	0, 3, 0, "" },
@@ -550,7 +550,7 @@ void ValidateConfigSettings(void)
 {
 	int x;
 	//if one PID value is wrong we reset them all
-	for (x=PROFILE_COUNT;x>=0;x--)
+	for (x=PROFILE_COUNT-1;x>=0;x--)
 	{
 		if (
 			(mainConfig.tuneProfile[x].pidConfig[YAW].kp > 100.0f)   || (mainConfig.tuneProfile[x].pidConfig[YAW].kp < 0.0f)   ||

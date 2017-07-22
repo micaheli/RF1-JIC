@@ -232,7 +232,7 @@ static void TaskeSafeLoopCounter(void)
 
 void TaskProcessArmingStructure(void)
 {
-	static uint32_t lastSwitch = 0;
+	static uint32_t lastSwitch = 2000;
 
 	ProcessArmingStructure();
 	if (!boardArmed)
@@ -247,6 +247,7 @@ void TaskProcessArmingStructure(void)
  				DeinitFlight();
  				activeProfile = PROFILE3;
  				InitFlight();
+ 				activeProfile = PROFILE3;
 				lastSwitch = InlineMillis();
  			}
  		}
@@ -257,6 +258,7 @@ void TaskProcessArmingStructure(void)
  				DeinitFlight();
  				activeProfile = PROFILE2;
  				InitFlight();
+ 				activeProfile = PROFILE2;
 				lastSwitch = InlineMillis();
  			}
  		}
@@ -267,6 +269,7 @@ void TaskProcessArmingStructure(void)
  				DeinitFlight();
  				activeProfile = PROFILE1;
  				InitFlight();
+ 				activeProfile = PROFILE1;
 				lastSwitch = InlineMillis();
  			}
  		}
