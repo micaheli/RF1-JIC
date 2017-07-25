@@ -1,9 +1,9 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint8_t)(116U)
-#define CONFIG_VERSION_STR		"116"
-#define FIRMWARE_VERSION		"0.306.116 BETA" //RC19 is next
-#define FIRMWARE_NAME			"RaceFlight One"
+#define CONFIG_VERSION			(uint8_t)(117U)
+#define CONFIG_VERSION_STR		"117"
+#define FIRMWARE_VERSION		"0.306.117 BETA" //RC19 is next
+#define FIRMWARE_NAME			"JulianGoesPro"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n"
 
 #define RF_BUFFER_SIZE HID_EPIN_SIZE-1
@@ -31,7 +31,7 @@ typedef struct
 
 typedef struct
 {
-	tune_profile      tuneProfile[PROFILE_COUNT+1];
+	tune_profile      tuneProfile[PROFILE_COUNT];
 	rc_control_config rcControlsConfig;
 	gyro_config       gyroConfig;
 	mixer_config      mixerConfig;

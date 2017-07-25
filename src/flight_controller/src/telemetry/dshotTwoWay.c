@@ -2,9 +2,9 @@
 
 #define DSHOT_OUT_BUFFER_SIZE 48 //16 * 3 bytes
 int dShotFeedTheDog = 0;
-int dshotOutBuffer[DSHOT_OUT_BUFFER_SIZE];  
+uint32_t dshotOutBuffer[DSHOT_OUT_BUFFER_SIZE];  
 
-/*
+
 static void DshotTimerInit(uint32_t timer, uint32_t pwmHz, uint32_t timerHz); //make general function?
 static void DshotDmaInit(void);
 static void DshotTransferComplete(uint32_t callbackNumber);
@@ -12,13 +12,16 @@ static void DshotTransferComplete(uint32_t callbackNumber);
 //DSHOT timer
 TIM_HandleTypeDef dshotTimer;
 
+void SetDshotBuffer(uint16_t data)
+{
+    (void)(data);
+}
+
 void DshotInit(int offlineMode)
 {
 
-    TIM_ClockConfigTypeDef  sClockSourceConfig; //set, timer variable
-    TIM_MasterConfigTypeDef sMasterConfig;      //set, timer variable
-    int outputNumber;                           //set, motor output based on board orrientation, from quad's POV: 0 is top left, 1 is top right, etc...
-    int motorNum;                               //set, motor output based on board arrat, from board's POV: 0 is top left, 1 is top right, etc...
+    //int outputNumber;                           //set, motor output based on board orrientation, from quad's POV: 0 is top left, 1 is top right, etc...
+    //int motorNum;                               //set, motor output based on board arrat, from board's POV: 0 is top left, 1 is top right, etc...
 
     //deinit flight and treat motors independantly, make this compatible with old board
     if(offlineMode)
@@ -36,18 +39,28 @@ void DshotInit(int offlineMode)
 
     //init timer
     //DshotTimerInit(TIM1, 15, 24000000);
-    DshotTimerInit(TIM1, 15000000, 24000000); //slow way down for visual test
+    DshotTimerInit(ENUM_TIM1, 15000000, 24000000); //slow way down for visual test
     DshotDmaInit();
 
     //start the timer
-    if ((HAL_TIM_Base_Start(&htim1)) != HAL_OK)
+    if ((HAL_TIM_Base_Start(&dshotTimer)) != HAL_OK)
     {
       while(1);
     }
 
     //TESTING, output to GPIOB for testing.
     //start the transfer:
-    if (HAL_DMA_Start_IT(&dmaHandles[ENUM_DMA2_STREAM_5], (uint32_t)&aSRC_Const_Buffer, (uint32_t)&GPIOB->ODR, DSHOT_OUT_BUFFER_SIZE) != HAL_OK)
+
+    //send 1's and 0's 
+    for(uint32_t x=0;x<DSHOT_OUT_BUFFER_SIZE;x++)
+    {
+        if(dshotOutBuffer[x] % 2 == 0)
+            dshotOutBuffer[x] = 0x0000AAAA;
+        else
+            dshotOutBuffer[x] = 0x00005555;
+    }
+
+    if (HAL_DMA_Start_IT(&dmaHandles[ENUM_DMA2_STREAM_5], (uint32_t)&dshotOutBuffer, (uint32_t)&GPIOB->ODR, DSHOT_OUT_BUFFER_SIZE) != HAL_OK)
     {
         while(1);
     }
@@ -56,9 +69,11 @@ void DshotInit(int offlineMode)
 
 static void DshotTransferComplete(uint32_t callbackNumber)
 {
-  transferCompleteDetected = 1;
+    (void)(callbackNumber);
+  volatile int transferCompleteDetected = 1;
+  (void)(transferCompleteDetected);
   TIM1->DIER = TIM_DIER_UDE;
-  if (HAL_DMA_Start_IT(&dmaHandles[ENUM_DMA2_STREAM_5], (uint32_t)&aSRC_Const_Buffer, (uint32_t)&GPIOB->ODR, BUFFER_SIZE) != HAL_OK)
+  if (HAL_DMA_Start_IT(&dmaHandles[ENUM_DMA2_STREAM_5], (uint32_t)&dshotOutBuffer, (uint32_t)&GPIOB->ODR, DSHOT_OUT_BUFFER_SIZE) != HAL_OK)
     {
         while(1);
     }
@@ -99,6 +114,9 @@ static void DshotDmaInit(void) //make general function?
 static void DshotTimerInit(uint32_t timer, uint32_t pwmHz, uint32_t timerHz) //make general function?
 {
 
+    TIM_ClockConfigTypeDef  sClockSourceConfig; //set, timer variable
+    TIM_MasterConfigTypeDef sMasterConfig;      //set, timer variable
+
     //run at 24 MHz, need a bitrate of 3 bits per byte:
     //three types of "bytes"
     //one, zero, nothing:
@@ -113,7 +131,7 @@ static void DshotTimerInit(uint32_t timer, uint32_t pwmHz, uint32_t timerHz) //m
     //(15 / 24,000,000) = 0.000,000,625 seconds
     //3 timer events per bit, 000 = nothing, 100 = zero, 110 = one
 
-    dshotTimer.Instance           = timer;
+    dshotTimer.Instance           = timers[timer];
     dshotTimer.Init.Prescaler     = (uint16_t)(SystemCoreClock / TimerPrescalerDivisor(timer) / timerHz) - 1;
     dshotTimer.Init.CounterMode   = TIM_COUNTERMODE_UP;
     dshotTimer.Init.Period        = (timerHz / pwmHz) - 1;;
@@ -141,4 +159,3 @@ static void DshotTimerInit(uint32_t timer, uint32_t pwmHz, uint32_t timerHz) //m
 void BlockingReadGPIO()
 {
 }
-*/

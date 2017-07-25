@@ -2,4 +2,4 @@
 
 extern int dShotFeedTheDog;
 
-extern void DshotInit(void);
+extern void DshotInit(int offlineMode);

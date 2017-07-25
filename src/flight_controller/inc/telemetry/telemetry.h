@@ -154,6 +154,7 @@ typedef struct
 	uint32_t telemSmartAudio;
     uint32_t telemSport;
     uint32_t telemSpek;
+	uint32_t telemCrsf;
     uint32_t telemMsp;
     uint32_t telemMav;
     uint32_t telemTramp;

@@ -37,6 +37,7 @@
 #include "rfbl_functions.h"
 
 //telemetry includes
+#include "telemetry/crossfire.h"
 #include "telemetry/dshotTwoWay.h"
 #include "telemetry/sPortTelemetry.h"
 #include "telemetry/telemetry.h"

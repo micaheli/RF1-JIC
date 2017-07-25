@@ -135,7 +135,8 @@ const string_comp_rec stringCompTable[] = {
 		{"USING_IBUS_T",           USING_IBUS_T},
 		{"USING_CPPM_R",           USING_CPPM_R},
 		{"USING_CPPM_T",           USING_CPPM_T},
-
+		{"USING_CRSF_R",           USING_CRSF_R},
+		{"USING_CRSF_T",           USING_CRSF_T},
 };
 
 const config_variables_rec valueTable[] = {
@@ -1275,6 +1276,60 @@ void ProcessCommand(char *inString)
 			mainConfig.rcControlsConfig.rcCalibrated = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me SBUS Defaults\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			SaveAndSend();
+		}
+	else if (!strncmp("crsf_", inString, 4))
+		{
+			uint32_t protocol;
+			uint32_t usart;
+
+			switch(inString[5])
+			{
+				case 't':
+					protocol = USING_CRSF_T;
+					break;
+				case 'r':
+					protocol = USING_CRSF_R;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
+			}
+			switch(inString[6])
+			{
+				case '1':
+					usart = ENUM_USART1;
+					break;
+				case '2':
+					usart = ENUM_USART2;
+					break;
+				case '3':
+					usart = ENUM_USART3;
+					break;
+				case '4':
+					usart = ENUM_USART4;
+					break;
+				case '5':
+					usart = ENUM_USART5;
+					break;
+				case '6':
+					usart = ENUM_USART6;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
+			}
+
+			SetRxDefaults(protocol, usart);
+			SetMode(M_ARMED, 4, 50, 100);
+			resetBoard = 1;
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me CRSF Defaults\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
 			SaveAndSend();

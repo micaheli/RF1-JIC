@@ -132,6 +132,28 @@ typedef struct {
 	uint8_t endByte;
 } __attribute__ ((__packed__)) sbusFrame_t;
 
+typedef struct {
+	uint8_t syncByte;
+	uint8_t lengthByte;
+	uint8_t typeByte;
+	unsigned int chan0  : 11;
+	unsigned int chan1  : 11;
+	unsigned int chan2  : 11;
+	unsigned int chan3  : 11;
+	unsigned int chan4  : 11;
+	unsigned int chan5  : 11;
+	unsigned int chan6  : 11;
+	unsigned int chan7  : 11;
+	unsigned int chan8  : 11;
+	unsigned int chan9  : 11;
+	unsigned int chan10 : 11;
+	unsigned int chan11 : 11;
+	unsigned int chan12 : 11;
+	unsigned int chan13 : 11;
+	unsigned int chan14 : 11;
+	unsigned int chan15 : 11;
+	uint8_t crc;
+} __attribute__ ((__packed__)) crsfRcFrame_t;
 
 //uint32_t tempData[MAXCHANNELS];
 
@@ -419,6 +441,76 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 
 	return(outChannel);
 }
+
+void ProcessCrsfPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
+{
+
+	int chkSum; //set
+	int rxSum;  //set
+	int y;      //set
+
+	//<​Device address​ or Sync Byte>
+	//<Frame length>
+	//<​Type​>
+	//<Payload>
+	//<​CRC​> 
+
+															// Make sure this is very first thing done in function, and its called first on interrupt
+	memcpy(copiedBufferData, serialRxBuffer, frameSize);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+															// We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
+	crsfRcFrame_t *crsfRc = (crsfRcFrame_t*)copiedBufferData;
+
+	if (copiedBufferData[0] == CRSF_SYNC_BYTE)
+	{
+		switch(copiedBufferData[2]) //frame type is thirdbyte
+		{
+			case CRSF_TYPE_RC:
+				rxDataRaw[0]  = crsfRc->chan0;
+				rxDataRaw[1]  = crsfRc->chan1;
+				rxDataRaw[2]  = crsfRc->chan2;
+				rxDataRaw[3]  = crsfRc->chan3;
+				rxDataRaw[4]  = crsfRc->chan4;
+				rxDataRaw[5]  = crsfRc->chan5;
+				rxDataRaw[6]  = crsfRc->chan6;
+				rxDataRaw[7]  = crsfRc->chan7;
+				rxDataRaw[8]  = crsfRc->chan8;
+				rxDataRaw[9]  = crsfRc->chan9;
+				rxDataRaw[10] = crsfRc->chan10;
+				rxDataRaw[11] = crsfRc->chan11;
+				rxDataRaw[12] = crsfRc->chan12;
+				rxDataRaw[13] = crsfRc->chan13;
+				rxDataRaw[14] = crsfRc->chan14;
+				rxDataRaw[15] = crsfRc->chan15;
+				rxSum         = crsfRc->crc;
+
+				chkSum = CrsfCrc8(copiedBufferData+2, frameSize-2);
+
+				if (chkSum == rxSum)
+				{
+					for (y=MAXCHANNELS-1;y>-1;y--)
+					{
+						rxData[y] = rxDataRaw[ChannelMap(y)];
+					}
+
+					packetTime = 10;
+					packetTimeInv = ((float)packetTime / 1000.0f);
+					rx_timeout = 0;
+
+					if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
+						buzzerStatus.status = STATE_BUZZER_OFF;
+
+					InlineCollectRcCommand();
+					RxUpdate();
+				}
+				break;
+			default:
+				return;
+				break;
+			
+		}
+	}
+}
+
 
 void ProcessSpektrumPacket(uint32_t serialNumber)
 {
@@ -1397,6 +1489,53 @@ void SetRxDefaults(uint32_t rxProtocol, uint32_t usart)
 			break;
 		case USING_SBUS_R:
 		case USING_SBUS_T:
+			mainConfig.rcControlsConfig.shortThrow           = 1;
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 990;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 990;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 990;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 990;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 990;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 990;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 990;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 990;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 170;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 170;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 170;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 170;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 170;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 170;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 170;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 170;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 1810;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 1810;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1810;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 8;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 9;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 10;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 11;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 12;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 13;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 14;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 15; //junk channel
+			break;
+		case USING_CRSF_R:
+		case USING_CRSF_T:
 			mainConfig.rcControlsConfig.shortThrow           = 1;
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 990;
 			mainConfig.rcControlsConfig.midRc[ROLL]          = 990;
