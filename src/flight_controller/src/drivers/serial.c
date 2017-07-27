@@ -113,26 +113,26 @@ void UsartInit(uint32_t serialNumber)
 			rxPort = ports[board.serials[serialNumber].TXPort];
 			break;
 		case USING_CRSF_R:
-			board.serials[serialNumber].FrameSize  = 32;  //variable
-			board.serials[serialNumber].BaudRate   = 400000;
+			board.serials[serialNumber].FrameSize  = 26;  //variable
+			board.serials[serialNumber].BaudRate   = 420000;
 			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
 			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
 			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
 			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
-			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
+			board.serials[serialNumber].Mode       = UART_MODE_RX;
 			txPin  = board.serials[serialNumber].TXPin;
 			rxPin  = board.serials[serialNumber].RXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].RXPort];
 			break;
 		case USING_CRSF_T:
-			board.serials[serialNumber].FrameSize  = 32;  //variable
-			board.serials[serialNumber].BaudRate   = 400000;
+			board.serials[serialNumber].FrameSize  = 26;  //variable
+			board.serials[serialNumber].BaudRate   = 420000;
 			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
 			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
 			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
 			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
-			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
+			board.serials[serialNumber].Mode       = UART_MODE_RX;
 			txPin  = board.serials[serialNumber].TXPin;
 			rxPin  = board.serials[serialNumber].TXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
@@ -385,7 +385,7 @@ void UsartDmaInit(uint32_t serialNumber)
 		__HAL_LINKDMA(&uartHandles[board.serials[serialNumber].usartHandle], hdmarx, dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle]);
 
 	    /* DMA interrupt init */
-		HAL_NVIC_SetPriority(board.dmasActive[board.serials[serialNumber].RXDma].dmaIRQn, board.dmasActive[board.serials[serialNumber].RXDma].priority, 3);
+		HAL_NVIC_SetPriority(board.dmasActive[board.serials[serialNumber].RXDma].dmaIRQn, 0, 1);
 		HAL_NVIC_EnableIRQ(board.dmasActive[board.serials[serialNumber].RXDma].dmaIRQn);
 		board.dmasActive[board.serials[serialNumber].RXDma].enabled = 1;
 	}
@@ -632,11 +632,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
 	//works for all serials, we check huart against each serial handle to decide which one has interrupted then deal with it.
-    volatile uint32_t timeSinceLastPacket[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 5 usarts
+	//todo move arrays to init function
+    volatile uint32_t timeSinceLastPacket[MAX_USARTS] = {0,};
     uint32_t currentTime;
-    static uint32_t timeOfLastPacket[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 5 usarts
+    static uint32_t timeOfLastPacket[MAX_USARTS] = {0,};
 
+	static volatile unsigned char cat[32] = {0,};
     currentTime = InlineMillis();
+
 
 	for (uint32_t serialNumber = 0;serialNumber<MAX_USARTS;serialNumber++)
 	{
@@ -646,7 +649,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			timeSinceLastPacket[serialNumber] = (currentTime - timeOfLastPacket[serialNumber]); //todo: How do we handle multiple RXs with this?
 			timeOfLastPacket[serialNumber]    = currentTime; //todo: How do we handle multiple RXs with this?
 
-			/*
+				if(serialNumber == 0)
+					serialNumber = 0;
+						/*
 			The basic structure for each frame is the same. There is a range of ​Types​ with an extended header which will have the first few bytes of payload standardized. This is required to route frame across multiple devices for point to point communication.  
 			Broadcast Frames​: <​Device address​ or Sync Byte> <Frame length> <​Type​><Payload> <​CRC​> 
 			Extended header frames​: <​Device address​ or Sync Byte> <Frame length> <​Type​><Destination Address> <Origin Address> <Payload> <​CRC​> 
@@ -659,7 +664,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			{
 				//Amount of bytes including ​Type​, Payload and ​CRC​ (uint8_t) 
 				//total frame length is sync byte (0) + frame length byte (1) + number of the byte
-				board.serials[serialNumber].FrameSize = CONSTRAIN( (2 + dmaRxBuffer ), 2, 47); //not sure of total length
+				//if (serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][0] == CRSF_SYNC_BYTE)
+				//	board.serials[serialNumber].FrameSize = CONSTRAIN( (2 + dmaRxBuffer ), 2, 47); //not sure of total length
+				//else
+				//	board.serials[serialNumber].FrameSize = 26;
+
+
+				//	board.serials[serialNumber].FrameSize = 26;
 			}
 			else if ( ( (board.serials[serialNumber].Protocol == USING_SUMD_T) || (board.serials[serialNumber].Protocol == USING_SUMD_R)) && (dmaIndex[serialNumber] == 2) )
 			{
@@ -669,14 +680,20 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			}
 
 
-			if (timeSinceLastPacket[serialNumber] > 3)
+			cat[dmaIndex[serialNumber]] = dmaRxBuffer;
+			if ( (timeSinceLastPacket[serialNumber] > 3) && (dmaIndex[serialNumber] != 0) )
 			{
 				if (dmaIndex[serialNumber] < board.serials[serialNumber].FrameSize)
 				{
 					__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[serialNumber].usartHandle]); // Clear the buffer to prevent overrun
 				}
+				volatile int poo = dmaIndex[serialNumber];
 				dmaIndex[serialNumber] = 0;
+				if(serialNumber == 0)
+					serialNumber = 0;
+
 			}
+
 
 			serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][dmaIndex[serialNumber]++] = dmaRxBuffer; // Add that character to the string
 

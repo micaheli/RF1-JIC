@@ -1,14 +1,15 @@
 {
     "version": "0.2.0",
-    "configurations": [{
-            "name": "Flight stm32f405xx OpenOCD Debug",
-            "preLaunchTask": "Flight stm32f405xx",
+    "configurations": [
+        {
+            "name": "Revolt stm32f405xx OpenOCD Debug",
+            "preLaunchTask": "Revolt stm32f405xx",
             "type": "gdb",
             "request": "attach",
-            "executable": "c:\\dev\\raceflightone\\output\\stm32f405xx.elf",
+            "executable": "./output/REVOLT.elf",
             "target": ":3333",
             "remote": true,
-            "cwd": "c:\\dev\\raceflightone",
+            "cwd": "${workspaceRoot}",
             "autorun": [
                 "set target-async on",
                 "set confirm off",
@@ -16,22 +17,22 @@
                 "monitor reset halt",
                 "set debug remote 0",
                 "mon version",
-                "file c:\\dev\\raceflightone\\output\\stm32f405xx.elf",
+                "file ${workspaceRoot}/output/REVOLT.elf",
                 "load",
                 "monitor reset",
                 "break main"
             ],
-            "gdbpath": "arm-none-eabi-gdb"
+            "gdbpath": "/gcc-arm-none-eabi-6-2017-q1-update/bin/arm-none-eabi-gdb"
         },
         {
             "name": "Rfbl stm32f405xx OpenOCD Debug",
             "preLaunchTask": "Rfbl stm32f405xx",
             "type": "gdb",
             "request": "attach",
-            "executable": "c:\\dev\\raceflightone\\output\\stm32f405xx_nrfbl.elf",
+            "executable": "./output/stm32f405xx_nrfbl.elf",
             "target": "127.0.0.1:3333",
             "remote": true,
-            "cwd": "c:\\dev\\raceflightone",
+            "cwd": "${workspaceRoot}",
             "autorun": [
                 "set target-async on",
                 "set confirm off",
@@ -39,7 +40,7 @@
                 "monitor reset halt",
                 "set debug remote 0",
                 "mon version",
-                "file c:\\dev\\raceflightone\\output\\stm32f405xx_nrfbl.elf",
+                "file C${workspaceRoot}/output/stm32f405xx_nrfbl.elf",
                 "load",
                 "monitor reset",
                 "break main"
@@ -48,111 +49,21 @@
         },
         {
             "name": "Flight stm32f745xx OpenOCD Debug",
-            "preLaunchTask": "Flight stm32f745xx",
             "type": "gdb",
             "request": "attach",
-            "executable": "c:\\dev\\raceflightone\\output\\stm32f745xx.elf",
-            "target": ":3333",
-            "remote": true,
-            "cwd": "c:\\dev\\raceflightone",
-            "autorun": [
-                "monitor reset halt",
-                "monitor wait_halt",
-                "monitor sleep 100",
-                "monitor poll",
-                "set target-async on",
-                "set confirm off",
-                "set mem inaccessible-by-default off",
-                "monitor reset halt",
-                "set debug remote 0",
-                "mon version",
-                "file c:\\dev\\raceflightone\\output\\stm32f745xx.elf",
-                "load",
-                "monitor reset init",
-                "break main"
-            ],
-            "gdbpath": "arm-none-eabi-gdb"
-        },
-        {
-            "name": "RFBL stm32f745xx OpenOCD Debug",
-            "preLaunchTask": "RFBL stm32f745xx",
-            "type": "gdb",
-            "request": "attach",
-            "executable": "c:\\dev\\raceflightone\\output\\stm32f745xx_nrfbl.elf",
-            "target": ":3333",
-            "remote": true,
-            "cwd": "c:\\dev\\raceflightone",
-            "autorun": [
-                "monitor reset halt",
-                "monitor wait_halt",
-                "monitor sleep 100",
-                "monitor poll",
-                "set target-async on",
-                "set confirm off",
-                "set mem inaccessible-by-default off",
-                "monitor reset halt",
-                "set debug remote 0",
-                "mon version",
-                "file c:\\dev\\raceflightone\\output\\stm32f745xx_nrfbl.elf",
-                "load",
-                "monitor reset init",
-                "break main"
-            ],
-            "gdbpath": "arm-none-eabi-gdb"
-        },
-        {
-            "name": "Recovery stm32f745xx OpenOCD Debug",
-            "preLaunchTask": "Recovery stm32f745xx",
-            "type": "gdb",
-            "request": "attach",
-            "executable": "c:\\dev\\raceflightone\\output\\stm32f745xx_nrecovery.elf",
-            "target": ":3333",
-            "remote": true,
-            "cwd": "c:\\dev\\raceflightone",
-            "autorun": [
-                "monitor reset halt",
-                "monitor wait_halt",
-                "monitor sleep 100",
-                "monitor poll",
-                "set target-async on",
-                "set confirm off",
-                "set mem inaccessible-by-default off",
-                "monitor reset halt",
-                "set debug remote 0",
-                "mon version",
-                "file c:\\dev\\raceflightone\\output\\stm32f745xx_nrecovery.elf",
-                "load",
-                "monitor reset init",
-                "break main"
-            ],
-            "gdbpath": "arm-none-eabi-gdb"
-        },
-        {
-            "name": "esc stm32f301x8 OpenOCD Debug",
-            "preLaunchTask": "esc stm32f301x8",
-            "type": "gdb",
-            "request": "attach",
-            "executable": "c:\\dev\\raceflightone\\output\\stm32f301x8_nesc.elf",
+            "executable": "./output/stm32f745xx.elf",
             "target": "127.0.0.1:3333",
             "remote": true,
-            "cwd": "c:\\dev\\raceflightone",
+            "cwd": "${workspaceRoot}",
             "autorun": [
                 "monitor reset halt",
-                "monitor wait_halt",
-                "monitor sleep 100",
-                "monitor poll",
-                "set target-async on",
-                "set confirm off",
                 "set mem inaccessible-by-default off",
-                "monitor reset halt",
-                "set debug remote 0",
-                "mon version",
-                "file c:\\dev\\raceflightone\\output\\stm32f301x8_nesc.elf",
+                "file ${workspaceRoot}/output/stm32f745xx.elf",
                 "load",
-                "monitor reset init",
-                "break main"
+                "monitor reset"
             ],
             "gdbpath": "arm-none-eabi-gdb"
         }
+
     ]
 }

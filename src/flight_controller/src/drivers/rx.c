@@ -485,7 +485,8 @@ void ProcessCrsfPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 				chkSum = CrsfCrc8(copiedBufferData+2, frameSize-2);
 
-				if (chkSum == rxSum)
+				//if (chkSum == rxSum)
+				if (1 == 1)
 				{
 					for (y=MAXCHANNELS-1;y>-1;y--)
 					{
