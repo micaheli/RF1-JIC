@@ -1286,6 +1286,10 @@ Version 0.306.116 BETA
 	Fix profile 3 not working
 	Allow demag comp to be changed on ESCs
 
+Version 0.307.117 BETA
+	Dshot code cleanup
+	Added crossfire RX protocol
+
 #Features in current development:
 #	MAVlink compatibility
 
