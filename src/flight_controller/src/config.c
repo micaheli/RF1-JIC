@@ -177,6 +177,7 @@ const config_variables_rec valueTable[] = {
 		{ "telem_msp",	 		typeUINT,  "telm", &mainConfig.telemConfig.telemMsp,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "telem_rfosd",	 	typeUINT,  "telm", &mainConfig.telemConfig.telemRfOsd,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "telem_tramp",	 	typeUINT,  "telm", &mainConfig.telemConfig.telemTramp,					0, TELEM_NUM-1, TELEM_OFF, "" },
+		{ "telem_crsf",		 	typeUINT,  "telm", &mainConfig.telemConfig.telemCrsf,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		
 		{ "telem_mavlink", 		typeUINT,  "telm", &mainConfig.telemConfig.telemMav,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "adc_current_factor", typeFLOAT, "telm", &mainConfig.telemConfig.adcCurrFactor,				0, 60.0, 34.2, "" },
@@ -209,6 +210,9 @@ const config_variables_rec valueTable[] = {
  		{ "roll_expo1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.curveExpo[ROLL],		0, 100, 50, "" },
  		{ "yaw_expo1", 			typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.curveExpo[YAW],		0, 100, 50, "" },
  
+ 		{ "yaw_wc1", 			typeUINT,   "pids", &mainConfig.tuneProfile[0].pidConfig[YAW].wc, 			0, 30, 0, "" },
+ 		{ "roll_wc1", 			typeUINT,   "pids", &mainConfig.tuneProfile[0].pidConfig[ROLL].wc, 			0, 30, 0, "" },
+ 		{ "pitch_wc1", 			typeUINT,   "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].wc, 		0, 30, 0, "" },
  		{ "yaw_kp1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[YAW].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "roll_kp1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[ROLL].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "pitch_kp1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].kp, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
@@ -262,6 +266,9 @@ const config_variables_rec valueTable[] = {
  		{ "roll_expo2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.curveExpo[ROLL],		0, 100, 50, "" },
  		{ "yaw_expo2", 			typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.curveExpo[YAW],		0, 100, 50, "" },
  
+		{ "yaw_wc2", 			typeUINT,   "pids", &mainConfig.tuneProfile[1].pidConfig[YAW].wc, 			0, 30, 0, "" },
+ 		{ "roll_wc2", 			typeUINT,   "pids", &mainConfig.tuneProfile[1].pidConfig[ROLL].wc, 			0, 30, 0, "" },
+ 		{ "pitch_wc2", 			typeUINT,   "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].wc, 		0, 30, 0, "" },
  		{ "yaw_kp2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[YAW].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "roll_kp2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[ROLL].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "pitch_kp2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].kp, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
@@ -316,6 +323,9 @@ const config_variables_rec valueTable[] = {
  		{ "roll_expo3", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.curveExpo[ROLL],		0, 100, 50, "" },
  		{ "yaw_expo3", 			typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.curveExpo[YAW],		0, 100, 50, "" },
  
+		{ "yaw_wc3", 			typeUINT,   "pids", &mainConfig.tuneProfile[2].pidConfig[YAW].wc, 			0, 30, 0, "" },
+ 		{ "roll_wc3", 			typeUINT,   "pids", &mainConfig.tuneProfile[2].pidConfig[ROLL].wc, 			0, 30, 0, "" },
+ 		{ "pitch_wc3", 			typeUINT,   "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].wc, 		0, 30, 0, "" },
  		{ "yaw_kp3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[YAW].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "roll_kp3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[ROLL].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "pitch_kp3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].kp, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },

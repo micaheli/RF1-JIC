@@ -47,39 +47,49 @@ void InitPid (void)
 	pidsUsed[PITCH].kd = (DEFAULT_PITCH_KD * mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].kd) / DEFAULT_PID_CONFIG_VALUE;
 	//cross multiply pids
 
+	pidsUsed[YAW].wc   = mainConfig.tuneProfile[activeProfile].pidConfig[YAW].wc;
+	pidsUsed[ROLL].wc  = mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].wc;
+	pidsUsed[PITCH].wc = mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].wc;
+
 	if (mainConfig.mixerConfig.mixerStyle == 1)
 	{
 		pidsUsed[YAW].kp = pidsUsed[YAW].kp  / 100000;
 		pidsUsed[YAW].ki = (pidsUsed[YAW].ki / 50000) * loopSpeed.dT;
 		pidsUsed[YAW].kd = (pidsUsed[YAW].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[YAW].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga * 0.333);
+		if (pidsUsed[YAW].wc == 0)
+			pidsUsed[YAW].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga * 0.333);
 
 		pidsUsed[ROLL].kp = pidsUsed[ROLL].kp  / 100000;
 		pidsUsed[ROLL].ki = (pidsUsed[ROLL].ki / 50000) * loopSpeed.dT;
 		pidsUsed[ROLL].kd = (pidsUsed[ROLL].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[ROLL].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga * 0.333);
+		if (pidsUsed[ROLL].wc == 0)
+			pidsUsed[ROLL].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga * 0.333);
 
 		pidsUsed[PITCH].kp = pidsUsed[PITCH].kp  / 100000;
 		pidsUsed[PITCH].ki = (pidsUsed[PITCH].ki / 50000) * loopSpeed.dT;
 		pidsUsed[PITCH].kd = (pidsUsed[PITCH].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[PITCH].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga * 0.333);
+		if (pidsUsed[PITCH].wc == 0)
+			pidsUsed[PITCH].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga * 0.333);
 	}
 	else
 	{
 		pidsUsed[YAW].kp = pidsUsed[YAW].kp  / 50000;
 		pidsUsed[YAW].ki = (pidsUsed[YAW].ki / 25000) * loopSpeed.dT;
 		pidsUsed[YAW].kd = (pidsUsed[YAW].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[YAW].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga * 0.333);
+		if (pidsUsed[YAW].wc == 0)
+			pidsUsed[YAW].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga * 0.333);
 
 		pidsUsed[ROLL].kp = pidsUsed[ROLL].kp  / 50000;
 		pidsUsed[ROLL].ki = (pidsUsed[ROLL].ki / 25000) * loopSpeed.dT;
 		pidsUsed[ROLL].kd = (pidsUsed[ROLL].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[ROLL].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga * 0.333);
+		if (pidsUsed[ROLL].wc == 0)
+			pidsUsed[ROLL].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga * 0.333);
 
 		pidsUsed[PITCH].kp = pidsUsed[PITCH].kp  / 50000;
 		pidsUsed[PITCH].ki = (pidsUsed[PITCH].ki / 25000) * loopSpeed.dT;
 		pidsUsed[PITCH].kd = (pidsUsed[PITCH].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[PITCH].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga * 0.333);
+		if (pidsUsed[PITCH].wc == 0)
+			pidsUsed[PITCH].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga * 0.333);
 	}
 
 	if (loopSpeed.khzDivider == 32)

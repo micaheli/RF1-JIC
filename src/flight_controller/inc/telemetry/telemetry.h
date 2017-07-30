@@ -182,6 +182,7 @@ extern volatile vtx_record vtxRequested;
 extern volatile vtx_record vtxRecord;
 extern volatile uint32_t   sendSmartPortAt;
 extern volatile uint32_t   sendSmartPortLuaAt;
+extern volatile uint32_t   sendCrsfTelemtryAt;
 extern volatile uint32_t   sendSpektrumTelemtryAt;
 
 extern volatile uint32_t telemEnabled;

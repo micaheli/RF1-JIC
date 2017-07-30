@@ -5,6 +5,7 @@ volatile uint32_t sendMspAt = 0;
 volatile uint32_t sendRfOsdAt = 0;
 volatile uint32_t sendSmartPortAt = 0;
 volatile uint32_t sendSmartPortLuaAt = 0;
+volatile uint32_t sendCrsfTelemtryAt = 0;
 volatile uint32_t sendSpektrumTelemtryAt = 0;
 
 volatile uint32_t telemEnabled = 1;
@@ -104,13 +105,20 @@ void ProcessTelemtry(void)
 			CheckIfSportReadyToSend(); //sets sendSmartPortAt if it needs to.
 		}
 	}
-
-	if (mainConfig.telemConfig.telemSpek)
+	else if (mainConfig.telemConfig.telemSpek)
 	{
 		if ( (sendSpektrumTelemtryAt) && ( sendSpektrumTelemtryAt >= InlineMillis() ) )
 		{
 			sendSpektrumTelemtryAt = 0; //reset send time to 0 which disables it
 			sendSpektrumTelem();     //send the data. Blind of soft or hard s.port
+		}
+	}
+	else if (mainConfig.telemConfig.telemCrsf)
+	{
+		if ( (sendCrsfTelemtryAt) && ( sendCrsfTelemtryAt >= InlineMillis() ) )
+		{
+			sendCrsfTelemtryAt = 0; //reset send time to 0 which disables it
+			SendCrsfTelem();     //send the data. Blind of soft or hard s.port
 		}
 	}
 }

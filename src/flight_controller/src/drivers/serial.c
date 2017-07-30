@@ -132,11 +132,11 @@ void UsartInit(uint32_t serialNumber)
 			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
 			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
 			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
-			board.serials[serialNumber].Mode       = UART_MODE_RX;
+			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
 			txPin  = board.serials[serialNumber].TXPin;
-			rxPin  = board.serials[serialNumber].TXPin;
+			rxPin  = board.serials[serialNumber].RXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
-			rxPort = ports[board.serials[serialNumber].TXPort];
+			rxPort = ports[board.serials[serialNumber].RXPort];
 			break;
 		case USING_IBUS_R:
 			board.serials[serialNumber].FrameSize  = 32;

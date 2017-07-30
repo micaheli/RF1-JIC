@@ -502,6 +502,13 @@ void ProcessCrsfPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 					InlineCollectRcCommand();
 					RxUpdate();
+					static int everyTwenty = 0;
+					everyTwenty++;
+					if (everyTwenty=5)
+					{
+						sendCrsfTelemtryAt = InlineMillis() + 1;
+						everyTwenty = 0;
+					}
 				}
 				break;
 			default:
@@ -601,8 +608,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 			}
 		}
 
-		static uint32_t mutexLock = 0;
-		if (!spekPhase && mainConfig.telemConfig.telemSpek && !mutexLock)
+		if (!spekPhase && mainConfig.telemConfig.telemSpek)
 		{
 			sendSpektrumTelemtryAt = InlineMillis() + 2;
 		}
