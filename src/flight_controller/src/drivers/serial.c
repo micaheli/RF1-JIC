@@ -637,7 +637,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     uint32_t currentTime;
     static uint32_t timeOfLastPacket[MAX_USARTS] = {0,};
 
-	static volatile unsigned char cat[32] = {0,};
     currentTime = InlineMillis();
 
 
@@ -679,15 +678,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				board.serials[serialNumber].FrameSize = CONSTRAIN( (5 + (dmaRxBuffer * 2) ), 9, 47); //sumd can be between 7 and 37 long
 			}
 
-
-			cat[dmaIndex[serialNumber]] = dmaRxBuffer;
 			if ( (timeSinceLastPacket[serialNumber] > 3) && (dmaIndex[serialNumber] != 0) )
 			{
 				if (dmaIndex[serialNumber] < board.serials[serialNumber].FrameSize)
 				{
 					__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[serialNumber].usartHandle]); // Clear the buffer to prevent overrun
 				}
-				volatile int poo = dmaIndex[serialNumber];
+
 				dmaIndex[serialNumber] = 0;
 				if(serialNumber == 0)
 					serialNumber = 0;
