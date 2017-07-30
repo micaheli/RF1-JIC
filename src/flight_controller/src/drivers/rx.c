@@ -504,7 +504,7 @@ void ProcessCrsfPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 					RxUpdate();
 					static int everyTwenty = 0;
 					everyTwenty++;
-					if (everyTwenty==4)
+					if (everyTwenty==5)
 					{
 						sendCrsfTelemtryAt = InlineMillis() + 1;
 						everyTwenty = 0;
