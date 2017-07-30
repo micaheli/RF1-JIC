@@ -112,25 +112,22 @@ static uint8_t CrsfFlightModeFrame(void)
     {
         snprintf( (char *)&crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 LEVEL" );
         crsfOutBuffer[1] = 12; //payload + frame type + crc
-        crsfOutBuffer[12] = 0;
         crsfOutBuffer[13] = CrsfCrc8(&crsfOutBuffer[2], 11);
         return(14);
     }
     else if (ModeActive(M_HORIZON))
     {
         snprintf( (char *)&crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 ACRO-LEVEL" );
-        crsfOutBuffer[1] = 15; //payload + frame type + crc
-        crsfOutBuffer[15] = 0;
-        crsfOutBuffer[16] = CrsfCrc8(&crsfOutBuffer[2], 14);
-        return(17);
+        crsfOutBuffer[1] = 17; //payload + frame type + crc
+        crsfOutBuffer[18] = CrsfCrc8(&crsfOutBuffer[2], 16);
+        return(19);
     }
     else
     {
         snprintf( (char *)&crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 ACRO" );
-        crsfOutBuffer[1] = 9; //payload + frame type + crc
-        crsfOutBuffer[9] = 0;
-        crsfOutBuffer[10] = CrsfCrc8(&crsfOutBuffer[2], 8);
-        return(11);
+        crsfOutBuffer[1] = 11; //payload + frame type + crc
+        crsfOutBuffer[12] = CrsfCrc8(&crsfOutBuffer[2], 10);
+        return(13);
     }
 }
 
