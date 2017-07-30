@@ -121,14 +121,12 @@ static float kpAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.100f, 1.050f, 1.000
 static float kiAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.050f, 1.000f, 0.950f, 0.900f, 0.900f, 0.900f, 0.950f, 1.000f, 1.050f};
 static float kdAttenuationCurve[ATTENUATION_CURVE_SIZE] = {1.100f, 1.050f, 1.000f, 0.900f, 0.800f, 0.900f, 1.000f, 1.100f, 1.200f};
 
-static void PrintThrottleCurve(void);
-static void PrintTpaKp(void);
-static void PrintTpaKi(void);
-static void PrintTpaKd(void);
-static void BuildThrottleLookupTable(void);
-static void BuildThrottleLookupTableKp(void);
-static void BuildThrottleLookupTableKi(void);
-static void BuildThrottleLookupTableKd(void);
+static void  PrintCurve(char *outText, float curve[]);
+
+static void  BuildThrottleLookupTable(void);
+static void  BuildThrottleLookupTableKp(void);
+static void  BuildThrottleLookupTableKi(void);
+static void  BuildThrottleLookupTableKd(void);
 
 static float ApplyAttenuationCurve (float input, float curve[], uint32_t curveSize);
 static float ApplyAttenuationOldCurve (float input, float curve[], uint32_t curveSize);
@@ -139,7 +137,7 @@ static void BuildThrottleLookupTable(void)
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
-		throttleLookup[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.throttleCurve, ATTENUATION_CURVE_SIZE );
+		throttleLookup[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].throttleCurve, ATTENUATION_CURVE_SIZE );
 	}
 }
 
@@ -149,123 +147,75 @@ static void BuildThrottleLookupTableKp(void)
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
-		if (mainConfig.mixerConfig.tpaKpCurveType)
+		if (mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKpCurveType)
 		{
-			throttleLookupKp[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE );
+			throttleLookupKp[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKpCurve, ATTENUATION_CURVE_SIZE );
 		}
 		else
 		{
-			throttleLookupKp[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKpCurve, ATTENUATION_CURVE_SIZE );
+			throttleLookupKp[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKpCurve, ATTENUATION_CURVE_SIZE );
 		}
 	}
 }
+
 static void BuildThrottleLookupTableKi(void)
 {
 	int x;
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
-		if (mainConfig.mixerConfig.tpaKiCurveType)
+		if (mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKiCurveType)
 		{
-			throttleLookupKi[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE );
+			throttleLookupKi[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKiCurve, ATTENUATION_CURVE_SIZE );
 		}
 		else
 		{
-			throttleLookupKi[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKiCurve, ATTENUATION_CURVE_SIZE );
+			throttleLookupKi[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKiCurve, ATTENUATION_CURVE_SIZE );
 		}
 	}
 }
+
 static void BuildThrottleLookupTableKd(void)
 {
 	int x;
 	for (x=1023;x>=0;x--)
 	{
 		//range throttle 0 through 1023
-		if (mainConfig.mixerConfig.tpaKdCurveType)
+		if (mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKdCurveType)
 		{
-			throttleLookupKd[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE );
+			throttleLookupKd[x] = ApplyAttenuationOldCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKdCurve, ATTENUATION_CURVE_SIZE );
 		}
 		else
 		{
-			throttleLookupKd[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.mixerConfig.tpaKdCurve, ATTENUATION_CURVE_SIZE );
+			throttleLookupKd[x] = ApplyAttenuationCurve( ((float)x / 1023.0f), mainConfig.tuneProfile[activeProfile].filterConfig[0].tpaKdCurve, ATTENUATION_CURVE_SIZE );
 		}
 	}
 }
+
 void ResetTpaCurves(void)
 {
-	memcpy(mainConfig.mixerConfig.throttleCurve, throttleCurve,      sizeof(throttleCurve));
-	memcpy(mainConfig.mixerConfig.tpaKpCurve,    kpAttenuationCurve, sizeof(kpAttenuationCurve));
-	memcpy(mainConfig.mixerConfig.tpaKiCurve,    kiAttenuationCurve, sizeof(kiAttenuationCurve));
-	memcpy(mainConfig.mixerConfig.tpaKdCurve,    kdAttenuationCurve, sizeof(kdAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[0].filterConfig[0].throttleCurve, throttleCurve,      sizeof(throttleCurve));
+	memcpy(mainConfig.tuneProfile[0].filterConfig[0].tpaKpCurve,    kpAttenuationCurve, sizeof(kpAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[0].filterConfig[0].tpaKiCurve,    kiAttenuationCurve, sizeof(kiAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[0].filterConfig[0].tpaKdCurve,    kdAttenuationCurve, sizeof(kdAttenuationCurve));
+
+	memcpy(mainConfig.tuneProfile[1].filterConfig[0].throttleCurve, throttleCurve,      sizeof(throttleCurve));
+	memcpy(mainConfig.tuneProfile[1].filterConfig[0].tpaKpCurve,    kpAttenuationCurve, sizeof(kpAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[1].filterConfig[0].tpaKiCurve,    kiAttenuationCurve, sizeof(kiAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[1].filterConfig[0].tpaKdCurve,    kdAttenuationCurve, sizeof(kdAttenuationCurve));
+
+	memcpy(mainConfig.tuneProfile[2].filterConfig[0].throttleCurve, throttleCurve,      sizeof(throttleCurve));
+	memcpy(mainConfig.tuneProfile[2].filterConfig[0].tpaKpCurve,    kpAttenuationCurve, sizeof(kpAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[2].filterConfig[0].tpaKiCurve,    kiAttenuationCurve, sizeof(kiAttenuationCurve));
+	memcpy(mainConfig.tuneProfile[2].filterConfig[0].tpaKdCurve,    kdAttenuationCurve, sizeof(kdAttenuationCurve));
 }
 
-static void PrintThrottleCurve(void)
+void AdjustTpa(char *modString, char *outText, float inCurve[])
 {
-	uint32_t i;
-	RfCustomReplyBuffer("throttlecurve ");
-	for (i=0;i<ATTENUATION_CURVE_SIZE;i++)
-	{
-		if (i == ATTENUATION_CURVE_SIZE - 1)
-			sprintf(rf_custom_out_buffer, "%lu", (uint32_t)(mainConfig.mixerConfig.throttleCurve[i]*100) );
-		else
-			sprintf(rf_custom_out_buffer, "%lu=", (uint32_t)(mainConfig.mixerConfig.throttleCurve[i]*100) );
-		RfCustomReplyBuffer(rf_custom_out_buffer);
-	}
-	RfCustomReplyBuffer("\n");
-}
-
-static void PrintTpaKp(void)
-{
-	uint32_t i;
-	RfCustomReplyBuffer("tpakp ");
-	for (i=0;i<ATTENUATION_CURVE_SIZE;i++)
-	{
-		if (i == ATTENUATION_CURVE_SIZE - 1)
-			sprintf(rf_custom_out_buffer, "%lu", (uint32_t)(mainConfig.mixerConfig.tpaKpCurve[i]*100) );
-		else
-			sprintf(rf_custom_out_buffer, "%lu=", (uint32_t)(mainConfig.mixerConfig.tpaKpCurve[i]*100) );
-		RfCustomReplyBuffer(rf_custom_out_buffer);
-	}
-	RfCustomReplyBuffer("\n");
-}
-
-static void PrintTpaKi(void)
-{
-	uint32_t i;
-	RfCustomReplyBuffer("tpaki ");
-	for (i=0;i<ATTENUATION_CURVE_SIZE;i++)
-	{
-		if (i == ATTENUATION_CURVE_SIZE - 1)
-			sprintf(rf_custom_out_buffer, "%lu", (uint32_t)(mainConfig.mixerConfig.tpaKiCurve[i]*100) );
-		else
-			sprintf(rf_custom_out_buffer, "%lu=", (uint32_t)(mainConfig.mixerConfig.tpaKiCurve[i]*100) );
-		RfCustomReplyBuffer(rf_custom_out_buffer);
-	}
-	RfCustomReplyBuffer("\n");
-}
-
-static void PrintTpaKd(void)
-{
-	uint32_t i;
-	RfCustomReplyBuffer("tpakd ");
-	for (i=0;i<ATTENUATION_CURVE_SIZE;i++)
-	{
-		if (i == ATTENUATION_CURVE_SIZE - 1)
-			sprintf(rf_custom_out_buffer, "%lu", (uint32_t)(mainConfig.mixerConfig.tpaKdCurve[i]*100) );
-		else
-			sprintf(rf_custom_out_buffer, "%lu=", (uint32_t)(mainConfig.mixerConfig.tpaKdCurve[i]*100) );
-		RfCustomReplyBuffer(rf_custom_out_buffer);
-	}
-	RfCustomReplyBuffer("\n");
-}
-
-void AdjustKpTpa(char *modString)
-{
-	char tempString[8];
-	float curve[9] = {0.0f,};
-	float tempFloat = 0.0f;
+	char     tempString[8];
+	float    tempCurve[9] = {0.0f,};
+	float    tempFloat = 0.0f;
 	uint32_t x = 0;
-
 	for ( char *p = modString, *q = modString; p != NULL; p = q )
     {
         q = strchr( p, '=' );
@@ -273,9 +223,9 @@ void AdjustKpTpa(char *modString)
         {
 			sprintf(tempString, "%*.*s", ( int )(q - p ), ( int )( q - p ), p );
 			tempFloat = (float)((float)atoi( tempString ) / 100.0f);
-			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
+			if ( (tempFloat >= 0.0f) && (tempFloat <= 2.0f) )
 			{
-            	curve[x++] = tempFloat;
+            	tempCurve[x++] = tempFloat;
 			}
 			else
 			{
@@ -287,9 +237,9 @@ void AdjustKpTpa(char *modString)
         {
 			sprintf(tempString, "%s", p );
             tempFloat = (float)((float)atoi( tempString ) / 100.0f);
-			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
+			if ( (tempFloat >= 0.0f) && (tempFloat <= 2.0f) )
 			{
-            	curve[x++] = tempFloat;
+            	tempCurve[x++] = tempFloat;
 			}
 			else
 			{
@@ -300,175 +250,45 @@ void AdjustKpTpa(char *modString)
 	if (x == 9)
 	{
 		for (x=0;x<9;x++)
-			mainConfig.mixerConfig.tpaKpCurve[x] = curve[x];
+			inCurve[x] = tempCurve[x];
 		RfCustomReplyBuffer("#me New Curve Set\n");
-		PrintTpaKp();
-		return;
 	}
-
-	RfCustomReplyBuffer("#me Curve Not Changed\n");
-	PrintTpaKp();
+	else
+	{
+		RfCustomReplyBuffer("#me Curve Not Changed\n");
+	}
+	PrintCurve(outText, inCurve);
 }
 
-void AdjustKiTpa(char *modString)
+static void PrintCurve(char *outText, float curve[])
 {
-	char tempString[8];
-	float curve[9] = {0.0f,};
-	float tempFloat = 0.0f;
-	uint32_t x = 0;
-
-	for ( char *p = modString, *q = modString; p != NULL; p = q )
-    {
-        q = strchr( p, '=' );
-        if ( q )
-        {
-			sprintf(tempString, "%*.*s", ( int )(q - p ), ( int )( q - p ), p );
-			tempFloat = (float)((float)atoi( tempString ) / 100.0f);
-			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
-			{
-            	curve[x++] = tempFloat;
-			}
-			else
-			{
-				x = 0;
-			}
-            ++q;
-        }
-		else
-        {
-			sprintf(tempString, "%s", p );
-            tempFloat = (float)((float)atoi( tempString ) / 100.0f);
-			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
-			{
-            	curve[x++] = tempFloat;
-			}
-			else
-			{
-				x = 0;
-			}
-        }
-    }
-	if (x == 9)
+	uint32_t i;
+	RfCustomReplyBuffer(outText);
+	for (i=0;i<ATTENUATION_CURVE_SIZE;i++)
 	{
-		for (x=0;x<9;x++)
-			mainConfig.mixerConfig.tpaKiCurve[x] = curve[x];
-		RfCustomReplyBuffer("#me New Curve Set\n");
-		PrintTpaKi();
-		return;
-	}
-
-	RfCustomReplyBuffer("#me Curve Not Changed\n");
-	PrintTpaKi();
-}
-
-void AdjustKdTpa(char *modString)
-{
-	char tempString[8];
-	float curve[9] = {0.0f,};
-	float tempFloat = 0.0f;
-	uint32_t x = 0;
-
-	for ( char *p = modString, *q = modString; p != NULL; p = q )
-    {
-        q = strchr( p, '=' );
-        if ( q )
-        {
-			sprintf(tempString, "%*.*s", ( int )(q - p ), ( int )( q - p ), p );
-			tempFloat = (float)((float)atoi( tempString ) / 100.0f);
-			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
-			{
-            	curve[x++] = tempFloat;
-			}
-			else
-			{
-				x = 0;
-			}
-            ++q;
-        }
+		if (i == ATTENUATION_CURVE_SIZE - 1)
+			sprintf(rf_custom_out_buffer, "%lu", (uint32_t)(curve[i]*100) );
 		else
-        {
-			sprintf(tempString, "%s", p );
-            tempFloat = (float)((float)atoi( tempString ) / 100.0f);
-			if ( (tempFloat > 0.0f) && (tempFloat <= 2.0f) )
-			{
-            	curve[x++] = tempFloat;
-			}
-			else
-			{
-				x = 0;
-			}
-        }
-    }
-	if (x == 9)
-	{
-		for (x=0;x<9;x++)
-			mainConfig.mixerConfig.tpaKdCurve[x] = curve[x];
-		RfCustomReplyBuffer("#me New Curve Set\n");
-		PrintTpaKd();
-		return;
+			sprintf(rf_custom_out_buffer, "%lu=", (uint32_t)(curve[i]*100) );
+		RfCustomReplyBuffer(rf_custom_out_buffer);
 	}
-
-	RfCustomReplyBuffer("#me Curve Not Changed\n");
-	PrintTpaKd();
-}
-
-void AdjustThrottleCurve(char *modString)
-{
-	char  tempString[8];
-	float curve[9] = {0.0f,};
-	float tempFloat = 0.0f;
-	uint32_t x = 0;
-
-	for ( char *p = modString, *q = modString; p != NULL; p = q )
-    {
-        q = strchr( p, '=' );
-        if ( q )
-        {
-			sprintf(tempString, "%*.*s", ( int )(q - p ), ( int )( q - p ), p );
-			tempFloat = (float)((float)atoi( tempString ) / 100.0f);
-			if ( (tempFloat >= 0.0f) && (tempFloat <= 1.0f) )
-			{
-            	curve[x++] = tempFloat;
-			}
-			else
-			{
-				x = 0;
-			}
-            ++q;
-        }
-		else
-        {
-			sprintf(tempString, "%s", p );
-            tempFloat = (float)((float)atoi( tempString ) / 100.0f);
-			if ( (tempFloat >= 0.0f) && (tempFloat <= 1.0f) )
-			{
-            	curve[x++] = tempFloat;
-			}
-			else
-			{
-				x = 0;
-			}
-        }
-    }
-	if (x == 9)
-	{
-		for (x=0;x<9;x++)
-			mainConfig.mixerConfig.throttleCurve[x] = curve[x];
-		RfCustomReplyBuffer("#me New Curve Set\n");
-		PrintThrottleCurve();
-		return;
-	}
-
-	RfCustomReplyBuffer("#me Curve Not Changed\n");
-	PrintThrottleCurve();
+	RfCustomReplyBuffer("\n");
 }
 
 void PrintTpaCurves(void)
 {
-	PrintThrottleCurve();
-	PrintTpaKp();
-	PrintTpaKi();
-	PrintTpaKd();
+	PrintCurve("throttlecurve1 ", mainConfig.tuneProfile[0].filterConfig[0].throttleCurve);
+	PrintCurve("tpakp1 ", mainConfig.tuneProfile[0].filterConfig[0].tpaKpCurve);
+	PrintCurve("tpaki1 ", mainConfig.tuneProfile[0].filterConfig[0].tpaKiCurve);
+	PrintCurve("tpakd1 ", mainConfig.tuneProfile[0].filterConfig[0].tpaKdCurve);
+	PrintCurve("throttlecurve2 ", mainConfig.tuneProfile[1].filterConfig[0].throttleCurve);
+	PrintCurve("tpakp2 ", mainConfig.tuneProfile[1].filterConfig[0].tpaKpCurve);
+	PrintCurve("tpaki2 ", mainConfig.tuneProfile[1].filterConfig[0].tpaKiCurve);
+	PrintCurve("tpakd2 ", mainConfig.tuneProfile[1].filterConfig[0].tpaKdCurve);
+	PrintCurve("throttlecurve3 ", mainConfig.tuneProfile[2].filterConfig[0].throttleCurve);
+	PrintCurve("tpakp3 ", mainConfig.tuneProfile[2].filterConfig[0].tpaKpCurve);
+	PrintCurve("tpaki3 ", mainConfig.tuneProfile[2].filterConfig[0].tpaKiCurve);
+	PrintCurve("tpakd3 ", mainConfig.tuneProfile[2].filterConfig[0].tpaKdCurve);
 }
 
 void InitMixer(void) {

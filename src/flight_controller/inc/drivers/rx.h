@@ -11,13 +11,8 @@ typedef struct {
     uint32_t midRc[MAXCHANNELS];
     uint32_t minRc[MAXCHANNELS];
     uint32_t maxRc[MAXCHANNELS];
-    uint32_t useCurve[MAXCHANNELS];
-    float    curveExpo[MAXCHANNELS];
     uint32_t channelMap[MAXCHANNELS];
-    float    rates[3];
-    float    acroPlus[3];
     uint32_t rcCalibrated;
-	float    rcSmoothingFactor;
     uint32_t rxProtcol;
     uint32_t rxUsart;
     uint32_t rxInvertPin;
@@ -27,6 +22,15 @@ typedef struct {
 	uint32_t shortThrow;
     uint32_t armMethod;
 } rc_control_config;
+
+typedef struct
+{
+	int   useCurve;
+	float rcSmoothingFactor;
+	float rates[3];
+	float acroPlus[3];
+	float curveExpo[3];
+} rc_rate;
 
 typedef struct
 {
@@ -126,7 +130,9 @@ enum
 #define USING_SMARTAUDIO       16
 #define USING_RFOSD            17
 #define USING_TRAMP            18
-#define USING_RX_END           19
+#define USING_CRSF_R           19
+#define USING_CRSF_T           20
+#define USING_RX_END           21
 
 extern volatile float smoothCurvedThrottle0_1;
 extern volatile float trueCurvedThrottle0_1;
@@ -164,6 +170,7 @@ extern void PowerInveter(uint32_t port, uint32_t pin, uint32_t direction);
 extern void ProcessSbusPacket(uint32_t serialNumber);
 extern void ProcessSumdPacket(uint8_t serialRxBuffer[], uint32_t frameSize);
 extern void ProcessIbusPacket(uint8_t serialRxBuffer[], uint32_t frameSize);
+extern void ProcessCrsfPacket(uint8_t serialRxBuffer[], uint32_t frameSize);
 
 extern void RxUpdate(void);
 extern void CheckFailsafe(void);

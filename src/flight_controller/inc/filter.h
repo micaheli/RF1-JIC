@@ -2,6 +2,8 @@
 
 #include <arm_math.h>
 
+#define ATTENUATION_CURVE_SIZE 9
+
 //Single axis kalman filter
 typedef struct
 {
@@ -67,11 +69,22 @@ typedef struct
 
 typedef struct
 {
-	uint32_t filterMod;
-	uint32_t filterType;
+	int						 resRedux;
+	int                      filterMod;
+	int                      filterType;
+	int                      ga;
+	int                      wc;
+	float                    gaMultiplier;
 	paf_filter_config_record kd;
 	paf_filter_config_record gyro;
 	paf_filter_config_record acc;
+	float                    throttleCurve[ATTENUATION_CURVE_SIZE];
+	float                    tpaKpCurve[ATTENUATION_CURVE_SIZE];
+	float                    tpaKiCurve[ATTENUATION_CURVE_SIZE];
+	float                    tpaKdCurve[ATTENUATION_CURVE_SIZE];
+	int                      tpaKpCurveType;
+	int                      tpaKiCurveType;
+	int                      tpaKdCurveType;
 } filter_device;
 
 typedef struct

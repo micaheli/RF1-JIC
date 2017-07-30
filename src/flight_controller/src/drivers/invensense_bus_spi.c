@@ -45,7 +45,7 @@ void AccGyroDeinit(void) {
 	//reset the gyro if it's connected and talking to us.
 	//will timeout if gyro isn't initialized, but this is okay.
 	AccGyroWriteRegister(INVENS_RM_PWR_MGMT_1, INVENS_CONST_H_RESET);
-    DelayMs(125);
+    DelayMs(80);
 
 	//TODO: get rid of these defines
     // ensure the interrupt is not running

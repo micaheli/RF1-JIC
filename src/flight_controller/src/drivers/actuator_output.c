@@ -270,7 +270,7 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 	uint8_t  serialOutBuffer[2];
 	float    tempOutputF;
 
-	if (mainConfig.mixerConfig.resRedux)
+	if (mainConfig.tuneProfile[activeProfile].filterConfig[0].resRedux)
 	{
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
 		{

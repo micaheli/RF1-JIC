@@ -6,9 +6,10 @@
 uint32_t rfCustomReplyBufferPointer = 0;
 uint32_t rfCustomReplyBufferPointerSent = 0;
 
-#define LARGE_RF_BUFFER_SIZE 4096
+#define LARGE_RF_BUFFER_SIZE 7000
 main_config mainConfig;
 uint32_t resetBoard = 0;
+volatile int activeProfile = PROFILE1;
 char rf_custom_out_buffer[RF_BUFFER_SIZE];
 char rfCustomSendBufferAdder[RF_BUFFER_SIZE];
 char rfCustomSendBuffer[LARGE_RF_BUFFER_SIZE];
@@ -134,7 +135,8 @@ const string_comp_rec stringCompTable[] = {
 		{"USING_IBUS_T",           USING_IBUS_T},
 		{"USING_CPPM_R",           USING_CPPM_R},
 		{"USING_CPPM_T",           USING_CPPM_T},
-
+		{"USING_CRSF_R",           USING_CRSF_R},
+		{"USING_CRSF_T",           USING_CRSF_T},
 };
 
 const config_variables_rec valueTable[] = {
@@ -151,11 +153,7 @@ const config_variables_rec valueTable[] = {
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 6, "" },
 		{ "idle_percent_inv",	typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercentInverted,			0, 15.0, 8, "" },
-		{ "res_redux",			typeINT,   "mixr", &mainConfig.mixerConfig.resRedux,					0, 1, 1, "" },
 		{ "spin_rec_str",		typeFLOAT, "mixr", &mainConfig.mixerConfig.spinRecoveryStrength,		0, 1500.0, 750.0, "" },
-		{ "tpa_kp_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKpCurveType,				0, 1, 1, "" },
-		{ "tpa_ki_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKiCurveType,				0, 1, 1, "" },
-		{ "tpa_kd_curve_type",	typeINT,   "mixr", &mainConfig.mixerConfig.tpaKdCurveType,				0, 1, 1, "" },
 
 		{ "mout1", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[0],				0, 7, 0, "" },
 		{ "mout2", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[1],				0, 7, 1, "" },
@@ -179,6 +177,7 @@ const config_variables_rec valueTable[] = {
 		{ "telem_msp",	 		typeUINT,  "telm", &mainConfig.telemConfig.telemMsp,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "telem_rfosd",	 	typeUINT,  "telm", &mainConfig.telemConfig.telemRfOsd,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "telem_tramp",	 	typeUINT,  "telm", &mainConfig.telemConfig.telemTramp,					0, TELEM_NUM-1, TELEM_OFF, "" },
+		{ "telem_crsf",		 	typeUINT,  "telm", &mainConfig.telemConfig.telemCrsf,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		
 		{ "telem_mavlink", 		typeUINT,  "telm", &mainConfig.telemConfig.telemMav,					0, TELEM_NUM-1, TELEM_OFF, "" },
 		{ "adc_current_factor", typeFLOAT, "telm", &mainConfig.telemConfig.adcCurrFactor,				0, 60.0, 34.2, "" },
@@ -191,52 +190,182 @@ const config_variables_rec valueTable[] = {
 		{ "man_gy_roll_angle",  typeFLOAT, "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],		-360.0f, 360.0f, 0, "" },
 		{ "man_gy_pitch_angle", typeFLOAT, "gyro", &mainConfig.gyroConfig.minorBoardRotation[Y],		-360.0f, 360.0f, 0, "" },
 		{ "man_gy_yaw_angle", 	typeFLOAT, "gyro", &mainConfig.gyroConfig.minorBoardRotation[Z], 		-360.0f, 360.0f, 0, "" },
-		{ "rf_loop_ctrl", 		typeUINT,  "gyro", &mainConfig.gyroConfig.loopCtrl, 					0, LOOP_UH32, LOOP_UH32, "" },
 
-		{ "yaw_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kp, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "roll_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kp, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "pitch_kp", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kp, 					0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
 
-		{ "yaw_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].ki, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "roll_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].ki, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "pitch_ki", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].ki, 					0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
 
-		{ "yaw_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[YAW].kd, 						0.001, 200, 25, "" },
-		{ "roll_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[ROLL].kd, 						0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-		{ "pitch_kd", 			typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].kd, 					0.001, 200, DEFAULT_PID_CONFIG_VALUE, "" },
-
-		{ "yaw_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.r, 				0, 0, 0.000, "" },
- 		{ "roll_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.r, 				0, 0, 0.000, "" },
- 		{ "pitch_rap", 			typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.r, 				0, 0, 0.000, "" },
-
-		{ "yaw_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[YAW].ga, 						0, 31, 4, "" },
-		{ "roll_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[ROLL].ga, 						0, 31, 0, "" },
-		{ "pitch_ga", 			typeUINT,  "pids", &mainConfig.pidConfig[PITCH].ga, 					0, 31, 0, "" },
-
-		{ "kd_limit", 			typeFLOAT, "pids", &mainConfig.pidConfig[0].kdLimit, 					0.1, 1.0, 0.35, "" },
-		{ "ki_limit", 			typeFLOAT, "pids", &mainConfig.pidConfig[0].kiLimit, 					0.1, 1.0, 0.15, "" },
-
-		{ "slp", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].slp, 					0, 25.0, 05.0, "" },
-		{ "sli", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sli, 					0, 25.0, 00.1, "" },
-		{ "sla", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sla, 					0, 75.0, 35.0, "" },
-		{ "sld", 				typeFLOAT, "pids", &mainConfig.pidConfig[PITCH].sld, 					0, 0.90, 0.03, "" },
-
-		{ "filter_type",		typeUINT,  "filt", &mainConfig.filterConfig[0].filterType, 				0, 3, 0, "" },
-
-		{ "yaw_quick", 			typeFLOAT, "filt", &mainConfig.filterConfig[YAW].gyro.q, 				0, 100, 75.000, "" },
-		{ "roll_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].gyro.q, 				0, 100, 60.000, "" },
-		{ "pitch_quick", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].gyro.q, 				0, 100, 60.000, "" },
-
- 		{ "yaw_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[YAW].kd.r, 					0, 100, 40.000, "" },
- 		{ "roll_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ROLL].kd.r, 				0, 100, 40.000, "" },
- 		{ "pitch_kd_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[PITCH].kd.r, 				0, 100, 40.000, "" },
+		{ "rf_loop_ctrl", 		typeUINT,   "gyro", &mainConfig.gyroConfig.loopCtrl, 						0, LOOP_UH32, LOOP_UH32, "" },
+		{ "drunk", 				typeINT,    "gyro", &mainConfig.gyroConfig.drunk, 							0, 2, 1, "" },
+		{ "skunk", 				typeINT,    "gyro", &mainConfig.gyroConfig.skunk, 							0, 2, 0, "" },
  
-		{ "x_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.q, 				0, 10, 2.0000, "" },
-		{ "x_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCX].acc.r, 				0, 10, 025.00, "" },
-		{ "y_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.q, 				0, 10, 2.0000, "" },
-		{ "y_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCY].acc.r, 				0, 10, 025.00, "" },
-		{ "z_vector_quick", 	typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.q, 				0, 10, 2.0000, "" },
-		{ "z_vector_rap", 		typeFLOAT, "filt", &mainConfig.filterConfig[ACCZ].acc.r, 				0, 10, 025.00, "" },
+		{ "pname1", 			typeSTRING, "rate", &mainConfig.tuneProfile[0].profileName,				 	0, 0, 0, "Profile1" },
+ 		{ "stick_curve1", 		typeINT,    "rate", &mainConfig.tuneProfile[0].rcRates.useCurve, 			0, EXPO_CURVE_END, ACRO_PLUS, "" },
+ 		{ "rc_smoothing1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.rcSmoothingFactor,	0.0, 4.0, 1.0, "" },
+ 		{ "pitch_rate1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.rates[PITCH],		0, 1500, 400, "" },
+ 		{ "roll_rate1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.rates[ROLL],			0, 1500, 400, "" },
+ 		{ "yaw_rate1", 			typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.rates[YAW],			0, 1500, 400, "" },
+ 		{ "pitch_acrop1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.acroPlus[PITCH],		0, 300, 140, "" },
+ 		{ "roll_acrop1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.acroPlus[ROLL],		0, 300, 140, "" },
+ 		{ "yaw_acrop1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.acroPlus[YAW],		0, 300, 140, "" },
+ 		{ "pitch_expo1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.curveExpo[PITCH],	0, 100, 50, "" },
+ 		{ "roll_expo1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.curveExpo[ROLL],		0, 100, 50, "" },
+ 		{ "yaw_expo1", 			typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.curveExpo[YAW],		0, 100, 50, "" },
+ 
+ 		{ "yaw_wc1", 			typeUINT,   "pids", &mainConfig.tuneProfile[0].pidConfig[YAW].wc, 			0, 30, 0, "" },
+ 		{ "roll_wc1", 			typeUINT,   "pids", &mainConfig.tuneProfile[0].pidConfig[ROLL].wc, 			0, 30, 0, "" },
+ 		{ "pitch_wc1", 			typeUINT,   "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].wc, 		0, 30, 0, "" },
+ 		{ "yaw_kp1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[YAW].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "roll_kp1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[ROLL].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "pitch_kp1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].kp, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "yaw_ki1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[YAW].ki, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "roll_ki1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[ROLL].ki, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "pitch_ki1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].ki, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "yaw_kd1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[YAW].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "roll_kd1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[ROLL].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "pitch_kd1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].kd, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "kd_limit1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[0].kdLimit, 		0.1, 1.0, 0.35, "" },
+ 		{ "ki_limit1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[0].kiLimit, 		0.1, 1.0, 0.15, "" },
+ 		{ "slp1", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].slp, 		0, 25.0, 05.0, "" },
+ 		{ "sli1", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].sli, 		0, 25.0, 00.1, "" },
+ 		{ "sla1", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].sla, 		0, 75.0, 35.0, "" },
+ 		{ "sld1", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].sld, 		0, 0.90, 0.03, "" },
+ 
+		{ "res_redux1",			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[0].resRedux,		0, 1, 1, "" },
+ 		{ "yaw_rap1", 			typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.r, 	0, 0, 0.000, "" },
+ 		{ "roll_rap1", 			typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.r, 	0, 0, 0.000, "" },
+ 		{ "pitch_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.r, 	0, 0, 0.000, "" },
+ 		{ "yaw_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].ga, 		0, 31, 0, "" },
+ 		{ "roll_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].ga, 		0, 31, 0, "" },
+ 		{ "pitch_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].ga, 		0, 31, 0, "" },
+ 		{ "filter_type1",		typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[0].filterType, 	0, 3, 0, "" },
+ 		{ "yaw_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.q, 	0, 100, 75.000, "" },
+ 		{ "roll_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
+ 		{ "pitch_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
+ 		{ "yaw_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].kd.r, 		0, 100, 40.000, "" },
+ 		{ "roll_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].kd.r, 		0, 100, 40.000, "" },
+ 		{ "pitch_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].kd.r, 	0, 100, 40.000, "" },
+ 		{ "x_vector_quick1", 	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCX].acc.q, 	0, 10, 2.0000, "" },
+ 		{ "x_vector_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCX].acc.r, 	0, 10, 025.00, "" },
+ 		{ "y_vector_quick1", 	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCY].acc.q, 	0, 10, 2.0000, "" },
+ 		{ "y_vector_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCY].acc.r, 	0, 10, 025.00, "" },
+ 		{ "z_vector_quick1", 	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCZ].acc.q, 	0, 10, 2.0000, "" },
+ 		{ "z_vector_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCZ].acc.r, 	0, 10, 025.00, "" },
+ 		{ "tpa_kp_curve_type1",	typeINT,   "mixr", &mainConfig.tuneProfile[0].filterConfig[0].tpaKpCurveType,				0, 1, 1, "" },
+		{ "tpa_ki_curve_type1",	typeINT,   "mixr", &mainConfig.tuneProfile[0].filterConfig[0].tpaKiCurveType,				0, 1, 1, "" },
+		{ "tpa_kd_curve_type1",	typeINT,   "mixr", &mainConfig.tuneProfile[0].filterConfig[0].tpaKdCurveType,				0, 1, 1, "" },
+ 
+ 		{ "pname2", 			typeSTRING, "rate", &mainConfig.tuneProfile[1].profileName,				 	0, 0, 0, "Profile2" },
+ 		{ "stick_curve2", 		typeINT,    "rate", &mainConfig.tuneProfile[1].rcRates.useCurve, 			0, EXPO_CURVE_END, ACRO_PLUS, "" },
+ 		{ "rc_smoothing2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.rcSmoothingFactor,	0.0, 4.0, 1.0, "" },
+ 		{ "pitch_rate2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.rates[PITCH],		0, 1500, 400, "" },
+ 		{ "roll_rate2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.rates[ROLL],			0, 1500, 400, "" },
+ 		{ "yaw_rate2", 			typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.rates[YAW],			0, 1500, 400, "" },
+ 		{ "pitch_acrop2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.acroPlus[PITCH],		0, 300, 140, "" },
+ 		{ "roll_acrop2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.acroPlus[ROLL],		0, 300, 140, "" },
+ 		{ "yaw_acrop2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.acroPlus[YAW],		0, 300, 140, "" },
+ 		{ "pitch_expo2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.curveExpo[PITCH],	0, 100, 50, "" },
+ 		{ "roll_expo2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.curveExpo[ROLL],		0, 100, 50, "" },
+ 		{ "yaw_expo2", 			typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.curveExpo[YAW],		0, 100, 50, "" },
+ 
+		{ "yaw_wc2", 			typeUINT,   "pids", &mainConfig.tuneProfile[1].pidConfig[YAW].wc, 			0, 30, 0, "" },
+ 		{ "roll_wc2", 			typeUINT,   "pids", &mainConfig.tuneProfile[1].pidConfig[ROLL].wc, 			0, 30, 0, "" },
+ 		{ "pitch_wc2", 			typeUINT,   "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].wc, 		0, 30, 0, "" },
+ 		{ "yaw_kp2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[YAW].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "roll_kp2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[ROLL].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "pitch_kp2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].kp, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "yaw_ki2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[YAW].ki, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "roll_ki2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[ROLL].ki, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "pitch_ki2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].ki, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "yaw_kd2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[YAW].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "roll_kd2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[ROLL].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "pitch_kd2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].kd, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "kd_limit2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[0].kdLimit, 		0.1, 1.0, 0.35, "" },
+ 		{ "ki_limit2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[0].kiLimit, 		0.1, 1.0, 0.15, "" },
+ 		{ "slp2", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].slp, 		0, 25.0, 05.0, "" },
+ 		{ "sli2", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].sli, 		0, 25.0, 00.1, "" },
+ 		{ "sla2", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].sla, 		0, 75.0, 35.0, "" },
+ 		{ "sld2", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].sld, 		0, 0.90, 0.03, "" },
+ 
+		{ "res_redux2",			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[0].resRedux,		0, 1, 1, "" },
+ 		{ "yaw_rap2", 			typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.r, 	0, 0, 0.000, "" },
+ 		{ "roll_rap2", 			typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.r, 	0, 0, 0.000, "" },
+ 		{ "pitch_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.r, 	0, 0, 0.000, "" },
+ 		{ "yaw_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].ga, 		0, 31, 0, "" },
+ 		{ "roll_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].ga, 		0, 31, 0, "" },
+ 		{ "pitch_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].ga, 		0, 31, 0, "" },
+ 		{ "filter_type2",		typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[0].filterType, 	0, 3, 0, "" },
+ 		{ "yaw_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.q, 	0, 100, 75.000, "" },
+ 		{ "roll_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
+ 		{ "pitch_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
+ 		{ "yaw_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].kd.r, 		0, 100, 40.000, "" },
+ 		{ "roll_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].kd.r, 		0, 100, 40.000, "" },
+ 		{ "pitch_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].kd.r, 	0, 100, 40.000, "" },
+ 		{ "x_vector_quick2", 	typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCX].acc.q, 	0, 10, 2.0000, "" },
+ 		{ "x_vector_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCX].acc.r, 	0, 10, 025.00, "" },
+ 		{ "y_vector_quick2", 	typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCY].acc.q, 	0, 10, 2.0000, "" },
+ 		{ "y_vector_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCY].acc.r, 	0, 10, 025.00, "" },
+ 		{ "z_vector_quick2", 	typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCZ].acc.q, 	0, 10, 2.0000, "" },
+ 		{ "z_vector_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCZ].acc.r, 	0, 10, 025.00, "" },
+		{ "tpa_kp_curve_type2",	typeINT,   "mixr", &mainConfig.tuneProfile[1].filterConfig[0].tpaKpCurveType,				0, 1, 1, "" },
+		{ "tpa_ki_curve_type2",	typeINT,   "mixr", &mainConfig.tuneProfile[1].filterConfig[0].tpaKiCurveType,				0, 1, 1, "" },
+		{ "tpa_kd_curve_type2",	typeINT,   "mixr", &mainConfig.tuneProfile[1].filterConfig[0].tpaKdCurveType,				0, 1, 1, "" },
+ 
+ 
+ 		{ "pname3", 			typeSTRING, "rate", &mainConfig.tuneProfile[2].profileName,				 	0, 0, 0, "Profile3" },
+ 		{ "stick_curve3", 		typeINT,    "rate", &mainConfig.tuneProfile[2].rcRates.useCurve, 			0, EXPO_CURVE_END, ACRO_PLUS, "" },
+ 		{ "rc_smoothing3", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.rcSmoothingFactor,	0.0, 4.0, 1.0, "" },
+ 		{ "pitch_rate3", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.rates[PITCH],		0, 1500, 400, "" },
+ 		{ "roll_rate3", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.rates[ROLL],			0, 1500, 400, "" },
+ 		{ "yaw_rate3", 			typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.rates[YAW],			0, 1500, 400, "" },
+ 		{ "pitch_acrop3", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.acroPlus[PITCH],		0, 300, 140, "" },
+ 		{ "roll_acrop3", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.acroPlus[ROLL],		0, 300, 140, "" },
+ 		{ "yaw_acrop3", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.acroPlus[YAW],		0, 300, 140, "" },
+ 		{ "pitch_expo3", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.curveExpo[PITCH],	0, 100, 50, "" },
+ 		{ "roll_expo3", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.curveExpo[ROLL],		0, 100, 50, "" },
+ 		{ "yaw_expo3", 			typeFLOAT,  "rate", &mainConfig.tuneProfile[2].rcRates.curveExpo[YAW],		0, 100, 50, "" },
+ 
+		{ "yaw_wc3", 			typeUINT,   "pids", &mainConfig.tuneProfile[2].pidConfig[YAW].wc, 			0, 30, 0, "" },
+ 		{ "roll_wc3", 			typeUINT,   "pids", &mainConfig.tuneProfile[2].pidConfig[ROLL].wc, 			0, 30, 0, "" },
+ 		{ "pitch_wc3", 			typeUINT,   "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].wc, 		0, 30, 0, "" },
+ 		{ "yaw_kp3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[YAW].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "roll_kp3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[ROLL].kp, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "pitch_kp3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].kp, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "yaw_ki3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[YAW].ki, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "roll_ki3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[ROLL].ki, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "pitch_ki3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].ki, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "yaw_kd3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[YAW].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "roll_kd3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[ROLL].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "pitch_kd3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].kd, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
+ 		{ "kd_limit3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[0].kdLimit, 		0.1, 1.0, 0.35, "" },
+ 		{ "ki_limit3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[0].kiLimit, 		0.1, 1.0, 0.15, "" },
+ 		{ "slp3", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].slp, 		0, 25.0, 05.0, "" },
+ 		{ "sli3", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].sli, 		0, 25.0, 00.1, "" },
+ 		{ "sla3", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].sla, 		0, 75.0, 35.0, "" },
+ 		{ "sld3", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].sld, 		0, 0.90, 0.03, "" },
+
+		{ "res_redux3",			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[0].resRedux,		0, 1, 1, "" },
+ 		{ "yaw_rap3", 			typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.r, 	0, 0, 0.000, "" },
+ 		{ "roll_rap3", 			typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.r, 	0, 0, 0.000, "" },
+ 		{ "pitch_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.r, 	0, 0, 0.000, "" },
+ 		{ "yaw_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].ga, 		0, 31, 0, "" },
+ 		{ "roll_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].ga, 		0, 31, 0, "" },
+ 		{ "pitch_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].ga, 		0, 31, 0, "" },
+ 		{ "filter_type3",		typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[0].filterType, 	0, 3, 0, "" },
+ 		{ "yaw_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.q, 	0, 100, 75.000, "" },
+ 		{ "roll_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
+ 		{ "pitch_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
+ 		{ "yaw_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].kd.r, 		0, 100, 40.000, "" },
+ 		{ "roll_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].kd.r, 		0, 100, 40.000, "" },
+ 		{ "pitch_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].kd.r, 	0, 100, 40.000, "" },
+ 		{ "x_vector_quick3", 	typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCX].acc.q, 	0, 10, 2.0000, "" },
+ 		{ "x_vector_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCX].acc.r, 	0, 10, 025.00, "" },
+ 		{ "y_vector_quick3", 	typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCY].acc.q, 	0, 10, 2.0000, "" },
+ 		{ "y_vector_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCY].acc.r, 	0, 10, 025.00, "" },
+ 		{ "z_vector_quick3", 	typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCZ].acc.q, 	0, 10, 2.0000, "" },
+ 		{ "z_vector_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCZ].acc.r, 	0, 10, 025.00, "" },
+		{ "tpa_kp_curve_type3",	typeINT,   "mixr", &mainConfig.tuneProfile[2].filterConfig[0].tpaKpCurveType,				0, 1, 1, "" },
+		{ "tpa_ki_curve_type3",	typeINT,   "mixr", &mainConfig.tuneProfile[2].filterConfig[0].tpaKiCurveType,				0, 1, 1, "" },
+		{ "tpa_kd_curve_type3",	typeINT,   "mixr", &mainConfig.tuneProfile[2].filterConfig[0].tpaKdCurveType,				0, 1, 1, "" },
+ 
 
 #ifdef STM32F446xx	//TODO remove target specific ifdefs
 		{ "rx_protocol",		typeUINT, "rccf", &mainConfig.rcControlsConfig.rxProtcol,				0, USING_RX_END - 1, USING_SPEK_T, "" },
@@ -303,37 +432,9 @@ const config_variables_rec valueTable[] = {
 		{ "aux12_map", 			typeUINT,  "rccf", &mainConfig.rcControlsConfig.channelMap[AUX12], 		0, 100, 100, "" },
 
 		{ "rc_calibrated", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.rcCalibrated,			0, 1, 0, "" },
-		{ "rc_smoothing", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.rcSmoothingFactor,		0.0, 4.0, 3.0, "" },
-
-		{ "stick_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[PITCH], 		0, EXPO_CURVE_END, ACRO_PLUS, "" },
-		{ "throttle_curve", 	typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[THROTTLE], 	0, EXPO_CURVE_END, NO_EXPO, "" },
-		{ "aux1_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX1], 		0, EXPO_CURVE_END, NO_EXPO, "" },
-		{ "aux2_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX2], 		0, EXPO_CURVE_END, NO_EXPO, "" },
-		{ "aux3_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX3], 		0, EXPO_CURVE_END, NO_EXPO, "" },
-		{ "aux4_curve", 		typeUINT,  "rccf", &mainConfig.rcControlsConfig.useCurve[AUX4], 		0, EXPO_CURVE_END, NO_EXPO, "" },
-
-		{ "pitch_expo", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[PITCH],		0, 100, 50, "" },
-		{ "roll_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[ROLL],		0, 100, 50, "" },
-		{ "yaw_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[YAW],			0, 100, 50, "" },
-		{ "throttle_expo", 		typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[THROTTLE],	0, 100, 0, "" },
-		{ "aux1_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX1],		0, 100, 0, "" },
-		{ "aux2_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX2],		0, 100, 0, "" },
-		{ "aux3_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX3],		0, 100, 0, "" },
-		{ "aux4_expo", 			typeFLOAT, "rccf", &mainConfig.rcControlsConfig.curveExpo[AUX4],		0, 100, 0, "" },
 
 		{ "bind", 	            typeUINT,  "rccf", &mainConfig.rcControlsConfig.bind, 	                0, 32, 0, "" },
 		{ "short_throw", 	    typeUINT,  "rccf", &mainConfig.rcControlsConfig.shortThrow, 	        0, 1, 1, "" },
-
-		{ "pitch_rate", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.rates[PITCH],			0, 1500, 400, "" },
-		{ "roll_rate", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.rates[ROLL],			0, 1500, 400, "" },
-		{ "yaw_rate", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.rates[YAW],				0, 1500, 400, "" },
-
-		{ "pitch_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[PITCH],		0, 300, 140, "" },
-		{ "roll_acrop", 		typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[ROLL],			0, 300, 140, "" },
-		{ "yaw_acrop", 			typeFLOAT, "rate", &mainConfig.rcControlsConfig.acroPlus[YAW],			0, 300, 140, "" },
-
-		{ "drunk", 				typeFLOAT, "filt", &mainConfig.filterConfig[0].gyro.p, 					0, 2.0, 1.0, "" },
-		{ "skunk", 				typeFLOAT, "filt", &mainConfig.filterConfig[1].gyro.p, 					0, 2.0, 0.0, "" },
 
 };
 
@@ -458,34 +559,34 @@ char *ftoa6(float x, char *floatString)
 
 void ValidateConfigSettings(void)
 {
-	uint32_t x;
-
+	int x;
 	//if one PID value is wrong we reset them all
-	if (
-		(mainConfig.pidConfig[YAW].kp > 100.0f)   || (mainConfig.pidConfig[YAW].kp < 0.0f)   ||
-		(mainConfig.pidConfig[YAW].ki > 100.0f)   || (mainConfig.pidConfig[YAW].ki < 0.0f)   ||
-		(mainConfig.pidConfig[YAW].kd > 100.0f)   || (mainConfig.pidConfig[YAW].kd < 0.0f)   ||
-		(mainConfig.pidConfig[ROLL].kp > 100.0f)  || (mainConfig.pidConfig[ROLL].kp < 0.0f)  ||
-		(mainConfig.pidConfig[ROLL].ki > 100.0f)  || (mainConfig.pidConfig[ROLL].ki < 0.0f)  ||
-		(mainConfig.pidConfig[ROLL].kd > 100.0f)  || (mainConfig.pidConfig[ROLL].kd < 0.0f)  ||
-		(mainConfig.pidConfig[PITCH].kp > 100.0f) || (mainConfig.pidConfig[PITCH].kp < 0.0f) ||
-		(mainConfig.pidConfig[PITCH].ki > 100.0f) || (mainConfig.pidConfig[PITCH].ki < 0.0f) ||
-		(mainConfig.pidConfig[PITCH].kd > 100.0f) || (mainConfig.pidConfig[PITCH].kd < 0.0f)
-	   )
+	for (x=PROFILE_COUNT-1;x>=0;x--)
 	{
-		mainConfig.pidConfig[YAW].kp   = DEFAULT_PID_CONFIG_VALUE;
-		mainConfig.pidConfig[YAW].ki   = DEFAULT_PID_CONFIG_VALUE;
-		mainConfig.pidConfig[YAW].kd   = DEFAULT_PID_CONFIG_VALUE;
-		mainConfig.pidConfig[ROLL].kp  = DEFAULT_PID_CONFIG_VALUE;
-		mainConfig.pidConfig[ROLL].ki  = DEFAULT_PID_CONFIG_VALUE;
-		mainConfig.pidConfig[ROLL].kd  = DEFAULT_PID_CONFIG_VALUE;
-		mainConfig.pidConfig[PITCH].kp = DEFAULT_PID_CONFIG_VALUE;
-		mainConfig.pidConfig[PITCH].ki = DEFAULT_PID_CONFIG_VALUE;
-		mainConfig.pidConfig[PITCH].kd = DEFAULT_PID_CONFIG_VALUE;
+		if (
+			(mainConfig.tuneProfile[x].pidConfig[YAW].kp > 100.0f)   || (mainConfig.tuneProfile[x].pidConfig[YAW].kp < 0.0f)   ||
+			(mainConfig.tuneProfile[x].pidConfig[YAW].ki > 100.0f)   || (mainConfig.tuneProfile[x].pidConfig[YAW].ki < 0.0f)   ||
+			(mainConfig.tuneProfile[x].pidConfig[YAW].kd > 100.0f)   || (mainConfig.tuneProfile[x].pidConfig[YAW].kd < 0.0f)   ||
+			(mainConfig.tuneProfile[x].pidConfig[ROLL].kp > 100.0f)  || (mainConfig.tuneProfile[x].pidConfig[ROLL].kp < 0.0f)  ||
+			(mainConfig.tuneProfile[x].pidConfig[ROLL].ki > 100.0f)  || (mainConfig.tuneProfile[x].pidConfig[ROLL].ki < 0.0f)  ||
+			(mainConfig.tuneProfile[x].pidConfig[ROLL].kd > 100.0f)  || (mainConfig.tuneProfile[x].pidConfig[ROLL].kd < 0.0f)  ||
+			(mainConfig.tuneProfile[x].pidConfig[PITCH].kp > 100.0f) || (mainConfig.tuneProfile[x].pidConfig[PITCH].kp < 0.0f) ||
+			(mainConfig.tuneProfile[x].pidConfig[PITCH].ki > 100.0f) || (mainConfig.tuneProfile[x].pidConfig[PITCH].ki < 0.0f) ||
+			(mainConfig.tuneProfile[x].pidConfig[PITCH].kd > 100.0f) || (mainConfig.tuneProfile[x].pidConfig[PITCH].kd < 0.0f)
+		)
+		{
+			mainConfig.tuneProfile[x].pidConfig[YAW].kp   = DEFAULT_PID_CONFIG_VALUE;
+			mainConfig.tuneProfile[x].pidConfig[YAW].ki   = DEFAULT_PID_CONFIG_VALUE;
+			mainConfig.tuneProfile[x].pidConfig[YAW].kd   = DEFAULT_PID_CONFIG_VALUE;
+			mainConfig.tuneProfile[x].pidConfig[ROLL].kp  = DEFAULT_PID_CONFIG_VALUE;
+			mainConfig.tuneProfile[x].pidConfig[ROLL].ki  = DEFAULT_PID_CONFIG_VALUE;
+			mainConfig.tuneProfile[x].pidConfig[ROLL].kd  = DEFAULT_PID_CONFIG_VALUE;
+			mainConfig.tuneProfile[x].pidConfig[PITCH].kp = DEFAULT_PID_CONFIG_VALUE;
+			mainConfig.tuneProfile[x].pidConfig[PITCH].ki = DEFAULT_PID_CONFIG_VALUE;
+			mainConfig.tuneProfile[x].pidConfig[PITCH].kd = DEFAULT_PID_CONFIG_VALUE;
+		}
 	}
-
-
-	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
+	for (x=(sizeof(valueTable)/sizeof(config_variables_rec))-1;x>=0;x--)
 	{
 		switch(valueTable[x].type)
 		{
@@ -493,21 +594,16 @@ void ValidateConfigSettings(void)
 				if ( ( *(uint32_t *)valueTable[x].ptr < (uint32_t)valueTable[x].Min ) || ( *(uint32_t *)valueTable[x].ptr > (uint32_t)valueTable[x].Max ) )
 					*(uint32_t *)valueTable[x].ptr = (uint32_t)valueTable[x].Default;
 				break;
-
 			case typeINT:
 				if ( ( *(int32_t *)valueTable[x].ptr < (int32_t)valueTable[x].Min ) || ( *(int32_t *)valueTable[x].ptr > (int32_t)valueTable[x].Max ) )
 					*(int32_t *)valueTable[x].ptr = (int32_t)valueTable[x].Default;
 				break;
-
 			case typeFLOAT:
 				if ( ( *(float *)valueTable[x].ptr < (float)valueTable[x].Min ) || ( *(float *)valueTable[x].ptr > (float)valueTable[x].Max ) )
 					*(float *)valueTable[x].ptr = (float)valueTable[x].Default;
 				break;
-
 		}
-
 	}
-
 }
 
 static void DoIdleStop(void)
@@ -528,36 +624,30 @@ static void DoIdleStop(void)
 
 void GenerateConfig(void)
 {
-	uint32_t x;
-
+	uint32_t  x;
+	char     *c;
 	bzero(&mainConfig, sizeof(mainConfig));
 	ResetTpaCurves();
-
-	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
+	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 	{
 		switch(valueTable[x].type)
 		{
 		case typeUINT:
 			*(uint32_t *)valueTable[x].ptr = (uint32_t)valueTable[x].Default;
 			break;
-
 		case typeINT:
-			*(int32_t *)valueTable[x].ptr = (int32_t)valueTable[x].Default;
+			*(int32_t *)valueTable[x].ptr  = (int32_t)valueTable[x].Default;
 			break;
-
 		case typeFLOAT:
-			*(float *)valueTable[x].ptr = (float)valueTable[x].Default;
+			*(float *)valueTable[x].ptr    = (float)valueTable[x].Default;
 			break;
-/*
 		case typeSTRING:
+			c = valueTable[x].ptr;
+			strncpy(c,valueTable[x].strDefault,15);
+			c[15] = 0;
 			break;
-*/
-
 		}
-
 	}
-
-
 }
 
 void SaveConfig (uint32_t addresConfigStart)
@@ -717,44 +807,44 @@ static int GetValueFromString(char *string, const string_comp_rec thisStringComp
 
 void SetValueOrString(int position, char *value)
 {
-	int  x;
+	uint32_t x;
 	char stringBuffer[10];
-
-	value = CleanupNumberString(value);
-
-	//compare args with strings in stringCompTable
-	for (x=(sizeof(stringCompTable)/sizeof(string_comp_rec))-1;x>=0;x--)
+	if (valueTable[position].type != typeSTRING)
 	{
-		if (!strcmp(stringCompTable[x].valueString, value))
+		value = CleanupNumberString(value);
+		//compare args with strings in stringCompTable
+		for (x=0;x<(sizeof(stringCompTable)/sizeof(string_comp_rec));x++)
 		{
-
-			//snprintf(buffer, 10, "%d", value);
-			snprintf(stringBuffer, 10, "%ld", stringCompTable[x].valueInt);
-			SetValue(position, stringBuffer);
-			return;
+			if (!strcmp(stringCompTable[x].valueString, value))
+			{
+				//snprintf(buffer, 10, "%d", value);
+				snprintf(stringBuffer, 10, "%ld", stringCompTable[x].valueInt);
+				SetValue(position, stringBuffer);
+				return;
+			}
 		}
 	}
-
 	SetValue(position, value);
 }
 
 void SetValue(int position, char *value)
 {
-
+	char *c;
+		
 	switch (valueTable[position].type) {
 		//TODO used something better then atoi
 		case typeUINT:
+		case typeINT:
 			*(uint32_t *)valueTable[position].ptr = atoi(value);
 			break;
-		case typeINT:
-			*(int *)valueTable[position].ptr = atoi(value);
-			break;
-
 		case typeFLOAT:
 			*(float *)valueTable[position].ptr = atof(value);
 			break;
+		case typeSTRING:
+			c = valueTable[position].ptr;
+			strncpy(c,value,35);
+			break;
 	}
-
 }
 
 void SendStatusReport(char *inString)
@@ -812,54 +902,54 @@ static int SetVariable(char *inString)
 void OutputVarSet(uint32_t position)
 {
 	char fString[20];
-
-	switch (valueTable[position].type) {
-
-	case typeUINT:
-		sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
-		RfCustomReplyBuffer(rf_custom_out_buffer);
-		break;
-
-
-	case typeINT:
-		sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
-		RfCustomReplyBuffer(rf_custom_out_buffer);
-		break;
-
-
-	case typeFLOAT:
-		ftoa(*(float *)valueTable[position].ptr, fString);
-		StripSpaces(fString);
-		sprintf(rf_custom_out_buffer, "set %s=%s\n", valueTable[position].name, fString);
-		RfCustomReplyBuffer(rf_custom_out_buffer);
-		break;
+	char *c;
+	switch (valueTable[position].type)
+	{
+		case typeUINT:
+			sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			break;
+		case typeINT:
+			sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			break;
+		case typeFLOAT:
+			ftoa(*(float *)valueTable[position].ptr, fString);
+			StripSpaces(fString);
+			sprintf(rf_custom_out_buffer, "set %s=%s\n", valueTable[position].name, fString);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			break;
+		case typeSTRING:
+			c = valueTable[position].ptr;
+			sprintf(rf_custom_out_buffer, "set %s=%s\n", valueTable[position].name, c);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			break;
 	}
-
 }
 
 void OutputVar(uint32_t position)
 {
 	char fString[20];
-
-	switch (valueTable[position].type) {
-
-	case typeUINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
-		break;
-
-
-	case typeINT:
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
-		break;
-
-
-	case typeFLOAT:
-		ftoa(*(float *)valueTable[position].ptr, fString);
-		StripSpaces(fString);
-		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%s\n", valueTable[position].name, fString);
-		break;
+	char *c;
+	switch (valueTable[position].type)
+	{
+		case typeUINT:
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+			break;
+		case typeINT:
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+			break;
+		case typeFLOAT:
+			ftoa(*(float *)valueTable[position].ptr, fString);
+			StripSpaces(fString);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%s\n", valueTable[position].name, fString);
+			break;
+		case typeSTRING:
+			c = valueTable[position].ptr;
+			sprintf(rf_custom_out_buffer, "%s=%s\n", valueTable[position].name, c);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			break;
 	}
-
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
 /**********************************************************************************************************************/
@@ -1200,6 +1290,60 @@ void ProcessCommand(char *inString)
 
 			SaveAndSend();
 		}
+	else if (!strncmp("crsf_", inString, 4))
+		{
+			uint32_t protocol;
+			uint32_t usart;
+
+			switch(inString[5])
+			{
+				case 't':
+					protocol = USING_CRSF_T;
+					break;
+				case 'r':
+					protocol = USING_CRSF_R;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
+			}
+			switch(inString[6])
+			{
+				case '1':
+					usart = ENUM_USART1;
+					break;
+				case '2':
+					usart = ENUM_USART2;
+					break;
+				case '3':
+					usart = ENUM_USART3;
+					break;
+				case '4':
+					usart = ENUM_USART4;
+					break;
+				case '5':
+					usart = ENUM_USART5;
+					break;
+				case '6':
+					usart = ENUM_USART6;
+					break;
+				default:
+					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");
+					RfCustomReplyBuffer(rf_custom_out_buffer);
+					break;
+			}
+
+			SetRxDefaults(protocol, usart);
+			SetMode(M_ARMED, 4, 50, 100);
+			resetBoard = 1;
+			mainConfig.rcControlsConfig.rcCalibrated = 1;
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me CRSF Defaults\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			SaveAndSend();
+		}
 	else if (!strncmp("sumd_", inString, 4))
 		{
 
@@ -1368,29 +1512,24 @@ void ProcessCommand(char *inString)
 		{
 
 			mainConfig.gyroConfig.loopCtrl   = LOOP_UH32;
-			mainConfig.pidConfig[YAW].kp     = 30.00;
-			mainConfig.pidConfig[ROLL].kp    = 30.00;
-			mainConfig.pidConfig[PITCH].kp   = 30.00;
-
-			mainConfig.pidConfig[YAW].ki     = 30.00;
-			mainConfig.pidConfig[ROLL].ki    = 30.00;
-			mainConfig.pidConfig[PITCH].ki   = 30.00;
-
-			mainConfig.pidConfig[YAW].kd     = 30.00;
-			mainConfig.pidConfig[ROLL].kd    = 30.00;
-			mainConfig.pidConfig[PITCH].kd   = 30.00;
-
-			mainConfig.pidConfig[YAW].ga     = 6;
-			mainConfig.pidConfig[ROLL].ga    = 0;
-			mainConfig.pidConfig[PITCH].ga   = 0;
-
-			mainConfig.filterConfig[YAW].gyro.q   = 75.000;
-			mainConfig.filterConfig[ROLL].gyro.q  = 40.000;
-			mainConfig.filterConfig[PITCH].gyro.q = 40.000;
-
-			mainConfig.filterConfig[YAW].kd.r     = 65.0f;
-			mainConfig.filterConfig[ROLL].kd.r    = 65.0f;
-			mainConfig.filterConfig[PITCH].kd.r   = 65.0f;
+ 			mainConfig.tuneProfile[activeProfile].pidConfig[YAW].kp          = 30.00;
+ 			mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].kp         = 30.00;
+ 			mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].kp        = 30.00;
+ 			mainConfig.tuneProfile[activeProfile].pidConfig[YAW].ki          = 30.00;
+ 			mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].ki         = 30.00;
+ 			mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].ki        = 30.00;
+ 			mainConfig.tuneProfile[activeProfile].pidConfig[YAW].kd          = 30.00;
+ 			mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].kd         = 30.00;
+ 			mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].kd        = 30.00;
+ 			mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga       = 0;
+ 			mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga      = 0;
+ 			mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga     = 0;
+ 			mainConfig.tuneProfile[activeProfile].filterConfig[YAW].gyro.q   = 75.000;
+ 			mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].gyro.q  = 60.000;
+ 			mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].gyro.q = 60.000;
+ 			mainConfig.tuneProfile[activeProfile].filterConfig[YAW].kd.r     = 60.0f;
+ 			mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].kd.r    = 60.0f;
+ 			mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].kd.r   = 60.0f;
 
 			resetBoard = 1;
 
@@ -1599,14 +1738,11 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("msmode", inString))
 		{
-			mainConfig.pidConfig[YAW].ga                  = 0;
-			mainConfig.pidConfig[ROLL].ga                 = 0;
-			mainConfig.pidConfig[PITCH].ga                = 0;
-			mainConfig.mixerConfig.tpaKpCurveType         = 0;
-			mainConfig.mixerConfig.tpaKiCurveType         = 1;
-			mainConfig.mixerConfig.tpaKdCurveType         = 0;
-			mainConfig.mixerConfig.escProtocol            = ESC_MULTISHOT;
-			mainConfig.mixerConfig.escUpdateFrequency     = 32000;
+			mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga   = 0;
+			mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga  = 0;
+			mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga = 0;
+			mainConfig.mixerConfig.escProtocol               = ESC_MULTISHOT;
+			mainConfig.mixerConfig.escUpdateFrequency        = 32000;
 			resetBoard = 1;
 
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Digital Mode Enabled\n");
@@ -1616,16 +1752,13 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("dpmode", inString))
 		{
-			mainConfig.rcControlsConfig.rcSmoothingFactor = 0;
-			mainConfig.filterConfig[YAW].gyro.q           = 85;
-			mainConfig.filterConfig[ROLL].gyro.q          = 60;
-			mainConfig.filterConfig[PITCH].gyro.q         = 60;
-			mainConfig.pidConfig[YAW].ga                  = 0;
-			mainConfig.pidConfig[ROLL].ga                 = 0;
-			mainConfig.pidConfig[PITCH].ga                = 0;
-			mainConfig.mixerConfig.tpaKpCurveType         = 0;
-			mainConfig.mixerConfig.tpaKiCurveType         = 1;
-			mainConfig.mixerConfig.tpaKdCurveType         = 0;
+			mainConfig.tuneProfile[activeProfile].rcRates.rcSmoothingFactor = 0;
+			mainConfig.tuneProfile[activeProfile].filterConfig[YAW].gyro.q           = 85;
+			mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].gyro.q          = 60;
+			mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].gyro.q         = 60;
+			mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga                  = 0;
+			mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga                 = 0;
+			mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga                = 0;
 			mainConfig.mixerConfig.escProtocol            = ESC_DSHOT600;
 			mainConfig.mixerConfig.escUpdateFrequency     = 32000;
 			resetBoard = 1;
@@ -1777,27 +1910,6 @@ void ProcessCommand(char *inString)
 		{
 			char fString[20];
 
-			if (!mainConfig.pidConfig[YAW].kp)
-				mainConfig.pidConfig[YAW].kp = 0.001f;
-			if (!mainConfig.pidConfig[ROLL].kp)
-				mainConfig.pidConfig[ROLL].kp = 0.001f;
-			if (!mainConfig.pidConfig[PITCH].kp)
-				mainConfig.pidConfig[PITCH].kp = 0.001f;
-
-			if (!mainConfig.pidConfig[YAW].ki)
-				mainConfig.pidConfig[YAW].ki = 0.001f;
-			if (!mainConfig.pidConfig[ROLL].ki)
-				mainConfig.pidConfig[ROLL].ki = 0.001f;
-			if (!mainConfig.pidConfig[PITCH].ki)
-				mainConfig.pidConfig[PITCH].ki = 0.001f;
-
-			if (!mainConfig.pidConfig[YAW].kd)
-				mainConfig.pidConfig[YAW].kd = 0.001f;
-			if (!mainConfig.pidConfig[ROLL].kd)
-				mainConfig.pidConfig[ROLL].kd = 0.001f;
-			if (!mainConfig.pidConfig[PITCH].kd)
-				mainConfig.pidConfig[PITCH].kd = 0.001f;
-
 			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_YAW_KP) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me yaw_kp_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_ROLL_KP) ), fString); StripSpaces(fString);
@@ -1837,7 +1949,7 @@ void ProcessCommand(char *inString)
 				PrintModes();
 				PrintTpaCurves();
 
-				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
+				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
 					OutputVarSet(x);
 					argsOutputted++;
@@ -1849,7 +1961,7 @@ void ProcessCommand(char *inString)
 
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s\n", FULL_VERSION_STRING);
 				RfCustomReplyBuffer(rf_custom_out_buffer);
-				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec))-1;x++)
+				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
 				{
 					if (!strcmp(valueTable[x].group, args))
 					{
@@ -2022,25 +2134,65 @@ void ProcessCommand(char *inString)
 			args = StripSpaces(args);
 			SetupModes(args);
 		}
-	else if (!strcmp("throttlecurve", inString))
+	else if (!strcmp("throttlecurve1", inString))
 		{
 			args = StripSpaces(args);
-			AdjustThrottleCurve(args);
+			AdjustTpa(args, "throttlecurve1 ", mainConfig.tuneProfile[0].filterConfig[0].throttleCurve);
 		}
-	else if (!strcmp("tpakp", inString))
+	else if (!strcmp("throttlecurve2", inString))
 		{
 			args = StripSpaces(args);
-			AdjustKpTpa(args);
+			AdjustTpa(args, "throttlecurve2 ", mainConfig.tuneProfile[1].filterConfig[0].throttleCurve);
 		}
-	else if (!strcmp("tpaki", inString))
+	else if (!strcmp("throttlecurve3", inString))
 		{
 			args = StripSpaces(args);
-			AdjustKiTpa(args);
+			AdjustTpa(args, "throttlecurve3 ", mainConfig.tuneProfile[2].filterConfig[0].throttleCurve);
 		}
-	else if (!strcmp("tpakd", inString))
+	else if (!strcmp("tpakp1", inString))
 		{
 			args = StripSpaces(args);
-			AdjustKdTpa(args);
+			AdjustTpa(args, "tpakp1 ", mainConfig.tuneProfile[0].filterConfig[0].tpaKpCurve);
+		}
+	else if (!strcmp("tpaki1", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpaki1 ", mainConfig.tuneProfile[0].filterConfig[0].tpaKiCurve);
+		}
+	else if (!strcmp("tpakd1", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpakd1 ", mainConfig.tuneProfile[0].filterConfig[0].tpaKdCurve);
+		}
+	else if (!strcmp("tpakp2", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpakp2 ", mainConfig.tuneProfile[1].filterConfig[0].tpaKpCurve);
+		}
+	else if (!strcmp("tpaki2", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpaki2 ", mainConfig.tuneProfile[1].filterConfig[0].tpaKiCurve);
+		}
+	else if (!strcmp("tpakd2", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpakd2 ", mainConfig.tuneProfile[1].filterConfig[0].tpaKdCurve);
+		}
+	else if (!strcmp("tpakp3", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpakp3 ", mainConfig.tuneProfile[2].filterConfig[0].tpaKpCurve);
+		}
+	else if (!strcmp("tpaki3", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpaki3 ", mainConfig.tuneProfile[2].filterConfig[0].tpaKiCurve);
+		}
+	else if (!strcmp("tpakd3", inString))
+		{
+			args = StripSpaces(args);
+			AdjustTpa(args, "tpakd3 ", mainConfig.tuneProfile[2].filterConfig[0].tpaKdCurve);
 		}
 	else if (!strcmp("save", inString))
 		{

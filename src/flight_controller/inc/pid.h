@@ -40,9 +40,15 @@
 //#define DEFAULT_PITCH_KD         1500.0f
 
 
-enum { KP = 0, KD, KI, PID_VARIABLE_COUNT }; // why is there a blank enum here kalyn?
+enum
+{
+    KP = 0,
+    KD = 1,
+    KI = 2,
+};
 
-typedef struct {
+typedef struct
+{
     float kp;
     float ki;
     float kd;
@@ -68,7 +74,7 @@ extern float currentKdFilterConfig[AXIS_NUMBER];
 
 void InitPid (void);
 //void InlineInitPidFilters(void);
-uint32_t InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[]);
+uint32_t InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange);
 uint32_t SpinStopper(int32_t axis, float pidError);
 void InlineUpdateWitchcraft(pid_terms pidConfig[]);
 

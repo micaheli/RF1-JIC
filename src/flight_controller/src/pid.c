@@ -22,6 +22,8 @@ uint32_t uhOhRecover = 0;
 void InitPid (void)
 {
 
+	int axis; //set
+
 	bzero(kiError,           sizeof(kiError));
 	bzero(kiErrorLimit,      sizeof(kiErrorLimit));
 	bzero(kdDelta,           sizeof(kdDelta));
@@ -32,52 +34,62 @@ void InitPid (void)
 
 	uhOhRecover = 0; //unset recover mode
 
-	pidsUsed[YAW].kp   = (DEFAULT_YAW_KP * mainConfig.pidConfig[YAW].kp) / DEFAULT_PID_CONFIG_VALUE;
-	pidsUsed[YAW].ki   = (DEFAULT_YAW_KI * mainConfig.pidConfig[YAW].ki) / DEFAULT_PID_CONFIG_VALUE;
-	pidsUsed[YAW].kd   = (DEFAULT_YAW_KD * mainConfig.pidConfig[YAW].kd) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[YAW].kp   = (DEFAULT_YAW_KP * mainConfig.tuneProfile[activeProfile].pidConfig[YAW].kp) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[YAW].ki   = (DEFAULT_YAW_KI * mainConfig.tuneProfile[activeProfile].pidConfig[YAW].ki) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[YAW].kd   = (DEFAULT_YAW_KD * mainConfig.tuneProfile[activeProfile].pidConfig[YAW].kd) / DEFAULT_PID_CONFIG_VALUE;
 
-	pidsUsed[ROLL].kp  = (DEFAULT_ROLL_KP * mainConfig.pidConfig[ROLL].kp) / DEFAULT_PID_CONFIG_VALUE;
-	pidsUsed[ROLL].ki  = (DEFAULT_ROLL_KI * mainConfig.pidConfig[ROLL].ki) / DEFAULT_PID_CONFIG_VALUE;
-	pidsUsed[ROLL].kd  = (DEFAULT_ROLL_KD * mainConfig.pidConfig[ROLL].kd) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[ROLL].kp  = (DEFAULT_ROLL_KP * mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].kp) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[ROLL].ki  = (DEFAULT_ROLL_KI * mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].ki) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[ROLL].kd  = (DEFAULT_ROLL_KD * mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].kd) / DEFAULT_PID_CONFIG_VALUE;
 
-	pidsUsed[PITCH].kp = (DEFAULT_PITCH_KP * mainConfig.pidConfig[PITCH].kp) / DEFAULT_PID_CONFIG_VALUE;
-	pidsUsed[PITCH].ki = (DEFAULT_PITCH_KI * mainConfig.pidConfig[PITCH].ki) / DEFAULT_PID_CONFIG_VALUE;
-	pidsUsed[PITCH].kd = (DEFAULT_PITCH_KD * mainConfig.pidConfig[PITCH].kd) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[PITCH].kp = (DEFAULT_PITCH_KP * mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].kp) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[PITCH].ki = (DEFAULT_PITCH_KI * mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].ki) / DEFAULT_PID_CONFIG_VALUE;
+	pidsUsed[PITCH].kd = (DEFAULT_PITCH_KD * mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].kd) / DEFAULT_PID_CONFIG_VALUE;
 	//cross multiply pids
+
+	pidsUsed[YAW].wc   = mainConfig.tuneProfile[activeProfile].pidConfig[YAW].wc;
+	pidsUsed[ROLL].wc  = mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].wc;
+	pidsUsed[PITCH].wc = mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].wc;
 
 	if (mainConfig.mixerConfig.mixerStyle == 1)
 	{
 		pidsUsed[YAW].kp = pidsUsed[YAW].kp  / 100000;
 		pidsUsed[YAW].ki = (pidsUsed[YAW].ki / 50000) * loopSpeed.dT;
 		pidsUsed[YAW].kd = (pidsUsed[YAW].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[YAW].wc = mainConfig.pidConfig[0].wc  = (mainConfig.pidConfig[YAW].ga * 0.333);
+		if (pidsUsed[YAW].wc == 0)
+			pidsUsed[YAW].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga * 0.333);
 
 		pidsUsed[ROLL].kp = pidsUsed[ROLL].kp  / 100000;
 		pidsUsed[ROLL].ki = (pidsUsed[ROLL].ki / 50000) * loopSpeed.dT;
 		pidsUsed[ROLL].kd = (pidsUsed[ROLL].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[ROLL].wc = mainConfig.pidConfig[ROLL].wc  = (mainConfig.pidConfig[ROLL].ga * 0.333);
+		if (pidsUsed[ROLL].wc == 0)
+			pidsUsed[ROLL].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga * 0.333);
 
 		pidsUsed[PITCH].kp = pidsUsed[PITCH].kp  / 100000;
 		pidsUsed[PITCH].ki = (pidsUsed[PITCH].ki / 50000) * loopSpeed.dT;
 		pidsUsed[PITCH].kd = (pidsUsed[PITCH].kd / 200000000)  / loopSpeed.dT;
-		pidsUsed[PITCH].wc = mainConfig.pidConfig[PITCH].wc  = (mainConfig.pidConfig[PITCH].ga * 0.333);
+		if (pidsUsed[PITCH].wc == 0)
+			pidsUsed[PITCH].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga * 0.333);
 	}
 	else
 	{
 		pidsUsed[YAW].kp = pidsUsed[YAW].kp  / 50000;
 		pidsUsed[YAW].ki = (pidsUsed[YAW].ki / 25000) * loopSpeed.dT;
 		pidsUsed[YAW].kd = (pidsUsed[YAW].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[YAW].wc = mainConfig.pidConfig[0].wc  = (mainConfig.pidConfig[YAW].ga * 0.333);
+		if (pidsUsed[YAW].wc == 0)
+			pidsUsed[YAW].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga * 0.333);
 
 		pidsUsed[ROLL].kp = pidsUsed[ROLL].kp  / 50000;
 		pidsUsed[ROLL].ki = (pidsUsed[ROLL].ki / 25000) * loopSpeed.dT;
 		pidsUsed[ROLL].kd = (pidsUsed[ROLL].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[ROLL].wc = mainConfig.pidConfig[ROLL].wc  = (mainConfig.pidConfig[ROLL].ga * 0.333);
+		if (pidsUsed[ROLL].wc == 0)
+			pidsUsed[ROLL].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga * 0.333);
 
 		pidsUsed[PITCH].kp = pidsUsed[PITCH].kp  / 50000;
 		pidsUsed[PITCH].ki = (pidsUsed[PITCH].ki / 25000) * loopSpeed.dT;
 		pidsUsed[PITCH].kd = (pidsUsed[PITCH].kd / 100000000)  / loopSpeed.dT;
-		pidsUsed[PITCH].wc = mainConfig.pidConfig[PITCH].wc  = (mainConfig.pidConfig[PITCH].ga * 0.333);
+		if (pidsUsed[PITCH].wc == 0)
+			pidsUsed[PITCH].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga * 0.333);
 	}
 
 	if (loopSpeed.khzDivider == 32)
@@ -108,12 +120,12 @@ void InitPid (void)
 	for (axis = 2; axis >= 0; --axis)
 	{
 		InitKdFilter(&kdFilter[axis]);
-		InitBiquad(mainConfig.filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 2.11f);
+		InitBiquad(mainConfig.tuneProfile[activeProfile].filterConfig[axis].kd.r, &kdBqFilterState[axis], loopSpeed.dT, FILTER_TYPE_LOWPASS, &kdBqFilterState[axis], 2.11f);
 	}
 }
 
 
-inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange, pid_terms pidConfig[])
+inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange)
 {
 
 	int32_t axis;
@@ -121,7 +133,6 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 	float   pidError;
 	static float lastfilteredGyroData[AXIS_NUMBER];
 
-	(void)(pidConfig);
 	(void)(actuatorRange);
 
 	for (axis = 2; axis >= 0; --axis)
@@ -162,7 +173,10 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 			if ( fullKiLatched )
 			{
 
-				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -mainConfig.pidConfig[0].kiLimit, mainConfig.pidConfig[0].kiLimit); //prevent insane windup
+				if (axis == YAW)
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f); //prevent insane windup
+				else
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit); //prevent insane windup
 
 				if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
 				{
@@ -201,7 +215,7 @@ inline uint32_t InlinePidController (float filteredGyroData[], float flightSetPo
 				//kdDelta[axis] = kdFilter[axis].x;
 				kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
 
-				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -mainConfig.pidConfig[0].kdLimit, mainConfig.pidConfig[0].kdLimit);
+				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsed[axis].kd, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kdLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kdLimit);
 			//}
 			// calculate Kd ////////////////////////// ^
 
@@ -222,6 +236,10 @@ inline uint32_t SpinStopper(int32_t axis, float pidError)
 
     static uint32_t countErrorUhoh[AXIS_NUMBER]  = {0, 0, 0};
     static uint32_t uhOhRecoverCounter = 0;
+	int multiplier = 1;
+
+	if (axis == YAW)
+		multiplier = 2;
 
 	if (!uhOhRecover)
 	{
@@ -234,7 +252,7 @@ inline uint32_t SpinStopper(int32_t axis, float pidError)
 		{
 			countErrorUhoh[axis] = 0;
 		}
-		if (countErrorUhoh[axis] > loopSpeed.uhohNumber )
+		if (countErrorUhoh[axis] > (loopSpeed.uhohNumber * multiplier) )
 		{
 			uhOhRecover = 1;
 		}
@@ -250,7 +268,7 @@ inline uint32_t SpinStopper(int32_t axis, float pidError)
 	}
 	if (uhOhRecoverCounter)
 	{
-		return (1);
+		return(1);
 	}
 	return (0);
 }

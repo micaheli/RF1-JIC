@@ -19,8 +19,9 @@ string_modes_rec stringModes[] = {
 		{"LEDCOLOR",    7,  M_LEDCOLOR },
 		{"DIRECT",      8,  M_DIRECT },
 		{"VTXON",       9,  M_VTXON },
-//		{"GLUE",       10,  M_GLUE },
-		{"BRAINDRAIN", 9,  M_BRAINDRAIN },
+		{"BRAINDRAIN",  10, M_BRAINDRAIN },
+		{"PROFILE2",    11, M_PROFILE2 },
+ 		{"PROFILE3",    12, M_PROFILE3 },
 //		{"CATMODE",    11,  M_CATMODE },
 };
 
@@ -93,7 +94,7 @@ void PrintModes(void)
 	uint32_t channel;
 
 
-	sprintf(rf_custom_out_buffer, "#me modes active: %lu\n", activeModes );
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me modes active: %lu\n", activeModes );
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 	for (x=0;x<(sizeof(stringModes)/sizeof(string_modes_rec));x++)
 	{
@@ -105,7 +106,7 @@ void PrintModes(void)
 		else
 			channel += 1;
 
-		sprintf(rf_custom_out_buffer, "modes %s=%lu=%i=%i\n", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
+		snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "modes %s=%lu=%i=%i\n", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
 		RfCustomReplyBuffer(rf_custom_out_buffer);
 		//snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "modes %s=%d=%d=%d", stringModes[x].modeString, channel, mainConfig.flightModeArray[x*3+1], mainConfig.flightModeArray[x*3+2] );
 		//RfCustomReply(rf_custom_out_buffer);

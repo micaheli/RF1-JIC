@@ -232,7 +232,48 @@ static void TaskeSafeLoopCounter(void)
 
 void TaskProcessArmingStructure(void)
 {
+	static uint32_t lastSwitch = 5000;
+
 	ProcessArmingStructure();
+	if (!boardArmed)
+ 	{
+		if ( (InlineMillis() - lastSwitch) < 2000 )
+			return;
+
+ 		if (ModeActive(M_PROFILE3)) // is profile 3 active?
+ 		{
+ 			if (activeProfile != PROFILE3 )
+ 			{
+ 				DeinitFlight();
+ 				activeProfile = PROFILE3;
+ 				InitFlight();
+ 				activeProfile = PROFILE3;
+				lastSwitch = InlineMillis();
+ 			}
+ 		}
+ 		else if (ModeActive(M_PROFILE2))  // is profile 2 active?
+ 		{
+ 			if (activeProfile != PROFILE2 )
+ 			{
+ 				DeinitFlight();
+ 				activeProfile = PROFILE2;
+ 				InitFlight();
+ 				activeProfile = PROFILE2;
+				lastSwitch = InlineMillis();
+ 			}
+ 		}
+ 		else  // then profile 1 is active?
+ 		{
+ 			if (activeProfile != PROFILE1 )
+ 			{
+ 				DeinitFlight();
+ 				activeProfile = PROFILE1;
+ 				InitFlight();
+ 				activeProfile = PROFILE1;
+				lastSwitch = InlineMillis();
+ 			}
+ 		}
+ 	}
 }
 
 void TaskCheckDelayedArming(void)
@@ -318,8 +359,13 @@ void TaskAdc(void)
 
 void TaskProcessSoftSerial(void)
 {
-	 if (oneWireActive)
-		 FeedTheDog();
+	//feed the dog if oneWire is active to prevent WD restart
+	if (oneWireActive)
+		FeedTheDog();
+
+	//feed the dog if dshot is active to prevent WD restart
+	if(dShotFeedTheDog)
+		FeedTheDog();
 }
 
 void TaskWizard(void)

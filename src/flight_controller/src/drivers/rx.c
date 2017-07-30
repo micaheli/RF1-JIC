@@ -15,6 +15,7 @@ volatile uint32_t throttleIsSafe = 0;
 static uint32_t packetTime = 11;
 static float packetTimeInv = (11.0f / 1000.0f);
 
+uint32_t veryFirstArm              = 1;
 uint32_t PreArmFilterCheck         = 0;
 uint32_t activeFailsafe            = 0;
 uint32_t failsafeHappend           = 0;
@@ -131,6 +132,28 @@ typedef struct {
 	uint8_t endByte;
 } __attribute__ ((__packed__)) sbusFrame_t;
 
+typedef struct {
+	uint8_t syncByte;
+	uint8_t lengthByte;
+	uint8_t typeByte;
+	unsigned int chan0  : 11;
+	unsigned int chan1  : 11;
+	unsigned int chan2  : 11;
+	unsigned int chan3  : 11;
+	unsigned int chan4  : 11;
+	unsigned int chan5  : 11;
+	unsigned int chan6  : 11;
+	unsigned int chan7  : 11;
+	unsigned int chan8  : 11;
+	unsigned int chan9  : 11;
+	unsigned int chan10 : 11;
+	unsigned int chan11 : 11;
+	unsigned int chan12 : 11;
+	unsigned int chan13 : 11;
+	unsigned int chan14 : 11;
+	unsigned int chan15 : 11;
+	uint8_t crc;
+} __attribute__ ((__packed__)) crsfRcFrame_t;
 
 //uint32_t tempData[MAXCHANNELS];
 
@@ -222,7 +245,7 @@ void ProcessArmingStructure(void)
 
 inline void CheckThrottleSafe(void)
 {
-	uint32_t trueRangedThrottleU   = 0;
+	uint32_t trueRangedThrottleU; //set
 
 	trueRangedThrottleU = lrintf( InlineChangeRangef(trueRcCommandF[THROTTLE], 1.0f, -1.0f, 1023.0f, 0.0f) );
 
@@ -245,9 +268,6 @@ inline void CheckThrottleSafe(void)
 
 inline void RxUpdate(void) // hook for when rx updates
 {
-
-	//very first arm
-	static uint32_t veryFirstArm = 1;
 
 	 //get current flight modes
 	CheckRxToModes();
@@ -422,6 +442,84 @@ inline uint32_t ChannelMap(uint32_t inChannel)
 	return(outChannel);
 }
 
+void ProcessCrsfPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
+{
+
+	int chkSum; //set
+	int rxSum;  //set
+	int y;      //set
+
+	//<​Device address​ or Sync Byte>
+	//<Frame length>
+	//<​Type​>
+	//<Payload>
+	//<​CRC​> 
+
+															// Make sure this is very first thing done in function, and its called first on interrupt
+	memcpy(copiedBufferData, serialRxBuffer, frameSize);    // we do this to make sure we don't have a race condition, we copy before it has a chance to be written by dma
+															// We know since we are highest priority interrupt, nothing can interrupt us, and copy happens so quick, we will alwyas be guaranteed to get it
+	crsfRcFrame_t *crsfRc = (crsfRcFrame_t*)copiedBufferData;
+
+	if (copiedBufferData[0] == CRSF_SYNC_BYTE)
+	{
+		switch(copiedBufferData[2]) //frame type is thirdbyte
+		{
+			case CRSF_TYPE_RC:
+				rxDataRaw[0]  = crsfRc->chan0;
+				rxDataRaw[1]  = crsfRc->chan1;
+				rxDataRaw[2]  = crsfRc->chan2;
+				rxDataRaw[3]  = crsfRc->chan3;
+				rxDataRaw[4]  = crsfRc->chan4;
+				rxDataRaw[5]  = crsfRc->chan5;
+				rxDataRaw[6]  = crsfRc->chan6;
+				rxDataRaw[7]  = crsfRc->chan7;
+				rxDataRaw[8]  = crsfRc->chan8;
+				rxDataRaw[9]  = crsfRc->chan9;
+				rxDataRaw[10] = crsfRc->chan10;
+				rxDataRaw[11] = crsfRc->chan11;
+				rxDataRaw[12] = crsfRc->chan12;
+				rxDataRaw[13] = crsfRc->chan13;
+				rxDataRaw[14] = crsfRc->chan14;
+				rxDataRaw[15] = crsfRc->chan15;
+				rxSum         = crsfRc->crc;
+
+				chkSum = CrsfCrc8(copiedBufferData+2, frameSize-2);
+
+				//if (chkSum == rxSum)
+				if (1 == 1)
+				{
+					for (y=MAXCHANNELS-1;y>-1;y--)
+					{
+						rxData[y] = rxDataRaw[ChannelMap(y)];
+					}
+
+					packetTime = 10;
+					packetTimeInv = ((float)packetTime / 1000.0f);
+					rx_timeout = 0;
+
+					if (buzzerStatus.status == STATE_BUZZER_FAILSAFE)
+						buzzerStatus.status = STATE_BUZZER_OFF;
+
+					InlineCollectRcCommand();
+					RxUpdate();
+					static int everyTwenty = 0;
+					everyTwenty++;
+					if (everyTwenty=5)
+					{
+						sendCrsfTelemtryAt = InlineMillis() + 1;
+						everyTwenty = 0;
+					}
+				}
+				break;
+			default:
+				return;
+				break;
+			
+		}
+	}
+}
+
+
 void ProcessSpektrumPacket(uint32_t serialNumber)
 {
 	static uint32_t timeSinceLastPacket = 0;
@@ -510,8 +608,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 			}
 		}
 
-		static uint32_t mutexLock = 0;
-		if (!spekPhase && mainConfig.telemConfig.telemSpek && !mutexLock)
+		if (!spekPhase && mainConfig.telemConfig.telemSpek)
 		{
 			sendSpektrumTelemtryAt = InlineMillis() + 2;
 		}
@@ -784,10 +881,11 @@ void InitRcData(void)
 {
 	int32_t axis  = 0;
 
+	//very first arm
+	veryFirstArm = 1;
 	rxUpdateCount = 0;
-	//pitch yaw and roll must all use the same curve. We make sure that's set here.
-	mainConfig.rcControlsConfig.useCurve[YAW]  = mainConfig.rcControlsConfig.useCurve[PITCH];
-	mainConfig.rcControlsConfig.useCurve[ROLL] = mainConfig.rcControlsConfig.useCurve[PITCH];
+
+	bzero(rxCalibrationRecords, sizeof(rxCalibrationRecords));
 
 	//precalculate max angles for RC Curves for the three stick axis
 	for (axis = 3; axis >= 0; axis--)
@@ -874,20 +972,43 @@ inline void InlineCollectRcCommand (void)
 	for (axis = 0; axis < MAXCHANNELS; axis++)
 	{
 
+		//range with deadband in mind to produce smooth movement
+		//if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
+		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.00f + mainConfig.rcControlsConfig.deadBand[axis], -1.0f); //-1 to 0
+		//else if ( (axis == THROTTLE) && (!mainConfig.rcControlsConfig.shortThrow) ) //add 5% deadband to top of throttle
+		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.05f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1.05
+		//else if ( (axis == THROTTLE) ) //add 10% deadband to top of throttle
+		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.10f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1.10
+		//else
+		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.00f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
+
 		if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.00f + mainConfig.rcControlsConfig.deadBand[axis], -1.0f); //-1 to 0
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.00f, -1.0f); //-1 to 0
 		else if ( (axis == THROTTLE) && (!mainConfig.rcControlsConfig.shortThrow) ) //add 5% deadband to top of throttle
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.05f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1.05
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.05f, 0.0f); //0 to +1.05
 		else if ( (axis == THROTTLE) ) //add 10% deadband to top of throttle
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.10f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1.10
-		else
-			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.00f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.10f, 0.0f); //0 to +1.10
+		else //positive range
+			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.00f, 0.0f); //0 to +1
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
-		if (ABS(rangedRx) > mainConfig.rcControlsConfig.deadBand[axis])
+		if (ABS(rangedRx) >= mainConfig.rcControlsConfig.deadBand[axis])
 		{
+			//range with deadband in mind to produce smooth movement
+			if(axis != THROTTLE)
+			{
+				if (rangedRx > 0)
+				{
+					rangedRx = InlineChangeRangef(rangedRx, 1.0f, mainConfig.rcControlsConfig.deadBand[axis], 1.0f, 0.0f);
+				}
+				else
+				{
+					rangedRx = InlineChangeRangef(rangedRx, -mainConfig.rcControlsConfig.deadBand[axis], -1.0f, 0.0f, -1.0f);
+				}
+			}
+
 			trueRcCommandF[axis]   = InlineConstrainf( rangedRx, -1.0f, 1.0f);
-			curvedRcCommandF[axis] = InlineApplyRcCommandCurve(trueRcCommandF[axis], mainConfig.rcControlsConfig.useCurve[axis], mainConfig.rcControlsConfig.curveExpo[axis], axis);
+			curvedRcCommandF[axis] = InlineApplyRcCommandCurve(trueRcCommandF[axis], mainConfig.tuneProfile[activeProfile].rcRates.useCurve, mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[axis], axis);
 		}
 		else
 		{
@@ -918,9 +1039,9 @@ static float GetKissMaxRates(float rcCommand, uint32_t axis)
 		negative  = 1;
 	}
 
-	kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
-	kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis] * 1.1f);
-	kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
+	kissUseCurve = (mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[axis]);
+	kissRate     = (mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[axis] * 1.1f);
+	kissGRate    = (mainConfig.tuneProfile[activeProfile].rcRates.rates[axis]);
 	kissSetpoint = rcCommand;
 
 	kissRpyUseRates = 1.0f - ABS(rcCommand) * kissGRate;
@@ -949,9 +1070,9 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 		negative  = 1;
 	}
 
-	flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
-	flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
-	flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
+	flopExpo      = (mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[axis]);
+	flopRcRate    = (mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[axis]);
+	flopSuperRate = (mainConfig.tuneProfile[activeProfile].rcRates.rates[axis]);
 
 	if (flopRcRate > 2.0f)
 		flopRcRate = flopRcRate + (14.55f * (flopRcRate - 2.0f));
@@ -1015,9 +1136,9 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 			if (rcCommand>0.98f)
 				rcCommand = 0.98f;
 
-			flopExpo      = (mainConfig.rcControlsConfig.curveExpo[axis]);
-			flopRcRate    = (mainConfig.rcControlsConfig.acroPlus[axis]);
-			flopSuperRate = (mainConfig.rcControlsConfig.rates[axis]);
+			flopExpo      = (mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[axis]);
+			flopRcRate    = (mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[axis]);
+			flopSuperRate = (mainConfig.tuneProfile[activeProfile].rcRates.rates[axis]);
 
 			if (flopRcRate > 2.0f)
 				flopRcRate = flopRcRate + (14.55f * (flopRcRate - 2.0f));
@@ -1047,9 +1168,9 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 			if (rcCommand>0.98f)
 				rcCommand = 0.98f;
 
-			kissUseCurve = (mainConfig.rcControlsConfig.curveExpo[axis]);
-			kissRate     = (mainConfig.rcControlsConfig.acroPlus[axis] * 1.1f);
-			kissGRate    = (mainConfig.rcControlsConfig.rates[axis]);
+			kissUseCurve = (mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[axis]);
+			kissRate     = (mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[axis] * 1.1f);
+			kissGRate    = (mainConfig.tuneProfile[activeProfile].rcRates.rates[axis]);
 			kissSetpoint = rcCommand;
 
 			kissRpyUseRates = 1.0f - ABS(rcCommand) * kissGRate;
@@ -1078,7 +1199,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     static int32_t factor              = 0;
     int32_t        channel             = 0;
 
-	if ( (mainConfig.rcControlsConfig.rcSmoothingFactor < 0.1f) || ModeActive(M_DIRECT) || (mainConfig.rcControlsConfig.useCurve[PITCH] == BETAFLOP_EXPO) || (mainConfig.rcControlsConfig.useCurve[PITCH] == KISS_EXPO) )
+	if ( (mainConfig.tuneProfile[activeProfile].rcRates.rcSmoothingFactor < 0.1f) || ModeActive(M_DIRECT) || (mainConfig.tuneProfile[activeProfile].rcRates.useCurve == BETAFLOP_EXPO) || (mainConfig.tuneProfile[activeProfile].rcRates.useCurve == KISS_EXPO) )
 	{
 		for (channel=3; channel >= 0; channel--)
 		{
@@ -1089,7 +1210,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 		return;
 	}
 
-	smoothingInterval = lrintf((float)loopSpeed.khzDivider * (float)packetTime * mainConfig.rcControlsConfig.rcSmoothingFactor ); //todo: calculate this number to be number of loops between PID loops
+	smoothingInterval = lrintf((float)loopSpeed.khzDivider * (float)packetTime * mainConfig.tuneProfile[activeProfile].rcRates.rcSmoothingFactor ); //todo: calculate this number to be number of loops between PID loops
 	//smoothingIntervalThrottle = lrintf((float)loopSpeed.khzDivider * (float)packetTime ); //todo: calculate this number to be number of loops between PID loops
 
     if (isRxDataNew)
@@ -1375,6 +1496,53 @@ void SetRxDefaults(uint32_t rxProtocol, uint32_t usart)
 			break;
 		case USING_SBUS_R:
 		case USING_SBUS_T:
+			mainConfig.rcControlsConfig.shortThrow           = 1;
+			mainConfig.rcControlsConfig.midRc[PITCH]         = 990;
+			mainConfig.rcControlsConfig.midRc[ROLL]          = 990;
+			mainConfig.rcControlsConfig.midRc[YAW]           = 990;
+			mainConfig.rcControlsConfig.midRc[THROTTLE]      = 990;
+			mainConfig.rcControlsConfig.midRc[AUX1]          = 990;
+			mainConfig.rcControlsConfig.midRc[AUX2]          = 990;
+			mainConfig.rcControlsConfig.midRc[AUX3]          = 990;
+			mainConfig.rcControlsConfig.midRc[AUX4]          = 990;
+
+			mainConfig.rcControlsConfig.minRc[PITCH]         = 170;
+			mainConfig.rcControlsConfig.minRc[ROLL]          = 170;
+			mainConfig.rcControlsConfig.minRc[YAW]           = 170;
+			mainConfig.rcControlsConfig.minRc[THROTTLE]      = 170;
+			mainConfig.rcControlsConfig.minRc[AUX1]          = 170;
+			mainConfig.rcControlsConfig.minRc[AUX2]          = 170;
+			mainConfig.rcControlsConfig.minRc[AUX3]          = 170;
+			mainConfig.rcControlsConfig.minRc[AUX4]          = 170;
+
+			mainConfig.rcControlsConfig.maxRc[PITCH]         = 1810;
+			mainConfig.rcControlsConfig.maxRc[ROLL]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[YAW]           = 1810;
+			mainConfig.rcControlsConfig.maxRc[THROTTLE]      = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX1]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX2]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX3]          = 1810;
+			mainConfig.rcControlsConfig.maxRc[AUX4]          = 1810;
+
+			mainConfig.rcControlsConfig.channelMap[PITCH]    = 2;
+			mainConfig.rcControlsConfig.channelMap[ROLL]     = 1;
+			mainConfig.rcControlsConfig.channelMap[YAW]      = 3;
+			mainConfig.rcControlsConfig.channelMap[THROTTLE] = 0;
+			mainConfig.rcControlsConfig.channelMap[AUX1]     = 4;
+			mainConfig.rcControlsConfig.channelMap[AUX2]     = 5;
+			mainConfig.rcControlsConfig.channelMap[AUX3]     = 6;
+			mainConfig.rcControlsConfig.channelMap[AUX4]     = 7;
+			mainConfig.rcControlsConfig.channelMap[AUX5]     = 8;
+			mainConfig.rcControlsConfig.channelMap[AUX6]     = 9;
+			mainConfig.rcControlsConfig.channelMap[AUX7]     = 10;
+			mainConfig.rcControlsConfig.channelMap[AUX8]     = 11;
+			mainConfig.rcControlsConfig.channelMap[AUX9]     = 12;
+			mainConfig.rcControlsConfig.channelMap[AUX10]    = 13;
+			mainConfig.rcControlsConfig.channelMap[AUX11]    = 14;
+			mainConfig.rcControlsConfig.channelMap[AUX12]    = 15; //junk channel
+			break;
+		case USING_CRSF_R:
+		case USING_CRSF_T:
 			mainConfig.rcControlsConfig.shortThrow           = 1;
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 990;
 			mainConfig.rcControlsConfig.midRc[ROLL]          = 990;

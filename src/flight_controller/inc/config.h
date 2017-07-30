@@ -1,23 +1,42 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint8_t)(112U)
-#define CONFIG_VERSION_STR		"112"
-#define FIRMWARE_VERSION		"0.300.112 BETA" //RC18
+#define CONFIG_VERSION			(uint8_t)(118U)
+#define CONFIG_VERSION_STR		"118"
+#define FIRMWARE_VERSION		"0.308.118 BETA" //RC19 is next
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n"
 
 #define RF_BUFFER_SIZE HID_EPIN_SIZE-1
 #define FLIGHT_MODE_ARRAY_SIZE 96
 
+#define PROFILE_COUNT 3
+enum
+{
+	PROFILE1 = 0,
+	PROFILE2 = 1,
+	PROFILE3 = 2,
+	PROFILE4 = 3,
+	PROFILE5 = 4,
+	PROFILE6 = 5,
+	PROFILE7 = 6,
+};
+
 typedef struct
 {
+	char			  profileName[16];
+	rc_rate           rcRates;
+	pid_terms         pidConfig[AXIS_NUMBER];
+	filter_device     filterConfig[AXIS_NUMBER];
+} tune_profile;
+
+typedef struct
+{
+	tune_profile      tuneProfile[PROFILE_COUNT];
 	rc_control_config rcControlsConfig;
 	gyro_config       gyroConfig;
 	mixer_config      mixerConfig;
 	led_config		  ledConfig;
 	telem_config	  telemConfig;
-	filter_device     filterConfig[AXIS_NUMBER];
-	pid_terms         pidConfig[AXIS_NUMBER];
 	int16_t           flightModeArray[96];
 	uint8_t           version;
 	uint16_t          size;
@@ -55,8 +74,9 @@ extern char rf_custom_out_buffer[];
 extern char *StripSpaces(char *inString);
 extern char *CleanupString(char *inString);
 
-extern uint32_t resetBoard;
-extern main_config mainConfig;
+extern volatile int               activeProfile;
+extern uint32_t                   resetBoard;
+extern main_config                mainConfig;
 extern const config_variables_rec valueTable[];
 
 extern char   *CleanupNumberString(char *inString);

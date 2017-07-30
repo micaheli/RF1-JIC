@@ -2270,7 +2270,8 @@ int HandleMaxOsd(void)
     //only run every 100 ms
     static uint32_t lastTimeRun = 0;
 
-    return;
+    //disabled for now
+    return(0);
     if (InlineMillis() - lastTimeRun > 100)
         return(0);
 
@@ -2303,7 +2304,8 @@ int InitMaxOsd(void)
     int x; //set
     uint8_t spiReturnData; //set
 
-    return;
+    //disabled for now
+    return(0);
     //reset structure
     maxOsdRecord.status           = OSD_STATUS_UNKNOWN;
     maxOsdRecord.type             = OSD_TYPE_UNKNOWN;
@@ -2344,7 +2346,7 @@ int InitMaxOsd(void)
                 maxOsdRecord.status = OSD_STATUS_DISABLED;
                 maxOsdRecord.type   = OSD_TYPE_SPI;
                 //should return 0
-                DelayMs(100);
+                DelayMs(80);
                 if (!mainConfig.gyroConfig.boardCalibrated)
                 {
                     maxOsdRecord.status = OSD_STATUS_LOADING_CHAR_MAP;

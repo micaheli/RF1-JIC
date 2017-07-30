@@ -154,6 +154,7 @@ typedef struct
 	uint32_t telemSmartAudio;
     uint32_t telemSport;
     uint32_t telemSpek;
+	uint32_t telemCrsf;
     uint32_t telemMsp;
     uint32_t telemMav;
     uint32_t telemTramp;
@@ -181,6 +182,7 @@ extern volatile vtx_record vtxRequested;
 extern volatile vtx_record vtxRecord;
 extern volatile uint32_t   sendSmartPortAt;
 extern volatile uint32_t   sendSmartPortLuaAt;
+extern volatile uint32_t   sendCrsfTelemtryAt;
 extern volatile uint32_t   sendSpektrumTelemtryAt;
 
 extern volatile uint32_t telemEnabled;

@@ -397,19 +397,19 @@ void textMenuUpdate(void)
 			switch(pidSpektrumTelem.row)
 			{
 				case (2):
-					mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp += dataInc; // kp
+					mainConfig.tuneProfile[activeProfile].pidConfig[pidSpektrumTelem.columnAxis].kp += dataInc; // kp
 				    break;
 				case (3):
-		            mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki += dataInc; //ki
+		            mainConfig.tuneProfile[activeProfile].pidConfig[pidSpektrumTelem.columnAxis].ki += dataInc; //ki
 				    break;
 				case (4):
-		            mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd += dataInc; //kd
+		            mainConfig.tuneProfile[activeProfile].pidConfig[pidSpektrumTelem.columnAxis].kd += dataInc; //kd
 				    break;
 				case (5):
-					mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q += dataInc; //filter
+					mainConfig.tuneProfile[activeProfile].filterConfig[pidSpektrumTelem.columnAxis].gyro.q += dataInc; //filter
 				    break;
 				case (6):
-					mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga += dataInc ;
+					mainConfig.tuneProfile[activeProfile].filterConfig[pidSpektrumTelem.columnAxis].ga += dataInc ;
 				    break;
 				case (7):
 				    if (dataInc != 0)
@@ -432,11 +432,11 @@ void textMenuUpdate(void)
 			}
 
 			//fills in the rows with the data
-			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kp, &stringArray[2][3], 10);
-			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ki, &stringArray[3][3], 10);
-			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].kd, &stringArray[4][3], 10);
-			itoa(mainConfig.filterConfig[pidSpektrumTelem.columnAxis].gyro.q, &stringArray[5][8], 10);
-			itoa(mainConfig.pidConfig[pidSpektrumTelem.columnAxis].ga, &stringArray[6][4], 10);
+			itoa(mainConfig.tuneProfile[activeProfile].pidConfig[pidSpektrumTelem.columnAxis].kp, &stringArray[2][3], 10);
+			itoa(mainConfig.tuneProfile[activeProfile].pidConfig[pidSpektrumTelem.columnAxis].ki, &stringArray[3][3], 10);
+			itoa(mainConfig.tuneProfile[activeProfile].pidConfig[pidSpektrumTelem.columnAxis].kd, &stringArray[4][3], 10);
+			itoa(mainConfig.tuneProfile[activeProfile].filterConfig[pidSpektrumTelem.columnAxis].gyro.q, &stringArray[5][8], 10);
+			itoa(mainConfig.tuneProfile[activeProfile].filterConfig[pidSpektrumTelem.columnAxis].ga, &stringArray[6][4], 10);
         }
 
         if (pidSpektrumTelem.columnAxis > 2 && pidSpektrumTelem.columnAxis < 6)
@@ -454,13 +454,13 @@ void textMenuUpdate(void)
 			switch(pidSpektrumTelem.row)
 			{
 				case (2):
-					mainConfig.rcControlsConfig.rates[pidSpektrumTelem.columnAxis-3] += dataInc; // subtract three to make axis line up with enumeration
+					mainConfig.tuneProfile[activeProfile].rcRates.rates[pidSpektrumTelem.columnAxis-3] += dataInc; // subtract three to make axis line up with enumeration
 				    break;
 				case (3):
-					mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3] += dataInc;
+					mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[pidSpektrumTelem.columnAxis-3] += dataInc;
 				    break;
 				case (4):
-			        mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3] += dataInc;
+			        mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[pidSpektrumTelem.columnAxis-3] += dataInc;
 				    break;
 				case (5):
 					mainConfig.rcControlsConfig.deadBand[pidSpektrumTelem.columnAxis-3] += dataInc * .001;
@@ -486,9 +486,9 @@ void textMenuUpdate(void)
 			}
 
         	//fills in the rows with the data
-			itoa(mainConfig.rcControlsConfig.rates[pidSpektrumTelem.columnAxis-3], &stringArray[2][6], 10);
-			itoa(mainConfig.rcControlsConfig.curveExpo[pidSpektrumTelem.columnAxis-3], &stringArray[3][6], 10);
-			itoa(mainConfig.rcControlsConfig.acroPlus[pidSpektrumTelem.columnAxis-3], &stringArray[4][6], 10);
+			itoa(mainConfig.tuneProfile[activeProfile].rcRates.rates[pidSpektrumTelem.columnAxis-3], &stringArray[2][6], 10);
+			itoa(mainConfig.tuneProfile[activeProfile].rcRates.curveExpo[pidSpektrumTelem.columnAxis-3], &stringArray[3][6], 10);
+			itoa(mainConfig.tuneProfile[activeProfile].rcRates.acroPlus[pidSpektrumTelem.columnAxis-3], &stringArray[4][6], 10);
 			itoa((mainConfig.rcControlsConfig.deadBand[pidSpektrumTelem.columnAxis-3]) * 1000 , &stringArray[6][10], 10);
 
 

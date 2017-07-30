@@ -1262,9 +1262,36 @@ Version 299.110 BETA:
 	Increment version
 	Git force pull
 
-Version 300.110 BETA:
+Version 300.110 RC18:
 	Prevent 1wire auto hardfault
 	testmotors function only spins one motor at a time now
+
+Version 0.302.114 BETA:
+	Added profile support
+
+Version 0.303.114 BETA
+	Fix minor drift issue
+	Improve spin stopper
+
+Version 0.304.115 BETA
+	Fix minor drift issue caused by profile changes to mixer
+
+Version 0.305.115 BETA
+	Revise deadband to be smoother
+	Inverse logged pitch output
+	Fix hot motor issue some people are having
+
+Version 0.306.116 BETA
+	Fix profiling switching hang
+	Fix profile 3 not working
+	Allow demag comp to be changed on ESCs
+
+Version 0.307.117 BETA
+	Dshot code cleanup
+	Added crossfire RX protocol
+
+Version 0.307.118 ALPHA
+	Test witchcraft
 
 #Features in current development:
 #	MAVlink compatibility

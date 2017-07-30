@@ -5,6 +5,7 @@ volatile uint32_t sendMspAt = 0;
 volatile uint32_t sendRfOsdAt = 0;
 volatile uint32_t sendSmartPortAt = 0;
 volatile uint32_t sendSmartPortLuaAt = 0;
+volatile uint32_t sendCrsfTelemtryAt = 0;
 volatile uint32_t sendSpektrumTelemtryAt = 0;
 
 volatile uint32_t telemEnabled = 1;
@@ -104,13 +105,20 @@ void ProcessTelemtry(void)
 			CheckIfSportReadyToSend(); //sets sendSmartPortAt if it needs to.
 		}
 	}
-
-	if (mainConfig.telemConfig.telemSpek)
+	else if (mainConfig.telemConfig.telemSpek)
 	{
 		if ( (sendSpektrumTelemtryAt) && ( sendSpektrumTelemtryAt >= InlineMillis() ) )
 		{
 			sendSpektrumTelemtryAt = 0; //reset send time to 0 which disables it
 			sendSpektrumTelem();     //send the data. Blind of soft or hard s.port
+		}
+	}
+	else if (mainConfig.telemConfig.telemCrsf)
+	{
+		if ( (sendCrsfTelemtryAt) && ( sendCrsfTelemtryAt >= InlineMillis() ) )
+		{
+			sendCrsfTelemtryAt = 0; //reset send time to 0 which disables it
+			SendCrsfTelem();     //send the data. Blind of soft or hard s.port
 		}
 	}
 }
@@ -124,7 +132,7 @@ int VtxFrequencyToBandChannel(int frequency)
 {
 	//if frequency is not in table then -1 is returned which is unknown frequency
 	int x;
-	for (x=sizeof(vtxBandChannelToFrequencyLookup);x>=0;x--)
+	for (x=sizeof(vtxBandChannelToFrequencyLookup)-1;x>=0;x--)
 	{
 		if(vtxBandChannelToFrequencyLookup[x] == frequency)
 			return(x);
@@ -300,6 +308,7 @@ int VtxPower(int power)
 void InitTelemtry(void)
 {
 
+	static int firstTimeInit = 1;
 	int temp;
 	vtxRecord.vtxDevice      = VTX_DEVICE_NONE;
 	vtxRequested.vtxDevice   = VTX_DEVICE_NONE;
@@ -308,8 +317,11 @@ void InitTelemtry(void)
 	InitSmartAudio();
     if(mainConfig.telemConfig.telemSmartAudio && !vtxRecord.vtxDevice)
     {
-    	DelayMs(1500);
-    	InitSmartAudio();
+		if(firstTimeInit)
+		{
+    		DelayMs(1500);
+    		InitSmartAudio();
+		}
     }
 
 	InitAllSport();
@@ -467,6 +479,7 @@ void InitTelemtry(void)
 	if (mainConfig.telemConfig.telemSpek)
 		InitSpektrumTelemetry();
 
+	firstTimeInit = 0;
 }
 
 
