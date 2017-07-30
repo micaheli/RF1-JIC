@@ -112,6 +112,7 @@ static uint8_t CrsfFlightModeFrame(void)
     {
         snprintf( &crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 LEVEL" );
         crsfOutBuffer[1] = 12; //payload + frame type + crc
+        crsfOutBuffer[12] = 0;
         crsfOutBuffer[13] = CrsfCrc8(&crsfOutBuffer[2], 11);
         return(14);
     }
@@ -119,6 +120,7 @@ static uint8_t CrsfFlightModeFrame(void)
     {
         snprintf( &crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 ACRO-LEVEL" );
         crsfOutBuffer[1] = 15; //payload + frame type + crc
+        crsfOutBuffer[15] = 0;
         crsfOutBuffer[16] = CrsfCrc8(&crsfOutBuffer[2], 14);
         return(17);
     }
@@ -126,6 +128,7 @@ static uint8_t CrsfFlightModeFrame(void)
     {
         snprintf( &crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 ACRO" );
         crsfOutBuffer[1] = 9; //payload + frame type + crc
+        crsfOutBuffer[9] = 0;
         crsfOutBuffer[10] = CrsfCrc8(&crsfOutBuffer[2], 8);
         return(11);
     }
