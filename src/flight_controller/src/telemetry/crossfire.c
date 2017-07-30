@@ -104,6 +104,7 @@ static uint8_t CrsfFlightModeFrame(void)
     //payload
     //crc
 
+    bzero(crsfOutBuffer, CRSF_OUT_BUFFER_SIZE);
     crsfOutBuffer[0] = CRSF_ADD_BROADCAST;
     crsfOutBuffer[2] = CRSF_TYPE_FLIGHT_MD;
 
