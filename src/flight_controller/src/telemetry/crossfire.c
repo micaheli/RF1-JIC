@@ -95,7 +95,6 @@ static uint8_t CrsfBattFrame(void)
 
 static uint8_t CrsfFlightModeFrame(void)
 {
-    uint8_t temp; //set
     //Payload:
     //char[] Flight mode ( Null-terminated string ) 
 
@@ -110,7 +109,7 @@ static uint8_t CrsfFlightModeFrame(void)
 
     if (ModeActive(M_ATTITUDE))
     {
-        snprintf( &crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 LEVEL" );
+        snprintf( (char *)&crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 LEVEL" );
         crsfOutBuffer[1] = 12; //payload + frame type + crc
         crsfOutBuffer[12] = 0;
         crsfOutBuffer[13] = CrsfCrc8(&crsfOutBuffer[2], 11);
@@ -118,7 +117,7 @@ static uint8_t CrsfFlightModeFrame(void)
     }
     else if (ModeActive(M_HORIZON))
     {
-        snprintf( &crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 ACRO-LEVEL" );
+        snprintf( (char *)&crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 ACRO-LEVEL" );
         crsfOutBuffer[1] = 15; //payload + frame type + crc
         crsfOutBuffer[15] = 0;
         crsfOutBuffer[16] = CrsfCrc8(&crsfOutBuffer[2], 14);
@@ -126,7 +125,7 @@ static uint8_t CrsfFlightModeFrame(void)
     }
     else
     {
-        snprintf( &crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 ACRO" );
+        snprintf( (char *)&crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 ACRO" );
         crsfOutBuffer[1] = 9; //payload + frame type + crc
         crsfOutBuffer[9] = 0;
         crsfOutBuffer[10] = CrsfCrc8(&crsfOutBuffer[2], 8);
