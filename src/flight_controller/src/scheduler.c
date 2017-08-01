@@ -447,6 +447,8 @@ void TaskBuzzer(void)
 void ErrorHandler(uint32_t error)
 {
 	errorMask |= (error);
+	int slowBlink = 2;
+	int counter, temp; //set
 
 	switch (error)
 	{
@@ -482,9 +484,17 @@ void ErrorHandler(uint32_t error)
 			return;
 			break;
 		case HARD_FAULT:  //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
+			slowBlink = 4;
+			break;
 		case MEM_FAULT:   //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
+			slowBlink = 6;
+			break;
 		case BUS_FAULT:   //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
+			slowBlink = 8;
+			break;
 		case USAGE_FAULT: //hard fault is bad, if we're in flight we should setup a restart, for now we crash the board
+			slowBlink = 10;
+			break;
 		default:
 			break;
 	}
@@ -492,8 +502,24 @@ void ErrorHandler(uint32_t error)
 	//bad errors will fall through here
 	ZeroActuators(32000);
 
+	counter = 0;
+	temp = slowBlink;
     while (1)
     {
+		if(counter++ > 20)
+		{
+			while(temp-->0)
+			{
+				DoLed(1, 0);
+				DoLed(0, 1);
+				simpleDelay_ASM(1000000);
+				DoLed(1, 0);
+				DoLed(0, 0);
+				simpleDelay_ASM(1000000);
+			}
+			temp = slowBlink;
+			counter = 0;
+		}
 		DoLed(0, 1);
 		DoLed(1, 0);
 		simpleDelay_ASM(50000);

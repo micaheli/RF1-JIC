@@ -435,7 +435,17 @@ const config_variables_rec valueTable[] = {
 
 		{ "bind", 	            typeUINT,  "rccf", &mainConfig.rcControlsConfig.bind, 	                0, 32, 0, "" },
 		{ "short_throw", 	    typeUINT,  "rccf", &mainConfig.rcControlsConfig.shortThrow, 	        0, 1, 1, "" },
-
+/*
+		{ "omega_drive", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaDrive, 	     		    0, 4000000000, 0, "" },
+		{ "omega_route", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaDrive, 	     		    0, 4000000000, 0, "" },
+		{ "omega_in_low", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaInLow, 	     		    0, 4000000000, 0, "" },
+		{ "omega_in_mid", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaInMid, 	     		    0, 4000000000, 0, "" },
+		{ "omega_in_high", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaInHigh, 	     		0, 4000000000, 0, "" },
+		{ "omega_out_low", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaOutLow, 	     		0, 4000000000, 0, "" },
+		{ "omega_out_mid", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaOutMid, 	     		0, 4000000000, 0, "" },
+		{ "omega_out_high", 	typeUINT,  "mixr", &mainConfig.mixerConfig.omegaOutHigh, 	     		0, 4000000000, 0, "" },
+		{ "omega_rate", 		typeUINT,  "mixr", &mainConfig.mixerConfig.omegaRate, 	     		    0, 4000000000, 0, "" },
+*/
 };
 
 
@@ -842,7 +852,8 @@ void SetValue(int position, char *value)
 			break;
 		case typeSTRING:
 			c = valueTable[position].ptr;
-			strncpy(c,value,35);
+			strncpy(c,value,15);
+			c[15]=0;
 			break;
 	}
 }
@@ -1752,13 +1763,6 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("dpmode", inString))
 		{
-			mainConfig.tuneProfile[activeProfile].rcRates.rcSmoothingFactor = 0;
-			mainConfig.tuneProfile[activeProfile].filterConfig[YAW].gyro.q           = 85;
-			mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].gyro.q          = 60;
-			mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].gyro.q         = 60;
-			mainConfig.tuneProfile[activeProfile].filterConfig[YAW].ga                  = 0;
-			mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].ga                 = 0;
-			mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga                = 0;
 			mainConfig.mixerConfig.escProtocol            = ESC_DSHOT600;
 			mainConfig.mixerConfig.escUpdateFrequency     = 32000;
 			resetBoard = 1;

@@ -31,6 +31,17 @@ typedef struct
     float    idlePercentInverted;
     uint32_t motorOutput[8];
 	float    spinRecoveryStrength;
+	/*
+	uint32_t omegaDrive;
+	uint32_t omegaRoute;
+	uint32_t omegaInLow;
+	uint32_t omegaInMid;
+	uint32_t omegaInHigh;
+	uint32_t omegaOutLow;
+	uint32_t omegaOutMid;
+	uint32_t omegaOutHigh;
+	uint32_t omegaRate;
+	*/
 } mixer_config;
 
 enum {

@@ -1302,6 +1302,9 @@ Version 0.308.118 ALPHA
 			Solder TBS RX pin to USART 3 TX and TX pin to USART3 RX
 			set telem_crsf=1 to enable CRSF telemtry output on the USART 3 TX pin
 
+Version 0.309.119 ALPHA
+	Fix profile naming bug
+
 #Features in current development:
 #	MAVlink compatibility
 
