@@ -1305,6 +1305,9 @@ Version 0.308.118 ALPHA
 Version 0.309.119 ALPHA
 	Fix profile naming bug
 
+Version 0.310.119 ALPHA
+	added stuff
+
 #Features in current development:
 #	MAVlink compatibility
 

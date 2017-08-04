@@ -97,24 +97,63 @@ static void ConvertAdcVoltage(uint32_t rawAdcVoltage, float highResistor, float 
 
 static void ConvertAdcCurrent(uint32_t rawAdcVoltage, float adcCurrFactor)
 {
-	static uint32_t lastTime=0;
+	#define ADC_AVERAGER 32
+	#define ADC_AVERAGER_DIV 0.03125f
 
-	adcCurrent = (float)rawAdcVoltage * (float)((float)NORMAL_VOLTAGE/4096.00) * adcCurrFactor;
+	static uint32_t rawAdcVoltageAverager[ADC_AVERAGER] = {0,};
+	static int adcAveragerIndex = 0;
+	static float adcAverageSum = 0;
 
+	static float averageMahCalc = 0;
+	static int averageAdcIndex = 0;
+
+	uint32_t now;
+	now = InlineMillis();
+	static uint32_t lastMahCalc = 0;
+
+	//prevent error on first calculation
+	if(!lastMahCalc)
+	{
+		lastMahCalc = now;
+	}
+
+	adcAverageSum += rawAdcVoltage; //add current ADC to sum
+	rawAdcVoltageAverager[adcAveragerIndex++] = rawAdcVoltage; //add current ADC to buffer
+	if(adcAveragerIndex == ADC_AVERAGER) //check for index rollover
+		adcAveragerIndex = 0;
+
+	adcAverageSum -= rawAdcVoltageAverager[adcAveragerIndex]; //subtract oldest ADC from sum
+
+	//multiply sum of ADCs by divisor for fast math averaging
+	adcCurrent = adcAverageSum * ADC_AVERAGER_DIV * (float)((float)NORMAL_VOLTAGE/4096.00) * adcCurrFactor;
+
+	adcCurrent = 100.0f;
+	//anything under 1 amp is completely inaccurate
 	if(adcCurrent < 1.0f)
 		adcCurrent = 0.0f;
 
-	if (lastTime > 0)
+	//average current, since float rounding errors make us level calculations inaccurate
+	averageMahCalc += adcCurrent;
+	averageAdcIndex++;
+
+	//calculate maH every 50 ms
+	if (now - lastMahCalc >= 50)
 	{
+		adcMAh += ( (float)( now - lastMahCalc ) * ( (float)(averageMahCalc / (float)averageAdcIndex) / 3600.0f ));
+		averageMahCalc = 0.0f;
+		averageAdcIndex = 0;
+		lastMahCalc = InlineMillis();
+
 		//ma / hour
 		//3600000000 ma / hour
-		//3600000000 us in an hour
+		//3600000 ms in an hour
 		//1000 ma in an amp
-		//amps / (3600000000 / 1000) = mah
-
-		adcMAh = adcMAh +  ( ( Micros() - lastTime ) * adcCurrent / 3600000.0f );
+		//amps / (3600000 / 1000) = mah
+		//3,600,000 ms in an hour
+		//adcCurrent for x hours = amp hours
+		//adcCurrent / 1000 for x hours = mA hours used
+		//
 	}
-	lastTime=Micros();
 }
 
 void CheckBatteryCellCount()

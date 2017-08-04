@@ -54,6 +54,7 @@ volatile uint32_t usedGa[AXIS_NUMBER]   = {0,};
 //these numbers change based on loop_control
 volatile loop_speed_record loopSpeed;
 
+static void BostModify(volatile float *throttleIn);
 void  InlineInitGyroFilters(void);
 void  InlineInitKdFilters(void);
 void  InlineInitSpectrumNoiseFilter(void);
@@ -904,6 +905,7 @@ void InlineFlightCode(float dpsGyroArray[])
 			}
 			else
 			{
+				BostModify(&smoothCurvedThrottle0_1);
 				if (mainConfig.mixerConfig.mixerStyle == 1) //race mixer
 					actuatorRange = InlineApplyMotorMixer1(flightPids, smoothCurvedThrottle0_1); //put in PIDs and Throttle or passthru
 				else //freestyle mixer
@@ -1153,4 +1155,11 @@ void InitFlight(void)
 	//InitTransponderTimer();
 	DelayMs(2);
 
+}
+
+static void BostModify(volatile float *throttleIn)
+{
+	//adcCurrent; //current current consumption
+	//adcMAh;     //current MAh used
+	*throttleIn = *throttleIn;
 }
