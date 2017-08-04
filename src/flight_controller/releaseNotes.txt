@@ -1306,7 +1306,7 @@ Version 0.309.119 ALPHA
 	Fix profile naming bug
 
 Version 0.310.119 ALPHA
-	added stuff
+	fix mah calc
 
 #Features in current development:
 #	MAVlink compatibility
