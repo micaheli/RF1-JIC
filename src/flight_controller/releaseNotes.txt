@@ -1307,6 +1307,7 @@ Version 0.309.119 ALPHA
 
 Version 0.310.119 ALPHA
 	fix mah calc
+	adjusted tramp usart setting
 
 #Features in current development:
 #	MAVlink compatibility

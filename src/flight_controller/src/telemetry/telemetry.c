@@ -431,7 +431,7 @@ void InitTelemtry(void)
 	if(mainConfig.telemConfig.telemTramp)
 	{
 		temp = -1;
-		switch(mainConfig.telemConfig.telemTramp)
+		switch(mainConfig.telemConfig.telemTramp - 1)
 		{
 			//soft trsmp not supported right now
 			case TELEM_ACTUATOR1:
