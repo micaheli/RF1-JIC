@@ -127,7 +127,6 @@ static void ConvertAdcCurrent(uint32_t rawAdcVoltage, float adcCurrFactor)
 	//multiply sum of ADCs by divisor for fast math averaging
 	adcCurrent = adcAverageSum * ADC_AVERAGER_DIV * (float)((float)NORMAL_VOLTAGE/4096.00) * adcCurrFactor;
 
-	adcCurrent = 100.0f;
 	//anything under 1 amp is completely inaccurate
 	if(adcCurrent < 1.0f)
 		adcCurrent = 0.0f;

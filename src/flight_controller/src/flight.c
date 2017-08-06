@@ -54,7 +54,7 @@ volatile uint32_t usedGa[AXIS_NUMBER]   = {0,};
 //these numbers change based on loop_control
 volatile loop_speed_record loopSpeed;
 
-static float BostModify(volatile float throttleIn);
+static float BoostModify(volatile float throttleIn);
 void  InlineInitGyroFilters(void);
 void  InlineInitKdFilters(void);
 void  InlineInitSpectrumNoiseFilter(void);
@@ -905,10 +905,11 @@ void InlineFlightCode(float dpsGyroArray[])
 			}
 			else
 			{
+				//volatile float throttleToUse = BoostModify(smoothCurvedThrottle0_1);
 				if (mainConfig.mixerConfig.mixerStyle == 1) //race mixer
-					actuatorRange = InlineApplyMotorMixer1(flightPids, BostModify(smoothCurvedThrottle0_1)); //put in PIDs and Throttle or passthru
+					actuatorRange = InlineApplyMotorMixer1(flightPids, smoothCurvedThrottle0_1); //put in PIDs and Throttle or passthru
 				else //freestyle mixer
-					actuatorRange = InlineApplyMotorMixer(flightPids, BostModify(smoothCurvedThrottle0_1)); //put in PIDs and Throttle or passthru
+					actuatorRange = InlineApplyMotorMixer(flightPids, smoothCurvedThrottle0_1); //put in PIDs and Throttle or passthru
 			}
 
 		}
@@ -1156,9 +1157,9 @@ void InitFlight(void)
 
 }
 
-static float BostModify(float throttleIn)
+static float BoostModify(volatile float throttleIn)
 {
-	float throttleOut;
+	volatile float throttleOut;
 	//adcCurrent; //current current consumption
 	//adcMAh;     //current MAh used
 	throttleOut = CONSTRAIN(throttleIn, 0.0f, 1.0f);
