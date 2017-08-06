@@ -110,7 +110,7 @@ void InitActuators(void)
 		case ESC_MULTISHOT:
 		default:
 			disarmUs3d  = 13.75;
-			disarmUs    = 4.900;
+			disarmUs    = 4.850;
 			calibrateUs = 5.000;
 			walledUs    = 22.50;
 			pwmHz       = 32000;
