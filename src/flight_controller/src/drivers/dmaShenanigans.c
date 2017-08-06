@@ -160,15 +160,14 @@ void InitWs2812(void)
 	//TODO: We need more actuators, no more max motor number, instead we use max_actuator number.
 	for (actuatorNumOutput = 0; actuatorNumOutput < MAX_MOTOR_NUMBER; actuatorNumOutput++)
 	{
-		outputNumber = mainConfig.mixerConfig.motorOutput[actuatorNumOutput];
 
-		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_WS2812)
+		if (board.motors[actuatorNumOutput].enabled == ENUM_ACTUATOR_TYPE_WS2812)
 		{
 
-			if (!DoesDmaConflictWithActiveDmas(board.motors[outputNumber]))
+			if (!DoesDmaConflictWithActiveDmas(board.motors[actuatorNumOutput]))
 			{
 				ws2812LedRecord.enabled = 1;
-				ws2812LedRecord.ws2812Actuator = board.motors[outputNumber];
+				ws2812LedRecord.ws2812Actuator = board.motors[actuatorNumOutput];
 				SetActiveDmaToActuatorDma(ws2812LedRecord.ws2812Actuator);
 				InitDmaOutputForSoftSerial(DMA_OUTPUT_WS2812_LEDS, ws2812LedRecord.ws2812Actuator);
 				uint8_t rgbArray[] = {0xFF, 0xAA, 0x11, 0x11, 0xAA, 0xFF};

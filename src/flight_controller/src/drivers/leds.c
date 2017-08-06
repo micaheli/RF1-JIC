@@ -523,11 +523,11 @@ inline void UpdateWs2812Leds(void)
 		{
 			case LED_MODE_OFF:
 				//leds off
-				LedModeOff(250);
+				LedModeOff(5000);
 				break;
 			case LED_MODE_ON:
 				//leds on
-				LedModeOn(250);
+				LedModeOn(5000);
 				break;
 			case LED_MODE_DISCO_FAST:
 				//Disco Fast
@@ -579,6 +579,6 @@ inline void UpdateWs2812Leds(void)
 				break;
 		}
 		//updates the led
-	OutputSerialDmaByte(rgbArray,ledArraySize, ws2812LedRecord.ws2812Actuator, 1, 0, 0);
+	//OutputSerialDmaByte(rgbArray,ledArraySize, ws2812LedRecord.ws2812Actuator, 1, 0, 0);
 	}
 }
