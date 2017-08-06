@@ -647,9 +647,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			//todo: How do we handle multiple RXs with this?
 			timeSinceLastPacket[serialNumber] = (currentTime - timeOfLastPacket[serialNumber]); //todo: How do we handle multiple RXs with this?
 			timeOfLastPacket[serialNumber]    = currentTime; //todo: How do we handle multiple RXs with this?
-
-				if(serialNumber == 0)
-					serialNumber = 0;
 						/*
 			The basic structure for each frame is the same. There is a range of ​Types​ with an extended header which will have the first few bytes of payload standardized. This is required to route frame across multiple devices for point to point communication.  
 			Broadcast Frames​: <​Device address​ or Sync Byte> <Frame length> <​Type​><Payload> <​CRC​> 
@@ -678,7 +675,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				board.serials[serialNumber].FrameSize = CONSTRAIN( (5 + (dmaRxBuffer * 2) ), 9, 47); //sumd can be between 7 and 37 long
 			}
 
-			if ( (timeSinceLastPacket[serialNumber] > 3) && (dmaIndex[serialNumber] != 0) )
+			if (timeSinceLastPacket[serialNumber] > 3)
 			{
 				if (dmaIndex[serialNumber] < board.serials[serialNumber].FrameSize)
 				{
@@ -686,8 +683,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				}
 
 				dmaIndex[serialNumber] = 0;
-				if(serialNumber == 0)
-					serialNumber = 0;
 
 			}
 

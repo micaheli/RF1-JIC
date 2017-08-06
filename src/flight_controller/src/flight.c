@@ -252,6 +252,7 @@ void InitFlightCode(void)
 	uint32_t loopUsed = mainConfig.gyroConfig.loopCtrl;
 	uint32_t validLoopConfig = 0;
 
+	SKIP_GYRO = 0;
 	armedTime = 0;
 	//biquad doesn't work unless we do this
 	//kdFiltUsed[YAW]   = mainConfig.filterConfig[YAW].kd.r;
@@ -907,9 +908,9 @@ void InlineFlightCode(float dpsGyroArray[])
 			{
 				//volatile float throttleToUse = BoostModify(smoothCurvedThrottle0_1);
 				if (mainConfig.mixerConfig.mixerStyle == 1) //race mixer
-					actuatorRange = InlineApplyMotorMixer1(flightPids, smoothCurvedThrottle0_1); //put in PIDs and Throttle or passthru
+					actuatorRange = InlineApplyMotorMixer1(flightPids, BoostModify(smoothCurvedThrottle0_1)); //put in PIDs and Throttle or passthru
 				else //freestyle mixer
-					actuatorRange = InlineApplyMotorMixer(flightPids, smoothCurvedThrottle0_1); //put in PIDs and Throttle or passthru
+					actuatorRange = InlineApplyMotorMixer(flightPids, BoostModify(smoothCurvedThrottle0_1)); //put in PIDs and Throttle or passthru
 			}
 
 		}

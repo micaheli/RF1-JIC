@@ -407,7 +407,7 @@ void TaskHandlePcComm(void)
 void TaskLed(void)
 {
 	UpdateLeds(); //update status LEDs
-	UpdateWs2812Leds();
+	//UpdateWs2812Leds();
 }
 
 void TaskIdleActuators(void)
