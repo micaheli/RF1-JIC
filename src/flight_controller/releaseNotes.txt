@@ -1309,6 +1309,15 @@ Version 0.310.119 ALPHA
 	fix mah calc
 	adjusted tramp usart setting
 
+Version 0.311.119 through 0.312.120 ALPHA
+	code cleanup
+
+Version 0.313.120 BETA
+	fix minor DMA conflight with ws2812 leds
+
+Version 0.314.120 BETA
+	led update
+
 #Features in current development:
 #	MAVlink compatibility
 

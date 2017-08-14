@@ -53,7 +53,8 @@ int EraseFlash(uint32_t flashStart, uint32_t flashEnd)
 
 }
 
-uint32_t GetFlashSector(uint32_t flashAddress) {
+uint32_t GetFlashSector(uint32_t flashAddress)
+{
 
     if ((flashAddress < ADDR_FLASH_SECTOR_1) && (flashAddress >= ADDR_FLASH_SECTOR_0))
 	{

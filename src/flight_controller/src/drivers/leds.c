@@ -28,9 +28,9 @@ uint8_t rgbArray[WS2812_MAX_LEDS*3];
 static void HandleCoolLeds(uint32_t heartbeatMs, uint32_t heartbeatMsHalf);
 static inline uint8_t LowerLed(uint8_t input, uint8_t sub);
 static inline void SetPixel(uint8_t pixel, uint8_t red, uint8_t green, uint8_t blue);
-static inline void LedModeOff(uint8_t speed);
+static inline void LedModeOff(uint32_t speed);
 static inline void LedModeColor();
-static inline void LedModeOn(uint8_t speed);
+static inline void LedModeOn(uint32_t speed);
 static inline void LedModeDisco(uint8_t speed);
 static inline void LedModeParty(uint8_t speed);
 static inline void LedModeGyroMotion(uint8_t speed);
@@ -60,7 +60,7 @@ static inline void SetPixel(uint8_t pixel, uint8_t red, uint8_t green, uint8_t b
 	rgbArray[( ((pixel-1)*3) + 2)] = ~(uint8_t)blue;
 }
 
-static inline void LedModeOff(uint8_t speed)
+static inline void LedModeOff(uint32_t speed)
 {
 	//setup & math
 	updateInterval = speed;
@@ -91,7 +91,7 @@ static inline void LedModeColor()
 	}
 }
 
-static inline void LedModeOn(uint8_t speed)
+static inline void LedModeOn(uint32_t speed)
 {
 	//setup & math
 	updateInterval = speed;
