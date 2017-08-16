@@ -17,6 +17,8 @@ int main(void)
 
     BoardInit();
 
+    //DshotInit(1);
+    
     HandleRfbl();
 
     LoadConfig(ADDRESS_CONFIG_START);
@@ -37,7 +39,6 @@ int main(void)
     buzzerStatus.status = STATE_BUZZER_STARTUP;
     ledStatus.status    = LEDS_SLOW_BLINK;
 
-    //DshotInit();
     //InitializeGpio(ports[ENUM_PORTB], GPIO_PIN_1, 0);
     //InitializeGpio(ports[ENUM_PORTB], GPIO_PIN_0, 0);
 

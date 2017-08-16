@@ -11,9 +11,11 @@
 
 //MCU config
 #define FC_PLLM	8
-#define FC_PLLN	384
+//#define FC_PLLN	384
+#define FC_PLLN	480
 #define FC_PLLP	4
-#define FC_PLLQ	8
+//#define FC_PLLQ	8
+#define FC_PLLQ	10
 
 //LED config
 #define LED1_ENABLED			1
@@ -484,12 +486,13 @@
 #define MAX_OSD_SPI_MOSI_PIN			SPI2_MOSI_PIN
 #define MAX_OSD_SPI_MOSI_GPIO_PORT		SPI2_MOSI_GPIO_PORT
 #define MAX_OSD_SPI_MOSI_AF				SPI2_MOSI_AF
-#define MAX_OSD_RX_DMA_FP				FP_DMA1_S3
+#define MAX_OSD_TX_DMA_FP				FP_DMA1_S2
 
 #define MAX_OSD_SPI_FAST_BAUD           SPI_BAUDRATEPRESCALER_16
 #define MAX_OSD_SPI_SLOW_BAUD			SPI_BAUDRATEPRESCALER_16
 
 //Flash Config
+#define FLASH_ENABLED                   1
 #define FLASH_SPI_NUMBER				ENUM_SPI1
 #define FLASH_SPI_CS_GPIO_Pin			SPI1_NSS_PIN
 #define FLASH_SPI_CS_GPIO_Port			SPI1_NSS_GPIO_PORT

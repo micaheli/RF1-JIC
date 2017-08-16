@@ -10,6 +10,7 @@
 #define FLIGHT_MODE_ARRAY_SIZE 96
 
 #define PROFILE_COUNT 3
+
 enum
 {
 	PROFILE1 = 0,
