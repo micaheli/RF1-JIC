@@ -11,11 +11,11 @@
 
 //MCU config
 #define FC_PLLM	8
-//#define FC_PLLN	384
-#define FC_PLLN	480
+#define FC_PLLN	384
+//#define FC_PLLN	480
 #define FC_PLLP	4
-//#define FC_PLLQ	8
-#define FC_PLLQ	10
+#define FC_PLLQ	8
+//#define FC_PLLQ	10
 
 //LED config
 #define LED1_ENABLED			1
