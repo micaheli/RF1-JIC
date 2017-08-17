@@ -150,7 +150,6 @@ void InitWs2812(void)
 {
 
 	uint32_t actuatorNumOutput;
-	uint32_t outputNumber;
 
 	//fix for revolt. If 1wire has run we can't use LEDs or motor outputs won't work right.
 	if (oneWireHasRun)

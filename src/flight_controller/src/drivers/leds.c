@@ -579,6 +579,6 @@ inline void UpdateWs2812Leds(void)
 				break;
 		}
 		//updates the led
-	//OutputSerialDmaByte(rgbArray,ledArraySize, ws2812LedRecord.ws2812Actuator, 1, 0, 0);
+	OutputSerialDmaByte(rgbArray,ledArraySize, ws2812LedRecord.ws2812Actuator, 1, 0, 0);
 	}
 }

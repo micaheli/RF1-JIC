@@ -1144,7 +1144,11 @@ void InitFlight(void)
 	InitLaptimer();
 #endif
 
-	if ( (!mainConfig.ledConfig.ledOnWithUsb) && (!IsUsbConnected()) )
+	if ( mainConfig.ledConfig.ledOnWithUsb )
+	{
+		InitWs2812();
+	}
+	else if(!mainConfig.ledConfig.ledOnWithUsb && (!IsUsbConnected()) )
 	{
 		InitWs2812();
 	}

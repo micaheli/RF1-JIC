@@ -29,7 +29,7 @@ volatile uint32_t adcDmaBuffer[2]; //first one is voltage, second one is current
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage, float highResistor, float lowResistor);
 static void ConvertAdcCurrent(uint32_t rawAdcVoltage, float adcCurrFactor);
-static float ProcessVoltage(VoltageStorageRec storageRec);
+static float ProcessVoltage(VoltageStorageRec storageRec[]);
 
 //IRQ based conversion complete
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
@@ -46,7 +46,7 @@ void PollAdc(void)
 }
 
 //pass VoltageStorageRec so it can be used for more than one measurement (current)
-static float ProcessVoltage(VoltageStorageRec storageRec) //takes adc voltage and returns usable voltage for telemtry
+static float ProcessVoltage(VoltageStorageRec storageRec[]) //takes adc voltage and returns usable voltage for telemtry
 {
     for (int32_t x=2;x>=0;x--)
     {
