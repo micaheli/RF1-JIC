@@ -64,7 +64,7 @@ void SystemClock_Config(void)
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
     HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-    /HAL_NVIC_EnableIRQ(SysTick_IRQn);
+    HAL_NVIC_EnableIRQ(SysTick_IRQn);
 
     //HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
     //HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
