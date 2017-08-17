@@ -184,7 +184,8 @@ const config_variables_rec valueTable[] = {
 		{ "vtx_pitmode_type",	typeUINT,  "telm", &mainConfig.telemConfig.vtxPitmodeType,				0, 1, 0, "" },
 		{ "vbat_buzzer",		typeUINT,  "telm", &mainConfig.telemConfig.vbatbuzzer,					0, 1, 1, "" },
 		{ "vbat_cutoff",		typeFLOAT, "telm", &mainConfig.telemConfig.vbatCutoff,					0, 4.0f, 3.8f, "" },
-
+		{ "bat_size",			typeUINT,  "telm", &mainConfig.telemConfig.batSize,						0, 50000, 1300, "" },
+		
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, CW315_INV, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1,  0, "" },
 		{ "man_gy_roll_angle",  typeFLOAT, "gyro", &mainConfig.gyroConfig.minorBoardRotation[X],		-360.0f, 360.0f, 0, "" },
