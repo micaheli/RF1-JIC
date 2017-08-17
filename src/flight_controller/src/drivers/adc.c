@@ -130,7 +130,7 @@ static void ConvertAdcCurrent(uint32_t rawAdcVoltage, float adcCurrFactor)
 	adcCurrent = adcAverageSum * ADC_AVERAGER_DIV * (float)((float)NORMAL_VOLTAGE/4096.00) * adcCurrFactor;
 
 	//anything under 1 amp is completely inaccurate
-	if(adcCurrent < 1.0f)
+	if(adcCurrent < 3.9f)
 		adcCurrent = 0.0f;
 
 	//average current, since float rounding errors make us level calculations inaccurate

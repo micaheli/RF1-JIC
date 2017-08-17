@@ -1322,6 +1322,7 @@ Version 0.314.120 BETA
 
 Version 0.315.121 BETA
 	added bat_size variable for crossfire telemetry
+        set bat_size=1300
 		measured in mAh
 	fixed minor motor calibration issue
 
