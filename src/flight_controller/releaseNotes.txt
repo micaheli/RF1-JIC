@@ -1320,6 +1320,11 @@ Version 0.314.120 BETA
 	update current filter
 	update PIDs
 
+Version 0.315.121 BETA
+	added bat_size variable for crossfire telemetry
+		measured in mAh
+	fixed minor motor calibration issue
+
 #Features in current development:
 #	MAVlink compatibility
 

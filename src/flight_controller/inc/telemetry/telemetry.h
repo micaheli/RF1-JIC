@@ -163,6 +163,7 @@ typedef struct
 	uint32_t vtxPitmodeType;
 	uint32_t vbatbuzzer;
 	float    vbatCutoff;
+	uint32_t batSize;
 } telem_config;
 
 typedef struct
