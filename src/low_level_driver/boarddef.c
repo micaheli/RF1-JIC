@@ -27,13 +27,13 @@ ADC_HandleTypeDef   adcHandle[3];
 uint32_t            boardSize;
 
 
+
+
+
+volatile function_pointer callbackFunctionArray[IRQH_FP_TOT] = {0,};
+uint32_t motorOutputBuffer[8][150];
 unsigned char serialRxBuffer[6][RXBUFFERSIZE];
 unsigned char serialTxBuffer[6][TXBUFFERSIZE];
-uint32_t motorOutputBuffer[5][1500];
-
-
-volatile function_pointer callbackFunctionArray[IRQH_FP_TOT];
-
 
 int InitializeMCUSettings(void)
 {
@@ -408,7 +408,7 @@ void GetBoardHardwareDefs(void)
 	board.dmasMotor[5].dmaIRQn        = board.motors[5].dmaIRQn;
 
 
-	board.motors[6].actuatorArrayNum  = 4;
+	board.motors[6].actuatorArrayNum  = 6;
 	board.motors[6].enabled           = ACTUATOR7_TYPE;
 	board.motors[6].timer             = ACTUATOR7_TIM;
 	board.motors[6].pin               = ACTUATOR7_PIN;

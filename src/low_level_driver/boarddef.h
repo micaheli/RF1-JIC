@@ -552,7 +552,7 @@ extern ADC_HandleTypeDef   adcHandle[];
 
 extern unsigned char serialTxBuffer[][TXBUFFERSIZE];
 extern unsigned char serialRxBuffer[][RXBUFFERSIZE];
-extern uint32_t motorOutputBuffer[][1500];
+extern uint32_t motorOutputBuffer[][150];
 
 extern int InitializeMCUSettings();
 extern void GetBoardHardwareDefs();

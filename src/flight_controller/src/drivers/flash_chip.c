@@ -627,7 +627,8 @@ void FlashDmaRxCallback(uint32_t callbackNumber)
 {
 
 	(void)(callbackNumber);
-	if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY) {
+	if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY)
+	{
         // reset chip select line
     	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
     	bzero(flashInfo.commandTxBuffer, sizeof(flashInfo.commandTxBuffer));

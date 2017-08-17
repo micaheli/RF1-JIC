@@ -1936,6 +1936,11 @@ void ProcessCommand(char *inString)
 			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_PITCH_KD) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me pitch_kd_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
+	else if (!strcmp("flashstatus", inString))
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me flash status:%lu\n", flashInfo.status);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
 	else if (!strcmp("dump", inString))
 		{
 			uint32_t argsOutputted = 0;

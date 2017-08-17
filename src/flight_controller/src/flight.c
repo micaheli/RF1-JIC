@@ -1114,12 +1114,6 @@ void InitFlight(void)
     InitModes();          //set flight modes mask to zero.
     InitBoardUsarts();    //most important thing is activated last, the ability to control the craft.
 
-	if (board.flash[0].enabled && (mainConfig.rcControlsConfig.rxUsart != ENUM_USART4) )
-    {
-    	InitFlashChip();
-    	InitFlightLogger();
-    }
-
 	InitMaxOsd();
 
 #ifdef STM32F446xx
@@ -1144,16 +1138,22 @@ void InitFlight(void)
 	InitLaptimer();
 #endif
 
-	if ( mainConfig.ledConfig.ledOnWithUsb )
-	{
+	//if ( mainConfig.ledConfig.ledOnWithUsb )
+	//{
 		InitWs2812();
-	}
-	else if(!mainConfig.ledConfig.ledOnWithUsb && (!IsUsbConnected()) )
-	{
-		InitWs2812();
+	//}
+	//else if(!mainConfig.ledConfig.ledOnWithUsb && (!IsUsbConnected()) )
+//	{
+//		InitWs2812();
+//	}
+
+	if (board.flash[0].enabled && (mainConfig.rcControlsConfig.rxUsart != ENUM_USART4) )
+    {
+    	InitFlashChip();
+    	InitFlightLogger();
 	}
 
-    DeInitActuators();    //Deinit before Init is a shotgun startup
+    //DeInitActuators();    //Deinit before Init is a shotgun startup
     InitActuators();      //Actuator init should happen after soft serial init.
     ZeroActuators(1000);  //output actuators to idle after timers are stable;
 

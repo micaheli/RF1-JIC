@@ -14,6 +14,7 @@ uint32_t normalPulseWidth[17];
 uint32_t endPulseWidth[17];
 uint32_t loPulseWidth[17];
 uint8_t  tempBuffer[1500];
+uint32_t longMotorOutputBuffer[1500];
 
 static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma actuatorDma);
 static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timerHz, uint32_t inverted);
@@ -78,6 +79,7 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 	uint32_t bufferIdx = 0;
 	uint32_t outputIndex;
 	uint32_t bitsPerFrame = 8;
+	uint32_t *outBuffer;
 
 	tempBuffer[bufferIdx++] = NO_PULSE;
 
@@ -103,44 +105,54 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 	tempBuffer[bufferIdx++] = NO_PULSE;
 	tempBuffer[bufferIdx++] = NO_PULSE;
 
-    motorOutputBuffer[actuator.actuatorArrayNum][0] = 0;
-    motorOutputBuffer[actuator.actuatorArrayNum][bufferIdx] = 0;
+	if (outputLength < 18)
+	{
+		outBuffer = motorOutputBuffer[actuator.actuatorArrayNum];
+	}
+	else
+	{
+		outBuffer = longMotorOutputBuffer;
+	}
 
-    for (uint32_t x = 1; x < (bufferIdx - 1); x++) //first bit is always a 0, last bit is always a 0
-    {
+	outBuffer[0] = 0;
+	outBuffer[bufferIdx] = 0;
 
-    	if (tempBuffer[x] == HI_PULSE) //this is a high bit high bit
-    	{
-    		if (tempBuffer[x+1] == HI_PULSE) //After bit is high so this is a normal bit
-    		{
-				motorOutputBuffer[actuator.actuatorArrayNum][x] = normalPulseWidth[actuator.actuatorArrayNum+1];
-			}
-    		else if ( ( tempBuffer[x-1] < HI_PULSE ) && (tempBuffer[x+1] < HI_PULSE) ) //B4 bit is low and AR bit low, so this is an ALONE BIT
+	for (uint32_t x = 1; x < (bufferIdx - 1); x++) //first bit is always a 0, last bit is always a 0
+	{
+
+		if (tempBuffer[x] == HI_PULSE) //this is a high bit high bit
+		{
+			if (tempBuffer[x+1] == HI_PULSE) //After bit is high so this is a normal bit
 			{
-				motorOutputBuffer[actuator.actuatorArrayNum][x] = alonePulseWidth[actuator.actuatorArrayNum+1];;
+				outBuffer[x] = normalPulseWidth[actuator.actuatorArrayNum+1];
+			}
+			else if ( ( tempBuffer[x-1] < HI_PULSE ) && (tempBuffer[x+1] < HI_PULSE) ) //B4 bit is low and AR bit low, so this is an ALONE BIT
+			{
+				outBuffer[x] = alonePulseWidth[actuator.actuatorArrayNum+1];;
 			}
 			else if ( ( tempBuffer[x-1] == HI_PULSE ) && (tempBuffer[x+1] < HI_PULSE) ) //B4 bit is high and AR bit low, so this is an END BIT
 			{
-				motorOutputBuffer[actuator.actuatorArrayNum][x] = endPulseWidth[actuator.actuatorArrayNum+1];
+				outBuffer[x] = endPulseWidth[actuator.actuatorArrayNum+1];
 			}
 			else
 			{
-				motorOutputBuffer[actuator.actuatorArrayNum][x] = normalPulseWidth[actuator.actuatorArrayNum+1];
+				outBuffer[x] = normalPulseWidth[actuator.actuatorArrayNum+1];
 			}
-    	}
-    	else
-    	{
-    		motorOutputBuffer[actuator.actuatorArrayNum][x] = loPulseWidth[actuator.actuatorArrayNum+1];
-    	}
+		}
+		else
+		{
+			outBuffer[x] = loPulseWidth[actuator.actuatorArrayNum+1];
+		}
 
-    }
+	}
 
-    if (noEndPadding)
-    {
-    	motorOutputBuffer[actuator.actuatorArrayNum][bufferIdx - 2] = 0;
-    }
+	if (noEndPadding)
+	{
+		outBuffer[bufferIdx - 2] = 0;
+	}
 
-	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], bufferIdx);
+	HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)outBuffer, bufferIdx);
+
 	//HAL_TIMEx_PWMN_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)motorOutputBuffer[actuator.actuatorArrayNum], bufferIdx);
 
 }
@@ -150,6 +162,7 @@ void InitWs2812(void)
 
 	uint32_t actuatorNumOutput;
 
+	volatile int cat = 000;
 	//fix for revolt. If 1wire has run we can't use LEDs or motor outputs won't work right.
 	if (oneWireHasRun)
 		return;

@@ -58,8 +58,8 @@ void DisableLogging(void)
 }
 
 
- void FinishPage(void)
- {
+void FinishPage(void)
+{
 	uint32_t remaingBytes = (flashInfo.pageSize - (flashInfo.buffer[flashInfo.bufferNum].txBufferPtr - FLASH_CHIP_BUFFER_WRITE_DATA_START) );
 	for (uint32_t x=0;x<remaingBytes;x++)
 	{
@@ -67,8 +67,8 @@ void DisableLogging(void)
 	}
 }
 
- void FinishBlock(uint32_t count)
- {
+void FinishBlock(uint32_t count)
+{
 	uint32_t finishY = ((flashInfo.currentWriteAddress + (flashInfo.buffer[flashInfo.bufferNum].txBufferPtr - FLASH_CHIP_BUFFER_WRITE_DATA_START)) % count);
 	if (finishY != 0)
 	{
@@ -79,14 +79,14 @@ void DisableLogging(void)
 	}
 }
 
-inline void InlineWrite16To8 (int16_t data)
+void InlineWrite16To8 (int16_t data)
 {
 	WriteByteToFlash(  (uint8_t)( data >> 8 ) );
 	WriteByteToFlash(  (uint8_t)(data & 0xff) );
 }
 
-inline void WriteByteToFlash (uint8_t data)
- {
+void WriteByteToFlash (uint8_t data)
+{
 
 	buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
 
@@ -173,6 +173,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 #endif
 
 	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (ModeActive(M_LOGGING)) && (flashInfo.enabled == STAT_FLASH_ENABLED) )
+	//if ( 1 )
 	{
 		ledStatus.status    = LEDS_FASTER_BLINK;
 		LoggingEnabled      = 1;
@@ -288,7 +289,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				WriteByteToFlash( 'I' );
 
 				BlackboxWriteUnsignedVB(logItteration);
-				BlackboxWriteUnsignedVB(logStartMicros + (logItteration * logRateTime) );
+				BlackboxWriteUnsignedVB( InlineMillis() * 1000);
 
 #ifndef LOG32
 
