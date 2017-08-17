@@ -13,6 +13,7 @@ uint32_t alonePulseWidth[17];
 uint32_t normalPulseWidth[17];
 uint32_t endPulseWidth[17];
 uint32_t loPulseWidth[17];
+uint8_t  tempBuffer[1500];
 
 static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma actuatorDma);
 static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timerHz, uint32_t inverted);
@@ -77,8 +78,6 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 	uint32_t bufferIdx = 0;
 	uint32_t outputIndex;
 	uint32_t bitsPerFrame = 8;
-
-	uint8_t  tempBuffer[1500];
 
 	tempBuffer[bufferIdx++] = NO_PULSE;
 
