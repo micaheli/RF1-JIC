@@ -51,7 +51,7 @@ static void RfblExecuteLoadCommand(void);
 
 void InitRfbl(void)
 {
-
+	//BootToAddress(emergencyStart);
 	HandleBackupRegistersAndBooting();
 
 	//FC will either boot into app or continue on here after the HandleBackupRegistersAndBooting function runs

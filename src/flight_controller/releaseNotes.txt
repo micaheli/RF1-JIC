@@ -1317,6 +1317,8 @@ Version 0.313.120 BETA
 
 Version 0.314.120 BETA
 	led update
+	update current filter
+	update PIDs
 
 #Features in current development:
 #	MAVlink compatibility

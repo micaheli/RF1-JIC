@@ -298,7 +298,8 @@ void BootToAddress(uint32_t address)
 	}
 
 	HAL_RCC_DeInit();
-	DelayMs(2); //let MCU stabilize
+	simpleDelay_ASM(2000); //let MCU stabilize
+	//DelayMs(2); 
 
 	__disable_irq(); // disable interrupts for jump
 

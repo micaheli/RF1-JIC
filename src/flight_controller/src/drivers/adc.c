@@ -29,6 +29,7 @@ volatile uint32_t adcDmaBuffer[2]; //first one is voltage, second one is current
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage, float highResistor, float lowResistor);
 static void ConvertAdcCurrent(uint32_t rawAdcVoltage, float adcCurrFactor);
+static float ProcessVoltage(VoltageStorageRec storageRec);
 
 //IRQ based conversion complete
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
@@ -44,36 +45,37 @@ void PollAdc(void)
 	ConvertAdcVoltage( adcDmaBuffer[1], HIGH_RESISTOR, LOW_RESISTOR );
 }
 
-float ProcessVoltage() //takes adc voltage and returns usable voltage for telemtry
+//pass VoltageStorageRec so it can be used for more than one measurement (current)
+static float ProcessVoltage(VoltageStorageRec storageRec) //takes adc voltage and returns usable voltage for telemtry
 {
     for (int32_t x=2;x>=0;x--)
     {
-        if (adcVoltage > voltageStorage[x].voltage)
+        if (adcVoltage > storageRec[x].voltage)
         {
-            voltageStorage[x].voltage = adcVoltage;
-            voltageStorage[x].storageTime = InlineMillis();
+            storageRec[x].voltage = adcVoltage;
+            storageRec[x].storageTime = InlineMillis();
         }
     }
 
-    if (voltageStorage[2].storageTime < (InlineMillis() - 3000))
+    if (storageRec[2].storageTime < (InlineMillis() - 3000))
     {
-        voltageStorage[2].storageTime = voltageStorage[1].storageTime;
-        voltageStorage[2].voltage = voltageStorage[1].voltage;
+        storageRec[2].storageTime = storageRec[1].storageTime;
+        storageRec[2].voltage = storageRec[1].voltage;
     }
 
-    if (voltageStorage[1].storageTime < (InlineMillis() - 2000))
+    if (storageRec[1].storageTime < (InlineMillis() - 2000))
     {
-        voltageStorage[1].storageTime = voltageStorage[0].storageTime;
-        voltageStorage[1].voltage = voltageStorage[0].voltage;
+        storageRec[1].storageTime = storageRec[0].storageTime;
+        storageRec[1].voltage = storageRec[0].voltage;
     }
 
-    if (voltageStorage[0].storageTime < (InlineMillis() - 1000))
+    if (storageRec[0].storageTime < (InlineMillis() - 1000))
     {
-        voltageStorage[0].storageTime = InlineMillis();
-        voltageStorage[0].voltage = adcVoltage;
+        storageRec[0].storageTime = InlineMillis();
+        storageRec[0].voltage = adcVoltage;
     }
 
-    return(voltageStorage[2].voltage);
+    return(storageRec[2].voltage);
 }
 
 static void ConvertAdcVoltage(uint32_t rawAdcVoltage, float highResistor, float lowResistor)
@@ -90,7 +92,7 @@ static void ConvertAdcVoltage(uint32_t rawAdcVoltage, float highResistor, float 
 		if (InlineMillis()-lastTime > 250 )
 		{
 			lastTime=InlineMillis();
-			averageVoltage = ProcessVoltage();
+			averageVoltage = ProcessVoltage(voltageStorage);
 		}
 	}
 }

@@ -11,7 +11,6 @@ int main(void)
 	GetBoardHardwareDefs();
     InitializeMCUSettings();
     BoardInit();
-
     InitRfbl();
     //FC will either boot into app or continue on here after the InitRfbl function runs
 

@@ -13,19 +13,31 @@
 #define MAX_KD 0.30f
 
 
+/*
+set yaw_kp1=19.000
+set roll_kp1=26.000
+set pitch_kp1=27.000
+set yaw_ki1=30.000
+set roll_ki1=30.000
+set pitch_ki1=30.000
+set yaw_kd1=50.000
+set roll_kd1=18.000
+set pitch_kd1=26.000
+*/
+
 #define DEFAULT_PID_CONFIG_VALUE 30.0f
 
-#define DEFAULT_YAW_KP           150.0f
-#define DEFAULT_ROLL_KP          130.0f
-#define DEFAULT_PITCH_KP         140.0f
+#define DEFAULT_ROLL_KP          112.5f
+#define DEFAULT_PITCH_KP         126.2f
+#define DEFAULT_YAW_KP           095.0f
 
-#define DEFAULT_YAW_KI           900.0f
-#define DEFAULT_ROLL_KI          800.0f
-#define DEFAULT_PITCH_KI         850.0f
+#define DEFAULT_ROLL_KI          789.5f
+#define DEFAULT_PITCH_KI         857.1f
+#define DEFAULT_YAW_KI           909.1f
 
-#define DEFAULT_YAW_KD           0800.0f
-#define DEFAULT_ROLL_KD          1200.0f
-#define DEFAULT_PITCH_KD         1300.0f
+#define DEFAULT_ROLL_KD          0720.0f
+#define DEFAULT_PITCH_KD         1130.4f
+#define DEFAULT_YAW_KD           1315.8f
 
 //#define DEFAULT_YAW_KP           154.0f
 //#define DEFAULT_ROLL_KP          150.0f
