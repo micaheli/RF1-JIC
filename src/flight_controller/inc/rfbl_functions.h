@@ -11,6 +11,6 @@ void ReadRfblBkRegs (void);
 
 void upgradeRfbl(void);
 void eraseRfbl(uint32_t firmwareSize);
-extern void HandleRfbl(void);
-extern void HandleFcStartupReg(void);
+extern int HandleRfbl(void);
+extern int HandleFcStartupReg(void);
 void HandleRfblDisasterPrevention (void);

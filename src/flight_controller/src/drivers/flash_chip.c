@@ -1,6 +1,6 @@
 #include "includes.h"
 
-
+persistance_record persistance;
 flash_info_record flashInfo;
 
 
@@ -386,7 +386,7 @@ void FlashDeinit(void)
 
 int InitFlashChip(void)
 {
-
+	int flashReturn;
 	//TODO: Allow working with multiple flash chips
 
 	//TODO: Check for DMA conflicts
@@ -415,23 +415,25 @@ int InitFlashChip(void)
     	}
     }
 
-    return ( FindFirstEmptyPage() );
-    //check Read ID in nonblocking mode, this function blocks, but it's used to test the non blocking functionality of the chip
-    if (M25p16ReadIdSetFlashRecordDma() == flashInfo.chipId)
-    {
-    	//flash chip is good! Let's check if we can write to it and where we can write to
-        if ( flashInfo.chipId )
-        {
-        	return ( FindFirstEmptyPage() );
-        }
+	flashReturn = FindFirstEmptyPage();
+	if(flashInfo.enabled != FLASH_DISABLED)
+	{
+		buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
 
-    }
+		//bzero(&persistance, sizeof(persistance_record));
+		persistance.version = PERSISTANCE_VERSION;
+		persistance.start1 = (flashInfo.flashSectors - 2) * flashInfo.sectorSize;
+		persistance.start2 = (flashInfo.flashSectors - 1) * flashInfo.sectorSize;
+		persistance.end = (flashInfo.flashSectors) * flashInfo.sectorSize;
 
-    if (0)
-    {
-    	M25p16DmaReadPage(0, flashInfo.buffer[0].txBuffer, flashInfo.buffer[0].rxBuffer);
-    }
-    return (0);
+		if ( M25p16ReadPage( persistance.start1, buffer->txBuffer, buffer->rxBuffer) )
+		{
+			memcpy(&persistance.data, buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(persistance.data));
+		}
+
+	}
+	return(flashReturn);
+
 }
 
 void DataFlashProgramPage(uint32_t address, uint8_t *data, uint16_t length)

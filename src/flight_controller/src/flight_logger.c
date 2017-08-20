@@ -9,13 +9,40 @@
 	"STYLE=RAT\n\0" \
 
 
+#define HEADER2      \
+"H Product:Blackbox flight data recorder by Nicholas Sherlock\n" \
+"H Data version:2\n" \
+"H I interval:1\n" \
+"H Field I name:loopIteration,time,axisP[2],axisI[2],axisD[2],axisP[0],axisI[0],axisD[0],axisP[1],axisI[1],axisD[1],rcCommand[2],rcCommand[0],rcCommand[1],rcCommand[3],debug[2],debug[0],debug[1],ugyroADC[2],ugyroADC[0],ugyroADC[1],accSmooth[2],accSmooth[0],accSmooth[1],motor[0],motor[1],motor[2],motor[3]\n" \
+"H Field I signed:0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1\n" \
+"H Field I predictor:0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n" \
+"H Field I encoding:1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n" \
+"H Field P predictor:6,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1\n" \
+"H Field P encoding:9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n" \
+"H Field S name:flightModeFlags,stateFlags,failsafePhase,rxSignalReceived,rxFlightChannelsValid\n" \
+"H Field S signed:0,0,0,0,0\n" \
+"H Field S predictor:0,0,0,0,0\n" \
+"H Field S encoding:1,1,7,7,7\n" \
+"H Firmware type:Raceflight\n" \
+"H Firmware revision:One\n" \
+"H Firmware date:Oct 31 2015 22:44:00\n" \
+"P interval:1/1\n" \
+"H rcRate:100\n" \
+"H minthrottle:1100\n" \
+"H maxthrottle:2000\n" \
+"H gyro.scale:0x41600000\n" \
+"H acc_1G:1\n\0" \
+
+uint32_t lastProgramTime;
+int headerWritesTotal;
+int headerWritesDone;
 uint32_t LoggingEnabled;
 uint32_t firstLogging;
 uint32_t flashAlign;
 uint32_t logItteration;
 int32_t  logItterationCounter;
 uint32_t logRateTime;
-uint32_t logStartMicros;
+uint32_t logStartMillis;
 uint32_t flashCountdownFake;
 
 pid_output lastFlightPids[AXIS_NUMBER];
@@ -29,13 +56,15 @@ float      lastMotorOutput[AXIS_NUMBER];
 int InitFlightLogger(void)
 {
 
+	headerWritesTotal = 0;
+	headerWritesDone = 0;
 	flashCountdownFake = 0;
 	logItterationCounter = 1;
 	LoggingEnabled = 0;
 	firstLogging   = 1;
 	flashAlign     = 0;
 	logItteration  = 0;
-	logStartMicros = 0;
+	logStartMillis = 0;
 	logRateTime    = 1000;
 	bzero(lastFlightPids, sizeof(pid_output));
 	bzero(lastFlightSetPoints, sizeof(lastFlightSetPoints));
@@ -226,7 +255,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 
 		if (firstLogging)
 		{
-			logStartMicros = Micros();
+			logStartMillis = InlineMillis();
 
 			flashInfo.buffer[0].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 			flashInfo.buffer[1].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
@@ -240,9 +269,14 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				flashInfo.currentWriteAddress += (UPDATE_BB_DATA_SIZE - finishX);
 			}
 
-			DumbWriteString(HEADER, strlen(HEADER)+1);
-			//DumbWriteString(blackboxHeader, strlen(blackboxHeader)+1);
-			//FinishPage();
+			headerWritesTotal = CONSTRAIN(((strlen(HEADER2)+1) / flashInfo.pageSize), 1, 100);
+			headerWritesDone = 0;
+
+			//DumbWriteString(HEADER2, strlen(HEADER2)+1);
+			DumbWriteString(HEADER2, flashInfo.pageSize);
+			headerWritesDone++;
+			lastProgramTime = InlineMillis();
+
 			firstLogging = 0;
 			logItterationCounter = 1;
 
@@ -253,6 +287,27 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 			if(--logItterationCounter == 0)
 			{
 				logItterationCounter = 3;	//TODO make this configurable value. Capture rate = 1khz/value
+
+				//no logging until header is written
+				if (headerWritesDone-1 != headerWritesTotal)
+				{
+					//don't try to right the header until the flash is ready
+					if ( ( (InlineMillis() - lastProgramTime) > 5) && (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS) )
+					{
+						if(headerWritesDone == headerWritesTotal)
+						{
+							//last write
+							DumbWriteString(HEADER2+(headerWritesDone*flashInfo.pageSize), ( (flashInfo.pageSize*headerWritesDone) % strlen(HEADER2) ));
+							headerWritesDone++;
+						}
+						else
+						{
+							DumbWriteString(HEADER2+(headerWritesDone*flashInfo.pageSize), flashInfo.pageSize);
+							headerWritesDone++;
+						}
+					}
+					return;
+				}
 
 #ifndef LOG32
 				//average all values

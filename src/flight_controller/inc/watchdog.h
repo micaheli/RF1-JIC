@@ -21,5 +21,5 @@ typedef enum {
 } watchdog_timeout;
 
 
-extern uint8_t InitWatchdog(watchdog_timeout timeout);
+extern int InitWatchdog(watchdog_timeout timeout);
 extern void FeedTheDog(void);

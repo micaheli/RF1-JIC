@@ -13,9 +13,10 @@ uint32_t armingBuzzArray[]   = {100,100,100,100,100,0};
 uint32_t deadBatteryBuzzArray[]  = {200,50,100,50,200,50,100,0};
 uint32_t switchBuzzArray[]   = {200,50,50,50,50,50,200,0};
 
-void InitBuzzer(void)
+int InitBuzzer(void)
 {
 	InitializeBuzzerPin(ports[board.buzzerPort], board.buzzerPin);
+	return(0);
 }
 
 

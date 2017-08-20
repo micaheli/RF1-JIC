@@ -29,7 +29,7 @@ extern uint32_t armedTime;
 enum { CALIBRATE_BOARD_FAILED = 0, CALIBRATE_BOARD_UPRIGHT = 1, CALIBRATE_BOARD_INVERTED = 2, };
 
 extern void  DeinitFlight(void);
-extern void  InitFlight(void);
+extern int   InitFlight(void);
 extern void  ArmBoard(void);
 extern void  DisarmBoard(void);
 extern int   SetCalibrate1(void);

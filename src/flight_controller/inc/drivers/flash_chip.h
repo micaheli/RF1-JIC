@@ -36,6 +36,28 @@ typedef struct {
 	volatile uint32_t rxBufferPtr;
 } buffer_record;
 
+#define PERSISTANCE_VERSION 001
+
+typedef struct
+{
+	uint8_t version;
+	uint8_t size;	
+	uint8_t crc;
+} persistance_data_record;
+
+typedef struct
+{
+	uint8_t enabled;
+	uint8_t version;
+	uint8_t start1;
+	uint8_t start2;
+	uint8_t end;
+	uint8_t generation;
+	uint8_t itteration;
+	persistance_data_record data;
+	uint8_t crc;
+} persistance_record;
+
 typedef struct {
 	volatile uint32_t enabled;
 	volatile uint32_t chipId;
@@ -48,25 +70,12 @@ typedef struct {
 	volatile uint32_t bufferStatus;
 	uint8_t commandRxBuffer[4]; //used for replies of commands
 	uint8_t commandTxBuffer[4]; //used for sending chip commands. Needs to be separate of data buffer since both can be in use at once
-/*
-	uint8_t txBufferA[FLASH_CHIP_BUFFER_SIZE]; //tx buffer to chip. Should be 256 + 5 bytes since that's the page size.
-	uint8_t rxBufferA[FLASH_CHIP_BUFFER_SIZE]; //rx buffer from chip. Should be 256 + 5 bytes since we use it for command and dummy bytes while reading a page
-	uint8_t txBufferB[FLASH_CHIP_BUFFER_SIZE]; //double buffer. While one write, one is filled
-	uint8_t rxBufferB[FLASH_CHIP_BUFFER_SIZE]; //double buffer. While one write, one is filled
-*/
-
 	buffer_record buffer[2];
 	uint8_t bufferNum;
-
-	/*
-	volatile uint32_t txBufferAPtr;
-	volatile uint32_t rxBufferAPtr;
-	volatile uint32_t txBufferBPtr;
-	volatile uint32_t rxBufferBPtr;
-	*/
 	volatile uint32_t currentWriteAddress;
 } flash_info_record;
 
+extern persistance_record persistance;
 extern flash_info_record flashInfo;
 
 extern void FlashDeinit(void);

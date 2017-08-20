@@ -1,6 +1,8 @@
 //#define STM32F405xx
 #include "includes.h"
 
+volatile int retValChk;
+
 int main(void)
 {
 	//Absolutely no MCU specific code to go here.
@@ -8,33 +10,33 @@ int main(void)
     int count = 16;
 
     //TODO: Make automatic
-	VectorIrqInit(ADDRESS_RFFW_START);
+	retValChk = VectorIrqInit(ADDRESS_RFFW_START);
 
 	//TODO Needs to pull parameters from flash here. For now we use defines
-	GetBoardHardwareDefs();
+	retValChk = GetBoardHardwareDefs();
 
-    InitializeMCUSettings();
+    retValChk = InitializeMCUSettings();
 
-    BoardInit();
+    retValChk = BoardInit();
 
     //DshotInit(1);
     
-    HandleRfbl();
+    retValChk = HandleRfbl();
 
-    LoadConfig(ADDRESS_CONFIG_START);
+    retValChk = LoadConfig(ADDRESS_CONFIG_START);
 
     SpektrumBind(mainConfig.rcControlsConfig.bind);
 
-    HandleFcStartupReg();
+    retValChk = HandleFcStartupReg();
 
-    InitBuzzer();
-    InitLeds();
+    retValChk = InitBuzzer();
+    retValChk = InitLeds();
 
-    InitUsb();
+    retValChk = InitUsb();
 
-    InitFlight();
+    retValChk = InitFlight();
 
-    InitWatchdog(WATCHDOG_TIMEOUT_32S);
+    retValChk = InitWatchdog(WATCHDOG_TIMEOUT_32S);
 
     buzzerStatus.status = STATE_BUZZER_STARTUP;
     ledStatus.status    = LEDS_SLOW_BLINK;

@@ -66,9 +66,10 @@ void RtcWriteBackupRegister(uint32_t BackupRegister, uint32_t data) {
     HAL_PWR_DisableBkUpAccess();
 }
 
-void InitUsb(void) {
+int InitUsb(void) {
 	usbStarted = 1;
 	USB_DEVICE_Init();
+	return(0);
 }
 
 void SystemReset(void)
@@ -289,24 +290,24 @@ uint32_t GetDmaCallbackFromDmaStream(uint32_t dmaEnum)
 void BootToAddress(uint32_t address)
 {
 	pFunction JumpToApplication;
-	uint32_t jumpAddress;
-
+	volatile uint32_t jumpAddress;
+	
 	//only disable USB if it's been started, otherwise we get a hard fault
 	if (usbStarted)
 	{
 		USB_DEVICE_DeInit();
 	}
-
+	__disable_irq(); // disable interrupts for jump
+	
 	HAL_RCC_DeInit();
 	simpleDelay_ASM(2000); //let MCU stabilize
 	//DelayMs(2); 
 
-	__disable_irq(); // disable interrupts for jump
-
 	jumpAddress = *(__IO uint32_t*)(address + 4);
-    JumpToApplication = (pFunction)jumpAddress;
+	JumpToApplication = (pFunction)jumpAddress;
 
-    // Initialize user application's Stack Pointer
+	// Initialize user application's Stack 
+	//__set_CONTROL(0); 
     __set_MSP(*(__IO uint32_t*)address);
     JumpToApplication();
 }

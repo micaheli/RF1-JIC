@@ -10,7 +10,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* Private function prototypes -----------------------------------------------*/
-void BoardInit(void);
+int BoardInit(void);
 void SystemClock_Config(void);
 void InitializeLED(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 

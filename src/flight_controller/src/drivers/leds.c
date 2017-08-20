@@ -329,7 +329,7 @@ static inline void LedModeBatteryLevel()
 }
 
 
-void InitLeds (void)
+int InitLeds (void)
 {
 	int x;
 
@@ -341,6 +341,7 @@ void InitLeds (void)
 		}
 	}
 	ledStatus.status = LEDS_OFF;
+	return(0);
 }
 
 

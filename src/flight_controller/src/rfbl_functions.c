@@ -7,12 +7,13 @@ uint32_t rebootAddress;
 uint32_t bootCycles;
 uint32_t bootDirection;
 
-void HandleRfbl(void)
+int HandleRfbl(void)
 {
     ReadRfblBkRegs();
 #ifdef DEBUG
     HandleRfblDisasterPrevention();
 #endif
+	return(0);
 }
 
 void HandleRfblDisasterPrevention(void)
@@ -24,7 +25,7 @@ void HandleRfblDisasterPrevention(void)
 	WriteRfblBkRegs();
 }
 
-void HandleFcStartupReg(void)
+int HandleFcStartupReg(void)
 {
     if (RtcReadBackupRegister(FC_STATUS_REG) == FC_STATUS_INFLIGHT) { //FC crashed while inflight.
     	//crashed FC startup
@@ -42,7 +43,8 @@ void HandleFcStartupReg(void)
 		RtcWriteBackupRegister(RFBL_BKR_BOOT_DIRECTION_REG,BOOT_TO_APP_COMMAND);
     } else {
     	RtcWriteBackupRegister(FC_STATUS_REG,FC_STATUS_STARTUP);
-    }
+	}
+	return(0);
 }
 
 void WriteRfblBkRegs(void)

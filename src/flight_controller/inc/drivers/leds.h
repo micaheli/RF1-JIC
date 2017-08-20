@@ -50,7 +50,7 @@ extern uint8_t colorChart[COLOR_CHART_SIZE][3];
 extern ledStatus_t ledStatus;
 
 extern void DoLed(uint32_t number, uint32_t on);
-extern void InitLeds (void);
+extern int InitLeds (void);
 extern void UpdateLeds(void);
 extern void BlinkAllLeds(uint32_t timeNow, uint16_t time1, uint16_t time2);
 extern void UpdateWs2812Leds(void);

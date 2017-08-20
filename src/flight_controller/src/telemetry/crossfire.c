@@ -82,12 +82,26 @@ static uint8_t CrsfBattFrame(void)
     crsfOutBuffer[5] = (uint8_t)((uint16_t)(adcCurrent*10.0f) >> 8);
     crsfOutBuffer[6] = (uint8_t)((uint16_t)(adcCurrent*10.0f));
     //capacity (24bit mAh)
-    crsfOutBuffer[7] = (uint8_t)(mainConfig.telemConfig.batSize >> 16);
-    crsfOutBuffer[8] = (uint8_t)(mainConfig.telemConfig.batSize >> 8);
-    crsfOutBuffer[9] = (uint8_t)(mainConfig.telemConfig.batSize);
-    //capacity used (8bit percent)
-    crsfOutBuffer[10] = (uint8_t)((uint32_t)adcMAh/mainConfig.telemConfig.batSize);
-
+    if (!mainConfig.telemConfig.crsfOtxCurHack)
+    {
+        crsfOutBuffer[7] = (uint8_t)(mainConfig.telemConfig.batSize >> 16);
+        crsfOutBuffer[8] = (uint8_t)(mainConfig.telemConfig.batSize >> 8);
+        crsfOutBuffer[9] = (uint8_t)(mainConfig.telemConfig.batSize);
+        //capacity used (8bit percent)
+        //crsfOutBuffer[10] = (uint8_t)(50);
+        crsfOutBuffer[10] = (uint8_t)(((float)mainConfig.telemConfig.batSize - adcMAh) * 100.0f / (float)mainConfig.telemConfig.batSize);
+    }
+    else
+    {
+        crsfOutBuffer[7] = (uint8_t)((uint32_t)adcMAh >> 16);
+        crsfOutBuffer[8] = (uint8_t)((uint32_t)adcMAh >> 8);
+        crsfOutBuffer[9] = (uint8_t)((uint32_t)adcMAh);
+        //capacity used (8bit percent)
+        //crsfOutBuffer[10] = (uint8_t)(50);
+        crsfOutBuffer[10] = (uint8_t)(100);
+    }
+    
+    
     crsfOutBuffer[11] = CrsfCrc8(&crsfOutBuffer[2], CRSF_BATT_PAYLOAD_SIZE+1);
 
     return(12);

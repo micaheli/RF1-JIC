@@ -1,8 +1,8 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint8_t)(121U)
-#define CONFIG_VERSION_STR		"121"
-#define FIRMWARE_VERSION		"0.316.121 BETA" //RC19 is next
+#define CONFIG_VERSION			(uint8_t)(122U)
+#define CONFIG_VERSION_STR		"122"
+#define FIRMWARE_VERSION		"0.317.122 BETA" //RC19 is next
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n"
 
@@ -82,7 +82,7 @@ extern const config_variables_rec valueTable[];
 
 extern char   *CleanupNumberString(char *inString);
 extern void    SaveConfig (uint32_t addresConfigStart);
-extern void    LoadConfig (uint32_t addresConfigStart);
+extern int     LoadConfig (uint32_t addresConfigStart);
 extern void    GenerateConfig(void);
 extern void    ValidateConfigSettings(void);
 extern void    ProcessCommand(char *inString);

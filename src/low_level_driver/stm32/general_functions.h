@@ -15,7 +15,7 @@ extern void      delayUs(uint32_t uSec);
 extern uint32_t  RtcReadBackupRegister(uint32_t BackupRegister);
 extern void      RtcWriteBackupRegister(uint32_t BackupRegister, uint32_t data);
 
-extern void      InitUsb(void);
+extern int       InitUsb(void);
 
 extern void      inlineDigitalHi(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 extern void      inlineDigitalLo(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);

@@ -72,7 +72,7 @@ void SystemClock_Config(void)
     systemUsTicks = (HAL_RCC_GetHCLKFreq()/1000000);    
 }
 
-void VectorIrqInit(uint32_t address)
+int VectorIrqInit(uint32_t address)
 {
 	SCB->VTOR = address; //set vector register to firmware start
 	__enable_irq(); // enable interrupts
@@ -80,16 +80,18 @@ void VectorIrqInit(uint32_t address)
 	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 	DWT->CYCCNT = 0;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+    return(0);
 }
 
-void BoardInit(void)
+int BoardInit(void)
 {
 	HAL_Init();
     SystemClock_Config();
     StartSystemClocks();
+    return(0);
 }
 
-void USBInit(void)
+int USBInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
 
@@ -118,9 +120,10 @@ void USBInit(void)
     /* Peripheral interrupt init */
     HAL_NVIC_SetPriority(OTG_FS_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+    return(0);
 }
 
-void USBDeInit(void)
+int USBDeInit(void)
 {
     /* Peripheral clock disable */
     __HAL_RCC_USB_OTG_FS_CLK_DISABLE();
@@ -135,6 +138,7 @@ void USBDeInit(void)
 
     /* Peripheral interrupt Deinit*/
     HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
+    return(0);
 }
 
 uint32_t TimerPrescalerDivisor(uint32_t timer)

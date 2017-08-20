@@ -6,7 +6,7 @@
 #include "stm32f7xx_hal_conf.h"
 #include "flash.h"
 
-extern void VectorIrqInit(uint32_t address);
+extern int VectorIrqInit(uint32_t address);
 
 extern int FULL_32;
 

@@ -185,6 +185,7 @@ const config_variables_rec valueTable[] = {
 		{ "vbat_buzzer",		typeUINT,  "telm", &mainConfig.telemConfig.vbatbuzzer,					0, 1, 1, "" },
 		{ "vbat_cutoff",		typeFLOAT, "telm", &mainConfig.telemConfig.vbatCutoff,					0, 4.0f, 3.8f, "" },
 		{ "bat_size",			typeUINT,  "telm", &mainConfig.telemConfig.batSize,						0, 50000, 1300, "" },
+		{ "crsf_otx_cur_hack",	typeUINT,  "telm", &mainConfig.telemConfig.crsfOtxCurHack,				0, 1, 1, "" },
 		
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, CW315_INV, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1,  0, "" },
@@ -230,7 +231,7 @@ const config_variables_rec valueTable[] = {
  		{ "sla1", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].sla, 		0, 75.0, 35.0, "" },
  		{ "sld1", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].sld, 		0, 0.90, 0.03, "" },
  
-		{ "res_redux1",			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[0].resRedux,		0, 1, 1, "" },
+		{ "res_redux1",			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[0].resRedux,		0, 1, 0, "" },
  		{ "yaw_rap1", 			typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.r, 	0, 0, 0.000, "" },
  		{ "roll_rap1", 			typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.r, 	0, 0, 0.000, "" },
  		{ "pitch_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.r, 	0, 0, 0.000, "" },
@@ -241,9 +242,9 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.q, 	0, 100, 75.000, "" },
  		{ "roll_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
  		{ "pitch_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
- 		{ "yaw_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].kd.r, 		0, 100, 40.000, "" },
- 		{ "roll_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].kd.r, 		0, 100, 40.000, "" },
- 		{ "pitch_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].kd.r, 	0, 100, 40.000, "" },
+ 		{ "yaw_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].kd.r, 		0, 100, 45.000, "" },
+ 		{ "roll_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].kd.r, 		0, 100, 45.000, "" },
+ 		{ "pitch_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].kd.r, 	0, 100, 45.000, "" },
  		{ "x_vector_quick1", 	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCX].acc.q, 	0, 10, 2.0000, "" },
  		{ "x_vector_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCX].acc.r, 	0, 10, 025.00, "" },
  		{ "y_vector_quick1", 	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCY].acc.q, 	0, 10, 2.0000, "" },
@@ -286,7 +287,7 @@ const config_variables_rec valueTable[] = {
  		{ "sla2", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].sla, 		0, 75.0, 35.0, "" },
  		{ "sld2", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].sld, 		0, 0.90, 0.03, "" },
  
-		{ "res_redux2",			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[0].resRedux,		0, 1, 1, "" },
+		{ "res_redux2",			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[0].resRedux,		0, 1, 0, "" },
  		{ "yaw_rap2", 			typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.r, 	0, 0, 0.000, "" },
  		{ "roll_rap2", 			typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.r, 	0, 0, 0.000, "" },
  		{ "pitch_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.r, 	0, 0, 0.000, "" },
@@ -297,9 +298,9 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.q, 	0, 100, 75.000, "" },
  		{ "roll_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
  		{ "pitch_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
- 		{ "yaw_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].kd.r, 		0, 100, 40.000, "" },
- 		{ "roll_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].kd.r, 		0, 100, 40.000, "" },
- 		{ "pitch_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].kd.r, 	0, 100, 40.000, "" },
+ 		{ "yaw_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].kd.r, 		0, 100, 45.000, "" },
+ 		{ "roll_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].kd.r, 		0, 100, 45.000, "" },
+ 		{ "pitch_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].kd.r, 	0, 100, 45.000, "" },
  		{ "x_vector_quick2", 	typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCX].acc.q, 	0, 10, 2.0000, "" },
  		{ "x_vector_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCX].acc.r, 	0, 10, 025.00, "" },
  		{ "y_vector_quick2", 	typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCY].acc.q, 	0, 10, 2.0000, "" },
@@ -343,7 +344,7 @@ const config_variables_rec valueTable[] = {
  		{ "sla3", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].sla, 		0, 75.0, 35.0, "" },
  		{ "sld3", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].sld, 		0, 0.90, 0.03, "" },
 
-		{ "res_redux3",			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[0].resRedux,		0, 1, 1, "" },
+		{ "res_redux3",			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[0].resRedux,		0, 1, 0, "" },
  		{ "yaw_rap3", 			typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.r, 	0, 0, 0.000, "" },
  		{ "roll_rap3", 			typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.r, 	0, 0, 0.000, "" },
  		{ "pitch_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.r, 	0, 0, 0.000, "" },
@@ -354,9 +355,9 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.q, 	0, 100, 75.000, "" },
  		{ "roll_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
  		{ "pitch_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
- 		{ "yaw_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].kd.r, 		0, 100, 40.000, "" },
- 		{ "roll_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].kd.r, 		0, 100, 40.000, "" },
- 		{ "pitch_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].kd.r, 	0, 100, 40.000, "" },
+ 		{ "yaw_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].kd.r, 		0, 100, 45.000, "" },
+ 		{ "roll_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].kd.r, 		0, 100, 45.000, "" },
+ 		{ "pitch_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].kd.r, 	0, 100, 45.000, "" },
  		{ "x_vector_quick3", 	typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCX].acc.q, 	0, 10, 2.0000, "" },
  		{ "x_vector_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCX].acc.r, 	0, 10, 025.00, "" },
  		{ "y_vector_quick3", 	typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCY].acc.q, 	0, 10, 2.0000, "" },
@@ -708,7 +709,7 @@ static int ValidateConfig (uint32_t addresConfigStart)
 
 }
 
-void LoadConfig (uint32_t addresConfigStart)
+int LoadConfig (uint32_t addresConfigStart)
 {
 	if (ValidateConfig(addresConfigStart) ) {
 		memcpy(&mainConfig, (char *) addresConfigStart, sizeof(main_config));
@@ -717,6 +718,7 @@ void LoadConfig (uint32_t addresConfigStart)
 		GenerateConfig();
 		SaveConfig(addresConfigStart);
 	}
+	return(0);
 }
 
 
@@ -1940,6 +1942,24 @@ void ProcessCommand(char *inString)
 		{
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me flash status:%lu\n", flashInfo.status);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("flashmsd", inString))
+		{
+			DeinitFlight();
+			RfCustomReply("#me Rebooting to flash MSD\n");
+			RtcWriteBackupRegister(RFBL_BKR_REBOOT_PENDING_REG, 222);
+			RtcWriteBackupRegister(RFBL_BKR_BOOT_ADDRESSS_REG, 0x080E0000);
+			DelayMs(500);
+			SystemReset();
+			return;
+		}
+	else if (!strcmp("flashmsd1", inString))
+		{
+			DeinitFlight();
+			RfCustomReply("#me Rebooting to flash MSD\n");
+			DelayMs(500);
+			BootToAddress(0x080E0000);
+			return;
 		}
 	else if (!strcmp("dump", inString))
 		{

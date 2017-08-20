@@ -1325,6 +1325,19 @@ Version 0.315.121 BETA
         set bat_size=1300
 		measured in mAh
 	fixed minor motor calibration issue
+	large code optimizations
+
+Version 0.316.122 BETA
+	Added flashmsd command
+		run this command to access MSD mode for fast log downloads
+	Added crsf_otx_cur_hack=1 setting
+		Will change crsf telemetry to display mah used in place of battery capacity since openTX does not support battery usage 
+		default is on which is 1
+	Updated defaults
+
+Version 0.317.122 BETA
+	Log downloading is made easier
+	Log can be read directly from FC without need to download using blackbox log viewer
 
 #Features in current development:
 #	MAVlink compatibility

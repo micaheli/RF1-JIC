@@ -555,4 +555,4 @@ extern unsigned char serialRxBuffer[][RXBUFFERSIZE];
 extern uint32_t motorOutputBuffer[][150];
 
 extern int InitializeMCUSettings();
-extern void GetBoardHardwareDefs();
+extern int GetBoardHardwareDefs();

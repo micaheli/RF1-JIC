@@ -8,7 +8,7 @@
 
 extern int FULL_32;
 extern uint32_t TimerPrescalerDivisor(uint32_t timer);
-extern void     VectorIrqInit(uint32_t address);
+extern int     VectorIrqInit(uint32_t address);
 
 //asm delay used for not so accurate delays needed before the board is initialized
 #define simpleDelay_ASM(us) do {\

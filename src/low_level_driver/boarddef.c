@@ -200,11 +200,11 @@ int InitializeMCUSettings(void)
 	ccr[55] = &_TIM14->CCR4;
 #endif
 
-	return(1);
+	return(0);
 }
 
 
-void GetBoardHardwareDefs(void)
+int GetBoardHardwareDefs(void)
 {
 
 	boardSize = sizeof(board);
@@ -926,4 +926,6 @@ void GetBoardHardwareDefs(void)
 	board.dmasSerial[board.serials[ENUM_USART6].RXDma].dmaIRQn            = board.serials[ENUM_USART6].RXDmaIrqn;
 	board.dmasSerial[board.serials[ENUM_USART6].RXDma].dmaHandle          = board.serials[ENUM_USART6].RXDma;
 	board.dmasSerial[board.serials[ENUM_USART6].RXDma].dmaChannel         = board.serials[ENUM_USART6].RXDmaChannel;
+
+	return(0);
 }

@@ -1074,7 +1074,7 @@ void DeinitFlight(void)
 uint32_t used1Wire = 0;
 #endif
 //init the board
-void InitFlight(void)
+int InitFlight(void)
 {
 
     //TODO: move the check into the init functions.
@@ -1159,7 +1159,7 @@ void InitFlight(void)
 
 	//InitTransponderTimer();
 	DelayMs(2);
-
+	return(0);
 }
 
 static float BoostModify(volatile float throttleIn)

@@ -1,5 +1,7 @@
 #pragma once
 
+extern volatile int retValChk;
+
 //#define LOG32
 #include <stdbool.h>
 #include <stdint.h>
@@ -73,4 +75,4 @@
 
 #include <arm_math.h>
 
-void BoardInit(void);
+extern int BoardInit(void);

@@ -22,7 +22,7 @@
 
 #include "drivers/leds.h"
 
-void BoardInit(void);
+extern int BoardInit(void);
 void gpioClockInit(void);
 
 //unused functions reference by board defs

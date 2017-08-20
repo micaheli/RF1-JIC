@@ -2,14 +2,16 @@
 
 
 //todo: will need to move this to MCU based
-uint8_t InitWatchdog(watchdog_timeout timeout) {
-	uint8_t result = 0;
+int InitWatchdog(watchdog_timeout timeout)
+{
+	int result = 1;
 	uint16_t reload = 0;
 
-	if (RCC->CSR & RCC_CSR_WWDGRSTF) {
+	if (RCC->CSR & RCC_CSR_WWDGRSTF)
+	{
 
 		// Reset by IWDG
-		result = 1;
+		result = 0;
 
 		// Clear reset flags
 		RCC->CSR |= RCC_CSR_RMVF;
@@ -79,7 +81,7 @@ uint8_t InitWatchdog(watchdog_timeout timeout) {
 	IWDG->KR = 0xCCCC;
 
 	/* Return status */
-	return result;
+	return(result);
 }
 
 
