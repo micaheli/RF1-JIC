@@ -202,7 +202,7 @@ const config_variables_rec valueTable[] = {
 
 		{ "rf_loop_ctrl", 		typeUINT,   "gyro", &mainConfig.gyroConfig.loopCtrl, 						0, LOOP_UH32, LOOP_UH32, "" },
 		{ "drunk", 				typeINT,    "gyro", &mainConfig.gyroConfig.drunk, 							0, 2, 1, "" },
-		{ "skunk", 				typeINT,    "gyro", &mainConfig.gyroConfig.skunk, 							0, 2, 0, "" },
+		{ "skunk", 				typeINT,    "gyro", &mainConfig.gyroConfig.skunk, 							0, 2, 2, "" },
  
 		{ "pname1", 			typeSTRING, "rate", &mainConfig.tuneProfile[0].profileName,				 	0, 0, 0, "Profile1" },
  		{ "stick_curve1", 		typeINT,    "rate", &mainConfig.tuneProfile[0].rcRates.useCurve, 			0, EXPO_CURVE_END, ACRO_PLUS, "" },

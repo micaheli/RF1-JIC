@@ -94,22 +94,42 @@ int HandleQuopaMode(void)
     {
         if ( !IsDshotEnabled() )
         {
-            SKIP_GYRO=1;
+            //SKIP_GYRO=1;
             DeinitFlight();
-            DelayMs(20); //let MCU stabilize 
+            DelayMs(10); //let MCU stabilize 
+            //DelayMs(20); //let MCU stabilize 
             oldEscProtocol  = mainConfig.mixerConfig.escProtocol;
 			oldEscFrequency = mainConfig.mixerConfig.escUpdateFrequency;
-            mainConfig.mixerConfig.escProtocol = ESC_DSHOT600;
+            mainConfig.mixerConfig.escProtocol = ESC_DSHOT300;
             mainConfig.mixerConfig.escUpdateFrequency = 8000;
             InitFlight();
-            DelayMs(1); //let MCU stabilize 
-            SKIP_GYRO=0;
-            DelayMs(50); //let MCU stabilize 
+            DelayMs(5); //let MCU stabilize 
+            SKIP_GYRO=1;
+            //DelayMs(3000); //let MCU stabilize 
+            CommandToDshot(serialOutBuffer, 0);
+            for(uint32_t x=0;x<3000;x++)
+            {
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+                delayUs(500); //let MCU stabilize 
+            }
         }
-        SKIP_GYRO=1;
-        DelayMs(2); //let MCU stabilize 
+        //SKIP_GYRO=1;
+        //DelayMs(2); //let MCU stabilize 
+        /*
         CommandToDshot(serialOutBuffer, 0);
-        for(uint32_t x=0;x<50;x++)
+        for(uint32_t x=0;x<300;x++)
+        {
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+            DelayMs(2); //let MCU stabilize 
+        }
+        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP4);
+        for(uint32_t x=0;x<100;x++)
         {
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
@@ -118,7 +138,21 @@ int HandleQuopaMode(void)
             DelayMs(2); //let MCU stabilize 
         }
         CommandToDshot(serialOutBuffer, DSHOT_CMD_SPIN_DIRECTION_REVERSED);
-        for(uint32_t x=0;x<50;x++)
+        for(uint32_t x=0;x<70;x++)
+        {
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+            DelayMs(2); //let MCU stabilize 
+        }
+        */
+        //SKIP_GYRO=0;
+        //DelayMs(100);
+        SKIP_GYRO=1;
+        DelayMs(2);
+        CommandToDshot(serialOutBuffer, DSHOT_CMD_SPIN_DIRECTION_REVERSED);
+        for(uint32_t x=0;x<60;x++)
         {
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
@@ -127,14 +161,45 @@ int HandleQuopaMode(void)
             DelayMs(3); //let MCU stabilize 
         }
         CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP4);
-        for(uint32_t x=0;x<30;x++)
+        for(uint32_t x=0;x<60;x++)
         {
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
-            DelayMs(10); //let MCU stabilize 
+            DelayMs(3); //let MCU stabilize 
         }
+
+
+        if(oldEscProtocol != -1)
+        {
+            /*
+            SKIP_GYRO=0;
+            DelayMs(100); //let MCU stabilize 
+            SKIP_GYRO=1;
+            DelayMs(2);
+            CommandToDshot(serialOutBuffer, DSHOT_CMD_SPIN_DIRECTION_REVERSED);
+            for(uint32_t x=0;x<60;x++)
+            {
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+                DelayMs(3); //let MCU stabilize 
+            }
+            DelayMs(100); //let MCU stabilize 
+            CommandToDshot(serialOutBuffer, DSHOT_CMD_SPIN_DIRECTION_REVERSED);
+            for(uint32_t x=0;x<60;x++)
+            {
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+                DelayMs(3); //let MCU stabilize 
+            }
+            */
+        }
+
         SKIP_GYRO=0;
         quopaState = QUOPA_ACTIVE;
         //}

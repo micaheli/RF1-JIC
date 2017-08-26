@@ -1340,13 +1340,9 @@ Version 0.317.122 BETA
 	Log can be read directly from FC without need to download using blackbox log viewer
 
 Version 0.318.123 BETA
-	Updated BLHeli_S ESC firmware to 16.76
-	Tuned automatic crash detection and recovery slightly
-	Added QUOPA Mode
-		"Quad Upsidedown Orientation Press Autorecover"
-		Works with multishot and dshot
-			ESCs must be capable of running dshot600 though
-	Dshot changes
+    Updated BLHeli_S ESC firmware to 16.76
+    Tuned automatic crash detection and recovery slightly
+    Dshot changes
 
 Version 0.319.123 BETA
 	Added new crossfire options
@@ -1382,7 +1378,11 @@ Version 0.319.123 BETA
 
 Version 0.320.123 BETA:
 	Update defaults
-	Tuned QUOPA mode
+	Added QUOPA Mode
+        "Quad Upsidedown Orientation Press Autorecover"
+        Works with multishot and dshot
+            ESCs must be capable of running dshot600 though
+            ESCs must be updated to at least version 16.76
 
 #Features in current development:
 #	MAVlink compatibility

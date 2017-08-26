@@ -619,19 +619,19 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 		{
 			motorOutput[i] = (
 				(
-					(pids[YAW].kp * throttleLookupKp[motorOutput0_1023] * 0.1 ) +
-					(pids[YAW].kd * throttleLookupKd[motorOutput0_1023] * 0.1 ) +
-					(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] * 0.1 )
+					(pids[YAW].kp * throttleLookupKp[motorOutput0_1023] * 0.1f ) +
+					(pids[YAW].kd * throttleLookupKd[motorOutput0_1023] * 0.1f ) +
+					(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] * 0.1f )
 				) * motorMixerT[i].yaw +
 				(
-					(pids[ROLL].kp * throttleLookupKp[motorOutput0_1023] ) +
-					(pids[ROLL].kd * throttleLookupKd[motorOutput0_1023] ) +
-					(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] )
+					(pids[ROLL].kp * throttleLookupKp[motorOutput0_1023] * 0.66f ) +
+					(pids[ROLL].kd * throttleLookupKd[motorOutput0_1023] * 0.66f ) +
+					(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] * 0.66f )
 				) * motorMixerT[i].roll +
 				(
-					(pids[PITCH].kp * throttleLookupKp[motorOutput0_1023] ) +
-					(pids[PITCH].kd * throttleLookupKd[motorOutput0_1023] ) +
-					(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] )
+					(pids[PITCH].kp * throttleLookupKp[motorOutput0_1023] * 0.66f ) +
+					(pids[PITCH].kd * throttleLookupKd[motorOutput0_1023] * 0.66f ) +
+					(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] * 0.66f )
 				) * motorMixerT[i].pitch
 			);
 		}
