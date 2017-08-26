@@ -25,6 +25,7 @@ typedef struct {
 	volatile float z;
 } vector_record;
 
+extern volatile int quadInverted;
 extern volatile float currentSpinRate;
 extern volatile quaternion_record attitudeFrameQuat;
 extern volatile float requestedDegrees[3];

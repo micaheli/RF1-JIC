@@ -71,6 +71,9 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 	dmaHandles[board.dmasActive[board.spis[spiInx].RXDma].dmaHandle].Init.Mode                = board.dmasActive[board.spis[spiInx].RXDma].dmaMode;
 	dmaHandles[board.dmasActive[board.spis[spiInx].RXDma].dmaHandle].Init.Priority            = board.dmasActive[board.spis[spiInx].RXDma].dmaPriority;
 	dmaHandles[board.dmasActive[board.spis[spiInx].RXDma].dmaHandle].Init.FIFOMode            = board.dmasActive[board.spis[spiInx].RXDma].fifoMode;
+
+	HAL_DMA_UnRegisterCallback(&dmaHandles[board.dmasActive[board.spis[spiInx].RXDma].dmaHandle], HAL_DMA_XFER_ALL_CB_ID);
+
 	if (HAL_DMA_Init(&dmaHandles[board.dmasActive[board.spis[spiInx].RXDma].dmaHandle]) != HAL_OK) {
 		ErrorHandler(MSP_DMA_SPI_RX_INIT_FAILIURE);
 	}
@@ -88,6 +91,9 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 	dmaHandles[board.dmasActive[board.spis[spiInx].TXDma].dmaHandle].Init.Mode                = board.dmasActive[board.spis[spiInx].TXDma].dmaMode;
 	dmaHandles[board.dmasActive[board.spis[spiInx].TXDma].dmaHandle].Init.Priority            = board.dmasActive[board.spis[spiInx].TXDma].dmaPriority;
 	dmaHandles[board.dmasActive[board.spis[spiInx].TXDma].dmaHandle].Init.FIFOMode            = board.dmasActive[board.spis[spiInx].TXDma].fifoMode;
+	
+	HAL_DMA_UnRegisterCallback(&dmaHandles[board.dmasActive[board.spis[spiInx].TXDma].dmaHandle], HAL_DMA_XFER_ALL_CB_ID);
+	
 	if (HAL_DMA_Init(&dmaHandles[board.dmasActive[board.spis[spiInx].TXDma].dmaHandle]) != HAL_OK) {
 		ErrorHandler(MSP_DMA_SPI_TX_INIT_FAILIURE);
 	}

@@ -25,6 +25,7 @@ extern volatile uint32_t SKIP_GYRO;
 extern float    accNoise[];
 extern float    filteredAccData[];
 extern uint32_t armedTime;
+extern uint32_t armedTimeSincePower;
 
 enum { CALIBRATE_BOARD_FAILED = 0, CALIBRATE_BOARD_UPRIGHT = 1, CALIBRATE_BOARD_INVERTED = 2, };
 

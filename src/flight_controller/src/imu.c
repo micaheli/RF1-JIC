@@ -1,5 +1,6 @@
 #include "includes.h"
 
+volatile int quadInverted = 0;
 volatile quaternion_record commandQuat;
 volatile quaternion_record accQuat;
 volatile quaternion_record gyroQuat;
@@ -520,11 +521,18 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 
 	if (boardArmed)
 	{
-		accTrust  = 1.0f;
+		if(quopaState == QUOPA_ACTIVE)
+		{
+			accTrust  = 10.0f;
+		}
+		else
+		{
+			accTrust  = 1.0f;
+		}
 	}
 	else
 	{
-		accTrust  = 10.0f;
+		accTrust  = 20.0f;
 	}
 
 	//we use radians
@@ -532,6 +540,10 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 	gyroRoll  =  InlineDegreesToRadians( gyroRoll );
 	gyroYaw   = -InlineDegreesToRadians( gyroYaw );
 
+	if( (gyroRoll < -100) || (gyroRoll > 100) )
+		quadInverted = 1;
+	else
+		quadInverted = 0;
 	////normallize the ACC readings
 	//arm_sqrt_f32( (accX * accX + accY * accY + accZ * accZ), &norm);
 	//norm = 1.0f/norm;
@@ -560,6 +572,7 @@ void UpdateImu(float accX, float accY, float accZ, float gyroRoll, float gyroPit
 	if ( 
 			ModeSet(M_ATTITUDE) || 
 			ModeSet(M_HORIZON)  || 
+			ModeSet(M_QUOPA)    || 
 			ModeSet(M_GLUE)     ||
 			ModeSet(M_CATMODE)
 		)

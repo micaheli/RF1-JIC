@@ -476,6 +476,54 @@ void InitTelemtry(void)
 
 	}
 
+	if(mainConfig.telemConfig.telemCrsf)
+	{
+		temp = -1;
+		switch(mainConfig.telemConfig.telemCrsf)
+		{
+			//soft trsmp not supported right now
+			case TELEM_ACTUATOR1:
+			case TELEM_ACTUATOR2:
+			case TELEM_ACTUATOR3:
+			case TELEM_ACTUATOR4:
+			case TELEM_ACTUATOR5:
+			case TELEM_ACTUATOR6:
+			case TELEM_ACTUATOR7:
+			case TELEM_ACTUATOR8:
+				break;
+			case TELEM_USART1:
+				temp = ENUM_USART1;
+				break;
+			case TELEM_USART2:
+				temp = TELEM_USART2;
+				break;
+			case TELEM_USART3:
+				temp = TELEM_USART3;
+				break;
+			case TELEM_USART4:
+				temp = TELEM_USART4;
+				break;
+			case TELEM_USART5:
+				temp = TELEM_USART5;
+				break;
+			case TELEM_USART6:
+				temp = TELEM_USART6;
+				break;
+			default:
+				break;
+		}
+
+		if (temp > -1)
+		{
+			InitCrsfTelemetry(temp);
+		}
+		else
+		{
+			mainConfig.telemConfig.telemCrsf = 0;
+		}
+
+	}
+
 	if (mainConfig.telemConfig.telemSpek)
 		InitSpektrumTelemetry();
 

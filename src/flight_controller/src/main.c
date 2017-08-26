@@ -36,6 +36,8 @@ int main(void)
 
     retValChk = InitFlight();
 
+    retValChk = InitQuopaMode();
+
     retValChk = InitWatchdog(WATCHDOG_TIMEOUT_32S);
 
     buzzerStatus.status = STATE_BUZZER_STARTUP;

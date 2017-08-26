@@ -5,6 +5,8 @@ volatile uint32_t disarmPulseValue;
 volatile uint32_t calibratePulseValue;
 volatile uint32_t idlePulseValue;
 volatile uint32_t pulseValueRange;
+volatile uint32_t mshotNormalPulseValue;
+volatile uint32_t mshotReversedPulseValue;
 volatile int escFrequency = 0;
 
 static void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz);
@@ -131,7 +133,9 @@ void InitActuators(void)
 	calibratePulseValue = ((uint32_t)(calibrateUs * timerHz)) / 1000000;
 	idlePulseValue      = ((uint32_t)(idleUs * timerHz))      / 1000000;
 	walledPulseValue    = ((uint32_t)(walledUs * timerHz))    / 1000000;
-
+	mshotNormalPulseValue    = ((uint32_t)(28 * timerHz))     / 1000000;
+	mshotReversedPulseValue  = ((uint32_t)(30.5 * timerHz))   / 1000000;
+	
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
@@ -261,6 +265,14 @@ static uint32_t ThrottleToDDshot(float throttle, float idle)
 
 }
 
+void OutputMshotCommand(motor_type actuator, uint32_t msPulse)
+{
+	if(msPulse > 1)
+		*ccr[actuator.timCCR] = (uint16_t)(mshotNormalPulseValue);
+	else
+		*ccr[actuator.timCCR] = (uint16_t)(mshotReversedPulseValue);
+}
+
 void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 {
 	(void)servoOutput;
@@ -280,46 +292,67 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 			motorOutput[motorNum] = InlineChangeRangef(tempOutputF, 255.0f, 0.0f, 1.0f, 0.0f);
 		}
 	}
-	if (boardArmed) {
-		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+	if (boardArmed)
+	{
+		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+		{
 			outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
-			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) 
+			{
 				if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
 				{
 					OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(motorOutput[motorNum], mainConfig.mixerConfig.idlePercent) );
 				} 
-				else if ( IsDshotEnabled() ) {
+				else if ( IsDshotEnabled() )
+				{
 					ThrottleToDshot(serialOutBuffer, motorOutput[motorNum], mainConfig.mixerConfig.idlePercent, mainConfig.mixerConfig.bitReverseEsc[motorNum]);
 					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
-				} else {
+				}
+				else
+				{
 					*ccr[board.motors[outputNumber].timCCR] = (uint16_t)(motorOutput[motorNum] * (float)pulseValueRange) + idlePulseValue;
 				}
 			}
 		}
-	} else if (calibrateMotors) {
-		if (motorOutput[0] < 0.1) {
-			for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+	}
+	else if (calibrateMotors)
+	{
+		if (motorOutput[0] < 0.1)
+		{
+			for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+			{
 				outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
-				if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-					if ( !IsDshotEnabled() ) {
+				if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+				{
+					if ( !IsDshotEnabled() )
+					{
 						*ccr[board.motors[outputNumber].timCCR] = calibratePulseValue;
 					}
 				}
 			}
-		} else {
-			for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+		}
+		else
+		{
+			for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+			{
 				outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
-				if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
-					if ( !IsDshotEnabled() ) {
+				if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) 
+				{
+					if ( !IsDshotEnabled() )
+					{
 						*ccr[board.motors[outputNumber].timCCR] = pulseValueRange + idlePulseValue;
 					}
 				}
 			}
 		}
-	} else {
-		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++) {
+	}
+	else
+	{
+		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+		{
 			outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
-			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) {
+			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+			{
 				if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
 				{
 					OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(0, 0) );

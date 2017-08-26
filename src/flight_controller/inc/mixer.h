@@ -26,7 +26,9 @@ typedef struct
     uint32_t mixerStyle;
     uint32_t escProtocol;
 	int      bitReverseEsc[8];
+	int      bitReverseEscHidden[8];
     uint32_t escUpdateFrequency;
+    int      quopaReversed;
     float    idlePercent;
     float    idlePercentInverted;
     uint32_t motorOutput[8];

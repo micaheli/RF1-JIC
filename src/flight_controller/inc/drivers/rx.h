@@ -132,7 +132,9 @@ enum
 #define USING_TRAMP            18
 #define USING_CRSF_R           19
 #define USING_CRSF_T           20
-#define USING_RX_END           21
+#define USING_CRSF_B           21
+#define USING_CRSF_TELEM       22
+#define USING_RX_END           23
 
 extern volatile float smoothCurvedThrottle0_1;
 extern volatile float trueCurvedThrottle0_1;

@@ -27,15 +27,15 @@ set pitch_kd1=26.000
 
 #define DEFAULT_PID_CONFIG_VALUE 30.0f
 
-#define DEFAULT_ROLL_KP          112.5f
+#define DEFAULT_ROLL_KP          116.0f
 #define DEFAULT_PITCH_KP         126.2f
 #define DEFAULT_YAW_KP           095.0f
 
-#define DEFAULT_ROLL_KI          789.5f
+#define DEFAULT_ROLL_KI          816.5f
 #define DEFAULT_PITCH_KI         857.1f
 #define DEFAULT_YAW_KI           909.1f
 
-#define DEFAULT_ROLL_KD          0720.0f
+#define DEFAULT_ROLL_KD          0952.0f
 #define DEFAULT_PITCH_KD         1130.4f
 #define DEFAULT_YAW_KD           1315.8f
 

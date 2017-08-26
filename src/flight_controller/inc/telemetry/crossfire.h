@@ -39,3 +39,4 @@ enum
 
 extern uint8_t CrsfCrc8(uint8_t * ptr, uint8_t len);
 extern void    SendCrsfTelem(void);
+extern int     InitCrsfTelemetry(int usartNumber);

@@ -136,6 +136,7 @@ void WriteByteToFlash (uint8_t data)
 		if (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS)
 		{
 			//only write and increment write address is flash chip s not busy to prevent blocks of FFFFFFF
+			//M25p16BlockingWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer);
 			M25p16DmaWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer); //write buffer to flash using DMA
 			flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
 		}

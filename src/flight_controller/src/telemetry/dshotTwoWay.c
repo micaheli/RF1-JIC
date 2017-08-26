@@ -157,7 +157,6 @@ static void DshotDmaInit(void) //make general function?
     dmaHandles[ENUM_DMA2_STREAM_5].Init.MemInc              = DMA_MINC_ENABLE;
     dmaHandles[ENUM_DMA2_STREAM_5].Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
     dmaHandles[ENUM_DMA2_STREAM_5].Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
-    //dmaHandles[ENUM_DMA2_STREAM_5].Init.Mode                = DMA_CIRCULAR;
     dmaHandles[ENUM_DMA2_STREAM_5].Init.Mode                = DMA_NORMAL;
     dmaHandles[ENUM_DMA2_STREAM_5].Init.Priority            = DMA_PRIORITY_HIGH;
     dmaHandles[ENUM_DMA2_STREAM_5].Init.FIFOMode            = DMA_FIFOMODE_DISABLE;

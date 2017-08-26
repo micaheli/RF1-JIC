@@ -1,27 +1,25 @@
 #include "includes.h"
 
-
-
 uint32_t activeModes;
 uint32_t setModes;
 
-
-
 //also modify the enumeration in modes.h
-string_modes_rec stringModes[] = {
-		{"ARMED",       0,  M_ARMED },
-		{"LEVEL",       1,  M_ATTITUDE },
-		{"ACROLEVEL",   2,  M_HORIZON },
-		{"FAILSAFE",    3,  M_FAILSAFE },
-		{"LOGGING",     4,  M_LOGGING },
-		{"BUZZER",      5,  M_BUZZER },
-		{"LEDMODE",     6,  M_LEDMODE },
-		{"LEDCOLOR",    7,  M_LEDCOLOR },
-		{"DIRECT",      8,  M_DIRECT },
-		{"VTXON",       9,  M_VTXON },
-		{"BRAINDRAIN",  10, M_BRAINDRAIN },
-		{"PROFILE2",    11, M_PROFILE2 },
- 		{"PROFILE3",    12, M_PROFILE3 },
+string_modes_rec stringModes[] =
+{
+	{"ARMED",       0,  M_ARMED },
+	{"LEVEL",       1,  M_ATTITUDE },
+	{"ACROLEVEL",   2,  M_HORIZON },
+	{"FAILSAFE",    3,  M_FAILSAFE },
+	{"LOGGING",     4,  M_LOGGING },
+	{"BUZZER",      5,  M_BUZZER },
+	{"LEDMODE",     6,  M_LEDMODE },
+	{"LEDCOLOR",    7,  M_LEDCOLOR },
+	{"DIRECT",      8,  M_DIRECT },
+	{"VTXON",       9,  M_VTXON },
+	{"BRAINDRAIN",  10, M_BRAINDRAIN },
+	{"PROFILE2",    11, M_PROFILE2 },
+	{"PROFILE3",    12, M_PROFILE3 },
+	{"QUOPA",       13, M_QUOPA },
 //		{"CATMODE",    11,  M_CATMODE },
 };
 

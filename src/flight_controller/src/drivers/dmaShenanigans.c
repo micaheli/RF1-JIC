@@ -774,6 +774,8 @@ static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma
 	dmaHandles[actuatorDma.dmaHandle].Init.MemBurst     	   = actuatorDma.MemBurst;
 	dmaHandles[actuatorDma.dmaHandle].Init.PeriphBurst         = actuatorDma.PeriphBurst;
 
+	HAL_DMA_UnRegisterCallback(&dmaHandles[actuatorDma.dmaHandle], HAL_DMA_XFER_ALL_CB_ID);
+
 	/* Associate the initialized DMA handle to the TIM handle */
 	__HAL_LINKDMA(htim, hdma[handlerIndex], dmaHandles[actuatorDma.dmaHandle]);
 

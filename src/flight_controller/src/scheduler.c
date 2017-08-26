@@ -29,6 +29,7 @@ uint32_t lastBitFound             = 0;
 
 static void TaskProcessSoftSerial(void);
 static void TaskTelemtry(void);
+static void TaskQuopa(void);
 static void TaskWizard(void);
 static void TaskHandlePcComm(void);
 static void TaskLed(void);
@@ -181,6 +182,7 @@ void Scheduler(int32_t count)
 			TaskeSafeLoopCounter();
 			break;
 		case 12:
+			TaskQuopa();
 			break;
 		default:
 			break;
@@ -452,6 +454,7 @@ void ErrorHandler(uint32_t error)
 
 	switch (error)
 	{
+		case BAD_TELEMETRY_SETUP:
 		case TIMER_INPUT_INIT_FAILIURE:
 		case ADC_INIT_FAILIURE:
 		case ADC_DMA_INIT_FAILIURE:
@@ -529,4 +532,10 @@ void ErrorHandler(uint32_t error)
     	ZeroActuators(10);
     }
 
+}
+
+static void TaskQuopa(void)
+{
+	//set's the quopa state machine
+	HandleQuopaMode();
 }

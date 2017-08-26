@@ -31,6 +31,7 @@ float sliUsed;
 float sldUsed;
 int   usedSkunk;
 uint32_t armedTime;
+uint32_t armedTimeSincePower = 0;
 
 uint32_t khzLoopCounter                 = 0;
 uint32_t gyroLoopCounter                = 0;
@@ -109,7 +110,6 @@ int SetCalibrate2(void)
 	{ //make sure step one completed successfully.
 		return (0);
 	}
-
 
 	if (boardOrientation1 == CALIBRATE_BOARD_UPRIGHT)
 	{
@@ -296,7 +296,7 @@ void InitFlightCode(void)
 	{
 		escFrequency = 16000; 
 		loopUsed = LOOP_UH16;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
+		if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
 		{
 			validLoopConfig = 1;
 		}
@@ -778,7 +778,7 @@ void InlineFlightCode(float dpsGyroArray[])
 
 			
 		}
-		else if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON)) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
+		else if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || ModeActive(M_QUOPA)) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
 		{
 			if (!timeSinceSelfLevelActivated)
 				timeSinceSelfLevelActivated = InlineMillis();
@@ -842,7 +842,7 @@ void InlineFlightCode(float dpsGyroArray[])
 				flightSetPoints[ROLL]    = ( rollAttitudeError  * 15) + rollAttitudeErrorKi  + (rollAttitudeErrorKdelta  / loopSpeed.truedT * sldUsed);
 				flightSetPoints[PITCH]   = ( pitchAttitudeError * 15) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.truedT * sldUsed);
 			}
-			else if (ModeActive(M_ATTITUDE)) //if M_ATTITUDE mode
+			else if (ModeActive(M_ATTITUDE) || ModeActive(M_QUOPA) ) //if M_ATTITUDE mode
 			{
 				//roll and pitch are set directly from self level mode
 				flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.truedT * sldUsed), -300.0, 300.0);
@@ -946,7 +946,10 @@ void InlineFlightCode(float dpsGyroArray[])
 
 			CheckFailsafe();
 			if(boardArmed)
+			{
 				armedTime++; //armed time in ms
+				armedTimeSincePower++;
+			}
 
 #ifndef LOG32
 			//update blackbox here
@@ -1087,8 +1090,9 @@ int InitFlight(void)
 	{
 		//16 KHz on F4s if quaternions are needed.
 		if ( 
-			ModeSet(M_ATTITUDE) || 
-			ModeSet(M_HORIZON)
+			ModeSet(M_ATTITUDE) ||
+			ModeSet(M_HORIZON)  ||
+			ModeSet(M_QUOPA)
 			//ModeSet(M_HORIZON)  || 
 			//ModeSet(M_GLUE)     ||
 			//ModeSet(M_CATMODE)
@@ -1138,14 +1142,14 @@ int InitFlight(void)
 	InitLaptimer();
 #endif
 
-	//if ( mainConfig.ledConfig.ledOnWithUsb )
-	//{
+	if ( mainConfig.ledConfig.ledOnWithUsb )
+	{
 		InitWs2812();
-	//}
-	//else if(!mainConfig.ledConfig.ledOnWithUsb && (!IsUsbConnected()) )
-//	{
-//		InitWs2812();
-//	}
+	}
+	else if( !IsUsbConnected() )
+	{
+		InitWs2812();
+	}
 
 	if (board.flash[0].enabled && (mainConfig.rcControlsConfig.rxUsart != ENUM_USART4) )
     {

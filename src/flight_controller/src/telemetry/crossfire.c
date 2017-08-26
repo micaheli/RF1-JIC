@@ -11,6 +11,43 @@ static uint8_t CrsfBattFrame(void);
 static uint8_t CrsfFlightModeFrame(void);
 static uint8_t CrsfGpsFrame(void);
 
+int InitCrsfTelemetry(int usartNumber)
+{
+
+    if (
+        (mainConfig.rcControlsConfig.rxProtcol == USING_CRSF_B)
+    )
+    {
+        //no need to do anything, crsf is set to both and is already setup. We use this usart
+        return(1);
+    }
+
+    if (
+        (mainConfig.rcControlsConfig.rxProtcol == USING_CRSF_T) ||
+        (mainConfig.rcControlsConfig.rxProtcol == USING_CRSF_R)
+    )
+    {
+        if((uint32_t)usartNumber == mainConfig.rcControlsConfig.rxUsart)
+        {
+            //)invalid setup. set error mask
+            ErrorHandler(BAD_TELEMETRY_SETUP);
+            return(0);
+        }
+        else
+        {
+            //we setup the usart
+            board.serials[usartNumber].enabled   = 1;
+            board.serials[usartNumber].Protocol  = USING_CRSF_TELEM;
+            board.dmasSerial[board.serials[usartNumber].TXDma].enabled  = 1;
+            UsartDeInit(usartNumber); //deinits serial and associated pins and DMAs
+            UsartInit(usartNumber);   //inits serial and associated pins and DMAs if used. Serial settings are set in serial.c
+        }
+    }
+
+    return(1);
+}
+
+
 uint8_t CrsfCrc8(uint8_t * ptr, uint8_t len)
 {
     uint8_t crc = 0;
@@ -136,6 +173,13 @@ static uint8_t CrsfFlightModeFrame(void)
         crsfOutBuffer[18] = CrsfCrc8(&crsfOutBuffer[2], 16);
         return(19);
     }
+    else if (ModeActive(M_QUOPA))
+    {
+        snprintf( (char *)&crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 QUOPA" );
+        crsfOutBuffer[1] = 17; //payload + frame type + crc
+        crsfOutBuffer[18] = CrsfCrc8(&crsfOutBuffer[2], 16);
+        return(19);
+    }
     else
     {
         snprintf( (char *)&crsfOutBuffer[3], CRSF_OUT_BUFFER_SIZE-5, "RF1 ACRO" );
@@ -232,8 +276,16 @@ void SendCrsfTelem(void)
 	{
 		if ( (board.serials[serialNumber].enabled) && (mainConfig.telemConfig.telemCrsf) )
 		{
-			if (board.serials[serialNumber].Protocol == USING_CRSF_T)
-				HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)crsfOutBuffer, packetSize);
+            if (board.serials[serialNumber].Protocol == USING_CRSF_TELEM)
+            {
+                HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)crsfOutBuffer, packetSize);
+                break;
+            }
+            else if (board.serials[serialNumber].Protocol == USING_CRSF_B)
+            {
+                HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)crsfOutBuffer, packetSize);
+                break;
+            }
 		}
 	}
 }

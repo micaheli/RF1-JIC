@@ -485,6 +485,8 @@ void ProcessCrsfPacket(uint8_t serialRxBuffer[], uint32_t frameSize)
 
 				chkSum = CrsfCrc8(copiedBufferData+2, frameSize-2);
 
+				(void)(chkSum);
+				(void)(rxSum);
 				//if (chkSum == rxSum)
 				if (1 == 1)
 				{
@@ -1543,6 +1545,7 @@ void SetRxDefaults(uint32_t rxProtocol, uint32_t usart)
 			break;
 		case USING_CRSF_R:
 		case USING_CRSF_T:
+		case USING_CRSF_B:
 			mainConfig.rcControlsConfig.shortThrow           = 1;
 			mainConfig.rcControlsConfig.midRc[PITCH]         = 990;
 			mainConfig.rcControlsConfig.midRc[ROLL]          = 990;

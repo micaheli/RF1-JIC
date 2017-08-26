@@ -1339,6 +1339,51 @@ Version 0.317.122 BETA
 	Log downloading is made easier
 	Log can be read directly from FC without need to download using blackbox log viewer
 
+Version 0.318.123 BETA
+	Updated BLHeli_S ESC firmware to 16.76
+	Tuned automatic crash detection and recovery slightly
+	Added QUOPA Mode
+		"Quad Upsidedown Orientation Press Autorecover"
+		Works with multishot and dshot
+			ESCs must be capable of running dshot600 though
+	Dshot changes
+
+Version 0.319.123 BETA
+	Added new crossfire options
+		CRSF_TELEM - for using an usart TX pin for only crossfire telemetry
+		CRSF_T - For using a usart TX pin for CRSF RX
+		CRSF_R - For using a usart RX pin for CRSF RX
+		CRSF_B - For using a usart RX pin for CRSF RX and the TX pin for crossfire telemetry
+			To use with telemetry:
+				In Console send:
+					crsf_t1
+					set telem_crsf = 3
+					save
+				-or-
+					crsf_t3
+					set telem_crsf = 1
+					save
+				-or-
+					crsf_b1
+					save
+				-or-
+					crsf_b3
+					save
+			To use without telemetry:
+				In Console send:
+					crsf_t1
+					save
+				-or-
+					crsf_t3
+					save
+				-or-
+					crsf_r3
+					save
+
+Version 0.320.123 BETA:
+	Update defaults
+	Tuned QUOPA mode
+
 #Features in current development:
 #	MAVlink compatibility
 

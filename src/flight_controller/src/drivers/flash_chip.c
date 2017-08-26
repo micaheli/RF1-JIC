@@ -69,6 +69,35 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 
 }
 
+void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
+{
+
+	//write data from txBuffer into flash chip using DMA.
+	//command and dummy bytes are in rxBuffer
+
+	//once the command is executed (by DMA handler when CS goes high), the chip will take between 0.8 and 5 ms to run
+	//this means 256 bytes can be written every 160 cycles at 32 KHz worst case (5ms)
+	//and that 256 bytes can be written every 5 cycles at 1 KHz worst case
+	//1 KHz safe logging is 51 bytes per cycle. That's 12 full floats
+	//typical case allows 6 times more data. 72 floats per 1 KHz.
+	//12 floats per cycle at 1 KHz is about 48  KB per second. 48  KB per seconds will last 341 seconds (5.68 minutes of flight time).
+	//72 floats per cycle at 1 KHz is about 288 KB per second. 288 KB per seconds will last 56 seconds (a bit under 1 minute of flight time).
+
+	//rx buffer is just used as a dummy, we can completely ignore it
+
+  	txBuffer[0] = M25P16_PAGE_PROGRAM;
+  	txBuffer[1] = ((address >> 16) & 0xFF);
+  	txBuffer[2] = ((address >> 8) & 0xFF);
+  	txBuffer[3] = (address & 0xFF);
+
+	flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
+	WriteEnableDataFlash();
+	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
+	HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, FLASH_CHIP_BUFFER_SIZE, 100);
+	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
+	flashInfo.status = DMA_READ_COMPLETE;
+	
+}
 
 static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 {

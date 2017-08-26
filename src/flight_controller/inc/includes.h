@@ -25,6 +25,7 @@ extern volatile int retValChk;
 
 //general includes
 #include "imu.h"
+#include "quopa.h"
 #include "pid.h"
 #include "mixer.h"
 #include "modes.h"

@@ -27,6 +27,18 @@ const actuator_mixer CONST_MIXER_X1234RY[MAX_MOTOR_NUMBER] =  {
 	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
 };
 
+const actuator_mixer CONST_MIXER_X1234RYT[MAX_MOTOR_NUMBER] =  {
+	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
+	{-1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
+	{ 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2
+	{-1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3
+	{ 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 7
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
+};
+
 const actuator_mixer CONST_MIXER_X4213[MAX_MOTOR_NUMBER] =  {
 	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
 	{-1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3
@@ -76,6 +88,18 @@ const actuator_mixer CONST_MIXER_PLUS1234RY[MAX_MOTOR_NUMBER] =  {
 };
 
 actuator_mixer motorMixer[MAX_MOTOR_NUMBER] =  {
+	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
+	{-1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
+	{ 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2
+	{-1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 3
+	{ 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 4
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 5
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 6
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 7
+	{ 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 8
+};
+
+actuator_mixer motorMixerT[MAX_MOTOR_NUMBER] =  {
 	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
 	{-1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
 	{ 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 2
@@ -330,6 +354,7 @@ void InitMixer(void) {
 			threeDeeMode = 1;
 		case MIXER_X1234RY:
 			memcpy(motorMixer, CONST_MIXER_X1234RY, sizeof(motorMixer));
+			memcpy(motorMixerT, CONST_MIXER_X1234RYT, sizeof(motorMixerT));
 			break;
 		case MIXER_X1234_3D:
 			threeDeeMode = 1;
@@ -590,23 +615,46 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 
 		motorOutput0_1023 = lrintf( InlineChangeRangef(motorOutput[i], 1.0f, 0.0f, 1023.0f, 0.0f) );
 		//-1 to 1
-		motorOutput[i] = (
-			(
-				(pids[YAW].kp * throttleLookupKp[motorOutput0_1023] ) +
-				(pids[YAW].kd * throttleLookupKd[motorOutput0_1023] ) +
-				(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] )
-			) * motorMixer[i].yaw +
-			(
-				(pids[ROLL].kp * throttleLookupKp[motorOutput0_1023] ) +
-				(pids[ROLL].kd * throttleLookupKd[motorOutput0_1023] ) +
-				(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] )
-			) * motorMixer[i].roll +
-			(
-				(pids[PITCH].kp * throttleLookupKp[motorOutput0_1023] ) +
-				(pids[PITCH].kd * throttleLookupKd[motorOutput0_1023] ) +
-				(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] )
-			) * motorMixer[i].pitch
-		);
+		if(quopaState == QUOPA_ACTIVE)
+		{
+			motorOutput[i] = (
+				(
+					(pids[YAW].kp * throttleLookupKp[motorOutput0_1023] * 0.1 ) +
+					(pids[YAW].kd * throttleLookupKd[motorOutput0_1023] * 0.1 ) +
+					(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] * 0.1 )
+				) * motorMixerT[i].yaw +
+				(
+					(pids[ROLL].kp * throttleLookupKp[motorOutput0_1023] ) +
+					(pids[ROLL].kd * throttleLookupKd[motorOutput0_1023] ) +
+					(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] )
+				) * motorMixerT[i].roll +
+				(
+					(pids[PITCH].kp * throttleLookupKp[motorOutput0_1023] ) +
+					(pids[PITCH].kd * throttleLookupKd[motorOutput0_1023] ) +
+					(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] )
+				) * motorMixerT[i].pitch
+			);
+		}
+		else
+		{
+			motorOutput[i] = (
+				(
+					(pids[YAW].kp * throttleLookupKp[motorOutput0_1023] ) +
+					(pids[YAW].kd * throttleLookupKd[motorOutput0_1023] ) +
+					(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] )
+				) * motorMixer[i].yaw +
+				(
+					(pids[ROLL].kp * throttleLookupKp[motorOutput0_1023] ) +
+					(pids[ROLL].kd * throttleLookupKd[motorOutput0_1023] ) +
+					(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] )
+				) * motorMixer[i].roll +
+				(
+					(pids[PITCH].kp * throttleLookupKp[motorOutput0_1023] ) +
+					(pids[PITCH].kd * throttleLookupKd[motorOutput0_1023] ) +
+					(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] )
+				) * motorMixer[i].pitch
+			);
+		}
 		motorOutput[i] = InlineChangeRangef(motorOutput[i], 1.0, -1.0, 1.0, 0.0);
 		if (motorOutput[i] > highestMotor) { highestMotor = motorOutput[i]; }
 		if (motorOutput[i] < lowestMotor)  { lowestMotor  = motorOutput[i]; }

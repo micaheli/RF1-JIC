@@ -27,6 +27,7 @@ enum {
 	ADC_INIT_FAILIURE                 =  (1 << 23),
 	ADC_DMA_INIT_FAILIURE             =  (1 << 24),
 	OSD_SPI_INIT_FAILIURE             =  (1 << 25),
+	BAD_TELEMETRY_SETUP               =  (1 << 26),
 };
 
 #define SOFT_SERIAL_BIT_TIME_ARRAY_SIZE	80

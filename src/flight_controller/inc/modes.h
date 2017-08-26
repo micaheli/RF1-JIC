@@ -23,7 +23,8 @@ enum {
 	M_VTXON      = (1 << 9),
 	M_BRAINDRAIN = (1 << 10),
 	M_PROFILE2   = (1 << 11),
- 	M_PROFILE3   = (1 << 12),
+	M_PROFILE3   = (1 << 12),
+	M_QUOPA      = (1 << 13),
 	//M_CATMODE    = (1 << 11),
 };
 

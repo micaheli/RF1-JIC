@@ -137,7 +137,8 @@ const string_comp_rec stringCompTable[] = {
 		{"USING_CPPM_T",           USING_CPPM_T},
 		{"USING_CRSF_R",           USING_CRSF_R},
 		{"USING_CRSF_T",           USING_CRSF_T},
-};
+		{"USING_CRSF_B",           USING_CRSF_B},
+	};
 
 const config_variables_rec valueTable[] = {
 
@@ -146,10 +147,14 @@ const config_variables_rec valueTable[] = {
 		{ "famx", 				typeFLOAT, "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0.9, 1.1, 1, "" },
 		{ "mixer_style", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerStyle,					0, 1, 0, "" },
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtocol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
-		{ "bit_reverse_esc_1",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[0],			0, 1, 0, "" },
-		{ "bit_reverse_esc_2",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[1],			0, 1, 0, "" },
-		{ "bit_reverse_esc_3",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[2],			0, 1, 0, "" },
-		{ "bit_reverse_esc_4",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[3],			0, 1, 0, "" },
+		{ "bit_reverse_esc_1",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[0],			0, 1, -1, "" },
+		{ "bit_reverse_esc_2",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[1],			0, 1, -1, "" },
+		{ "bit_reverse_esc_3",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[2],			0, 1, -1, "" },
+		{ "bit_reverse_esc_4",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[3],			0, 1, -1, "" },
+		{ "bit_reverse_esc_5",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[4],			0, 1, -1, "" },
+		{ "bit_reverse_esc_6",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[5],			0, 1, -1, "" },
+		{ "bit_reverse_esc_7",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[6],			0, 1, -1, "" },
+		{ "bit_reverse_esc_8",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[7],			0, 1, -1, "" },
 		{ "esc_frequency", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escUpdateFrequency,			0, 32000, 32000, "" },
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 6, "" },
 		{ "idle_percent_inv",	typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercentInverted,			0, 15.0, 8, "" },
@@ -242,9 +247,9 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.q, 	0, 100, 75.000, "" },
  		{ "roll_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
  		{ "pitch_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
- 		{ "yaw_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].kd.r, 		0, 100, 45.000, "" },
- 		{ "roll_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].kd.r, 		0, 100, 45.000, "" },
- 		{ "pitch_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].kd.r, 	0, 100, 45.000, "" },
+ 		{ "yaw_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].kd.r, 		0, 100, 65.000, "" },
+ 		{ "roll_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].kd.r, 		0, 100, 65.000, "" },
+ 		{ "pitch_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].kd.r, 	0, 100, 65.000, "" },
  		{ "x_vector_quick1", 	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCX].acc.q, 	0, 10, 2.0000, "" },
  		{ "x_vector_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCX].acc.r, 	0, 10, 025.00, "" },
  		{ "y_vector_quick1", 	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ACCY].acc.q, 	0, 10, 2.0000, "" },
@@ -298,9 +303,9 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.q, 	0, 100, 75.000, "" },
  		{ "roll_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
  		{ "pitch_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
- 		{ "yaw_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].kd.r, 		0, 100, 45.000, "" },
- 		{ "roll_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].kd.r, 		0, 100, 45.000, "" },
- 		{ "pitch_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].kd.r, 	0, 100, 45.000, "" },
+ 		{ "yaw_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].kd.r, 		0, 100, 65.000, "" },
+ 		{ "roll_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].kd.r, 		0, 100, 65.000, "" },
+ 		{ "pitch_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].kd.r, 	0, 100, 65.000, "" },
  		{ "x_vector_quick2", 	typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCX].acc.q, 	0, 10, 2.0000, "" },
  		{ "x_vector_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCX].acc.r, 	0, 10, 025.00, "" },
  		{ "y_vector_quick2", 	typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ACCY].acc.q, 	0, 10, 2.0000, "" },
@@ -355,9 +360,9 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.q, 	0, 100, 75.000, "" },
  		{ "roll_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
  		{ "pitch_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
- 		{ "yaw_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].kd.r, 		0, 100, 45.000, "" },
- 		{ "roll_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].kd.r, 		0, 100, 45.000, "" },
- 		{ "pitch_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].kd.r, 	0, 100, 45.000, "" },
+ 		{ "yaw_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].kd.r, 		0, 100, 65.000, "" },
+ 		{ "roll_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].kd.r, 		0, 100, 65.000, "" },
+ 		{ "pitch_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].kd.r, 	0, 100, 65.000, "" },
  		{ "x_vector_quick3", 	typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCX].acc.q, 	0, 10, 2.0000, "" },
  		{ "x_vector_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCX].acc.r, 	0, 10, 025.00, "" },
  		{ "y_vector_quick3", 	typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ACCY].acc.q, 	0, 10, 2.0000, "" },
@@ -1316,6 +1321,9 @@ void ProcessCommand(char *inString)
 					break;
 				case 'r':
 					protocol = USING_CRSF_R;
+					break;
+				case 'b':
+					protocol = USING_CRSF_B;
 					break;
 				default:
 					snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Error\n");

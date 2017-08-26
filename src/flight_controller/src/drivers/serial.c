@@ -134,6 +134,32 @@ void UsartInit(uint32_t serialNumber)
 			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
 			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
 			txPin  = board.serials[serialNumber].TXPin;
+			rxPin  = board.serials[serialNumber].TXPin;
+			txPort = ports[board.serials[serialNumber].TXPort];
+			rxPort = ports[board.serials[serialNumber].TXPort];
+			break;
+		case USING_CRSF_TELEM:
+			board.serials[serialNumber].FrameSize  = 26;  //variable
+			board.serials[serialNumber].BaudRate   = 420000;
+			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
+			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
+			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
+			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
+			board.serials[serialNumber].Mode       = UART_MODE_TX;
+			txPin  = board.serials[serialNumber].TXPin;
+			rxPin  = board.serials[serialNumber].TXPin;
+			txPort = ports[board.serials[serialNumber].TXPort];
+			rxPort = ports[board.serials[serialNumber].TXPort];
+			break;
+		case USING_CRSF_B:
+			board.serials[serialNumber].FrameSize  = 26;  //variable
+			board.serials[serialNumber].BaudRate   = 420000;
+			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
+			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
+			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
+			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
+			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
+			txPin  = board.serials[serialNumber].TXPin;
 			rxPin  = board.serials[serialNumber].RXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
 			rxPort = ports[board.serials[serialNumber].RXPort];
@@ -188,7 +214,8 @@ void UsartInit(uint32_t serialNumber)
 	if (board.serials[serialNumber].Mode != UART_MODE_RX)
 		HAL_GPIO_DeInit(txPort, txPin); //no need for TX pin is serial is in RX only mode.
 
-	HAL_GPIO_DeInit(rxPort, rxPin);
+	if (board.serials[serialNumber].Mode != UART_MODE_TX)
+		HAL_GPIO_DeInit(rxPort, rxPin);
 
 	/* UART TX GPIO pin configuration  */
 	if (board.serials[serialNumber].Mode != UART_MODE_RX)
@@ -203,10 +230,13 @@ void UsartInit(uint32_t serialNumber)
 		HAL_GPIO_Init(txPort, &GPIO_InitStruct);
 
 	/* UART RX GPIO pin configuration  */
-	GPIO_InitStruct.Pin = rxPin;
-	GPIO_InitStruct.Alternate = board.serials[serialNumber].RXAlternate;
+	if (board.serials[serialNumber].Mode != UART_MODE_TX)
+	{
+		GPIO_InitStruct.Pin = rxPin;
+		GPIO_InitStruct.Alternate = board.serials[serialNumber].RXAlternate;
 
-	HAL_GPIO_Init(rxPort, &GPIO_InitStruct);
+		HAL_GPIO_Init(rxPort, &GPIO_InitStruct);
+	}
 
 
 	/*##-1- Configure the UART peripheral ######################################*/
@@ -265,8 +295,8 @@ void UsartInit(uint32_t serialNumber)
 
 }
 
-void UsartDeInit(uint32_t serialNumber) {
-
+void UsartDeInit(uint32_t serialNumber)
+{
 
 	if (board.serials[serialNumber].serialTxBuffer)
 		bzero(serialTxBuffer[board.serials[serialNumber].serialTxBuffer-1], sizeof(serialTxBuffer[board.serials[serialNumber].serialTxBuffer-1]));
@@ -335,7 +365,8 @@ void UsartDmaInit(uint32_t serialNumber)
 
 	/*##-3- Configure the DMA ##################################################*/
 	/* Configure the DMA handler for Transmission process */
-	if (board.dmasSerial[board.serials[serialNumber].TXDma].enabled) { //only mess with the DMA is the current serial device needs it
+	if (board.dmasSerial[board.serials[serialNumber].TXDma].enabled)
+	{ //only mess with the DMA is the current serial device needs it
 
 		dmaHandles[board.dmasActive[board.serials[serialNumber].TXDma].dmaHandle].Instance                = dmaStream[board.dmasActive[board.serials[serialNumber].TXDma].dmaStream];
 		dmaHandles[board.dmasActive[board.serials[serialNumber].TXDma].dmaHandle].Init.Channel             = board.dmasActive[board.serials[serialNumber].TXDma].dmaChannel;
@@ -348,6 +379,8 @@ void UsartDmaInit(uint32_t serialNumber)
 		dmaHandles[board.dmasActive[board.serials[serialNumber].TXDma].dmaHandle].Init.Priority            = board.dmasActive[board.serials[serialNumber].TXDma].dmaPriority;
 		dmaHandles[board.dmasActive[board.serials[serialNumber].TXDma].dmaHandle].Init.FIFOMode            = board.dmasActive[board.serials[serialNumber].TXDma].fifoMode;
 
+		HAL_DMA_UnRegisterCallback(&dmaHandles[board.dmasActive[board.serials[serialNumber].TXDma].dmaHandle], HAL_DMA_XFER_ALL_CB_ID);
+	
 		HAL_DMA_Init(&dmaHandles[board.dmasActive[board.serials[serialNumber].TXDma].dmaHandle]);
 
 		/* Associate the initialized DMA handle to the UART handle */
@@ -366,7 +399,8 @@ void UsartDmaInit(uint32_t serialNumber)
 	}
 
 	/* Configure the DMA handler for reception process */
-	if (board.dmasSerial[board.serials[serialNumber].RXDma].enabled) { //only mess with the DMA is the current serial device needs it
+	if (board.dmasSerial[board.serials[serialNumber].RXDma].enabled)
+	{ //only mess with the DMA is the current serial device needs it
 
 		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Instance                 = dmaStream[board.dmasActive[board.serials[serialNumber].RXDma].dmaStream];
 		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.Channel             = board.dmasActive[board.serials[serialNumber].RXDma].dmaChannel;
@@ -378,6 +412,8 @@ void UsartDmaInit(uint32_t serialNumber)
 		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.Mode                = board.dmasActive[board.serials[serialNumber].RXDma].dmaMode;
 		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.Priority            = board.dmasActive[board.serials[serialNumber].RXDma].dmaPriority;
 		dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle].Init.FIFOMode            = board.dmasActive[board.serials[serialNumber].RXDma].fifoMode;
+
+		HAL_DMA_UnRegisterCallback(&dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle], HAL_DMA_XFER_ALL_CB_ID);
 
 		HAL_DMA_Init(&dmaHandles[board.dmasActive[board.serials[serialNumber].RXDma].dmaHandle]);
 
@@ -467,10 +503,13 @@ void InitBoardUsarts (void)
 		board.serials[mainConfig.rcControlsConfig.rxUsart].enabled  = 1;
 		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = mainConfig.rcControlsConfig.rxProtcol;
 		board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].RXDma].enabled  = 1;
-		if (mainConfig.telemConfig.telemCrsf)
-		{
-			board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].TXDma].enabled  = 1;
-		}
+	}
+	else if (mainConfig.rcControlsConfig.rxProtcol == USING_CRSF_B)
+	{
+		board.serials[mainConfig.rcControlsConfig.rxUsart].enabled  = 1;
+		board.serials[mainConfig.rcControlsConfig.rxUsart].Protocol = mainConfig.rcControlsConfig.rxProtcol;
+		mainConfig.telemConfig.telemCrsf = mainConfig.rcControlsConfig.rxUsart+1;
+		board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].TXDma].enabled  = 1;
 		board.dmasSerial[board.serials[mainConfig.rcControlsConfig.rxUsart].RXDma].enabled  = 1;
 	}
 	else if (mainConfig.rcControlsConfig.rxProtcol == USING_CPPM_R)
@@ -594,7 +633,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	}
 }
 
-inline void ProcessSerialRx(void)
+void ProcessSerialRx(void)
 {
 	uint32_t serialNumber;
 
@@ -605,7 +644,7 @@ inline void ProcessSerialRx(void)
 
 		if ((board.serials[serialNumber].Protocol == USING_SPEK_T) || (board.serials[serialNumber].Protocol == USING_SPEK_R) || (board.serials[serialNumber].Protocol == USING_DSM2_T) || (board.serials[serialNumber].Protocol == USING_DSM2_R))
 			ProcessSpektrumPacket(serialNumber);
-		else if ( (board.serials[serialNumber].Protocol == USING_CRSF_T) || (board.serials[serialNumber].Protocol == USING_CRSF_R) )
+		else if ( (board.serials[serialNumber].Protocol == USING_CRSF_B) || (board.serials[serialNumber].Protocol == USING_CRSF_T) || (board.serials[serialNumber].Protocol == USING_CRSF_R) )
 			ProcessCrsfPacket(serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1], board.serials[serialNumber].FrameSize);
 		else if ((board.serials[serialNumber].Protocol == USING_SBUS_T) || (board.serials[serialNumber].Protocol == USING_SBUS_R))
 			ProcessSbusPacket(serialNumber);
@@ -656,7 +695,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 			Amount of bytes including ​Type​, Payload and ​CRC​ (uint8_t) 
 			*/
-			if ( ( (board.serials[serialNumber].Protocol == USING_CRSF_T) || (board.serials[serialNumber].Protocol == USING_CRSF_R)) && (dmaIndex[serialNumber] == 1) )
+			if ( ( (board.serials[serialNumber].Protocol == USING_CRSF_B) ||(board.serials[serialNumber].Protocol == USING_CRSF_T) || (board.serials[serialNumber].Protocol == USING_CRSF_R)) && (dmaIndex[serialNumber] == 1) )
 			{
 				//Amount of bytes including ​Type​, Payload and ​CRC​ (uint8_t) 
 				//total frame length is sync byte (0) + frame length byte (1) + number of the byte

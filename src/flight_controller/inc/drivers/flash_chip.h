@@ -11,6 +11,7 @@ enum {
 	DMA_READ_COMPLETE          = (1 << 7),
 	DMA_DATA_READ_IN_PROGRESS  = (1 << 8),
 	DMA_DATA_WRITE_IN_PROGRESS = (1 << 9),
+	DATA_WRITE_IN_PROGRESS     = (1 << 10),
 };
 
 //data in read buffer goes from 5 to 260. the first
@@ -91,3 +92,4 @@ extern int  MassEraseDataFlash(int blocking);
 extern void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 extern int  M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 extern int  WriteEnableDataFlashDma(void);
+extern void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);

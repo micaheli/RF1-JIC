@@ -285,6 +285,8 @@ void InitAdc(void)
 	dmaHandles[board.dmasActive[ENUM_DMA2_STREAM_1].dmaHandle].Init.MemBurst            = board.dmasActive[ENUM_DMA2_STREAM_1].MemBurst;
 	dmaHandles[board.dmasActive[ENUM_DMA2_STREAM_1].dmaHandle].Init.PeriphBurst         = board.dmasActive[ENUM_DMA2_STREAM_1].PeriphBurst;
 
+	HAL_DMA_UnRegisterCallback(&dmaHandles[board.dmasActive[ENUM_DMA2_STREAM_1].dmaHandle], HAL_DMA_XFER_ALL_CB_ID);
+
 	//link the DMA
 	__HAL_LINKDMA(&adcHandle[board.boardADC[1].adcHandle], DMA_Handle, dmaHandles[board.dmasActive[ENUM_DMA2_STREAM_1].dmaHandle]);
 
