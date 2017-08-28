@@ -270,6 +270,16 @@ inline void RxUpdate(void) // hook for when rx updates
 {
 
 	 //get current flight modes
+
+	//if(trueRcCommandF[5] > 0.9)
+	//{
+	//	inlineDigitalLo(ports[ENUM_PORTB], GPIO_PIN_0);
+	//}
+	//else
+	//{
+	//	inlineDigitalHi(ports[ENUM_PORTB], GPIO_PIN_0);
+	//}
+
 	CheckRxToModes();
 
 	CheckThrottleSafe();

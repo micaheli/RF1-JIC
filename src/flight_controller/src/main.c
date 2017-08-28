@@ -43,7 +43,10 @@ int main(void)
     buzzerStatus.status = STATE_BUZZER_STARTUP;
     ledStatus.status    = LEDS_SLOW_BLINK;
 
-    //InitializeGpio(ports[ENUM_PORTB], GPIO_PIN_1, 0);
+    //DeInitActuators();
+    //DelayMs(10);
+    //InitializeGpio(ports[ENUM_PORTB], GPIO_PIN_0, 0);
+    //inlineDigitalLo(ports[ENUM_PORTB], GPIO_PIN_0);
     //InitializeGpio(ports[ENUM_PORTB], GPIO_PIN_0, 0);
 
     while (1)

@@ -1344,7 +1344,7 @@ Version 0.318.123 BETA
     Tuned automatic crash detection and recovery slightly
     Dshot changes
 
-Version 0.319.123 BETA
+Version 0.319.124 BETA
 	Added new crossfire options
 		CRSF_TELEM - for using an usart TX pin for only crossfire telemetry
 		CRSF_T - For using a usart TX pin for CRSF RX
@@ -1376,8 +1376,9 @@ Version 0.319.123 BETA
 					crsf_r3
 					save
 
-Version 0.320.123 BETA:
+Version 0.320.125 BETA:
 	Update defaults
+	Adjust PIDs slightly
 	Added QUOPA Mode
         "Quad Upsidedown Orientation Press Autorecover"
         Works with multishot and dshot

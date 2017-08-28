@@ -778,7 +778,7 @@ void InlineFlightCode(float dpsGyroArray[])
 
 			
 		}
-		else if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || ModeActive(M_QUOPA)) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
+		else if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || (quopaState == QUOPA_ACTIVE) ) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
 		{
 			if (!timeSinceSelfLevelActivated)
 				timeSinceSelfLevelActivated = InlineMillis();
@@ -842,7 +842,7 @@ void InlineFlightCode(float dpsGyroArray[])
 				flightSetPoints[ROLL]    = ( rollAttitudeError  * 15) + rollAttitudeErrorKi  + (rollAttitudeErrorKdelta  / loopSpeed.truedT * sldUsed);
 				flightSetPoints[PITCH]   = ( pitchAttitudeError * 15) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.truedT * sldUsed);
 			}
-			else if (ModeActive(M_ATTITUDE) || ModeActive(M_QUOPA) ) //if M_ATTITUDE mode
+			else if (ModeActive(M_ATTITUDE) || (quopaState == QUOPA_ACTIVE) ) //if M_ATTITUDE mode
 			{
 				//roll and pitch are set directly from self level mode
 				flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.truedT * sldUsed), -300.0, 300.0);
