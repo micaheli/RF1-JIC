@@ -43,7 +43,7 @@ void DshotInit(int offlineMode)
 {
 
     //todo change from single buffer method maybe
-    int outputNumber;   //set, motor output based on board orrientation, from quad's POV: 0 is top left, 1 is top right, etc...
+    //int outputNumber;   //set, motor output based on board orrientation, from quad's POV: 0 is top left, 1 is top right, etc...
     int motorNum;       //set, motor output based on board arrat, from board's POV: 0 is top left, 1 is top right, etc...
 
     //deinit flight and treat motors independantly, make this compatible with old board
@@ -186,6 +186,7 @@ static void DshotTimerInit(uint32_t timer, uint32_t pwmHz, uint32_t timerHz) //m
     TIM_ClockConfigTypeDef  sClockSourceConfig; //set, timer variable
     TIM_MasterConfigTypeDef sMasterConfig;      //set, timer variable
 
+    (void)(pwmHz);
     //run at 24 MHz, need a bitrate of 3 bits per byte:
     //three types of "bytes"
     //one, zero, nothing:

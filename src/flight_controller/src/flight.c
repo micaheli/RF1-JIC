@@ -951,6 +951,10 @@ void InlineFlightCode(float dpsGyroArray[])
 				armedTimeSincePower++;
 			}
 
+			if( (quopaState == QUOPA_ACTIVE) && armedTime > QUOPA_FLIGHT_LIMIT )
+			{
+				DisarmBoard();
+			}
 #ifndef LOG32
 			//update blackbox here
 			UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
@@ -1080,8 +1084,9 @@ uint32_t used1Wire = 0;
 int InitFlight(void)
 {
 
-    //TODO: move the check into the init functions.
+	volatile int retValChk;
 
+    //TODO: move the check into the init functions.
 	InitOrientation();
 	CheckRxToModes(); //check which modes are set whether or not they're enabled
 
@@ -1144,11 +1149,11 @@ int InitFlight(void)
 
 	if ( mainConfig.ledConfig.ledOnWithUsb )
 	{
-		InitWs2812();
+		retValChk = InitWs2812();
 	}
 	else if( !IsUsbConnected() )
 	{
-		InitWs2812();
+		retValChk = InitWs2812();
 	}
 
 	if (board.flash[0].enabled && (mainConfig.rcControlsConfig.rxUsart != ENUM_USART4) )
@@ -1163,6 +1168,10 @@ int InitFlight(void)
 
 	//InitTransponderTimer();
 	DelayMs(2);
+
+	if(retValChk)
+		retValChk = retValChk;
+
 	return(0);
 }
 

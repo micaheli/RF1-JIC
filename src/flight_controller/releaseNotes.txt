@@ -1385,6 +1385,21 @@ Version 0.320.125 BETA:
             ESCs must be capable of running dshot600 though
             ESCs must be updated to at least version 16.76
 
+Version 0.321.126 BETA:
+	Limit QUOPA to 5 seconds per attempt
+	Added set quopa_style=0 variable
+		0 will always use all four motors to get quad unstuck
+		1 will limit use of motors to get quad unstuck
+			will not work as well but is much easier on motors and ESCs
+	Config dump now stored in flight log
+	Added voltage and current to logging
+	Added set log_mask1 and log_mask2 variables
+		You can now choose which items you want logged
+			currently disabled
+			everything is currently logged
+	Include BLHeli version 16.77
+		remove startup power lock
+
 #Features in current development:
 #	MAVlink compatibility
 

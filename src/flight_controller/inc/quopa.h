@@ -1,5 +1,7 @@
 #pragma once
 
+#define QUOPA_FLIGHT_LIMIT 5000
+
 typedef enum quopa_state_t
 {
     QUOPA_INACTIVE = 0,

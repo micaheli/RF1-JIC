@@ -157,15 +157,15 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 
 }
 
-void InitWs2812(void)
+int InitWs2812(void)
 {
 
 	uint32_t actuatorNumOutput;
 
-	volatile int cat = 000;
+	//volatile int cat = 000;
 	//fix for revolt. If 1wire has run we can't use LEDs or motor outputs won't work right.
 	if (oneWireHasRun)
-		return;
+		return(0);
 
 	ws2812LedRecord.enabled = 0;
 	//TODO: We need more actuators, no more max motor number, instead we use max_actuator number.
@@ -189,6 +189,7 @@ void InitWs2812(void)
 
 	}
 
+	return(1);
 }
 
 void InitDmaInputOnMotors(motor_type actuator) {

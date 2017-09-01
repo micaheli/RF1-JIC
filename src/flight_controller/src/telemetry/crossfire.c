@@ -113,8 +113,8 @@ static uint8_t CrsfBattFrame(void)
     crsfOutBuffer[1] = CRSF_BATT_PAYLOAD_SIZE + 2; //payload + frame type + crc
     crsfOutBuffer[2] = CRSF_TYPE_BATT;
     //voltage (16bit mV * 100)
-    crsfOutBuffer[3] = (uint8_t)((uint16_t)(adcVoltage*10.0f) >> 8);
-    crsfOutBuffer[4] = (uint8_t)((uint16_t)(adcVoltage*10.0f));
+    crsfOutBuffer[3] = (uint8_t)((uint16_t)(averageVoltage*10.0f) >> 8);
+    crsfOutBuffer[4] = (uint8_t)((uint16_t)(averageVoltage*10.0f));
     //current (16bit mA * 100)
     crsfOutBuffer[5] = (uint8_t)((uint16_t)(adcCurrent*10.0f) >> 8);
     crsfOutBuffer[6] = (uint8_t)((uint16_t)(adcCurrent*10.0f));

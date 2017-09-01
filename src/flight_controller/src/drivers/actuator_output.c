@@ -235,6 +235,13 @@ static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle
 		digitalThrottle = 0;
 	}
 
+	//limit motor spinning
+	if( (quopaState == QUOPA_ACTIVE) && mainConfig.mixerConfig.quopaStyle == 1)
+	{
+		if(throttle < 0.15)
+			digitalThrottle = 0;
+	}
+
 	checksumData = digitalThrottle;
 
     for (i = 0; i < 3; i++)

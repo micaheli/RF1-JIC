@@ -32,10 +32,10 @@ flash_info_record flashInfo;
 
 static void SpiInit(uint32_t baudRatePrescaler);
 static int M25p16ReadIdSetFlashRecord(void);
-static unsigned int M25p16ReadIdSetFlashRecordDma(void);
+//static unsigned int M25p16ReadIdSetFlashRecordDma(void);
 static uint8_t M25p16ReadStatus(void);
 static int FlashChipReadWriteDataSpiDma(uint8_t *txData, uint8_t *rxData, uint16_t length);
-static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
+//static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 extern void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 
 
@@ -69,7 +69,7 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 
 }
 
-void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
+void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer)
 {
 
 	//write data from txBuffer into flash chip using DMA.
@@ -99,6 +99,7 @@ void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuf
 	
 }
 
+/*
 static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 {
 	//address need to be aligned with the pages. We won't check since this is C!! Woohoo!
@@ -121,7 +122,7 @@ static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuf
 	return(0);
 
 }
-
+*/
 
 int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 {
@@ -220,6 +221,7 @@ static int M25p16ReadIdSetFlashRecord(void)
     return flashInfo.chipId;
 }
 
+/*
 static unsigned int M25p16ReadIdSetFlashRecordDma(void)
 {
 
@@ -246,6 +248,7 @@ static unsigned int M25p16ReadIdSetFlashRecordDma(void)
   	return ( (uint32_t)( (flashInfo.commandRxBuffer[1] << 16) | (flashInfo.commandRxBuffer[2] << 8) | (flashInfo.commandRxBuffer[3]) ) );
 
 }
+*/
 
 static void SpiInit(uint32_t baudRatePrescaler)
 {

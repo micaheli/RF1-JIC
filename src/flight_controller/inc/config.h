@@ -1,8 +1,8 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint8_t)(125U)
-#define CONFIG_VERSION_STR		"125"
-#define FIRMWARE_VERSION		"0.320.125 BETA" //RC19 is next
+#define CONFIG_VERSION			(uint8_t)(126U)
+#define CONFIG_VERSION_STR		"126"
+#define FIRMWARE_VERSION		"0.321.126 BETA" //RC19 is next
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n"
 
@@ -71,14 +71,19 @@ typedef struct
 } string_comp_rec;
 
 extern char rf_custom_out_buffer[];
+extern char rfCustomSendBuffer[];
 
 extern char *StripSpaces(char *inString);
 extern char *CleanupString(char *inString);
 
+extern volatile uint32_t          configSize;
 extern volatile int               activeProfile;
 extern uint32_t                   resetBoard;
 extern main_config                mainConfig;
 extern const config_variables_rec valueTable[];
+extern volatile uint32_t rfCustomReplyBufferPointer;
+extern volatile int headerToWrite;
+extern volatile int headerWritten;
 
 extern char   *CleanupNumberString(char *inString);
 extern void    SaveConfig (uint32_t addresConfigStart);
@@ -92,3 +97,4 @@ extern void    SaveAndSend(void);
 
 extern int     RfCustomReplyBuffer(char *rfCustomSendBufferAdder);
 extern int     SendRfCustomReplyBuffer(void);
+extern void    OutputVarSet(uint32_t position);

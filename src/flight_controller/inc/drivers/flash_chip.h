@@ -92,4 +92,4 @@ extern int  MassEraseDataFlash(int blocking);
 extern void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 extern int  M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 extern int  WriteEnableDataFlashDma(void);
-extern void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
+extern void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer);

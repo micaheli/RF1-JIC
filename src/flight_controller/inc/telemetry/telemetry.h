@@ -165,6 +165,8 @@ typedef struct
 	float    vbatCutoff;
 	uint32_t batSize;
 	uint32_t crsfOtxCurHack;
+	uint32_t logMask1;
+	uint32_t logMask2;
 } telem_config;
 
 typedef struct

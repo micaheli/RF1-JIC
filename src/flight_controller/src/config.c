@@ -3,8 +3,12 @@
 
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
-uint32_t rfCustomReplyBufferPointer = 0;
+volatile uint32_t rfCustomReplyBufferPointer = 0;
 uint32_t rfCustomReplyBufferPointerSent = 0;
+volatile uint32_t configSize = 0;
+
+volatile int headerToWrite;
+volatile int headerWritten;
 
 #define LARGE_RF_BUFFER_SIZE 7000
 main_config mainConfig;
@@ -159,7 +163,8 @@ const config_variables_rec valueTable[] = {
 		{ "idle_percent", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercent,					0, 15.0, 6, "" },
 		{ "idle_percent_inv",	typeFLOAT, "mixr", &mainConfig.mixerConfig.idlePercentInverted,			0, 15.0, 8, "" },
 		{ "spin_rec_str",		typeFLOAT, "mixr", &mainConfig.mixerConfig.spinRecoveryStrength,		0, 1500.0, 750.0, "" },
-
+		{ "quopa_style",		typeUINT,  "mixr", &mainConfig.mixerConfig.quopaStyle,					0, 2, 0, "" },
+		
 		{ "mout1", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[0],				0, 7, 0, "" },
 		{ "mout2", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[1],				0, 7, 1, "" },
 		{ "mout3", 				typeUINT,  "mixr", &mainConfig.mixerConfig.motorOutput[2],				0, 7, 2, "" },
@@ -191,6 +196,8 @@ const config_variables_rec valueTable[] = {
 		{ "vbat_cutoff",		typeFLOAT, "telm", &mainConfig.telemConfig.vbatCutoff,					0, 4.0f, 3.8f, "" },
 		{ "bat_size",			typeUINT,  "telm", &mainConfig.telemConfig.batSize,						0, 50000, 1300, "" },
 		{ "crsf_otx_cur_hack",	typeUINT,  "telm", &mainConfig.telemConfig.crsfOtxCurHack,				0, 1, 1, "" },
+		{ "log_mask1",			typeUINT,  "telm", &mainConfig.telemConfig.logMask1,					0, 1, 1, "" },
+		{ "log_mask2",			typeUINT,  "telm", &mainConfig.telemConfig.logMask2,					0, 1, 1, "" },
 		
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, CW315_INV, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1,  0, "" },
@@ -603,7 +610,7 @@ void ValidateConfigSettings(void)
 			mainConfig.tuneProfile[x].pidConfig[PITCH].kd = DEFAULT_PID_CONFIG_VALUE;
 		}
 	}
-	for (x=(sizeof(valueTable)/sizeof(config_variables_rec))-1;x>=0;x--)
+	for (x=configSize-1;x>=0;x--)
 	{
 		switch(valueTable[x].type)
 		{
@@ -645,7 +652,7 @@ void GenerateConfig(void)
 	char     *c;
 	bzero(&mainConfig, sizeof(mainConfig));
 	ResetTpaCurves();
-	for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+	for (x=0;x<configSize;x++)
 	{
 		switch(valueTable[x].type)
 		{
@@ -723,6 +730,7 @@ int LoadConfig (uint32_t addresConfigStart)
 		GenerateConfig();
 		SaveConfig(addresConfigStart);
 	}
+	configSize = (sizeof(valueTable)/sizeof(config_variables_rec));
 	return(0);
 }
 
@@ -897,7 +905,7 @@ static int SetVariable(char *inString)
 	for (x = strlen(inString); x >= 0; x--)
 		inString[x] = tolower((unsigned char)inString[x]);
 
-	for (x=(sizeof(valueTable)/sizeof(config_variables_rec))-1;x>=0;x--)
+	for (x=configSize-1;x>=0;x--)
 	{
 		if (!strcmp(valueTable[x].name, inString))
 		{
@@ -1987,7 +1995,7 @@ void ProcessCommand(char *inString)
 				PrintModes();
 				PrintTpaCurves();
 
-				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+				for (x=0;x<configSize;x++)
 				{
 					OutputVarSet(x);
 					argsOutputted++;
@@ -1999,7 +2007,7 @@ void ProcessCommand(char *inString)
 
 				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%s\n", FULL_VERSION_STRING);
 				RfCustomReplyBuffer(rf_custom_out_buffer);
-				for (x=0;x<(sizeof(valueTable)/sizeof(config_variables_rec));x++)
+				for (x=0;x<configSize;x++)
 				{
 					if (!strcmp(valueTable[x].group, args))
 					{
@@ -2339,7 +2347,6 @@ void DlflStatusDump(void)
 	sprintf(rf_custom_out_buffer, "#fl size=%u\n#fl total=%u\n", (unsigned int)(flashInfo.currentWriteAddress), (unsigned int)(flashInfo.totalSize));
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
-
 
 int RfCustomReplyBuffer(char *rfCustomSendBufferAdder)
 {
