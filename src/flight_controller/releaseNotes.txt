@@ -1400,6 +1400,31 @@ Version 0.321.126 BETA:
 	Include BLHeli version 16.77
 		remove startup power lock
 
+Version 0.322.127 BETA:
+	Sped up Wizard 2
+	Added CRSF to auto detection
+		Crsf telemetry must still be enabled separately as this cannot be auto detected at this time
+			After running the wizards you can enaabled CRSF tlemetry in the GUI - no need to set CRSF R, T or B option as before
+
+Version 0.323.127 BETA:
+	Added filter_typeX=4 and filter_typeX=1 variables (where X is the profile number)
+		filter_typeX=0 default filter with default behavior
+		filter_typeX=1 new filter with better max throttle and noise handling
+		filter_typeX=4 default filter with better max throttle and noise handling
+			it is not recomended to use filter_typeX=2 or 3 at this time
+
+Version 0.324.127 BETA:
+	Allow filter_typeX=4 to be saved
+	changed motor output on log to match blheli's scaled motor output (1000 to 1850 scale from 1000 to 2000 scale)
+		rf1 uses a true output of 0 to 100% where 0 is idle and 100% is full throttle
+		
+Version 0.325.129 BETA:
+	Fix vtxbandchannel console command
+	fix tramp, crsf, and rfosd usart selection
+
+Version 0.326.130 BETA:
+	Filter testing
+
 #Features in current development:
 #	MAVlink compatibility
 

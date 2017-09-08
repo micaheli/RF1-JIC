@@ -27,6 +27,8 @@ int InitCrsfTelemetry(int usartNumber)
         (mainConfig.rcControlsConfig.rxProtcol == USING_CRSF_R)
     )
     {
+        // R and T won't work is crsf usart is the same as crsf tlemetry
+        //this should also be checked when serial is enabled
         if((uint32_t)usartNumber == mainConfig.rcControlsConfig.rxUsart)
         {
             //)invalid setup. set error mask

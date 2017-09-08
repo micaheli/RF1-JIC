@@ -127,20 +127,19 @@ uint32_t WizRxCheckRxDataLooksValid(void)
 	uint32_t correct = 0;
 
 	//if processed data is within 5% of center on 3 axis it's safe to assume it's valid data
-	if ( (trueRcCommandF[YAW] < 0.05) && (trueRcCommandF[YAW] > - 0.05) )
+	if ( (trueRcCommandF[YAW] < 0.1) && (trueRcCommandF[YAW] > - 0.1) )
 		correct ++;
-	if ( (trueRcCommandF[ROLL] < 0.05) && (trueRcCommandF[ROLL] > - 0.05) )
+	if ( (trueRcCommandF[ROLL] < 0.1) && (trueRcCommandF[ROLL] > - 0.1) )
 		correct ++;
-	if ( (trueRcCommandF[PITCH] < 0.05) && (trueRcCommandF[PITCH] > - 0.05) )
+	if ( (trueRcCommandF[PITCH] < 0.1) && (trueRcCommandF[PITCH] > - 0.1) )
 		correct ++;
-	if ( (trueRcCommandF[THROTTLE] < 0.05) && (trueRcCommandF[THROTTLE] > - 0.05) )
+	if ( (trueRcCommandF[THROTTLE] < 0.1) && (trueRcCommandF[THROTTLE] > - 0.1) )
 		correct ++;
 
 	if (correct > 2)
-	{
 		return(1);
-	}
-	return(0);
+	else
+		return(0);
 }
 
 
@@ -526,33 +525,71 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 void HandleWizRx(void)
 {
 	/*
-	#define USING_MANUAL           0
-	#define USING_SPEK_R           1
-	#define USING_SPEK_T           2
-	#define USING_SBUS_R           3
-	#define USING_SBUS_T           4
-	#define USING_SUMD_R           5
-	#define USING_SUMD_T           6
-	#define USING_IBUS_R           7
-	#define USING_IBUS_T           8
-	#define USING_CPPM_R           9
-	#define USING_CPPM_T           10
-	#define USING_DSM2_R           11
-	#define USING_DSM2_T           12
-	#define USING_RX_END           13
+#define USING_MANUAL           0
+#define USING_SPEK_R           1
+#define USING_SPEK_T           2
+#define USING_SBUS_R           3
+#define USING_SBUS_T           4
+#define USING_SUMD_R           5
+#define USING_SUMD_T           6
+#define USING_IBUS_R           7
+#define USING_IBUS_T           8
+#define USING_DSM2_R           9
+#define USING_DSM2_T           10
+#define USING_CPPM_R           11
+#define USING_CPPM_T           12
+#define USING_SPORT            13
+#define USING_MSP              14
+#define USING_RFVTX            15
+#define USING_SMARTAUDIO       16
+#define USING_RFOSD            17
+#define USING_TRAMP            18
+#define USING_CRSF_R           19
+#define USING_CRSF_T           20
+#define USING_CRSF_B           21
+#define USING_CRSF_TELEM       22
+#define USING_RX_END           23
 	 */
-	uint32_t x, y, z = 0;
+	uint32_t x, y, useThis, z = 0;
 
-	for (x=1;x<USING_CPPM_R;x++)
+
+	for (x=1;x<USING_SPORT;x++)
 	{
+
+		if(x == USING_CPPM_R)
+			useThis = USING_CRSF_R;
+		else if(x == USING_CPPM_T)
+			useThis = USING_CRSF_T;
+		else
+			useThis = x;
+
 		for (y=0;y<MAX_USARTS;y++)
 		{
+			
+			#if defined(REVOLT)
+			//only check usart 1 and usart 3
+			if( y==0 )
+			{
+
+			}
+			else if( y==2 )
+			{
+
+			}
+			else
+			{
+				continue;
+			}
+			//if( !(y==0 || y==2) )
+			//	continue;
+			#endif
+
 			if (z == wizardStatus.currentStep)
 			{
 				wizardStatus.currentStep++;
-				if (WizRxCheckProtocol(x,y))
+				if (WizRxCheckProtocol(useThis,y))
 				{
-					snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX Protocol %lu Found on Usart %lu\n",x, y+1 );
+					snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me RX Protocol %lu Found on Usart %lu\n", useThis, y+1 );
 					RfCustomReplyBuffer(rf_custom_out_buffer);
 					wizardStatus.currentWizard = 0;
 					wizardStatus.currentStep = 0;
@@ -708,10 +745,13 @@ void SetupWizard(char *inString)
 		DisarmBoard();
 		motorOutput[0] = 1.0;
 		OutputActuators(motorOutput, servoOutput);
-		if (CheckSafeMotors(1000, 13000)) { //check for safe motors for 3 seconds, 10000 standard deviation allowed
+		if (CheckSafeMotors(1000, 13000))
+		{ //check for safe motors for 3 seconds, 10000 standard deviation allowed
 			RfCustomReplyBuffer("#me Plug in battery, run wiz mot2 when tones finish\n");
 			return;
-		} else {
+		}
+		else
+		{
 			RfCustomReplyBuffer("#me Motor calibration failed\n");
 			motorOutput[0] = 0;
 			motorOutput[1] = 0;

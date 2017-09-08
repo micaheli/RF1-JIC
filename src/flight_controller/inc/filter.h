@@ -54,6 +54,8 @@ typedef struct {
 	float r; //measurement noise covariance
 	float x; //value
 	float lastX; //value
+	float lastP; //value
+	float tempP; //value
 	float p; //estimation error covariance
 	float k; //paf gain
 	float output;
@@ -75,6 +77,10 @@ typedef struct
 	int                      ga;
 	int                      wc;
 	float                    gaMultiplier;
+	float                    omega0;
+	float                    omega1;
+	float                    omega2;
+	float                    omega3;
 	paf_filter_config_record kd;
 	paf_filter_config_record gyro;
 	paf_filter_config_record acc;

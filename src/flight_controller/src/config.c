@@ -4,13 +4,14 @@
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
 volatile uint32_t rfCustomReplyBufferPointer = 0;
-uint32_t rfCustomReplyBufferPointerSent = 0;
+volatile uint32_t rfCustomReplyBufferPointerSent = 0;
 volatile uint32_t configSize = 0;
 
-volatile int headerToWrite;
 volatile int headerWritten;
+volatile int headerToWrite;
+volatile int julian = -99;
 
-#define LARGE_RF_BUFFER_SIZE 7000
+#define LARGE_RF_BUFFER_SIZE 9000
 main_config mainConfig;
 uint32_t resetBoard = 0;
 volatile int activeProfile = PROFILE1;
@@ -196,8 +197,6 @@ const config_variables_rec valueTable[] = {
 		{ "vbat_cutoff",		typeFLOAT, "telm", &mainConfig.telemConfig.vbatCutoff,					0, 4.0f, 3.8f, "" },
 		{ "bat_size",			typeUINT,  "telm", &mainConfig.telemConfig.batSize,						0, 50000, 1300, "" },
 		{ "crsf_otx_cur_hack",	typeUINT,  "telm", &mainConfig.telemConfig.crsfOtxCurHack,				0, 1, 1, "" },
-		{ "log_mask1",			typeUINT,  "telm", &mainConfig.telemConfig.logMask1,					0, 1, 1, "" },
-		{ "log_mask2",			typeUINT,  "telm", &mainConfig.telemConfig.logMask2,					0, 1, 1, "" },
 		
 		{ "gyro_rotation", 		typeUINT,  "gyro", &mainConfig.gyroConfig.gyroRotation,					0, CW315_INV, CW0, "" },
 		{ "board_calibrated", 	typeUINT,  "gyro", &mainConfig.gyroConfig.boardCalibrated,				0, 1,  0, "" },
@@ -211,7 +210,7 @@ const config_variables_rec valueTable[] = {
 		{ "drunk", 				typeINT,    "gyro", &mainConfig.gyroConfig.drunk, 							0, 2, 1, "" },
 		{ "skunk", 				typeINT,    "gyro", &mainConfig.gyroConfig.skunk, 							0, 2, 2, "" },
  
-		{ "pname1", 			typeSTRING, "rate", &mainConfig.tuneProfile[0].profileName,				 	0, 0, 0, "Profile1" },
+		{ "pname1", 			typeSTRING, "rate", &mainConfig.tuneProfile[0].profileName,				 	0, 0, 0, "Profile1\0" },
  		{ "stick_curve1", 		typeINT,    "rate", &mainConfig.tuneProfile[0].rcRates.useCurve, 			0, EXPO_CURVE_END, ACRO_PLUS, "" },
  		{ "rc_smoothing1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.rcSmoothingFactor,	0.0, 4.0, 1.0, "" },
  		{ "pitch_rate1", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[0].rcRates.rates[PITCH],		0, 1500, 400, "" },
@@ -250,7 +249,7 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].ga, 		0, 31, 12, "" },
  		{ "roll_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].ga, 		0, 31, 0, "" },
- 		{ "filter_type1",		typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[0].filterType, 	0, 3, 0, "" },
+ 		{ "filter_type1",		typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[0].filterType, 	0, 4, 0, "" },
  		{ "yaw_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.q, 	0, 100, 70.000, "" },
  		{ "roll_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
  		{ "pitch_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
@@ -267,7 +266,7 @@ const config_variables_rec valueTable[] = {
 		{ "tpa_ki_curve_type1",	typeINT,   "mixr", &mainConfig.tuneProfile[0].filterConfig[0].tpaKiCurveType,				0, 1, 1, "" },
 		{ "tpa_kd_curve_type1",	typeINT,   "mixr", &mainConfig.tuneProfile[0].filterConfig[0].tpaKdCurveType,				0, 1, 1, "" },
  
- 		{ "pname2", 			typeSTRING, "rate", &mainConfig.tuneProfile[1].profileName,				 	0, 0, 0, "Profile2" },
+ 		{ "pname2", 			typeSTRING, "rate", &mainConfig.tuneProfile[1].profileName,				 	0, 0, 0, "Profile2\0" },
  		{ "stick_curve2", 		typeINT,    "rate", &mainConfig.tuneProfile[1].rcRates.useCurve, 			0, EXPO_CURVE_END, ACRO_PLUS, "" },
  		{ "rc_smoothing2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.rcSmoothingFactor,	0.0, 4.0, 1.0, "" },
  		{ "pitch_rate2", 		typeFLOAT,  "rate", &mainConfig.tuneProfile[1].rcRates.rates[PITCH],		0, 1500, 400, "" },
@@ -306,7 +305,7 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].ga, 		0, 31, 12, "" },
  		{ "roll_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].ga, 		0, 31, 0, "" },
- 		{ "filter_type2",		typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[0].filterType, 	0, 3, 0, "" },
+ 		{ "filter_type2",		typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[0].filterType, 	0, 4, 0, "" },
  		{ "yaw_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.q, 	0, 100, 70.000, "" },
  		{ "roll_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
  		{ "pitch_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
@@ -363,7 +362,7 @@ const config_variables_rec valueTable[] = {
  		{ "yaw_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].ga, 		0, 31, 12, "" },
  		{ "roll_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].ga, 		0, 31, 0, "" },
- 		{ "filter_type3",		typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[0].filterType, 	0, 3, 0, "" },
+ 		{ "filter_type3",		typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[0].filterType, 	0, 4, 0, "" },
  		{ "yaw_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.q, 	0, 100, 70.000, "" },
  		{ "roll_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.q, 	0, 100, 60.000, "" },
  		{ "pitch_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.q, 	0, 100, 60.000, "" },
@@ -449,7 +448,15 @@ const config_variables_rec valueTable[] = {
 
 		{ "bind", 	            typeUINT,  "rccf", &mainConfig.rcControlsConfig.bind, 	                0, 32, 0, "" },
 		{ "short_throw", 	    typeUINT,  "rccf", &mainConfig.rcControlsConfig.shortThrow, 	        0, 1, 1, "" },
-/*
+		{ "omega0", 	    	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].omega0, 0, 1000, 1, "" },
+		{ "omega1_yaw",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].omega1, 0, 1000, 30.0f, "" },
+		{ "omega1_roll",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].omega1, 0, 1000, 40.0f, "" },
+		{ "omega1_pitch",    	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].omega1, 0, 1000, 40.0f, "" },
+		{ "omega2_yaw",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].omega2, 0, 1000, 0.088f, "" },
+		{ "omega2_roll",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].omega2, 0, 1000, 0.088f, "" },
+		{ "omega2_pitch",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].omega2, 0, 1000, 0.088f, "" },
+		
+		/*
 		{ "omega_drive", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaDrive, 	     		    0, 4000000000, 0, "" },
 		{ "omega_route", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaDrive, 	     		    0, 4000000000, 0, "" },
 		{ "omega_in_low", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaInLow, 	     		    0, 4000000000, 0, "" },
@@ -723,6 +730,7 @@ static int ValidateConfig (uint32_t addresConfigStart)
 
 int LoadConfig (uint32_t addresConfigStart)
 {
+	configSize = (sizeof(valueTable)/sizeof(config_variables_rec));
 	if (ValidateConfig(addresConfigStart) ) {
 		memcpy(&mainConfig, (char *) addresConfigStart, sizeof(main_config));
 		ValidateConfigSettings();
@@ -730,7 +738,6 @@ int LoadConfig (uint32_t addresConfigStart)
 		GenerateConfig();
 		SaveConfig(addresConfigStart);
 	}
-	configSize = (sizeof(valueTable)/sizeof(config_variables_rec));
 	return(0);
 }
 
@@ -933,22 +940,22 @@ void OutputVarSet(uint32_t position)
 	switch (valueTable[position].type)
 	{
 		case typeUINT:
-			sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d\n", valueTable[position].name, (int)*(uint32_t *)valueTable[position].ptr);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			break;
 		case typeINT:
-			sprintf(rf_custom_out_buffer, "set %s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%d\n", valueTable[position].name, (int)*(int32_t *)valueTable[position].ptr);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			break;
 		case typeFLOAT:
 			ftoa(*(float *)valueTable[position].ptr, fString);
 			StripSpaces(fString);
-			sprintf(rf_custom_out_buffer, "set %s=%s\n", valueTable[position].name, fString);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%s\n", valueTable[position].name, fString);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			break;
 		case typeSTRING:
 			c = valueTable[position].ptr;
-			sprintf(rf_custom_out_buffer, "set %s=%s\n", valueTable[position].name, c);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "set %s=%s\n", valueTable[position].name, c);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			break;
 	}
@@ -973,7 +980,7 @@ void OutputVar(uint32_t position)
 			break;
 		case typeSTRING:
 			c = valueTable[position].ptr;
-			sprintf(rf_custom_out_buffer, "%s=%s\n", valueTable[position].name, c);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "%s=%s\n", valueTable[position].name, c);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			break;
 	}
@@ -1690,6 +1697,14 @@ void ProcessCommand(char *inString)
 				TrampGetSettings();
 			}
 
+			vtxRequested.vtxBand = vtxRecord.vtxBand;
+			vtxRequested.vtxChannel = vtxRecord.vtxChannel;
+			vtxRequested.vtxBandChannel = vtxRecord.vtxBandChannel;
+			vtxRequested.vtxPower = vtxRecord.vtxPower;
+			vtxRequested.vtxPit = vtxRecord.vtxPit;
+			vtxRequested.vtxFrequency = vtxRecord.vtxFrequency;
+			vtxRequested.vtxRegion = vtxRecord.vtxRegion;
+			vtxRequested.vtxTemp = vtxRecord.vtxTemp;
 			PrintVtxInfo();
 			progMode=0;
 		}
@@ -1699,6 +1714,14 @@ void ProcessCommand(char *inString)
 
 			if (VtxTurnOn())
 			{
+				vtxRequested.vtxBand = vtxRecord.vtxBand;
+				vtxRequested.vtxChannel = vtxRecord.vtxChannel;
+				vtxRequested.vtxBandChannel = vtxRecord.vtxBandChannel;
+				vtxRequested.vtxPower = vtxRecord.vtxPower;
+				vtxRequested.vtxPit = vtxRecord.vtxPit;
+				vtxRequested.vtxFrequency = vtxRecord.vtxFrequency;
+				vtxRequested.vtxRegion = vtxRecord.vtxRegion;
+				vtxRequested.vtxTemp = vtxRecord.vtxTemp;
 				PrintVtxInfo();
 			}
 			else
@@ -1716,6 +1739,14 @@ void ProcessCommand(char *inString)
 
 			if (VtxTurnPit())
 			{
+				vtxRequested.vtxBand = vtxRecord.vtxBand;
+				vtxRequested.vtxChannel = vtxRecord.vtxChannel;
+				vtxRequested.vtxBandChannel = vtxRecord.vtxBandChannel;
+				vtxRequested.vtxPower = vtxRecord.vtxPower;
+				vtxRequested.vtxPit = vtxRecord.vtxPit;
+				vtxRequested.vtxFrequency = vtxRecord.vtxFrequency;
+				vtxRequested.vtxRegion = vtxRecord.vtxRegion;
+				vtxRequested.vtxTemp = vtxRecord.vtxTemp;
 				PrintVtxInfo();
 			}
 			else
@@ -1733,6 +1764,14 @@ void ProcessCommand(char *inString)
 
 			if (VtxPower(atoi(args)))
 			{
+				vtxRequested.vtxBand = vtxRecord.vtxBand;
+				vtxRequested.vtxChannel = vtxRecord.vtxChannel;
+				vtxRequested.vtxBandChannel = vtxRecord.vtxBandChannel;
+				vtxRequested.vtxPower = vtxRecord.vtxPower;
+				vtxRequested.vtxPit = vtxRecord.vtxPit;
+				vtxRequested.vtxFrequency = vtxRecord.vtxFrequency;
+				vtxRequested.vtxRegion = vtxRecord.vtxRegion;
+				vtxRequested.vtxTemp = vtxRecord.vtxTemp;
 				PrintVtxInfo();
 			}
 			else
@@ -1750,6 +1789,14 @@ void ProcessCommand(char *inString)
 
 			if (VtxBandChannel( GetValueFromString(args, vtxStringCompTable, sizeof(vtxStringCompTable)) ))
 			{
+				vtxRequested.vtxBand = vtxRecord.vtxBand;
+				vtxRequested.vtxChannel = vtxRecord.vtxChannel;
+				vtxRequested.vtxBandChannel = vtxRecord.vtxBandChannel;
+				vtxRequested.vtxPower = vtxRecord.vtxPower;
+				vtxRequested.vtxPit = vtxRecord.vtxPit;
+				vtxRequested.vtxFrequency = vtxRecord.vtxFrequency;
+				vtxRequested.vtxRegion = vtxRecord.vtxRegion;
+				vtxRequested.vtxTemp = vtxRecord.vtxTemp;
 				PrintVtxInfo();
 			}
 			else
@@ -1976,6 +2023,11 @@ void ProcessCommand(char *inString)
 			DelayMs(500);
 			BootToAddress(0x080E0000);
 			return;
+		}
+	else if (!strcmp("julian", inString))
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Goes Pro!! %i\n", julian);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("dump", inString))
 		{
@@ -2344,7 +2396,7 @@ void SaveAndSend(void)
 
 void DlflStatusDump(void)
 {
-	sprintf(rf_custom_out_buffer, "#fl size=%u\n#fl total=%u\n", (unsigned int)(flashInfo.currentWriteAddress), (unsigned int)(flashInfo.totalSize));
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#fl size=%u\n#fl total=%u\n", (unsigned int)(flashInfo.currentWriteAddress), (unsigned int)(flashInfo.totalSize));
 	RfCustomReplyBuffer(rf_custom_out_buffer);
 }
 

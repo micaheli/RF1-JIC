@@ -617,6 +617,7 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 		//-1 to 1
 		if(quopaState == QUOPA_ACTIVE)
 		{
+			throttleIn = -1.0f;
 			motorOutput[i] = (
 				(
 					(pids[YAW].kp * throttleLookupKp[motorOutput0_1023] * 0.1f ) +

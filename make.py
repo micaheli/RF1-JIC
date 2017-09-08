@@ -172,7 +172,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405.ld"
         TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-O2"
+        OPTIMIZE_FLAGS = "-O3"
         STM32F4_ARCH_FLAGS_ADD = ""
         #STM32F4_ARCH_FLAGS_ADD = "-s -fdata-sections -ffunction-sections -flto"
 

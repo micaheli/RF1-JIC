@@ -55,7 +55,7 @@
 "H acc_1G:1\n\0"
 
 
-uint32_t lastProgramTime;
+volatile uint32_t lastProgramTime;
 uint32_t LoggingEnabled;
 uint32_t firstLogging;
 uint32_t flashAlign;
@@ -147,6 +147,11 @@ const bb_ip_value bb_data[MAX_BB_VALUES] =
 		{ "voltageAvg,",    "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &averageVoltage},
 		{ "current,",       "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &adcCurrent},
 
+		//{ "filty,",    "1,", "0,", "0,", "1,", "0,", 1000000,  typeFLOAT, &pafGyroStates[YAW].k},
+		//{ "filtr,",    "1,", "0,", "0,", "1,", "0,", 1000000,  typeFLOAT, &pafGyroStates[ROLL].k},
+		//{ "filtp,",     "1,", "0,", "0,", "1,", "0,", 1000000,  typeFLOAT, &pafGyroStates[PITCH].k},
+		
+
 };
 
 
@@ -162,27 +167,17 @@ static int PrintLogHeaderToBuffer(void)
 	if(rfCustomReplyBufferPointer) //buffer in use, don't do anything
 	{
 		//don't write a header. HID buffer is in use.
-		//headerWritten=0;
-		//headerToWrite=0;
-		//return(0);
+		headerWritten=0;
+		headerToWrite=0;
+		return(0);
 	}
 
-	rfCustomReplyBufferPointer = 0; //reset to 0 to prevent overflow and possible hard fault during flight
-
-	//fill buffer with config dump
-	RfCustomReplyBuffer(FULL_VERSION_STRING);
-	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#fc HARDWARE:%s\n", FC_NAME);
-	RfCustomReplyBuffer(rf_custom_out_buffer);
-	PrintModes();
-	PrintTpaCurves();
-	for (x=0;x<(int)configSize;x++)
-		OutputVarSet(x);
+	headerWritten=0;
+	headerToWrite=0;
 
 	snprintf(rfCustomSendBuffer+rfCustomReplyBufferPointer, strlen(BB_HEADER1)+1, "%s", BB_HEADER1);
-	headerWritten=0;
-	headerToWrite=strlen(BB_HEADER1)+rfCustomReplyBufferPointer;
-	rfCustomReplyBufferPointer = 0; //done with use of this pointer. HID can overwrite the buffer if needed now.
-	
+	headerToWrite += strlen(BB_HEADER1)+rfCustomReplyBufferPointer;
+
 	for(x=0;x<bbValues.bbValuesTotal;x++)
 	{
 		snprintf(rfCustomSendBuffer+headerToWrite, strlen(bbValues.bbPtr[x]->iName)+1, "%s", bbValues.bbPtr[x]->iName);
@@ -226,13 +221,28 @@ static int PrintLogHeaderToBuffer(void)
 	//volatile int asdfasf=33333;
 	snprintf(rfCustomSendBuffer+headerToWrite-1, 2, "\n");
 
-	//GCC bug?
-	volatile int stringLenOfBBH2 = strlen(BB_HEADER2);
-	volatile int tempVar = headerToWrite;
-	snprintf(rfCustomSendBuffer+tempVar, stringLenOfBBH2+1, "%s\n", BB_HEADER2);
-	headerToWrite = tempVar + stringLenOfBBH2;
-	headerWritten = 0;
-	//volatile int fish=33333;
+
+	snprintf(rfCustomSendBuffer+headerToWrite, strlen(BB_HEADER2)+1, "%s\n", BB_HEADER2);
+	headerToWrite += strlen(BB_HEADER2);
+
+
+	rfCustomReplyBufferPointer = headerToWrite;
+	rfCustomReplyBufferPointerSent = 0;
+
+	//fill buffer with config dump
+	RfCustomReplyBuffer("H RF1 Dump\n");
+	RfCustomReplyBuffer(FULL_VERSION_STRING);
+	snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#fc HARDWARE:%s\n", FC_NAME);
+	RfCustomReplyBuffer(rf_custom_out_buffer);
+	PrintModes();
+	PrintTpaCurves();
+	for (x=0;x<(int)configSize;x++)
+		OutputVarSet(x);
+
+	headerToWrite += rfCustomReplyBufferPointer;
+	rfCustomReplyBufferPointer = 0; //done with use of this pointer. HID can overwrite the buffer if needed now.
+	rfCustomReplyBufferPointerSent = 0;
+
 	return(0);
 
 }
@@ -253,6 +263,7 @@ static int SetupLog(void)
 		{
 			//if(mainConfig.telemConfig.logMask2 & (1 << (x-32)))
 				//bbValues.bbPtr[bbValues.bbValuesTotal++] = &bb_data[x];
+			bbValues.bbPtr[bbValues.bbValuesTotal++] = &bb_data[x];
 		}
 	}
 	return(0);
@@ -494,13 +505,13 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 
 			if(--logItterationCounter == 0)
 			{
-				logItterationCounter = 3;	//TODO make this configurable value. Capture rate = 1khz/value
+				logItterationCounter = 1;	//TODO make this configurable value. Capture rate = 1khz/value
 
 				//no logging until header is written
 				if(headerWritten < headerToWrite)
 				{
 					//don't try to right the header until the flash is ready
-					if ( ( (InlineMillis() - lastProgramTime) > 5) && (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS) )
+					if ( ( (InlineMillis() - lastProgramTime) > 6) && (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS) )
 					{
 							toWrite = CONSTRAIN(headerToWrite - headerWritten, (int)0, (int)flashInfo.pageSize);
 							DumbWriteString(rfCustomSendBuffer+headerWritten, toWrite);
@@ -524,10 +535,10 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 					currFilteredAccData[finishX]  = ( (filteredAccData[finishX] + lastFilteredAccData[finishX]) * 0.5);
 				}
 
-				currMotorOutput[0] = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5) + 1;
-				currMotorOutput[1] = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5) + 1;
-				currMotorOutput[2] = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5) + 1;
-				currMotorOutput[3] = ( (motorOutput[3] + lastMotorOutput[3]) * 0.5) + 1;
+				currMotorOutput[0] = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5) + 0.850f;
+				currMotorOutput[1] = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5) + 0.850f;
+				currMotorOutput[2] = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5) + 0.850f;
+				currMotorOutput[3] = ( (motorOutput[3] + lastMotorOutput[3]) * 0.5) + 0.850f;
 
 				//copy current value to last values.
 				memcpy(lastFlightPids, flightPids, sizeof(pid_output));
@@ -544,6 +555,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				currRcCommandF[YAW] = smoothedRcCommandF[YAW];
 				currRcCommandF[ROLL] = smoothedRcCommandF[ROLL];
 				currRcCommandF[PITCH] = smoothedRcCommandF[PITCH];
+				//1000 to 1850
 				currRcCommandF[THROTTLE] = ( ((smoothedRcCommandF[THROTTLE] + 1) * 500) + 1000) ;
 
 #endif

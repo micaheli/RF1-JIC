@@ -147,9 +147,9 @@ void UsartInit(uint32_t serialNumber)
 			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
 			board.serials[serialNumber].Mode       = UART_MODE_TX;
 			txPin  = board.serials[serialNumber].TXPin;
-			rxPin  = board.serials[serialNumber].TXPin;
+			rxPin  = board.serials[serialNumber].RXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
-			rxPort = ports[board.serials[serialNumber].TXPort];
+			rxPort = ports[board.serials[serialNumber].RXPort];
 			break;
 		case USING_CRSF_B:
 			board.serials[serialNumber].FrameSize  = 26;  //variable
@@ -290,7 +290,8 @@ void UsartInit(uint32_t serialNumber)
 	{
 		UsartDmaInit(serialNumber);
 		__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[serialNumber].usartHandle]);
-		HAL_UART_Receive_DMA(&uartHandles[board.serials[serialNumber].usartHandle], &dmaRxBuffer, 1);
+		if (board.serials[serialNumber].Mode != UART_MODE_TX)
+			HAL_UART_Receive_DMA(&uartHandles[board.serials[serialNumber].usartHandle], &dmaRxBuffer, 1);
 	}
 
 }
@@ -430,6 +431,16 @@ void UsartDmaInit(uint32_t serialNumber)
 
 void InitBoardUsarts (void)
 {
+
+	//make sure rsf telemetry is handled correctly.
+	//if crsf telemetry is same as rx usart and rx usart is R then change to B
+	if (
+		(mainConfig.telemConfig.telemCrsf == mainConfig.rcControlsConfig.rxUsart+1) &&
+		(mainConfig.rcControlsConfig.rxProtcol == USING_CRSF_R)
+	)
+	{
+		mainConfig.rcControlsConfig.rxProtcol = USING_CRSF_B;
+	}
 
 	//turn off all usarts.
 	for (uint32_t serialNumber = 0; serialNumber<MAX_USARTS;serialNumber++)

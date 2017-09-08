@@ -575,10 +575,25 @@ void InlineInitGyroFilters(void)
 
 	for (axis = 2; axis >= 0; --axis)
 	{
-		if (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 0)
+		if ( (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 0) || (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 4) )
+		{
 			OldInitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], 88.0f, 0.0f, filteredGyroData[axis]);
+			if(mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 4)
+				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);	
+		}		
 		else 
-			InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], 0.088f, 0.0f, filteredGyroData[axis]);
+		{
+			if(mainConfig.tuneProfile[0].filterConfig[YAW].omega0 == 678)
+			{
+				InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[0].filterConfig[axis].omega1, mainConfig.tuneProfile[0].filterConfig[axis].omega2, 0.0f, filteredGyroData[axis]);
+				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
+			}
+			else
+			{
+				InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], 0.088f, 0.0f, filteredGyroData[axis]);
+				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
+			}
+		}
 	}
 
 }
@@ -696,16 +711,19 @@ void InlineFlightCode(float dpsGyroArray[])
 	for (axis = 2; axis >= 0; --axis)
 	{
 
-		if (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 0)
+		if ( (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 0) || (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 4) )
 		{
 			averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
 			OldPafUpdate(&pafGyroStates[axis], averagedGyro );
 			filteredGyroData[axis] = (float)pafGyroStates[axis].output;
+			if((mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 4))
+				filteredGyroData[axis] = BiquadUpdate(filteredGyroData[axis], &lpfFilterState[axis]);
 		}
 		else
 		{
 			PafUpdate(&pafGyroStates[axis], dpsGyroArray[axis] );
 			filteredGyroData[axis] = (float)pafGyroStates[axis].x;
+			filteredGyroData[axis] = BiquadUpdate(filteredGyroData[axis], &lpfFilterState[axis]);
 		}
 
 

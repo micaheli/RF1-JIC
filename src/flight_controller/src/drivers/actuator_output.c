@@ -3,6 +3,7 @@
 volatile uint32_t disarmPulseValue3d;
 volatile uint32_t disarmPulseValue;
 volatile uint32_t calibratePulseValue;
+volatile uint32_t calibrateWalledPulseValue;
 volatile uint32_t idlePulseValue;
 volatile uint32_t pulseValueRange;
 volatile uint32_t mshotNormalPulseValue;
@@ -37,6 +38,7 @@ void InitActuators(void)
 	float disarmUs;    // shortest pulse width (disarmed)
 	float disarmUs3d;  // shortest pulse width (disarmed)
 	float calibrateUs; // shortest pulse width (calibrate)
+	float calibrateWalledUs;
 	float walledUs;    // longest pulse width (full throttle)
 	float idleUs;      // idle pulse width (armed, zero throttle)
 	uint32_t motorNum;
@@ -55,6 +57,7 @@ void InitActuators(void)
 			disarmUs    = 990;
 			calibrateUs = 1000;
 			walledUs    = 2000;
+			calibrateWalledUs = 1950;
 			pwmHz       = 490;
 			timerHz     = 1000000;
 			break;
@@ -63,6 +66,7 @@ void InitActuators(void)
 			disarmUs    = 120;
 			calibrateUs = 125;
 			walledUs    = 250;
+			calibrateWalledUs = 240;
 			pwmHz       = 3900;
 			timerHz     = 8000000;
 			break;
@@ -70,6 +74,7 @@ void InitActuators(void)
 			disarmUs    = 40;
 			calibrateUs = 41.667;
 			walledUs    = 83.334; // round up for int math
+			calibrateWalledUs = 82.0;
 			pwmHz       = 11500;
 			timerHz     = 24000000;
 			break;
@@ -81,6 +86,7 @@ void InitActuators(void)
 			disarmUs    = 0;
 			calibrateUs = 0;
 			walledUs    = 2000;
+			calibrateWalledUs = 2000;
 			idleUs      = 48;
 			pwmHz       = 0;
 			timerHz     = 0;
@@ -96,6 +102,7 @@ void InitActuators(void)
 			disarmUs    = 2.400;
 			calibrateUs = 2.500;
 			walledUs    = 10.00;
+			calibrateWalledUs = 9.5;
 			pwmHz       = 32000;
 			timerHz     = 48000000; // full resolution
 			//timerHz   = 12000000; // 1/4 resolution
@@ -105,6 +112,7 @@ void InitActuators(void)
 			disarmUs    = 1.220;
 			calibrateUs = 1.250;
 			walledUs    = 5.000;
+			calibrateWalledUs = 4.80;
 			pwmHz       = 32000;
 			timerHz     = 48000000; // full resolution
 			//timerHz   = 12000000; // 1/4 resolution
@@ -114,7 +122,8 @@ void InitActuators(void)
 			disarmUs3d  = 13.75;
 			disarmUs    = 4.850;
 			calibrateUs = 5.000;
-			walledUs    = 22.50;
+			walledUs    = 23.00;
+			calibrateWalledUs = 22.50;
 			pwmHz       = 32000;
 			timerHz     = 48000000; // full resolution
 			//timerHz     = 54000000; // full resolution
@@ -133,8 +142,9 @@ void InitActuators(void)
 	calibratePulseValue = ((uint32_t)(calibrateUs * timerHz)) / 1000000;
 	idlePulseValue      = ((uint32_t)(idleUs * timerHz))      / 1000000;
 	walledPulseValue    = ((uint32_t)(walledUs * timerHz))    / 1000000;
-	mshotNormalPulseValue    = ((uint32_t)(28 * timerHz))     / 1000000;
-	mshotReversedPulseValue  = ((uint32_t)(30.5 * timerHz))   / 1000000;
+	calibrateWalledPulseValue    = ((uint32_t)(calibrateWalledUs * timerHz))    / 1000000;
+	mshotNormalPulseValue        = ((uint32_t)(28 * timerHz))     / 1000000;
+	mshotReversedPulseValue      = ((uint32_t)(30.5 * timerHz))   / 1000000;
 	
 	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 
@@ -347,7 +357,7 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 				{
 					if ( !IsDshotEnabled() )
 					{
-						*ccr[board.motors[outputNumber].timCCR] = pulseValueRange + idlePulseValue;
+						*ccr[board.motors[outputNumber].timCCR] = calibrateWalledPulseValue;
 					}
 				}
 			}

@@ -1,10 +1,10 @@
 #pragma once
 
-#define CONFIG_VERSION			(uint8_t)(126U)
-#define CONFIG_VERSION_STR		"126"
-#define FIRMWARE_VERSION		"0.321.126 BETA" //RC19 is next
+#define CONFIG_VERSION			(uint8_t)(130U)
+#define CONFIG_VERSION_STR		"130"
+#define FIRMWARE_VERSION		"0.326.130 BETA" //RC19 is next
 #define FIRMWARE_NAME			"RaceFlight One"
-#define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n"
+#define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n\0"
 
 #define RF_BUFFER_SIZE HID_EPIN_SIZE-1
 #define FLIGHT_MODE_ARRAY_SIZE 96
@@ -82,8 +82,12 @@ extern uint32_t                   resetBoard;
 extern main_config                mainConfig;
 extern const config_variables_rec valueTable[];
 extern volatile uint32_t rfCustomReplyBufferPointer;
+extern volatile uint32_t rfCustomReplyBufferPointerSent;
+
+
 extern volatile int headerToWrite;
 extern volatile int headerWritten;
+extern volatile int julian;
 
 extern char   *CleanupNumberString(char *inString);
 extern void    SaveConfig (uint32_t addresConfigStart);

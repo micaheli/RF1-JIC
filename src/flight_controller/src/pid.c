@@ -129,10 +129,12 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 {
 
 	int32_t axis;
+	static int bounceStopper[3] = {0,};
 	//uint32_t everyOther;
 	float   pidError;
-	static float lastfilteredGyroData[AXIS_NUMBER];
-
+	static float lastfilteredGyroData[AXIS_NUMBER] = {0,};
+	//static float setPointSmoother[AXIS_NUMBER] = {0,};
+	
 	(void)(actuatorRange);
 
 	for (axis = 2; axis >= 0; --axis)
@@ -174,18 +176,37 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 			{
 
 				if (axis == YAW)
-					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f); //prevent insane windup
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 1.0f); //prevent insane windup
 				else
 					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit); //prevent insane windup
 
-				if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+				float ag = 1.0f;
+
+				if (ABS(flightSetPoints[axis]) > 50)
+					bounceStopper[axis]++;
+				else
+					bounceStopper[axis]--;
+
+				bounceStopper[axis] = CONSTRAIN(bounceStopper[axis],0,2000);
+				if(bounceStopper[axis])
 				{
-					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki, -kiErrorLimit[axis], kiErrorLimit[axis]);
+					if (ABS(pidError) > 50)
+						ag = InlineChangeRangef(ABS(pidError)-50, 2000, 0, 3, 1);
 				}
 				else
 				{
-					kiErrorLimit[axis] = ABS(flightPids[axis].ki);
+					ag = 1.0f;
 				}
+
+				if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+				{
+					flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki * ag, -kiErrorLimit[axis], kiErrorLimit[axis]);
+				}
+				else
+				{
+					kiErrorLimit[axis] = ABS(flightPids[axis].ki * ag);
+				}
+
 
 			}
 			else

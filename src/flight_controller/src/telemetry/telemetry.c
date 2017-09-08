@@ -309,7 +309,6 @@ void InitTelemtry(void)
 {
 
 	static int firstTimeInit = 1;
-	int temp;
 	vtxRecord.vtxDevice      = VTX_DEVICE_NONE;
 	vtxRequested.vtxDevice   = VTX_DEVICE_NONE;
 
@@ -430,7 +429,6 @@ void InitTelemtry(void)
 
 	if(mainConfig.telemConfig.telemTramp)
 	{
-		temp = -1;
 		switch(mainConfig.telemConfig.telemTramp - 1)
 		{
 			//soft trsmp not supported right now
@@ -444,41 +442,30 @@ void InitTelemtry(void)
 			case TELEM_ACTUATOR8:
 				break;
 			case TELEM_USART1:
-				temp = ENUM_USART1;
+				InitTrampTelemetry(ENUM_USART1);
 				break;
 			case TELEM_USART2:
-				temp = TELEM_USART2;
+				InitTrampTelemetry(ENUM_USART2);
 				break;
 			case TELEM_USART3:
-				temp = TELEM_USART3;
+				InitTrampTelemetry(ENUM_USART3);
 				break;
 			case TELEM_USART4:
-				temp = TELEM_USART4;
+				InitTrampTelemetry(ENUM_USART4);
 				break;
 			case TELEM_USART5:
-				temp = TELEM_USART5;
+				InitTrampTelemetry(ENUM_USART5);
 				break;
 			case TELEM_USART6:
-				temp = TELEM_USART6;
+				InitTrampTelemetry(ENUM_USART6);
 				break;
 			default:
 				break;
 		}
-
-		if (temp > -1)
-		{
-			InitTrampTelemetry(temp);
-		}
-		else
-		{
-			mainConfig.telemConfig.telemTramp = 0;
-		}
-
 	}
 
 	if(mainConfig.telemConfig.telemCrsf)
 	{
-		temp = -1;
 		switch(mainConfig.telemConfig.telemCrsf)
 		{
 			//soft trsmp not supported right now
@@ -492,36 +479,26 @@ void InitTelemtry(void)
 			case TELEM_ACTUATOR8:
 				break;
 			case TELEM_USART1:
-				temp = ENUM_USART1;
+				InitCrsfTelemetry(ENUM_USART1);
 				break;
 			case TELEM_USART2:
-				temp = TELEM_USART2;
+				InitCrsfTelemetry(ENUM_USART2);
 				break;
 			case TELEM_USART3:
-				temp = TELEM_USART3;
+				InitCrsfTelemetry(ENUM_USART3);
 				break;
 			case TELEM_USART4:
-				temp = TELEM_USART4;
+				InitCrsfTelemetry(ENUM_USART4);
 				break;
 			case TELEM_USART5:
-				temp = TELEM_USART5;
+				InitCrsfTelemetry(ENUM_USART5);
 				break;
 			case TELEM_USART6:
-				temp = TELEM_USART6;
+				InitCrsfTelemetry(ENUM_USART6);
 				break;
 			default:
 				break;
 		}
-
-		if (temp > -1)
-		{
-			InitCrsfTelemetry(temp);
-		}
-		else
-		{
-			mainConfig.telemConfig.telemCrsf = 0;
-		}
-
 	}
 
 	if (mainConfig.telemConfig.telemSpek)
