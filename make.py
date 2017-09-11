@@ -150,7 +150,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f303_256k_rfbl.ld"
         TARGET_PROCESSOR_TYPE = "f3"
         FEATURES.extend(["usb_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
 
     elif TARGET == "stm32f303xc_nrecovery":
         TARGET_DEVICE_LC = "stm32f303xc"
@@ -214,7 +214,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_rfbl.ld"
         TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
 
     elif TARGET == "REVOLT_nrecovery":
         if args.debug:
@@ -227,7 +227,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f405_recovery.ld"
         TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
 
     elif TARGET == "MICROVOLT":
         if args.debug:
@@ -253,7 +253,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f411_rfbl.ld"
         TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
 
     elif TARGET == "MICROVOLT_nrecovery":
         if args.debug:
@@ -266,7 +266,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f411_recovery.ld"
         TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
 
     elif (TARGET == "REVOLTF7") or (TARGET == "RVTF7"):
         if args.debug:
@@ -299,7 +299,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f745_rfbl.ld"
         TARGET_PROCESSOR_TYPE = "f7"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
         STM32F7_ARCH_FLAGS_ADD = ""
         #STM32F7_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
@@ -318,7 +318,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f745_recovery.ld"
         TARGET_PROCESSOR_TYPE = "f7"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
         STM32F7_ARCH_FLAGS_ADD = ""
         #STM32F7_ARCH_FLAGS_ADD = "-s -fno-math-errno -fdata-sections -ffunction-sections -flto"
         #STM32F7_ARCH_FLAGS_ADD = "-fno-math-errno -fdelete-null-pointer-checks"
@@ -341,7 +341,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f446_rfbl.ld"
         TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
         STM32F4_ARCH_FLAGS_ADD = ""
 
     elif TARGET == "SPMFC400_nrecovery":
@@ -352,7 +352,7 @@ def configure_target(TARGET):
         TARGET_SCRIPT = "stm32_flash_f446_recovery.ld"
         TARGET_PROCESSOR_TYPE = "f4"
         FEATURES.extend(["usb_otg_fs"])
-        OPTIMIZE_FLAGS = "-Og"
+        OPTIMIZE_FLAGS = "-Os"
         STM32F4_ARCH_FLAGS_ADD = ""
 
     else:

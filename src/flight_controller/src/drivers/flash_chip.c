@@ -2,6 +2,10 @@
 
 persistance_record persistance;
 flash_info_record flashInfo;
+volatile uint32_t flashWriteAddress;
+uint8_t *flashTxBuffer;
+uint8_t *flashRxBuffer;
+volatile uint32_t flashWriteInProgress;
 
 
 #define M25P16_RDID              0x9F
@@ -37,7 +41,11 @@ static uint8_t M25p16ReadStatus(void);
 static int FlashChipReadWriteDataSpiDma(uint8_t *txData, uint8_t *rxData, uint16_t length);
 //static int M25p16DmaReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 extern void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
+static int FindLatestPersistance(void);
+static int GetLatestPersistance(uint32_t sectorAddress);
+static uint8_t SetPersistanceDataCrc(uint8_t *data, uint8_t size);
 
+uint32_t persistanceWrites = 0;
 
 void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 {
@@ -67,6 +75,22 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 		FlashChipReadWriteDataSpiDma(txBuffer, rxBuffer, FLASH_CHIP_BUFFER_SIZE);
 	}
 
+}
+
+void M25p16BlockingWritePagePartial(uint32_t address, uint8_t *txBuffer, uint32_t size)
+{
+  	txBuffer[0] = M25P16_PAGE_PROGRAM;
+  	txBuffer[1] = ((address >> 16) & 0xFF);
+  	txBuffer[2] = ((address >> 8) & 0xFF);
+  	txBuffer[3] = (address & 0xFF);
+
+	flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
+	WriteEnableDataFlash();
+	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
+	HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, size, 100);
+	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
+	flashInfo.status = DMA_READ_COMPLETE;
+	
 }
 
 void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer)
@@ -138,17 +162,18 @@ int M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 
   	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
 
-	if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY) {
-
-		if (HAL_SPI_TransmitReceive(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, rxBuffer, FLASH_CHIP_BUFFER_SIZE, 1000) == HAL_OK) {
+	//if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY) {
+	if ( HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY )
+	{
+		if (HAL_SPI_TransmitReceive(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, rxBuffer, FLASH_CHIP_BUFFER_SIZE, 1000) == HAL_OK) 
+		{
 			inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
-			return 1;
+			return(1);
 		}
-
 	}
 
 	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
-	return 0;
+	return(0);
 
 }
 
@@ -254,6 +279,10 @@ static void SpiInit(uint32_t baudRatePrescaler)
 {
 
 	GPIO_InitTypeDef GPIO_InitStruct;
+	flashWriteAddress = 0;
+	flashTxBuffer = NULL;
+	flashRxBuffer = NULL;
+	flashWriteInProgress = 0;
 
 	spiHandles[board.spis[board.flash[0].spiNumber].spiHandle].Instance               = spiInstance[board.flash[0].spiNumber];
     HAL_SPI_DeInit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]);
@@ -276,7 +305,8 @@ static void SpiInit(uint32_t baudRatePrescaler)
     spiHandles[board.spis[board.flash[0].spiNumber].spiHandle].Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
     spiHandles[board.spis[board.flash[0].spiNumber].spiHandle].Init.CRCPolynomial     = 7;
 
-    if (HAL_SPI_Init(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) != HAL_OK) {
+	if (HAL_SPI_Init(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) != HAL_OK)
+	{
         ErrorHandler(FLASH_SPI_INIT_FAILIURE);
     }
 
@@ -287,7 +317,10 @@ static void SpiInit(uint32_t baudRatePrescaler)
 
 int CheckIfFlashBusy(void)
 {
-	return(0);
+	if((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS))
+		return(1);
+	else
+		return(0);
 }
 
 int FindFirstEmptyPage(void)
@@ -416,28 +449,168 @@ void FlashDeinit(void)
 
 }
 
+static int IsPersistanceDataValid(persistance_data_record persistanceData)
+{
+	uint8_t crc;
+	//check version
+	if(persistanceData.version == persistance.version)
+	{
+		//check crc
+		crc = SetPersistanceDataCrc( (uint8_t *)&persistanceData, sizeof(persistance_data_record) - 1);
+		if(crc == persistanceData.crc)
+			return(1);
+	}
+	return(0);
+}
+
+static int FindLatestPersistance(void)
+{
+	persistance_data_record tempPersistanceData;
+	buffer_record *buffer = &flashInfo.buffer[0];
+	
+	persistance.version = PERSISTANCE_VERSION;
+	persistance.start1  = (flashInfo.flashSectors - 2) * flashInfo.sectorSize;
+	persistance.start2  = (flashInfo.flashSectors - 1) * flashInfo.sectorSize;
+	persistance.end     = (flashInfo.flashSectors)     * flashInfo.sectorSize;
+
+	if (M25p16ReadPage( persistance.start1, buffer->txBuffer, buffer->rxBuffer))
+	{
+		memcpy((uint8_t *)&tempPersistanceData, buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(persistance_data_record));
+		
+		if( IsPersistanceDataValid(tempPersistanceData) )
+		{
+			return(PERSISTANCE_FOUND_ONE);
+		}
+	}
+
+	if (M25p16ReadPage( persistance.start2, buffer->txBuffer, buffer->rxBuffer))
+	{
+		memcpy((uint8_t *)&tempPersistanceData, buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(persistance_data_record));
+		if( IsPersistanceDataValid(tempPersistanceData) )
+		{
+			return(PERSISTANCE_FOUND_TWO);
+		}
+	}
+
+	return(PERSISTANCE_FOUND_NONE);
+}
+
+static int GetLatestPersistance(uint32_t sectorAddress)
+{
+	persistance_data_record tempPersistanceData;
+	buffer_record *buffer = &flashInfo.buffer[0];
+
+	//we know the first one is good, so let's set persistance to this one first
+	if (M25p16ReadPage( sectorAddress, buffer->txBuffer, buffer->rxBuffer))
+		memcpy((uint8_t *)&(persistance.data), buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(persistance_data_record));
+
+	for(uint32_t x=0; x< flashInfo.pagesPerSector; x++)
+	{
+		if (M25p16ReadPage( sectorAddress + (x * flashInfo.pageSize), buffer->txBuffer, buffer->rxBuffer))
+		{
+			memcpy((uint8_t *)&tempPersistanceData, buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(persistance_data_record));
+
+			//this one is good, push it into valid persistance	
+			if( IsPersistanceDataValid(tempPersistanceData) )
+				memcpy((uint8_t *)&(persistance.data), buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(persistance_data_record));
+			else  //this one is no good, return so we use last one that was pushed
+			{
+				persistance.data.generation ++;
+				return(1);
+			}
+
+		}
+	}
+
+	//must have reached end 
+	persistance.data.generation ++;
+	return(1);
+}
+
+static int EraseSingleSector(uint32_t addressToErase)
+{
+
+	int blocking;
+	WriteEnableDataFlash();
+
+	uint8_t command[4];
+	command[0] = M25P16_SECTOR_ERASE;
+	command[1] = ((addressToErase >> 16) & 0xFF);
+	command[2] = ((addressToErase >> 8) & 0xFF);
+	command[3] = (addressToErase & 0xFF);
+
+	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
+	HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], command, 4, 100);
+	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
+
+	blocking = 0;
+	while ((M25p16ReadStatus() & M25P16_WRITE_IN_PROGRESS))
+	{ //flash chip busy
+		FeedTheDog();
+		DelayMs(1);
+		blocking++;
+		if (blocking == 4000) //four seconds max time
+			return 0;
+	}
+	return(1);
+}
+
+static uint8_t SetPersistanceDataCrc(uint8_t *data, uint8_t size)
+{
+	uint8_t crc = 0;
+
+	for(int x=0; x< size; x++)
+		crc += data[x];
+
+	return(crc);
+}
+
+int SavePersistance(void)
+{
+	//current size is  44, using a buffer of 44+4, need to increase this is persistance increases
+	//use separate buffer from flight log so we don't erase flight log data and corrupt the log
+	uint8_t persistanceTxBuffer[260] = {0,};
+
+	if(!persistance.enabled)
+		return(0);
+
+	persistanceWrites++;
+
+	//only allowed to write persistance this many times
+	if(persistanceWrites >= flashInfo.pagesPerSector)
+		persistance.enabled = 0;
+
+	persistance.data.itteration ++;
+	persistance.data.crc = SetPersistanceDataCrc( (uint8_t *)&(persistance.data), sizeof(persistance_data_record) - 1);
+
+	memcpy(persistanceTxBuffer+4, &(persistance.data), sizeof(persistance_data_record));
+	M25p16BlockingWritePage(persistance.currentWriteAddress, persistanceTxBuffer);
+	persistance.currentWriteAddress += flashInfo.pageSize;
+
+	return(1);
+}
+
 int InitFlashChip(void)
 {
 	int flashReturn;
+	//buffer_record *buffer = &flashInfo.buffer[0];
 	//TODO: Allow working with multiple flash chips
 
 	//TODO: Check for DMA conflicts
-	if (board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma].enabled)
-	{
-		memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma], sizeof(board_dma) );
-	}
-	if (board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma].enabled)
-	{
-		memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma], sizeof(board_dma) );
-	}
+	//if (board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma].enabled)
+	//{
+	//	memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma], sizeof(board_dma) );
+	//}
+	//if (board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma].enabled)
+	//{
+	//	memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma], sizeof(board_dma) );
+	//}
 
 	//FlashDeinit();
 
     SpiInit(board.flash[0].spiFastBaud);
 
     //check Read ID in blocking mode
-
-
     if (!M25p16ReadIdSetFlashRecord())
     {
     	DelayMs(70);
@@ -450,18 +623,111 @@ int InitFlashChip(void)
 	flashReturn = FindFirstEmptyPage();
 	if(flashInfo.enabled != FLASH_DISABLED)
 	{
-		buffer_record *buffer = &flashInfo.buffer[flashInfo.bufferNum];
+		//skip for now
+		//return(flashReturn);
 
-		//bzero(&persistance, sizeof(persistance_record));
-		persistance.version = PERSISTANCE_VERSION;
-		persistance.start1 = (flashInfo.flashSectors - 2) * flashInfo.sectorSize;
-		persistance.start2 = (flashInfo.flashSectors - 1) * flashInfo.sectorSize;
-		persistance.end = (flashInfo.flashSectors) * flashInfo.sectorSize;
+		int persistanceResult = FindLatestPersistance();
 
+		//reset persistance writes
+		persistanceWrites = 0;
+
+		switch(persistanceResult)
+		{
+			case PERSISTANCE_FOUND_NONE:
+				EraseSingleSector(persistance.start1);
+				EraseSingleSector(persistance.start2);
+				persistance.enabled             = 1;
+				persistance.data.version        = persistance.version;
+				persistance.data.generation     = 0;
+				persistance.data.itteration     = 0;
+				persistance.data.motorTrim[0]   = 1.0f;
+				persistance.data.motorTrim[1]   = 1.0f;
+				persistance.data.motorTrim[2]   = 1.0f;
+				persistance.data.motorTrim[3]   = 1.0f;
+				persistance.data.motorTrim[4]   = 1.0f;
+				persistance.data.motorTrim[5]   = 1.0f;
+				persistance.data.motorTrim[6]   = 1.0f;
+				persistance.data.motorTrim[7]   = 1.0f;
+				bzero((uint8_t *)&persistance.data.yawKiTrim, sizeof(persistance.data.yawKiTrim));
+				bzero((uint8_t *)&persistance.data.rollKiTrim, sizeof(persistance.data.rollKiTrim));
+				bzero((uint8_t *)&persistance.data.pitchKiTrim, sizeof(persistance.data.pitchKiTrim));
+				persistance.currentWriteAddress = persistance.start1;
+				DelayMs(10); //give flash time to write page
+				SavePersistance();
+				//erase both sectors, create persistance, set recording it to one, record onto one
+				break;
+			case PERSISTANCE_FOUND_ONE:
+				EraseSingleSector(persistance.start2);
+				GetLatestPersistance(persistance.start1);
+				persistance.enabled             = 1;
+				persistance.currentWriteAddress = persistance.start2;
+				persistance.data.itteration     = 0;
+				SavePersistance();
+				DelayMs(10); //give flash time to write page
+				EraseSingleSector(persistance.start1);
+				//erase sector two, copy latest persistance from one, set recording it to two, record onto two, erase sector one
+				break;
+			case PERSISTANCE_FOUND_TWO:
+				EraseSingleSector(persistance.start1);
+				GetLatestPersistance(persistance.start2);
+				persistance.enabled             = 1;
+				persistance.currentWriteAddress = persistance.start1;
+				persistance.data.itteration     = 0;
+				SavePersistance();
+				DelayMs(10); //give flash time to write page
+				EraseSingleSector(persistance.start2);
+				//erase sector one, copy latest persistance from two, set recording it to one, record onto one, erase sector two
+				break;
+		}
+
+/*
+		for (int x = 0; x < flashInfo.pagesPerSector; x++)
+		{
+			if ( M25p16ReadPage( persistance.start1 + (x * flashInfo.pageSize), buffer->txBuffer, buffer->rxBuffer) )
+			{
+				(*(persistance_data_record *)(buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START)).version == PERSISTANCE_VERSION;
+
+				if(x % 2 == 0)
+				{
+					memcpy(&tempPersistanceData1, buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(tempPersistanceData1));
+				}
+				else
+				{
+					memcpy(&tempPersistanceData2, buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(tempPersistanceData2));					
+				}
+				if (tempPersistanceData.version == )
+			}
+		}
 		if ( M25p16ReadPage( persistance.start1, buffer->txBuffer, buffer->rxBuffer) )
 		{
-			memcpy(&persistance.data, buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(persistance.data));
+			memcpy(&tempPersistanceData, buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(tempPersistanceData));
+			if (persistance.data.version == tempPersistanceData.version)
+			{
+				memcpy(&persistance.data, tempPersistanceData, sizeof(tempPersistanceData));
+				
+			}
+
 		}
+		*/
+		//1. find latestest generation
+		//2. find latest itteration
+		//uint8_t 
+		//for (int x=0; x<pagesPerSector; x++)
+		//{
+		//	if ( M25p16ReadPage( persistance.start1, buffer->txBuffer, buffer->rxBuffer) )
+		//	{
+		//		memcpy(&tempPersistanceData, buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(persistance.data));
+		//	}
+//
+//		}
+//		for (int x=0; x<pagesPerSector; x++)
+//		{
+//			if ( M25p16ReadPage( persistance.start2, buffer->txBuffer, buffer->rxBuffer) )
+//			{
+//				memcpy(&tempPersistanceData, buffer->rxBuffer+FLASH_CHIP_BUFFER_READ_DATA_START, sizeof(persistance.data));
+//			}
+//		}
+
 
 	}
 	return(flashReturn);
@@ -479,7 +745,7 @@ void DataFlashProgramPage(uint32_t address, uint8_t *data, uint16_t length)
 	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
 }
 
-static uint8_t M25p16ReadStatus(void)
+uint8_t M25p16ReadStatus(void)
 {
     uint8_t command[1] = {M25P16_READ_STATUS_REG};
     uint8_t in[2];
@@ -529,7 +795,7 @@ int WriteEnableDataFlashDma(void)
 
 }
 
-int MassEraseDataFlashByPage(int blocking)
+int MassEraseDataFlashByPage(int blocking, int all)
 {
 	uint8_t command[4];
 	uint32_t sectorsToErase = 0;
@@ -538,7 +804,12 @@ int MassEraseDataFlashByPage(int blocking)
 
 	(void)(blocking);
 
-	sectorsToErase = ceil((float)flashInfo.currentWriteAddress / ((float)flashInfo.pageSize * (float)flashInfo.pagesPerSector));
+	flashInfo.currentWriteAddress = CONSTRAIN(flashInfo.currentWriteAddress, 1, persistance.start1 - flashInfo.pageSize);
+
+	if(all)
+		sectorsToErase = ceil((float)persistance.start1 - flashInfo.pageSize / ((float)flashInfo.pageSize * (float)flashInfo.pagesPerSector));
+	else
+		sectorsToErase = ceil((float)flashInfo.currentWriteAddress / ((float)flashInfo.pageSize * (float)flashInfo.pagesPerSector));
 
 	//for each sector
 	for (x = 0;x<sectorsToErase;x++)
@@ -571,6 +842,10 @@ int MassEraseDataFlashByPage(int blocking)
 
 int MassEraseDataFlash(int blocking)
 {
+
+	//erase by sector as to not kill persistance
+	if(blocking)
+		return(MassEraseDataFlashByPage(blocking, 1));
 
 	uint8_t c[1] = {M25P16_BULK_ERASE};
 

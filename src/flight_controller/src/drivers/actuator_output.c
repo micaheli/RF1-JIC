@@ -6,9 +6,10 @@ volatile uint32_t calibratePulseValue;
 volatile uint32_t calibrateWalledPulseValue;
 volatile uint32_t idlePulseValue;
 volatile uint32_t pulseValueRange;
-volatile uint32_t mshotNormalPulseValue;
-volatile uint32_t mshotReversedPulseValue;
+volatile uint32_t boostedIdlePulseValue;
+volatile uint32_t boostedPulseValueRange;
 volatile int escFrequency = 0;
+volatile float boostIdle = 0.0f;
 
 static void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz);
 static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int reverse);
@@ -41,6 +42,7 @@ void InitActuators(void)
 	float calibrateWalledUs;
 	float walledUs;    // longest pulse width (full throttle)
 	float idleUs;      // idle pulse width (armed, zero throttle)
+	float boostedIdleUs;      // idle pulse width during high speed manuver (armed, zero throttle)
 	uint32_t motorNum;
 	uint32_t outputNumber;
 
@@ -136,18 +138,19 @@ void InitActuators(void)
 	pwmHz = CONSTRAIN(mainConfig.mixerConfig.escUpdateFrequency, 50, pwmHz);
 	// compute idle PWM width from idlePercent
 	idleUs = ((walledUs - disarmUs) * (mainConfig.mixerConfig.idlePercent * 0.01) ) + disarmUs;
-
-	disarmPulseValue3d  = ((uint32_t)(disarmUs3d * timerHz))  / 1000000;
-	disarmPulseValue    = ((uint32_t)(disarmUs * timerHz))    / 1000000;
-	calibratePulseValue = ((uint32_t)(calibrateUs * timerHz)) / 1000000;
-	idlePulseValue      = ((uint32_t)(idleUs * timerHz))      / 1000000;
-	walledPulseValue    = ((uint32_t)(walledUs * timerHz))    / 1000000;
-	calibrateWalledPulseValue    = ((uint32_t)(calibrateWalledUs * timerHz))    / 1000000;
-	mshotNormalPulseValue        = ((uint32_t)(28 * timerHz))     / 1000000;
-	mshotReversedPulseValue      = ((uint32_t)(30.5 * timerHz))   / 1000000;
+	boostedIdleUs = ((walledUs - disarmUs) * (mainConfig.mixerConfig.idlePercent * 0.02) ) + disarmUs;
 	
-	pulseValueRange  = walledPulseValue - idlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
+	disarmPulseValue3d         = ((uint32_t)(disarmUs3d * timerHz))        / 1000000;
+	disarmPulseValue           = ((uint32_t)(disarmUs * timerHz))          / 1000000;
+	calibratePulseValue        = ((uint32_t)(calibrateUs * timerHz))       / 1000000;
+	idlePulseValue             = ((uint32_t)(idleUs * timerHz))            / 1000000;
+	boostedIdlePulseValue      = ((uint32_t)(boostedIdleUs * timerHz))     / 1000000;
+	walledPulseValue           = ((uint32_t)(walledUs * timerHz))          / 1000000;
+	calibrateWalledPulseValue  = ((uint32_t)(calibrateWalledUs * timerHz)) / 1000000;
 
+	pulseValueRange         = walledPulseValue - idlePulseValue;        //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
+	boostedPulseValueRange  = walledPulseValue - boostedIdlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
+	
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
 	{
 		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
@@ -282,14 +285,6 @@ static uint32_t ThrottleToDDshot(float throttle, float idle)
 
 }
 
-void OutputMshotCommand(motor_type actuator, uint32_t msPulse)
-{
-	if(msPulse > 1)
-		*ccr[actuator.timCCR] = (uint16_t)(mshotNormalPulseValue);
-	else
-		*ccr[actuator.timCCR] = (uint16_t)(mshotReversedPulseValue);
-}
-
 void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 {
 	(void)servoOutput;
@@ -318,16 +313,33 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 			{
 				if ( mainConfig.mixerConfig.escProtocol == ESC_DDSHOT )
 				{
+					//if(boostIdle > 1.0f)
+					//	OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(motorOutput[motorNum], mainConfig.mixerConfig.idlePercent * boostIdle) );
+					//else
 					OutputDDShotDma(board.motors[outputNumber], mainConfig.mixerConfig.bitReverseEsc[motorNum], ThrottleToDDshot(motorOutput[motorNum], mainConfig.mixerConfig.idlePercent) );
+						
 				} 
 				else if ( IsDshotEnabled() )
 				{
+					//if(boostIdle > 1.0f)
+					//	ThrottleToDshot(serialOutBuffer, motorOutput[motorNum], mainConfig.mixerConfig.idlePercent * boostIdle, mainConfig.mixerConfig.bitReverseEsc[motorNum]);						
+					//else
 					ThrottleToDshot(serialOutBuffer, motorOutput[motorNum], mainConfig.mixerConfig.idlePercent, mainConfig.mixerConfig.bitReverseEsc[motorNum]);
+
 					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1);
 				}
 				else
 				{
-					*ccr[board.motors[outputNumber].timCCR] = (uint16_t)(motorOutput[motorNum] * (float)pulseValueRange) + idlePulseValue;
+					//if(boostIdle > 1.0f)
+					//{
+					//	//uint32_t differenceRange = boostedPulseValueRange - pulseValueRange;
+					//	uint32_t differenceIdle = boostedIdlePulseValue - idlePulseValue;
+					//	differenceIdle = (uint32_t)((float)differenceIdle * (boostIdle - 1.0f)) + idlePulseValue;
+					//	uint32_t differenceRange = pulseValueRange - differenceIdle;
+					//	*ccr[board.motors[outputNumber].timCCR] = (uint16_t)(motorOutput[motorNum] * (float)differenceRange) + differenceIdle;
+					//}
+					//else
+						*ccr[board.motors[outputNumber].timCCR] = (uint16_t)(motorOutput[motorNum] * (float)pulseValueRange) + idlePulseValue;
 				}
 			}
 		}

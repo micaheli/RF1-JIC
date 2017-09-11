@@ -1425,6 +1425,19 @@ Version 0.325.129 BETA:
 Version 0.326.130 BETA:
 	Filter testing
 
+Version 0.327.130 BETA:
+	Bounce guard
+
+Version 0.328.130 BETA:
+	Bounce guard V2
+
+Version 0.329.130 BETA:
+	Better Ki handling
+
+Version 0.330.130 BETA:
+	Flight log now works with dshot
+	Better Ki handling
+
 #Features in current development:
 #	MAVlink compatibility
 

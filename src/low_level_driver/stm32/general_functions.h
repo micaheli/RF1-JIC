@@ -51,11 +51,11 @@ extern void      BootToAddress(uint32_t address);
 #define RFPM					0x5246504D
 #define PL						0x504C
 
-#define RECOVERY_VERSION		18
-#define RFBL_VERSION			18
-#define CFG1_VERSION			18
-#define RCVR_TAG				"RCVRVERSION#00180018" //must be 20 bytes max
-#define RFBL_TAG				"RFBLVERSION#00180018" //must be 20 bytes max
+#define RECOVERY_VERSION		19
+#define RFBL_VERSION			19
+#define CFG1_VERSION			19
+#define RCVR_TAG				"RCVRVERSION#00190019" //must be 20 bytes max
+#define RFBL_TAG				"RFBLVERSION#00190019" //must be 20 bytes max
 
 enum {
 	APP_ADDRESS						= 0x08008000,

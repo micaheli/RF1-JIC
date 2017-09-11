@@ -2,15 +2,6 @@
 
 #include "includes.h"
 
-// value returned on WHO_AM_I register
-#define MPU6000_WHO_AM_I    0x68
-#define MPU6500_WHO_AM_I    0x70
-#define MPU6555_WHO_AM_I    0x7C
-#define MPU9250_WHO_AM_I    0x71
-#define ICM20689_WHO_AM_I   0x98
-#define ICM20608G_WHO_AM_I  0xAF
-#define ICM20602_WHO_AM_I   0x12
-
 // Product ID Description for MPU6000
 // Product Name Product Revision
 #define MPU6000ES_REV_C4    0x14
@@ -178,7 +169,7 @@ int AccGyroDeviceDetect(void)
             case MPU6555_WHO_AM_I:
 			case MPU9250_WHO_AM_I:
             case ICM20689_WHO_AM_I:
-            case ICM20608G_WHO_AM_I:
+            //case ICM20608G_WHO_AM_I:
 #if defined(RVTF7)
             	deviceWhoAmI = data;
                 return data;
@@ -196,6 +187,8 @@ int AccGyroDeviceDetect(void)
 				break;
 #endif
             case ICM20602_WHO_AM_I:
+            case ICM20601_WHO_AM_I:
+            case ICM20608G_WHO_AM_I:
 #if defined(REVOLT) || defined(REVOLTF7) || defined(MICROVOLT)
             	deviceWhoAmI = data;
                 return data;
@@ -264,14 +257,22 @@ void accgyroDeviceReadComplete(void)
 	gyroData[1] = (int32_t)(int16_t)((gyroRxFrame.gyroY_H << 8) | gyroRxFrame.gyroY_L);
 	gyroData[2] = (int32_t)(int16_t)((gyroRxFrame.gyroZ_H << 8) | gyroRxFrame.gyroZ_L);
 
-	InlineUpdateGyro( gyroData, 0.060975609756098f ); // 1/16.4 is 0.060975609756098
+    if (deviceWhoAmI == ICM20601_WHO_AM_I)
+        InlineUpdateGyro( gyroData, 0.1219512195121951f ); // 1/8.2 is 0.1219512195121951
+    else
+        InlineUpdateGyro( gyroData, 0.060975609756098f ); // 1/16.4 is 0.060975609756098
 
-	if (accelUpdate) {
+        //32,767
+    if (accelUpdate) {
 		accelData[0] = (int32_t)(int16_t)((gyroRxFrame.accelX_H << 8) | gyroRxFrame.accelX_L);
 		accelData[1] = (int32_t)(int16_t)((gyroRxFrame.accelY_H << 8) | gyroRxFrame.accelY_L);
 		accelData[2] = (int32_t)(int16_t)((gyroRxFrame.accelZ_H << 8) | gyroRxFrame.accelZ_L);
 
-		InlineUpdateAcc( accelData, 0.00048828125f); //  1/2048 is 0.00048828125f
+        if (deviceWhoAmI == ICM20601_WHO_AM_I)
+            InlineUpdateAcc( accelData, 0.0009765625f); //  1/1024 is 0.0009765625f
+        else
+            InlineUpdateAcc( accelData, 0.00048828125f); //  1/2048 is 0.00048828125f
+
 	}
 }
 

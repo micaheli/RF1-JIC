@@ -29,7 +29,7 @@
 "H Firmware date:Oct 31 2015 22:44:00\n" \
 "P interval:1/1\n" \
 "H rcRate:100\n" \
-"H minthrottle:1100\n" \
+"H minthrottle:1000\n" \
 "H maxthrottle:2000\n" \
 "H gyro.scale:0x41600000\n" \
 "H acc_1G:1\n\0"
@@ -64,6 +64,7 @@ uint32_t logItteration;
 int32_t  logItterationCounter;
 uint32_t logStartMillis;
 uint32_t flashCountdownFake;
+float currThrottleVelocity;
 
 pid_output lastFlightPids[AXIS_NUMBER];
 float      lastFlightSetPoints[AXIS_NUMBER];
@@ -143,6 +144,7 @@ const bb_ip_value bb_data[MAX_BB_VALUES] =
 		{ "motor[2],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currMotorOutput[2]},
 		{ "motor[3],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currMotorOutput[3]},
 
+		//{ "tVelocity,",     "1,", "0,", "0,", "1,", "0,", 100,   typeFLOAT, &currThrottleVelocity},
 		{ "voltageRaw,",    "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &adcVoltage},
 		{ "voltageAvg,",    "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &averageVoltage},
 		{ "current,",       "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &adcCurrent},
@@ -349,14 +351,24 @@ void WriteByteToFlash (uint8_t data)
 		}
 		flashInfo.buffer[flashInfo.bufferNum].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 
-		if (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS)
+		//if (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS)
+		//{
+		//	//only write and increment write address is flash chip s not busy to prevent blocks of FFFFFFF
+		//	//M25p16BlockingWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer);
+		//	M25p16DmaWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer); //write buffer to flash using DMA
+		//	flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
+		//}
+		//if flash not being written to we set the variables the scheduler uses to write to flash
+		if(flashTxBuffer == NULL)
 		{
-			//only write and increment write address is flash chip s not busy to prevent blocks of FFFFFFF
-			//M25p16BlockingWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer);
-			M25p16DmaWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer); //write buffer to flash using DMA
+			flashWriteAddress = flashInfo.currentWriteAddress;
+			flashTxBuffer     = (uint8_t *)buffer->txBuffer;
+			flashRxBuffer     = (uint8_t *)buffer->rxBuffer;
 			flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
 		}
-		if (flashInfo.currentWriteAddress >= flashInfo.totalSize)
+
+		//if (flashInfo.currentWriteAddress >= flashInfo.totalSize)
+		if (flashInfo.currentWriteAddress >= persistance.start1) //last two sectors are for persistance
 			flashInfo.enabled = FLASH_FULL; //check if flash is full. Disable flash if it is full
 
 	}
@@ -404,8 +416,8 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	volatile int toWrite;
 	int x;
 	
-	if (IsDshotEnabled())
-		return;
+	//if (IsDshotEnabled())
+	//	return;
 
 #ifndef LOG32
 
@@ -535,11 +547,24 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 					currFilteredAccData[finishX]  = ( (filteredAccData[finishX] + lastFilteredAccData[finishX]) * 0.5);
 				}
 
-				currMotorOutput[0] = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5) + 0.850f;
-				currMotorOutput[1] = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5) + 0.850f;
-				currMotorOutput[2] = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5) + 0.850f;
-				currMotorOutput[3] = ( (motorOutput[3] + lastMotorOutput[3]) * 0.5) + 0.850f;
+				currMotorOutput[0] = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5) + 1.000f;
+				currMotorOutput[1] = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5) + 1.000f;
+				currMotorOutput[2] = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5) + 1.000f;
+				currMotorOutput[3] = ( (motorOutput[3] + lastMotorOutput[3]) * 0.5) + 1.000f;
 
+				if(currMotorOutput[0] > 1.95f)
+					currMotorOutput[0] = 2.0f;
+				
+				if(currMotorOutput[1] > 1.95f)
+					currMotorOutput[1] = 2.0f;
+				
+				if(currMotorOutput[2] > 1.95f)
+					currMotorOutput[2] = 2.0f;
+				
+				if(currMotorOutput[3] > 1.95f)
+					currMotorOutput[3] = 2.0f;
+
+				currThrottleVelocity = throttleVelocity;
 				//copy current value to last values.
 				memcpy(lastFlightPids, flightPids, sizeof(pid_output));
 				memcpy(lastFlightSetPoints, flightSetPoints, sizeof(lastFlightSetPoints));
@@ -565,7 +590,9 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 
 				if (recordJunkData)
 				{
-					toWrite = 7;
+					toWrite = 9;
+					BlackboxWriteSignedVB( (int)999 );
+					BlackboxWriteSignedVB( (int)999 );
 					BlackboxWriteSignedVB( (int)999 );
 					BlackboxWriteSignedVB( (int)rx_timeout );
 					BlackboxWriteSignedVB( (int)deviceWhoAmI );
@@ -609,8 +636,8 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				(void)(currDpsGyroArray);
 #else
 				(void)(recordJunkData);
-				BlackboxWriteSignedVB( (int32_t)((float)(filteredGyroData[YAW])   * 16.4) );
-				BlackboxWriteSignedVB( (int32_t)((float)(dpsGyroArray[YAW])       * 16.4) );
+				//BlackboxWriteSignedVB( (int32_t)((float)(filteredGyroData[YAW])   * 16.4) );
+				//BlackboxWriteSignedVB( (int32_t)((float)(dpsGyroArray[YAW])       * 16.4) );
 #endif
 
 			}

@@ -149,7 +149,7 @@ const config_variables_rec valueTable[] = {
 
 		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,					0, MIXER_END, MIXER_X1234, "" },
 
-		{ "famx", 				typeFLOAT, "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0.9, 1.1, 1, "" },
+		{ "famx", 				typeUINT,  "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0, 1, 1, "" },
 		{ "mixer_style", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerStyle,					0, 1, 0, "" },
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtocol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "bit_reverse_esc_1",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[0],			0, 1, -1, "" },
@@ -2143,7 +2143,7 @@ void ProcessCommand(char *inString)
 						RfCustomReplyBuffer(rf_custom_out_buffer);
 					}
 				} else {
-					if (MassEraseDataFlashByPage(1))
+					if (MassEraseDataFlashByPage(1, 0))
 					{
 						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Flash Erase Complete\n");
 						RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -2160,6 +2160,24 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("dlflstatusdump", inString))
 		{
 			DlflStatusDump();
+		}
+	else if (!strcmp("purse", inString))
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me purse v, g, i: %i, %i, %i\n",persistance.data.version,persistance.data.generation,persistance.data.itteration);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me trim 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.motorTrim[0] * 100), (int)(persistance.data.motorTrim[1] * 100), (int)(persistance.data.motorTrim[2] * 100), (int)(persistance.data.motorTrim[3] * 100));
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me y 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.yawKiTrim[0] * 1000000), (int)(persistance.data.yawKiTrim[1] * 1000000), (int)(persistance.data.yawKiTrim[2] * 1000000), (int)(persistance.data.yawKiTrim[3] * 1000000));
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("killsave", inString))
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me purse v, g, i: %i, %i, %i\n",persistance.data.version,persistance.data.generation,persistance.data.itteration);
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me trim 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.motorTrim[0] * 100), (int)(persistance.data.motorTrim[1] * 100), (int)(persistance.data.motorTrim[2] * 100), (int)(persistance.data.motorTrim[3] * 100));
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me y 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.yawKiTrim[0] * 1000000), (int)(persistance.data.yawKiTrim[1] * 1000000), (int)(persistance.data.yawKiTrim[2] * 1000000), (int)(persistance.data.yawKiTrim[3] * 1000000));
+			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("quadwall", inString))
 		{

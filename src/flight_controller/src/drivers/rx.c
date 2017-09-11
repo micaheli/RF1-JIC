@@ -1,5 +1,6 @@
 #include "includes.h"
 
+volatile float throttleVelocity        = 0.0f;
 volatile float smoothCurvedThrottle0_1 = 0.0f;
 volatile float trueCurvedThrottle0_1   = 0.0f;
 float trueRcCommandF[MAXCHANNELS];     //4 sticks. range is -1 to 1, directly related to stick position
@@ -900,6 +901,8 @@ void InitRcData(void)
 
 	bzero(rxCalibrationRecords, sizeof(rxCalibrationRecords));
 
+	throttleVelocity = 0.0f;
+
 	//precalculate max angles for RC Curves for the three stick axis
 	for (axis = 3; axis >= 0; axis--)
 	{
@@ -1031,7 +1034,7 @@ inline void InlineCollectRcCommand (void)
 		}
 
 	}
-
+	
 }
 
 static float GetKissMaxRates(float rcCommand, uint32_t axis)
@@ -1202,6 +1205,21 @@ static float GetFlopMaxRates(float rcCommand, uint32_t axis)
 	}
 }
 
+//runs every 10 ms
+int CalculateThrottleVelocity(void)
+{
+	static volatile uint32_t throttleBufferIdx = 0;
+	static volatile float throttleBuffer[10] = {0.0f,};
+
+	throttleBuffer[throttleBufferIdx++] = smoothCurvedThrottle0_1;
+
+	if(throttleBufferIdx == 10)
+		throttleBufferIdx = 0;
+
+	throttleVelocity = ABS(smoothCurvedThrottle0_1 - throttleBuffer[throttleBufferIdx]);
+
+	return(0);
+}
 
 inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF[])
 {
@@ -1219,6 +1237,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 			smoothedRcCommandF[channel] = curvedRcCommandF[channel];
 		}
 		smoothCurvedThrottle0_1 = trueCurvedThrottle0_1;
+		//calculate Throttle veoclity
 		ImuUpdateCommandQuat(curvedRcCommandF[ROLL], curvedRcCommandF[PITCH], curvedRcCommandF[YAW], (float)packetTimeInv * 0.5f );
 		return;
 	}

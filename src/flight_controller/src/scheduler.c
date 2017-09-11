@@ -30,6 +30,7 @@ uint32_t lastBitFound             = 0;
 static void TaskProcessSoftSerial(void);
 static void TaskTelemtry(void);
 static void TaskQuopa(void);
+static void TaskPersistanceAndFlash(void);
 static void TaskWizard(void);
 static void TaskHandlePcComm(void);
 static void TaskLed(void);
@@ -184,9 +185,74 @@ void Scheduler(int32_t count)
 		case 12:
 			TaskQuopa();
 			break;
+		case 13:
+			TaskPersistanceAndFlash();
+			break;
+		case 14:
+			break;
+		case 15:
+			break;
+		case 16:
+			break;
 		default:
 			break;
 
+	}
+
+}
+
+static void TaskPersistanceAndFlash(void)
+{
+	static uint32_t lastCheck = 0;
+	static uint32_t lastPersistance = 0;
+	
+	//SavePersistance
+	//check every 2 ms for flash write to finish
+	if ( (flashWriteInProgress) && (InlineMillis() - lastCheck > 1) )
+	{
+		lastCheck = InlineMillis();
+		if(CheckIfFlashBusy())
+		{
+			flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
+			flashWriteInProgress = 1;
+			return;
+		}
+		else
+		{
+			//save persistance if it's enabled, due and flash  is imediately availible, board is armed when this happens
+			if ( LoggingEnabled && (persistance.enabled) && (InlineMillis() - lastPersistance > 2000) )
+			{
+				lastPersistance = InlineMillis();
+				SavePersistance();
+				flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
+				flashWriteInProgress = 1;
+			}
+			else
+			{
+				flashInfo.status = DMA_READ_COMPLETE;
+				flashWriteInProgress = 0;
+				flashTxBuffer = NULL;
+				flashRxBuffer = NULL;
+			}
+		}
+	} //make sure persistance still saves when logging is diesabled, but only if board is armed
+	else if ( boardArmed && (armedTime > 2000) && !LoggingEnabled && (persistance.enabled) && (InlineMillis() - lastPersistance > 2000) )
+	{
+		lastPersistance = InlineMillis();
+		SavePersistance();
+		flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
+		flashWriteInProgress = 1;
+	}
+
+	//nothing to write
+	if(flashTxBuffer == NULL)
+	{
+		return;
+	}
+	else if(!flashWriteInProgress)
+	{
+		flashWriteInProgress = 1;
+		M25p16BlockingWritePage(flashWriteAddress, flashTxBuffer);
 	}
 
 }
@@ -216,11 +282,7 @@ static void TaskeSafeLoopCounter(void)
 		//one second since last check has happened
 		if (currTimeMs - lastTimeMs >= 1000)
 		{
-			if(safeLoopCounter > 32000)
-			{
-				//CPU load is okay
-			}
-			else
+			if(safeLoopCounter < 32000)
 			{
 				//CPU load is too high
 				failiureLatch = 1;

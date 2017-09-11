@@ -8,6 +8,8 @@ biquad_state lpfFilterStateKd[AXIS_NUMBER];
 biquad_state lpfFilterStateAcc[AXIS_NUMBER];
 biquad_state hpfFilterStateAcc[6];
 
+int motorTrimCounter;
+int kiTrimCounter;
 float gyroFiltUsed[AXIS_NUMBER];
 float accNoise[6];
 float averagedGyroData[AXIS_NUMBER][GYRO_AVERAGE_MAX_SUM];
@@ -30,8 +32,8 @@ float slpUsed;
 float sliUsed;
 float sldUsed;
 int   usedSkunk;
-uint32_t armedTime;
-uint32_t armedTimeSincePower = 0;
+volatile uint32_t armedTime;
+volatile uint32_t armedTimeSincePower = 0;
 
 uint32_t khzLoopCounter                 = 0;
 uint32_t gyroLoopCounter                = 0;
@@ -62,6 +64,7 @@ void  InlineInitSpectrumNoiseFilter(void);
 void  InlineInitAccFilters(void);
 float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, float rates, float acroPlus, uint32_t axis);
 float AverageGyroADCbuffer(uint32_t axis, volatile float currentData);
+static int TrimMotors(void);
 
 void ArmBoard(void)
 {
@@ -251,6 +254,9 @@ void InitFlightCode(void)
 
 	uint32_t loopUsed = mainConfig.gyroConfig.loopCtrl;
 	uint32_t validLoopConfig = 0;
+
+	motorTrimCounter = 0;
+	kiTrimCounter = 0;
 
 	SKIP_GYRO = 0;
 	armedTime = 0;
@@ -663,6 +669,116 @@ void InlineUpdateAttitude(float geeForceAccArray[])
 
 }
 
+static int TrimMotors(void)
+{
+	if(!mainConfig.mixerConfig.foreAftMixerFixer)
+		return(0);
+
+	if(!boardArmed)
+		return(0);
+
+	if(
+		(smoothedRcCommandF[PITCH] == 0.0f) &&
+		(smoothedRcCommandF[ROLL] == 0.0f) &&
+		(smoothedRcCommandF[YAW] == 0.0f)
+	)
+	{
+		//need at least 20ms to trim motors, so 19+ will work
+		kiTrimCounter++;
+	}
+	else
+	{
+		kiTrimCounter = 0;
+	}
+
+	uint32_t position = (uint32_t)(smoothCurvedThrottle0_1*10);
+
+	if (kiTrimCounter >= 19)
+	{
+		//5% trim rate
+		persistance.data.yawKiTrim[position] = (persistance.data.yawKiTrim[position] * 0.95f) + ((persistance.data.yawKiTrim[position]+flightPids[YAW].ki) * 0.05f);
+		persistance.data.rollKiTrim[position] = (persistance.data.rollKiTrim[position] * 0.95f) + ((persistance.data.rollKiTrim[position]+flightPids[ROLL].ki) * 0.05f);
+		persistance.data.pitchKiTrim[position] = (persistance.data.pitchKiTrim[position] * 0.95f) + ((persistance.data.pitchKiTrim[position]+flightPids[PITCH].ki) * 0.05f);
+	}
+
+	float remainder = (float)(smoothCurvedThrottle0_1*10.0f) - position;
+
+	if(position >= 10)
+	{
+		kiTrim[YAW]   = persistance.data.yawKiTrim[10];
+		kiTrim[ROLL]  = persistance.data.rollKiTrim[10];
+		kiTrim[PITCH] = persistance.data.pitchKiTrim[10];
+	}
+	else
+	{
+		kiTrim[YAW]   = persistance.data.yawKiTrim[position]   * (1-remainder) + (persistance.data.yawKiTrim[position+1] * remainder);
+		kiTrim[ROLL]  = persistance.data.rollKiTrim[position]  * (1-remainder) + (persistance.data.yawKiTrim[position+1] * remainder);
+		kiTrim[PITCH] = persistance.data.pitchKiTrim[position] * (1-remainder) + (persistance.data.yawKiTrim[position+1] * remainder);
+	}
+	/*
+	float attenuationValue = (smoothCurvedThrottle0_1 * (10)); 
+	float remainder = (float)((float)attenuationValue - (int)attenuationValue); 
+	uint32_t position = (int)attenuationValue; 
+
+	if (position >= 10) 
+	{
+		kiTrim[YAW]   = persistance.data.yawKiTrim[10];
+		kiTrim[ROLL]  = persistance.data.rollKiTrim[10];
+		kiTrim[PITCH] = persistance.data.pitchKiTrim[10];
+	}
+	else
+	{
+		kiTrim[YAW]   = persistance.data.yawKiTrim[position] + ((persistance.data.yawKiTrim[position+1] -  persistance.data.yawKiTrim[position]) * remainder);
+		kiTrim[ROLL]  = persistance.data.rollKiTrim[position] + ((persistance.data.rollKiTrim[position+1] -  persistance.data.rollKiTrim[position]) * remainder);
+		kiTrim[PITCH] = persistance.data.pitchKiTrim[position] + ((persistance.data.pitchKiTrim[position+1] -  persistance.data.pitchKiTrim[position]) * remainder);
+	}
+	*/
+	kiTrim[YAW]   = 0.0f;
+	kiTrim[ROLL]  = 0.0f;
+	kiTrim[PITCH] = 0.0f;
+	
+
+
+
+
+	//persistance.data.yawKiTrim
+	//throttle is 100% and constrols in deadband range
+	if(
+		(smoothCurvedThrottle0_1 > 0.99f) &&
+		(smoothedRcCommandF[PITCH] == 0.0f) &&
+		(smoothedRcCommandF[ROLL] == 0.0f) &&
+		(smoothedRcCommandF[YAW] == 0.0f)
+	)
+	{
+		//need at least 50ms to trim motors, so 49+ will work
+		motorTrimCounter++;
+	}
+	else
+	{
+		motorTrimCounter = 0;
+	}
+
+	if(motorTrimCounter>49)
+	{
+		float tallestMotor = 0.0f;
+		//gradually trim motors
+		//only check active motors
+		//activeMotorCounter in mixer.c
+		//for now quad only
+		for(int xxx = 0; xxx < 4; xxx++)
+		{
+			persistance.data.motorTrim[xxx] = CONSTRAIN( (persistance.data.motorTrim[xxx] * 0.95f) + (motorOutput[xxx] * 0.05f), 0.85f, 1.0f);
+			if(tallestMotor < persistance.data.motorTrim[xxx])
+				tallestMotor = persistance.data.motorTrim[xxx];
+		}
+
+		for(int xxx = 0; xxx < 4; xxx++)
+			persistance.data.motorTrim[xxx] += (1.0f - tallestMotor);
+	}
+
+	return(0);
+}
+
 void InlineFlightCode(float dpsGyroArray[])
 {
 
@@ -959,6 +1075,17 @@ void InlineFlightCode(float dpsGyroArray[])
 		if (khzLoopCounter-- == 0)
 		{
 
+			static int everyTenth = 0;
+			
+			everyTenth++;
+			if(everyTenth == 10)
+			{
+				CalculateThrottleVelocity();
+				everyTenth=0;
+			}
+
+			TrimMotors();
+
 			//runs at 1KHz or loopspeed, whatever is slower
 			khzLoopCounter=loopSpeed.khzDivider;
 
@@ -967,6 +1094,10 @@ void InlineFlightCode(float dpsGyroArray[])
 			{
 				armedTime++; //armed time in ms
 				armedTimeSincePower++;
+			}
+			else
+			{
+				armedTime = 0;
 			}
 
 			if( (quopaState == QUOPA_ACTIVE) && armedTime > QUOPA_FLIGHT_LIMIT )
@@ -1046,8 +1177,11 @@ float InlineGetSetPoint(float rcCommandF, uint32_t curveToUse, float rates, floa
 
 	}
 
-	returnValue = InlineConstrainf(returnValue,-1400,1400);
-
+	if (deviceWhoAmI == ICM20601_WHO_AM_I)
+		returnValue = InlineConstrainf(returnValue,-3600,3600);
+	else
+		returnValue = InlineConstrainf(returnValue,-1800,1800);
+	
 	return (returnValue);
 }
 
@@ -1128,6 +1262,13 @@ int InitFlight(void)
 
 	DeInitAllowedSoftOutputs();
 
+	if (board.flash[0].enabled)
+    {
+		//persistance data stored here
+    	InitFlashChip();
+    	InitFlightLogger();
+	}
+
     InitVbusSensing();
     InitRcData();
     InitMixer();          //init mixders
@@ -1147,7 +1288,7 @@ int InitFlight(void)
 	if (used1Wire == 0)
 	{
 #endif
-		if (!AccGyroInit(mainConfig.gyroConfig.loopCtrl))
+		if (AccGyroInit(mainConfig.gyroConfig.loopCtrl) < 1)
 		{
 			ErrorHandler(GYRO_INIT_FAILIURE);
 		}
@@ -1172,12 +1313,6 @@ int InitFlight(void)
 	else if( !IsUsbConnected() )
 	{
 		retValChk = InitWs2812();
-	}
-
-	if (board.flash[0].enabled && (mainConfig.rcControlsConfig.rxUsart != ENUM_USART4) )
-    {
-    	InitFlashChip();
-    	InitFlightLogger();
 	}
 
     //DeInitActuators();    //Deinit before Init is a shotgun startup

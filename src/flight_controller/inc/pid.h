@@ -80,6 +80,7 @@ typedef struct {
     float kiLimit;
 } pid_terms;
 
+extern volatile float kiTrim[AXIS_NUMBER];
 extern float pidSetpoint[AXIS_NUMBER];    //3 axis for pidc. range is in DPS.
 extern pid_output pids[AXIS_NUMBER];
 extern float currentKdFilterConfig[AXIS_NUMBER];

@@ -53,6 +53,7 @@ typedef struct
 	uint32_t activeFailsafe;
 } arming_structure;
 
+extern volatile float throttleVelocity;
 extern volatile uint32_t throttleIsSafe;
 extern volatile arming_structure armingStructure;
 
@@ -181,3 +182,5 @@ extern uint32_t ChannelMap(uint32_t inChannel);
 
 extern void PpmExtiCallback(uint32_t callbackNumber);
 extern void SetRxDefaults(uint32_t rxProtocol, uint32_t usart);
+
+extern int CalculateThrottleVelocity(void);

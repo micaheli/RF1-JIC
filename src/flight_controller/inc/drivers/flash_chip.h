@@ -1,5 +1,12 @@
 #pragma once
 
+enum 
+{
+	PERSISTANCE_FOUND_NONE = 0,
+	PERSISTANCE_FOUND_ONE  = 1,
+	PERSISTANCE_FOUND_TWO  = 2,
+};
+
 enum {
     PAGE_PROGRAM_IN_PROGRESS   = (1 << 0),
     MASS_ERASE_IN_PROGRESS     = (1 << 1),
@@ -30,6 +37,11 @@ enum {
 #define STAT_FLASH_ENABLED 1
 #define FLASH_FULL 2
 
+extern volatile uint32_t flashWriteAddress;
+extern uint8_t *flashTxBuffer;
+extern uint8_t *flashRxBuffer;
+extern volatile uint32_t flashWriteInProgress;
+
 typedef struct {
 	uint8_t rxBuffer[FLASH_CHIP_BUFFER_SIZE];
 	uint8_t txBuffer[FLASH_CHIP_BUFFER_SIZE];
@@ -37,12 +49,17 @@ typedef struct {
 	volatile uint32_t rxBufferPtr;
 } buffer_record;
 
-#define PERSISTANCE_VERSION 001
+#define PERSISTANCE_VERSION 002
 
 typedef struct
 {
 	uint8_t version;
-	uint8_t size;	
+	uint16_t generation;
+	uint8_t itteration;
+	volatile float motorTrim[8];
+	volatile float yawKiTrim[11];
+	volatile float rollKiTrim[11];
+	volatile float pitchKiTrim[11];
 	uint8_t crc;
 } persistance_data_record;
 
@@ -50,13 +67,13 @@ typedef struct
 {
 	uint8_t enabled;
 	uint8_t version;
-	uint8_t start1;
-	uint8_t start2;
-	uint8_t end;
+	uint32_t start1;
+	uint32_t start2;
+	uint32_t end;
+	uint32_t currentWriteAddress;
 	uint8_t generation;
 	uint8_t itteration;
 	persistance_data_record data;
-	uint8_t crc;
 } persistance_record;
 
 typedef struct {
@@ -79,6 +96,7 @@ typedef struct {
 extern persistance_record persistance;
 extern flash_info_record flashInfo;
 
+extern int  CheckIfFlashBusy(void);
 extern void FlashDeinit(void);
 extern void FlashDmaRxCallback(uint32_t callbackNumber);
 extern int  InitFlashChip(void);
@@ -87,9 +105,11 @@ extern int  FlashChipWriteData(uint8_t *data, uint8_t length);
 extern int  FlashChipReadData(uint32_t address, uint8_t *buffer, int length);
 extern void DataFlashProgramPage(uint32_t address, uint8_t *data, uint16_t length);
 extern void WriteEnableDataFlash(void);
-extern int  MassEraseDataFlashByPage(int blocking);
+extern int  MassEraseDataFlashByPage(int blocking, int all);
 extern int  MassEraseDataFlash(int blocking);
 extern void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 extern int  M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer);
 extern int  WriteEnableDataFlashDma(void);
 extern void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer);
+extern void M25p16BlockingWritePagePartial(uint32_t address, uint8_t *txBuffer, uint32_t size);
+extern int  SavePersistance(void);

@@ -534,7 +534,7 @@ int GetBoardHardwareDefs(void)
 	board.spis[ENUM_SPI1].TXDma 		                          = SPI1_TX_DMA_STREAM;
 	board.spis[ENUM_SPI1].RXDma 		                          = SPI1_RX_DMA_STREAM;
 
-	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].enabled            = 1;
+	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].enabled            = SPI1_DMA_ENABLED;
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaStream          = SPI1_TX_DMA_STREAM;
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaChannel         = SPI1_TX_DMA_CHANNEL;
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH;
@@ -549,7 +549,7 @@ int GetBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaHandle          = SPI1_TX_DMA_STREAM;
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].priority           = SPI1_RX_DMA_PRIORITY;
 
-	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].enabled            = 1;
+	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].enabled            = SPI1_DMA_ENABLED;
 	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaStream          = SPI1_RX_DMA_STREAM;
 	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaChannel         = SPI1_RX_DMA_CHANNEL;
 	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
@@ -594,7 +594,7 @@ int GetBoardHardwareDefs(void)
 	board.spis[ENUM_SPI2].TXDma 		                          = SPI2_TX_DMA_STREAM;
 	board.spis[ENUM_SPI2].RXDma 		                          = SPI2_RX_DMA_STREAM;
 
-	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].enabled            = 1;
+	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].enabled            = SPI2_DMA_ENABLED;
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaStream          = SPI2_TX_DMA_STREAM;   //diff between all SPIs
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaChannel         = SPI2_TX_DMA_CHANNEL;  //diff
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH; //same between all SPIs, diff between TX/RX
@@ -609,7 +609,7 @@ int GetBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].dmaHandle          = SPI2_TX_DMA_STREAM;   //diff
 	board.dmasSpi[board.spis[ENUM_SPI2].TXDma].priority           = SPI2_RX_DMA_PRIORITY;
 
-	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].enabled            = 1;
+	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].enabled            = SPI2_DMA_ENABLED;
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].dmaStream          = SPI2_RX_DMA_STREAM;
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].dmaChannel         = SPI2_RX_DMA_CHANNEL;
 	board.dmasSpi[board.spis[ENUM_SPI2].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;
@@ -657,7 +657,7 @@ int GetBoardHardwareDefs(void)
 	board.spis[ENUM_SPI3].TXDma 		                     	  = SPI3_TX_DMA_STREAM;
 	board.spis[ENUM_SPI3].RXDma 		                     	  = SPI3_RX_DMA_STREAM;
 
-	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].enabled            = 1;
+	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].enabled            = SPI3_DMA_ENABLED;
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaStream          = board.spis[ENUM_SPI3].TXDma;   //diff between all SPIs
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaChannel         = SPI3_TX_DMA_CHANNEL;  //diff
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH; //same between all SPIs, diff between TX/RX
@@ -672,7 +672,7 @@ int GetBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].dmaHandle          = board.spis[ENUM_SPI3].TXDma;   //diff
 	board.dmasSpi[board.spis[ENUM_SPI3].TXDma].priority           = SPI3_TX_DMA_PRIORITY;
 
-	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].enabled            = 1;
+	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].enabled            = SPI3_DMA_ENABLED;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaStream          = board.spis[ENUM_SPI3].RXDma;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaChannel         = SPI3_RX_DMA_CHANNEL;
 	board.dmasSpi[board.spis[ENUM_SPI3].RXDma].dmaDirection       = DMA_PERIPH_TO_MEMORY;

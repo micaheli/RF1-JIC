@@ -2,6 +2,16 @@
 
 #define GYRO_CALIBRATION_CYCLES 1000
 
+// value returned on WHO_AM_I register
+#define MPU6000_WHO_AM_I    0x68
+#define MPU6500_WHO_AM_I    0x70
+#define MPU6555_WHO_AM_I    0x7C
+#define MPU9250_WHO_AM_I    0x71
+#define ICM20689_WHO_AM_I   0x98
+#define ICM20608G_WHO_AM_I  0xAF
+#define ICM20602_WHO_AM_I   0x12
+#define ICM20601_WHO_AM_I   0xAC
+
 extern volatile uint32_t gyroCalibrationCycles;
 extern float geeForceAccArray[3];
 

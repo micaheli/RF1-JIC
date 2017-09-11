@@ -1,8 +1,5 @@
 #include "includes.h"
 
-//default is quad xl 1234
-//stinky yaw
-
 const actuator_mixer CONST_MIXER_X1234[MAX_MOTOR_NUMBER] =  {
 	//yaw, roll, pitch, throttle, aux1, aux2, aux3, aux4
 	{-1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f}, //motor 1
@@ -622,17 +619,20 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 				(
 					(pids[YAW].kp * throttleLookupKp[motorOutput0_1023] * 0.1f ) +
 					(pids[YAW].kd * throttleLookupKd[motorOutput0_1023] * 0.1f ) +
-					(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] * 0.1f )
+					(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] * 0.1f ) +
+					kiTrim[YAW]
 				) * motorMixerT[i].yaw +
 				(
 					(pids[ROLL].kp * throttleLookupKp[motorOutput0_1023] * 0.66f ) +
 					(pids[ROLL].kd * throttleLookupKd[motorOutput0_1023] * 0.66f ) +
-					(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] * 0.66f )
+					(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] * 0.66f ) +
+					kiTrim[ROLL]
 				) * motorMixerT[i].roll +
 				(
 					(pids[PITCH].kp * throttleLookupKp[motorOutput0_1023] * 0.66f ) +
 					(pids[PITCH].kd * throttleLookupKd[motorOutput0_1023] * 0.66f ) +
-					(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] * 0.66f )
+					(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] * 0.66f ) +
+					kiTrim[PITCH]
 				) * motorMixerT[i].pitch
 			);
 		}
@@ -642,17 +642,20 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 				(
 					(pids[YAW].kp * throttleLookupKp[motorOutput0_1023] ) +
 					(pids[YAW].kd * throttleLookupKd[motorOutput0_1023] ) +
-					(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] )
+					(pids[YAW].ki * throttleLookupKi[motorOutput0_1023] ) +
+					kiTrim[YAW]
 				) * motorMixer[i].yaw +
 				(
 					(pids[ROLL].kp * throttleLookupKp[motorOutput0_1023] ) +
 					(pids[ROLL].kd * throttleLookupKd[motorOutput0_1023] ) +
-					(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] )
+					(pids[ROLL].ki * throttleLookupKi[motorOutput0_1023] ) +
+					kiTrim[ROLL]
 				) * motorMixer[i].roll +
 				(
 					(pids[PITCH].kp * throttleLookupKp[motorOutput0_1023] ) +
 					(pids[PITCH].kd * throttleLookupKd[motorOutput0_1023] ) +
-					(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] )
+					(pids[PITCH].ki * throttleLookupKi[motorOutput0_1023] ) +
+					kiTrim[PITCH]
 				) * motorMixer[i].pitch
 			);
 		}
@@ -680,7 +683,8 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 
 	for(i=7; i>=0; i--)
 	{
-		motorOutput[i] = ForeAftMixerFixer( motorOutput[i], throttle, i);
+		//motorOutput[i] = ForeAftMixerFixer( motorOutput[i], throttle, i);
+		motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f) * persistance.data.motorTrim[i];
 	}
 
 	return(actuatorRange);
@@ -740,7 +744,7 @@ inline float InlineApplyMotorMixer1(pid_output pids[], float throttleIn)
  	}
  	for(i=7; i>=0; i--)
  	{
- 		motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f);
+ 		motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f) * persistance.data.motorTrim[i];
  	}
  	return(actuatorRange);
  }
