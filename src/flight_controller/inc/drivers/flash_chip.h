@@ -113,3 +113,4 @@ extern int  WriteEnableDataFlashDma(void);
 extern void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer);
 extern void M25p16BlockingWritePagePartial(uint32_t address, uint8_t *txBuffer, uint32_t size);
 extern int  SavePersistance(void);
+extern int  ResetPersistance(int preserveGeneration);

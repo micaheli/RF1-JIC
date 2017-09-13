@@ -2304,8 +2304,10 @@ int InitMaxOsd(void)
     int x; //set
     uint8_t spiReturnData; //set
 
+    if(mainConfig.telemConfig.telemRfOsd != TELEM_INTERNAL_OSD)
+        return(0);
     //disabled for now
-    return(0);
+    //
     //reset structure
     maxOsdRecord.status           = OSD_STATUS_UNKNOWN;
     maxOsdRecord.type             = OSD_TYPE_UNKNOWN;
@@ -2322,7 +2324,43 @@ int InitMaxOsd(void)
         maxOsdRecord.shadowBuffer[x] = OSD_EMPTY_CHAR_SHADOW_START;
     }
 
-	if (board.maxOsd[0].enabled)
+	if (board.maxOsd[0].enabled == 2)
+    {
+
+        GPIO_InitTypeDef GPIO_InitStruct;
+        GPIO_InitStruct.Pin   = board.maxOsd[0].csPin;
+        GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+        GPIO_InitStruct.Pull  = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        HAL_GPIO_Init(ports[board.maxOsd[0].csPort], &GPIO_InitStruct);
+
+        inlineDigitalHi(ports[board.maxOsd[0].csPort], board.maxOsd[0].csPin);
+        //always send soft reset at init
+        maxOsdRecord.status = OSD_STATUS_SPI_RESETTING;
+        spiReturnData = MaxSendReceiveCommand(MAX7456ADD_VM0, MAX7456_RESET, 1, 1);
+        if (!spiReturnData)
+        {
+            maxOsdRecord.status = OSD_STATUS_DISABLED;
+            maxOsdRecord.type   = OSD_TYPE_SPI;
+            //should return 0
+            DelayMs(80);
+            if (!mainConfig.gyroConfig.boardCalibrated)
+            {
+                maxOsdRecord.status = OSD_STATUS_LOADING_CHAR_MAP;
+                UpdateCharMap();
+                maxOsdRecord.status = OSD_STATUS_DISABLED;
+                //board not calibrated so we force flash the MAX chip's char map
+            }
+
+            CheckForVideoSignal();
+
+        }
+        else
+        {
+            maxOsdRecord.status = OSD_STATUS_UNKNOWN;
+        }
+    }
+    else if (board.maxOsd[0].enabled == 1)
     {
 
         //TODO: Check for DMA conflicts

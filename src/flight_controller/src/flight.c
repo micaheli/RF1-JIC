@@ -36,6 +36,7 @@ volatile uint32_t armedTime;
 volatile uint32_t armedTimeSincePower = 0;
 
 uint32_t khzLoopCounter                 = 0;
+uint32_t khzLoopCounterPhase            = 0;
 uint32_t gyroLoopCounter                = 0;
 volatile uint32_t SKIP_GYRO             = 0;
 volatile float yawAttitudeError         = 0.0f;
@@ -65,6 +66,7 @@ void  InlineInitAccFilters(void);
 float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, float rates, float acroPlus, uint32_t axis);
 float AverageGyroADCbuffer(uint32_t axis, volatile float currentData);
 static int TrimMotors(void);
+static int TrimKi(void);
 
 void ArmBoard(void)
 {
@@ -669,7 +671,7 @@ void InlineUpdateAttitude(float geeForceAccArray[])
 
 }
 
-static int TrimMotors(void)
+static int TrimKi(void)
 {
 	if(!mainConfig.mixerConfig.foreAftMixerFixer)
 		return(0);
@@ -681,6 +683,9 @@ static int TrimMotors(void)
 		(smoothedRcCommandF[PITCH] == 0.0f) &&
 		(smoothedRcCommandF[ROLL] == 0.0f) &&
 		(smoothedRcCommandF[YAW] == 0.0f)
+		//(ABS(flightSetPoints[PITCH] - filteredGyroData[PITCH]) < 50) &&
+		//(ABS(flightSetPoints[ROLL] - filteredGyroData[ROLL]) < 50) &&
+		//(ABS(flightSetPoints[YAW] - filteredGyroData[YAW]) < 50)
 	)
 	{
 		//need at least 20ms to trim motors, so 19+ will work
@@ -693,12 +698,12 @@ static int TrimMotors(void)
 
 	uint32_t position = (uint32_t)(smoothCurvedThrottle0_1*10);
 
-	if (kiTrimCounter >= 19)
+	if (kiTrimCounter >= 100)
 	{
 		//5% trim rate
-		persistance.data.yawKiTrim[position] = (persistance.data.yawKiTrim[position] * 0.95f) + ((persistance.data.yawKiTrim[position]+flightPids[YAW].ki) * 0.05f);
-		persistance.data.rollKiTrim[position] = (persistance.data.rollKiTrim[position] * 0.95f) + ((persistance.data.rollKiTrim[position]+flightPids[ROLL].ki) * 0.05f);
-		persistance.data.pitchKiTrim[position] = (persistance.data.pitchKiTrim[position] * 0.95f) + ((persistance.data.pitchKiTrim[position]+flightPids[PITCH].ki) * 0.05f);
+		persistance.data.yawKiTrim[position] = (persistance.data.yawKiTrim[position] * 0.80f) + ((flightPids[YAW].ki) * 0.20f);
+		persistance.data.rollKiTrim[position] = (persistance.data.rollKiTrim[position] * 0.80f) + ((flightPids[ROLL].ki) * 0.20f);
+		persistance.data.pitchKiTrim[position] = (persistance.data.pitchKiTrim[position] * 0.80f) + ((flightPids[PITCH].ki) * 0.20f);
 	}
 
 	float remainder = (float)(smoothCurvedThrottle0_1*10.0f) - position;
@@ -711,9 +716,9 @@ static int TrimMotors(void)
 	}
 	else
 	{
-		kiTrim[YAW]   = persistance.data.yawKiTrim[position]   * (1-remainder) + (persistance.data.yawKiTrim[position+1] * remainder);
-		kiTrim[ROLL]  = persistance.data.rollKiTrim[position]  * (1-remainder) + (persistance.data.yawKiTrim[position+1] * remainder);
-		kiTrim[PITCH] = persistance.data.pitchKiTrim[position] * (1-remainder) + (persistance.data.yawKiTrim[position+1] * remainder);
+		kiTrim[YAW]   = persistance.data.yawKiTrim[position]   * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
+		kiTrim[ROLL]  = persistance.data.rollKiTrim[position]  * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
+		kiTrim[PITCH] = persistance.data.pitchKiTrim[position] * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
 	}
 	/*
 	float attenuationValue = (smoothCurvedThrottle0_1 * (10)); 
@@ -733,15 +738,20 @@ static int TrimMotors(void)
 		kiTrim[PITCH] = persistance.data.pitchKiTrim[position] + ((persistance.data.pitchKiTrim[position+1] -  persistance.data.pitchKiTrim[position]) * remainder);
 	}
 	*/
-	kiTrim[YAW]   = 0.0f;
-	kiTrim[ROLL]  = 0.0f;
-	kiTrim[PITCH] = 0.0f;
-	
+	//kiTrim[YAW]   = 0.0f;
+	//kiTrim[ROLL]  = 0.0f;
+	//kiTrim[PITCH] = 0.0f;
+	return(1);
+}
 
+static int TrimMotors(void)
+{
+	if(!mainConfig.mixerConfig.foreAftMixerFixer)
+		return(0);
 
+	if(!boardArmed)
+		return(0);
 
-
-	//persistance.data.yawKiTrim
 	//throttle is 100% and constrols in deadband range
 	if(
 		(smoothCurvedThrottle0_1 > 0.99f) &&
@@ -767,7 +777,7 @@ static int TrimMotors(void)
 		//for now quad only
 		for(int xxx = 0; xxx < 4; xxx++)
 		{
-			persistance.data.motorTrim[xxx] = CONSTRAIN( (persistance.data.motorTrim[xxx] * 0.95f) + (motorOutput[xxx] * 0.05f), 0.85f, 1.0f);
+			persistance.data.motorTrim[xxx] = CONSTRAIN( (persistance.data.motorTrim[xxx] * 0.99f) + (motorOutput[xxx] * 0.01f), 0.85f, 1.0f);
 			if(tallestMotor < persistance.data.motorTrim[xxx])
 				tallestMotor = persistance.data.motorTrim[xxx];
 		}
@@ -1072,20 +1082,60 @@ void InlineFlightCode(float dpsGyroArray[])
 		UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
 #endif
 
+		//phase khz stuff
+		if (khzLoopCounterPhase == 7)
+		{
+			khzLoopCounterPhase = 0;
+			#ifndef LOG32
+				//update blackbox here
+				UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
+			#endif
+		}
+
+		if (khzLoopCounterPhase == 6)
+		{
+			khzLoopCounterPhase = 7;
+			//do nothing phase
+		}
+
+		if (khzLoopCounterPhase == 4)
+		{
+			khzLoopCounterPhase = 5;
+			TrimKi();			
+		}
+
+		if (khzLoopCounterPhase == 3)
+		{
+			khzLoopCounterPhase = 4;
+			//do nothing phase
+		}
+
+		if (khzLoopCounterPhase == 2)
+		{
+			khzLoopCounterPhase = 3;
+			TrimMotors();			
+		}
+	
+		if (khzLoopCounterPhase == 1)
+		{
+			//do nothing phase
+			khzLoopCounterPhase = 2;
+		}
+
 		if (khzLoopCounter-- == 0)
 		{
 
 			static int everyTenth = 0;
 			
+			khzLoopCounterPhase = 1;
+
 			everyTenth++;
 			if(everyTenth == 10)
 			{
 				CalculateThrottleVelocity();
 				everyTenth=0;
 			}
-
-			TrimMotors();
-
+			
 			//runs at 1KHz or loopspeed, whatever is slower
 			khzLoopCounter=loopSpeed.khzDivider;
 
@@ -1104,10 +1154,6 @@ void InlineFlightCode(float dpsGyroArray[])
 			{
 				DisarmBoard();
 			}
-#ifndef LOG32
-			//update blackbox here
-			UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
-#endif
 
 			//check for fullKiLatched here
 			if ( (boardArmed) && (smoothCurvedThrottle0_1 > 0.15f) )
@@ -1243,6 +1289,7 @@ int InitFlight(void)
 	CheckRxToModes(); //check which modes are set whether or not they're enabled
 
 	usedSkunk = mainConfig.gyroConfig.skunk;
+	usedSkunk = 0; 
 	if (!FULL_32)
 	{
 		//16 KHz on F4s if quaternions are needed.

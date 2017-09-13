@@ -281,6 +281,7 @@ void SendCrsfTelem(void)
             if (board.serials[serialNumber].Protocol == USING_CRSF_TELEM)
             {
                 HAL_UART_Transmit_DMA(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)crsfOutBuffer, packetSize);
+                //HAL_UART_Transmit(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)crsfOutBuffer, packetSize, 10);
                 break;
             }
             else if (board.serials[serialNumber].Protocol == USING_CRSF_B)

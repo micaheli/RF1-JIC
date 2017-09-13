@@ -78,6 +78,7 @@ float      currFlightSetPoints[AXIS_NUMBER];
 float      currFilteredGyroData[AXIS_NUMBER];
 float      currDpsGyroArray[AXIS_NUMBER];
 float      currFilteredAccData[AXIS_NUMBER];
+float      currKiTrim[AXIS_NUMBER];
 float      currMotorOutput[4];
 float      currRcCommandF[4];
 float      currIteration;
@@ -149,6 +150,9 @@ const bb_ip_value bb_data[MAX_BB_VALUES] =
 		{ "voltageAvg,",    "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &averageVoltage},
 		{ "current,",       "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &adcCurrent},
 
+		//{ "axisT[YAW],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currKiTrim[YAW] },
+		//{ "axisT[ROLL],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currKiTrim[ROLL] },
+		//{ "axisT[PITCH],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currKiTrim[PITCH] },
 		//{ "filty,",    "1,", "0,", "0,", "1,", "0,", 1000000,  typeFLOAT, &pafGyroStates[YAW].k},
 		//{ "filtr,",    "1,", "0,", "0,", "1,", "0,", 1000000,  typeFLOAT, &pafGyroStates[ROLL].k},
 		//{ "filtp,",     "1,", "0,", "0,", "1,", "0,", 1000000,  typeFLOAT, &pafGyroStates[PITCH].k},
@@ -509,7 +513,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 			lastProgramTime = InlineMillis();
 
 			firstLogging = 0;
-			logItterationCounter = 1;
+			logItterationCounter = 2;
 
 		}
 		else
@@ -517,8 +521,11 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 
 			if(--logItterationCounter == 0)
 			{
-				logItterationCounter = 1;	//TODO make this configurable value. Capture rate = 1khz/value
-
+				if(usedSkunk == 2)
+					logItterationCounter = 3;	//TODO make this configurable value. Capture rate = 1khz/value
+				else
+					logItterationCounter = 3;	//TODO make this configurable value. Capture rate = 1khz/value
+				
 				//no logging until header is written
 				if(headerWritten < headerToWrite)
 				{
@@ -552,6 +559,10 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				currMotorOutput[2] = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5) + 1.000f;
 				currMotorOutput[3] = ( (motorOutput[3] + lastMotorOutput[3]) * 0.5) + 1.000f;
 
+				currKiTrim[0] = kiTrim[0];
+				currKiTrim[1] = kiTrim[1];
+				currKiTrim[2] = kiTrim[2];
+				
 				if(currMotorOutput[0] > 1.95f)
 					currMotorOutput[0] = 2.0f;
 				

@@ -1,6 +1,6 @@
 #include "includes.h"
 
-uint8_t  dmaRxBuffer = '\000';
+uint8_t  dmaRxBuffer[MAX_USARTS] = {0,};
 uint32_t dmaIndex[MAX_USARTS] = {0,0,0,0,0,0}; //todo: change assumption that we have 6 usarts
 uint32_t dmaTxCallbackToUsartHandle[IRQH_FP_TOT] =  { 0 };
 volatile int32_t processRxCodeNow = -1;
@@ -139,6 +139,17 @@ void UsartInit(uint32_t serialNumber)
 			rxPort = ports[board.serials[serialNumber].TXPort];
 			break;
 		case USING_CRSF_TELEM:
+			board.dmasSerial[board.serials[serialNumber].RXDma].enabled  = 0;
+			board.dmasSerial[board.serials[serialNumber].TXDma].enabled  = 1;
+			board.dmasSerial[board.serials[serialNumber].TXDma].dmaDirection       = DMA_MEMORY_TO_PERIPH;
+			board.dmasSerial[board.serials[serialNumber].TXDma].dmaPeriphInc       = DMA_PINC_DISABLE;
+			board.dmasSerial[board.serials[serialNumber].TXDma].dmaMemInc          = DMA_MINC_ENABLE;
+			board.dmasSerial[board.serials[serialNumber].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
+			board.dmasSerial[board.serials[serialNumber].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
+			board.dmasSerial[board.serials[serialNumber].TXDma].dmaMode            = DMA_NORMAL;
+			board.dmasSerial[board.serials[serialNumber].TXDma].dmaPriority        = DMA_PRIORITY_MEDIUM;
+			board.dmasSerial[board.serials[serialNumber].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
+			memcpy( &board.dmasActive[board.serials[serialNumber].TXDma], &board.dmasSerial[board.serials[serialNumber].TXDma], sizeof(board_dma) ); //TODO: Add dmasUsart
 			board.serials[serialNumber].FrameSize  = 26;  //variable
 			board.serials[serialNumber].BaudRate   = 420000;
 			board.serials[serialNumber].WordLength = UART_WORDLENGTH_8B;
@@ -147,9 +158,9 @@ void UsartInit(uint32_t serialNumber)
 			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
 			board.serials[serialNumber].Mode       = UART_MODE_TX;
 			txPin  = board.serials[serialNumber].TXPin;
-			rxPin  = board.serials[serialNumber].RXPin;
+			rxPin  = board.serials[serialNumber].TXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
-			rxPort = ports[board.serials[serialNumber].RXPort];
+			rxPort = ports[board.serials[serialNumber].TXPort];
 			break;
 		case USING_CRSF_B:
 			board.serials[serialNumber].FrameSize  = 26;  //variable
@@ -158,7 +169,7 @@ void UsartInit(uint32_t serialNumber)
 			board.serials[serialNumber].StopBits   = UART_STOPBITS_1;
 			board.serials[serialNumber].Parity     = UART_PARITY_NONE;
 			board.serials[serialNumber].HwFlowCtl  = UART_HWCONTROL_NONE;
-			board.serials[serialNumber].Mode       = UART_MODE_TX_RX;
+			board.serials[serialNumber].Mode       = UART_MODE_TX;
 			txPin  = board.serials[serialNumber].TXPin;
 			rxPin  = board.serials[serialNumber].RXPin;
 			txPort = ports[board.serials[serialNumber].TXPort];
@@ -291,7 +302,7 @@ void UsartInit(uint32_t serialNumber)
 		UsartDmaInit(serialNumber);
 		__HAL_UART_FLUSH_DRREGISTER(&uartHandles[board.serials[serialNumber].usartHandle]);
 		if (board.serials[serialNumber].Mode != UART_MODE_TX)
-			HAL_UART_Receive_DMA(&uartHandles[board.serials[serialNumber].usartHandle], &dmaRxBuffer, 1);
+			HAL_UART_Receive_DMA(&uartHandles[board.serials[serialNumber].usartHandle], &dmaRxBuffer[serialNumber], 1);
 	}
 
 }
@@ -722,7 +733,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			{
 				//Sumd packet 2 (third one) is number of channels.
 				//total frame length is header (3) + number of channels * 2 (variable) + crc length (2).
-				board.serials[serialNumber].FrameSize = CONSTRAIN( (5 + (dmaRxBuffer * 2) ), 9, 47); //sumd can be between 7 and 37 long
+				board.serials[serialNumber].FrameSize = CONSTRAIN( (5 + (dmaRxBuffer[serialNumber] * 2) ), 9, 47); //sumd can be between 7 and 37 long
 			}
 
 			if (timeSinceLastPacket[serialNumber] > 3)
@@ -737,7 +748,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			}
 
 
-			serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][dmaIndex[serialNumber]++] = dmaRxBuffer; // Add that character to the string
+			serialRxBuffer[board.serials[serialNumber].serialRxBuffer-1][dmaIndex[serialNumber]++] = dmaRxBuffer[serialNumber]; // Add that character to the string
 
 			if (dmaIndex[serialNumber] >= board.serials[serialNumber].FrameSize)
 			{

@@ -1433,10 +1433,29 @@ Version 0.328.130 BETA:
 
 Version 0.329.130 BETA:
 	Better Ki handling
+	Flight log now works with dshot
 
 Version 0.330.130 BETA:
-	Flight log now works with dshot
-	Better Ki handling
+	Self learning of wuad behavior
+
+Version 0.331.130 BETA:
+	Adjust logging method
+	Added purse command
+
+Version 0.332.130 BETA:
+	Adjust logging method
+	Adjust skunk
+	Fix format flash
+
+Version 0.333.130 BETA:
+	Added amnesia command to reset learned behaviors
+
+Version 0.334.130 BETA:
+	Adjust AI 
+
+Version 0.335.130 BETA:
+	Fix crsf telem not working when rx on tx1 and telem on tx3
+	Fixed log corruption issue
 
 #Features in current development:
 #	MAVlink compatibility

@@ -29,7 +29,8 @@ enum
 	TELEM_SS1W_USART4T = 24,
 	TELEM_SS1W_USART5T = 25,
 	TELEM_SS1W_USART6T = 26,
-	TELEM_NUM          = 27,
+	TELEM_INTERNAL_OSD = 27,
+	TELEM_NUM          = 28,
 };
 
 enum

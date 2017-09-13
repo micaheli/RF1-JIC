@@ -2165,18 +2165,33 @@ void ProcessCommand(char *inString)
 		{
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me purse v, g, i: %i, %i, %i\n",persistance.data.version,persistance.data.generation,persistance.data.itteration);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me trim 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.motorTrim[0] * 100), (int)(persistance.data.motorTrim[1] * 100), (int)(persistance.data.motorTrim[2] * 100), (int)(persistance.data.motorTrim[3] * 100));
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me t 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.motorTrim[0] * 100), (int)(persistance.data.motorTrim[1] * 100), (int)(persistance.data.motorTrim[2] * 100), (int)(persistance.data.motorTrim[3] * 100));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me y 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.yawKiTrim[0] * 1000000), (int)(persistance.data.yawKiTrim[1] * 1000000), (int)(persistance.data.yawKiTrim[2] * 1000000), (int)(persistance.data.yawKiTrim[3] * 1000000));
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me y 1, 2, 3, 4, 5: %i, %i, %i, %i, %i\n",(int)(persistance.data.yawKiTrim[0] * 1000000), (int)(persistance.data.yawKiTrim[1] * 1000000), (int)(persistance.data.yawKiTrim[2] * 1000000), (int)(persistance.data.yawKiTrim[3] * 1000000), (int)(persistance.data.yawKiTrim[5] * 1000000));
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me y 6, 7, 8, 9, 10: %i, %i, %i, %i, %i\n",(int)(persistance.data.yawKiTrim[5] * 1000000), (int)(persistance.data.yawKiTrim[6] * 1000000), (int)(persistance.data.yawKiTrim[7] * 1000000), (int)(persistance.data.yawKiTrim[8] * 1000000), (int)(persistance.data.yawKiTrim[9] * 1000000));
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me r 1, 2, 3, 4, 5: %i, %i, %i, %i, %i\n",(int)(persistance.data.rollKiTrim[0] * 1000000), (int)(persistance.data.rollKiTrim[1] * 1000000), (int)(persistance.data.rollKiTrim[2] * 1000000), (int)(persistance.data.rollKiTrim[3] * 1000000), (int)(persistance.data.rollKiTrim[5] * 1000000));
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me r 6, 7, 8, 9, 10: %i, %i, %i, %i, %i\n",(int)(persistance.data.rollKiTrim[5] * 1000000), (int)(persistance.data.rollKiTrim[6] * 1000000), (int)(persistance.data.rollKiTrim[7] * 1000000), (int)(persistance.data.rollKiTrim[8] * 1000000), (int)(persistance.data.rollKiTrim[9] * 1000000));
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me p 1, 2, 3, 4, 5: %i, %i, %i, %i, %i\n",(int)(persistance.data.pitchKiTrim[0] * 1000000), (int)(persistance.data.pitchKiTrim[1] * 1000000), (int)(persistance.data.pitchKiTrim[2] * 1000000), (int)(persistance.data.pitchKiTrim[3] * 1000000), (int)(persistance.data.pitchKiTrim[5] * 1000000));
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me p 6, 7, 8, 9, 10: %i, %i, %i, %i, %i\n",(int)(persistance.data.pitchKiTrim[5] * 1000000), (int)(persistance.data.pitchKiTrim[6] * 1000000), (int)(persistance.data.pitchKiTrim[7] * 1000000), (int)(persistance.data.pitchKiTrim[8] * 1000000), (int)(persistance.data.pitchKiTrim[9] * 1000000));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
-	else if (!strcmp("killsave", inString))
+	else if (!strcmp("iffy", inString))
 		{
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me purse v, g, i: %i, %i, %i\n",persistance.data.version,persistance.data.generation,persistance.data.itteration);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me apple 0, 1, 2: %i, %i, %i\n",(int)(kiTrim[0] * 1000),(int)(kiTrim[1] * 1000),(int)(kiTrim[2] * 1000));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me trim 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.motorTrim[0] * 100), (int)(persistance.data.motorTrim[1] * 100), (int)(persistance.data.motorTrim[2] * 100), (int)(persistance.data.motorTrim[3] * 100));
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me y 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.yawKiTrim[0] * 1000000), (int)(persistance.data.yawKiTrim[1] * 1000000), (int)(persistance.data.yawKiTrim[2] * 1000000), (int)(persistance.data.yawKiTrim[3] * 1000000));
+		}
+	else if (!strcmp("amnesia", inString))
+		{
+			ResetPersistance(1);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me and suddenly we were strangers again\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("quadwall", inString))

@@ -634,26 +634,7 @@ int InitFlashChip(void)
 		switch(persistanceResult)
 		{
 			case PERSISTANCE_FOUND_NONE:
-				EraseSingleSector(persistance.start1);
-				EraseSingleSector(persistance.start2);
-				persistance.enabled             = 1;
-				persistance.data.version        = persistance.version;
-				persistance.data.generation     = 0;
-				persistance.data.itteration     = 0;
-				persistance.data.motorTrim[0]   = 1.0f;
-				persistance.data.motorTrim[1]   = 1.0f;
-				persistance.data.motorTrim[2]   = 1.0f;
-				persistance.data.motorTrim[3]   = 1.0f;
-				persistance.data.motorTrim[4]   = 1.0f;
-				persistance.data.motorTrim[5]   = 1.0f;
-				persistance.data.motorTrim[6]   = 1.0f;
-				persistance.data.motorTrim[7]   = 1.0f;
-				bzero((uint8_t *)&persistance.data.yawKiTrim, sizeof(persistance.data.yawKiTrim));
-				bzero((uint8_t *)&persistance.data.rollKiTrim, sizeof(persistance.data.rollKiTrim));
-				bzero((uint8_t *)&persistance.data.pitchKiTrim, sizeof(persistance.data.pitchKiTrim));
-				persistance.currentWriteAddress = persistance.start1;
-				DelayMs(10); //give flash time to write page
-				SavePersistance();
+				ResetPersistance(0);
 				//erase both sectors, create persistance, set recording it to one, record onto one
 				break;
 			case PERSISTANCE_FOUND_ONE:
@@ -795,6 +776,32 @@ int WriteEnableDataFlashDma(void)
 
 }
 
+int ResetPersistance(int preserveGeneration)
+{
+	EraseSingleSector(persistance.start1);
+	EraseSingleSector(persistance.start2);
+	persistance.enabled             = 1;
+	persistance.data.version        = persistance.version;
+	if(!preserveGeneration)
+		persistance.data.generation = 0;
+	persistance.data.itteration     = 0;
+	persistance.data.motorTrim[0]   = 1.0f;
+	persistance.data.motorTrim[1]   = 1.0f;
+	persistance.data.motorTrim[2]   = 1.0f;
+	persistance.data.motorTrim[3]   = 1.0f;
+	persistance.data.motorTrim[4]   = 1.0f;
+	persistance.data.motorTrim[5]   = 1.0f;
+	persistance.data.motorTrim[6]   = 1.0f;
+	persistance.data.motorTrim[7]   = 1.0f;
+	bzero((uint8_t *)&persistance.data.yawKiTrim, sizeof(persistance.data.yawKiTrim));
+	bzero((uint8_t *)&persistance.data.rollKiTrim, sizeof(persistance.data.rollKiTrim));
+	bzero((uint8_t *)&persistance.data.pitchKiTrim, sizeof(persistance.data.pitchKiTrim));
+	persistance.currentWriteAddress = persistance.start1;
+	DelayMs(10); //give flash time to write page
+	SavePersistance();
+	return(0);
+}
+
 int MassEraseDataFlashByPage(int blocking, int all)
 {
 	uint8_t command[4];
@@ -807,7 +814,7 @@ int MassEraseDataFlashByPage(int blocking, int all)
 	flashInfo.currentWriteAddress = CONSTRAIN(flashInfo.currentWriteAddress, 1, persistance.start1 - flashInfo.pageSize);
 
 	if(all)
-		sectorsToErase = ceil((float)persistance.start1 - flashInfo.pageSize / ((float)flashInfo.pageSize * (float)flashInfo.pagesPerSector));
+		sectorsToErase = ceil((float)(persistance.start1 - flashInfo.pageSize) / ((float)flashInfo.pageSize * (float)flashInfo.pagesPerSector));
 	else
 		sectorsToErase = ceil((float)flashInfo.currentWriteAddress / ((float)flashInfo.pageSize * (float)flashInfo.pagesPerSector));
 

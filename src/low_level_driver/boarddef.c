@@ -489,9 +489,10 @@ int GetBoardHardwareDefs(void)
 	callbackFunctionArray[FLASH_RX_DMA_FP] = FlashDmaRxCallback;
 
 	//Max OSD connection settings	------------------------------------------------------------------------------------------------------------------------------------------------------------
-	if (MAX_OSD_ENABLED)
+	board.maxOsd[0].enabled     = MAX_OSD_ENABLED;
+	if (board.maxOsd[0].enabled == 1)
 	{
-		board.maxOsd[0].enabled     = MAX_OSD_ENABLED;
+		//1 is lone spi, 2 is shared spi
 		board.maxOsd[0].spiNumber   = MAX_OSD_SPI_NUMBER;
 		board.maxOsd[0].csPin       = MAX_OSD_SPI_CS_GPIO_Pin;
 		board.maxOsd[0].csPort      = MAX_OSD_SPI_CS_GPIO_Port;

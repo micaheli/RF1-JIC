@@ -232,7 +232,7 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 				}
 
 				//disable for now
-				if (ABS(flightSetPoints[axis]) > 50)
+				if (ABS(flightSetPoints[axis]) > 3500)
 				{
 					if (axis == YAW)
 						shortKi[axis] = InlineConstrainf(shortKi[axis] + pidsUsed[axis].ki * pidError * ag1, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f); //prevent insane windup
