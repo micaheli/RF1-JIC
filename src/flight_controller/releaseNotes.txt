@@ -1457,6 +1457,13 @@ Version 0.335.130 BETA:
 	Fix crsf telem not working when rx on tx1 and telem on tx3
 	Fixed log corruption issue
 
+Version 0.336.130 BETA:
+	Slow down learning a bit
+
+Version 0.337.131 BETA:
+	Add learning mode
+	Fix flash not logging
+
 #Features in current development:
 #	MAVlink compatibility
 

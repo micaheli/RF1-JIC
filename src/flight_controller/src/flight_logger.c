@@ -431,8 +431,8 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	(void)(filteredAccData);
 #endif
 
-	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (ModeActive(M_LOGGING)) && (flashInfo.enabled == STAT_FLASH_ENABLED) )
-	//if ( 1 )
+	//if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (ModeActive(M_LOGGING)) && (flashInfo.enabled == STAT_FLASH_ENABLED) )
+	if ( 1 )
 	{
 		ledStatus.status    = LEDS_FASTER_BLINK;
 		LoggingEnabled      = 1;
@@ -513,7 +513,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 			lastProgramTime = InlineMillis();
 
 			firstLogging = 0;
-			logItterationCounter = 2;
+			logItterationCounter = 1;
 
 		}
 		else

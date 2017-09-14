@@ -20,7 +20,8 @@ string_modes_rec stringModes[] =
 	{"PROFILE2",    11, M_PROFILE2 },
 	{"PROFILE3",    12, M_PROFILE3 },
 	{"QUOPA",       13, M_QUOPA },
-//		{"CATMODE",    11,  M_CATMODE },
+	{"LEARN",       14, M_LEARN },
+	//		{"CATMODE",    11,  M_CATMODE },
 };
 
 

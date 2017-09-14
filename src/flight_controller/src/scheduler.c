@@ -220,7 +220,7 @@ static void TaskPersistanceAndFlash(void)
 		else
 		{
 			//save persistance if it's enabled, due and flash  is imediately availible, board is armed when this happens
-			if ( LoggingEnabled && (persistance.enabled) && (InlineMillis() - lastPersistance > 2000) )
+			if ( LoggingEnabled && (persistance.enabled) && (InlineMillis() - lastPersistance > 3000) )
 			{
 				lastPersistance = InlineMillis();
 				SavePersistance();
@@ -236,12 +236,12 @@ static void TaskPersistanceAndFlash(void)
 			}
 		}
 	} //make sure persistance still saves when logging is diesabled, but only if board is armed
-	else if ( boardArmed && (armedTime > 2000) && !LoggingEnabled && (persistance.enabled) && (InlineMillis() - lastPersistance > 2000) )
+	else if ( boardArmed && (armedTime > 4000) && !LoggingEnabled && (persistance.enabled) && (InlineMillis() - lastPersistance > 3000) )
 	{
-		lastPersistance = InlineMillis();
-		SavePersistance();
-		flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
 		flashWriteInProgress = 1;
+		SavePersistance();
+		lastPersistance = InlineMillis();
+		flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
 	}
 
 	//nothing to write
@@ -250,7 +250,7 @@ static void TaskPersistanceAndFlash(void)
 		return;
 	}
 	else if(!flashWriteInProgress)
-	{
+	{ //something to write
 		flashWriteInProgress = 1;
 		M25p16BlockingWritePage(flashWriteAddress, flashTxBuffer);
 	}

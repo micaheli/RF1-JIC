@@ -25,6 +25,7 @@ enum {
 	M_PROFILE2   = (1 << 11),
 	M_PROFILE3   = (1 << 12),
 	M_QUOPA      = (1 << 13),
+	M_LEARN      = (1 << 14),
 	//M_CATMODE    = (1 << 11),
 };
 

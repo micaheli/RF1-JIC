@@ -673,6 +673,9 @@ void InlineUpdateAttitude(float geeForceAccArray[])
 
 static int TrimKi(void)
 {
+	if (ModeSet(M_LEARN) && !ModeActive(M_LEARN))
+		return(0);
+
 	if(!mainConfig.mixerConfig.foreAftMixerFixer)
 		return(0);
 
@@ -746,6 +749,9 @@ static int TrimKi(void)
 
 static int TrimMotors(void)
 {
+	if (ModeSet(M_LEARN) && !ModeActive(M_LEARN))
+		return(0);
+
 	if(!mainConfig.mixerConfig.foreAftMixerFixer)
 		return(0);
 
@@ -1083,7 +1089,7 @@ void InlineFlightCode(float dpsGyroArray[])
 #endif
 
 		//phase khz stuff
-		if (khzLoopCounterPhase == 7)
+		if (khzLoopCounterPhase == 6)
 		{
 			khzLoopCounterPhase = 0;
 			#ifndef LOG32
@@ -1092,9 +1098,9 @@ void InlineFlightCode(float dpsGyroArray[])
 			#endif
 		}
 
-		if (khzLoopCounterPhase == 6)
+		if (khzLoopCounterPhase == 5)
 		{
-			khzLoopCounterPhase = 7;
+			khzLoopCounterPhase = 6;
 			//do nothing phase
 		}
 
