@@ -448,6 +448,7 @@ def configure_target(TARGET):
     ]
 
     SOURCE_FILES = ["src/low_level_driver/stm32_startup/startup_%s.s" % TARGET_DEVICE.lower()]
+    #SOURCE_FILES = ["src/low_level_driver/stm32_startup/startup_gd32f405xx.s"]
 
     # per project includes
 

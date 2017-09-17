@@ -600,4 +600,5 @@ static void TaskQuopa(void)
 {
 	//set's the quopa state machine
 	HandleQuopaMode();
+	HandleDshotBeep();
 }

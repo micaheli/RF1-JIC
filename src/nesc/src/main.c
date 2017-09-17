@@ -39,7 +39,6 @@ note_record imperialMarch[256];
 
  
 void LoadSongs(void)
-
 {
 	uint32_t noteCount=0;
 	imperialMarch[noteCount].note = notes[4][nG].natural; imperialMarch[noteCount++].noteLength = QUARTER_NOTE; 	
@@ -227,7 +226,8 @@ uint32_t noteBaseLength;
 
 
 
-void SetTempo(uint32_t tempo, uint32_t articulation) {
+void SetTempo(uint32_t tempo, uint32_t articulation)
+{
 	noteBaseLength = (uint32_t)((float)(60000.0f / (float)tempo) * 4.0f) - articulation;
 	noteSpace = articulation;
 }

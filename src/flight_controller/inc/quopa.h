@@ -1,6 +1,6 @@
 #pragma once
 
-#define QUOPA_FLIGHT_LIMIT 5000
+#define QUOPA_FLIGHT_LIMIT 3000
 
 typedef enum quopa_state_t
 {
@@ -12,8 +12,9 @@ typedef enum quopa_state_t
 
 
 extern volatile quopa_state quopaState;
+extern volatile quopa_state dshotBeepState;
 
+extern int InitDshotBeep(void);
 extern int InitQuopaMode(void);
-extern int StartQuopaMode(void);
-extern int CleanupQuopaMode(void);
 extern int HandleQuopaMode(void);
+extern int HandleDshotBeep(void);

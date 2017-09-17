@@ -37,7 +37,8 @@ int main(void)
     retValChk = InitFlight();
 
     retValChk = InitQuopaMode();
-
+    retValChk = InitDshotBeep();
+    
     retValChk = InitWatchdog(WATCHDOG_TIMEOUT_32S);
 
     buzzerStatus.status = STATE_BUZZER_STARTUP;
@@ -45,13 +46,13 @@ int main(void)
 
     //DeInitActuators();
     //DelayMs(10);
-    //InitializeGpio(ports[ENUM_PORTB], GPIO_PIN_0, 0);
-    //inlineDigitalLo(ports[ENUM_PORTB], GPIO_PIN_0);
+    //InitializeGpio(ports[ACTUATOR2_GPIO], ACTUATOR2_PIN, 0);
+    //inlineDigitalHi(ports[ACTUATOR2_GPIO], ACTUATOR2_PIN);
     //InitializeGpio(ports[ENUM_PORTB], GPIO_PIN_0, 0);
 
     while (1)
     {
-
+        inlineDigitalHi(ports[ACTUATOR2_GPIO], ACTUATOR2_PIN);
     	Scheduler(count--);
 
     	if (count == -1)

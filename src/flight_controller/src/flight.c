@@ -70,6 +70,14 @@ static int TrimKi(void);
 
 void ArmBoard(void)
 {
+	//no arming when dshot beep happening
+	if(dshotBeepState != QUOPA_INACTIVE)
+		return;
+
+	//no arming when ModeActive M_BEEP
+	if(ModeActive(M_BEEP))
+		return;
+
 	InitWatchdog(WATCHDOG_TIMEOUT_30MS);
 	boardArmed = 1;
 	timeSinceSelfLevelActivated = 0;
@@ -598,8 +606,22 @@ void InlineInitGyroFilters(void)
 			}
 			else
 			{
-				InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], 0.088f, 0.0f, filteredGyroData[axis]);
-				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
+				//set omega1_yaw=50.000
+				//set omega1_roll=90.000
+				//set omega1_pitch=90.000
+				//set omega2_yaw=0.980
+				//set omega2_roll=0.980
+				//set omega2_pitch=0.980
+				if(axis == YAW)
+				{
+					InitPaf( &pafGyroStates[axis], 50.000f, 0.980f, 0.0f, filteredGyroData[axis]);
+					InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
+				}
+				else
+				{
+					InitPaf( &pafGyroStates[axis], 90.000f, 0.980f, 0.0f, filteredGyroData[axis]);
+					InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
+				}
 			}
 		}
 	}

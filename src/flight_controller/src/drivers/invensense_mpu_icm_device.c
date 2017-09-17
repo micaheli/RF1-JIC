@@ -17,7 +17,8 @@
 #define MPU6000_REV_D9      0x59
 #define MPU6000_REV_D10     0x5A
 
-typedef struct __attribute__((__packed__)) {
+typedef struct __attribute__((__packed__))
+{
     uint8_t accAddress;  // needed to start rx/tx transfer when sending address
     uint8_t accelX_H;
     uint8_t accelX_L;
@@ -46,7 +47,8 @@ int32_t deviceWhoAmI = 0;
 //            acc update
 //            everything else uses 8khz or 32khz gyro rate, so set acc to 4khz
 //            acc update, get acc update every 2nd or 8th gyro update
-static const gyro_device_config mpu6500GyroConfig[] = {
+static const gyro_device_config mpu6500GyroConfig[] =
+{
     [LOOP_L1] = {1, INVENS_CONST_GYRO_DLPF_188, INVENS_CONST_GYRO_FCB_DISABLE, INVENS_CONST_ACC_DLPF_460, INVENS_CONST_ACC_FCB_DISABLE, 1},
     [LOOP_M1] = {8, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
     [LOOP_M2] = {4, INVENS_CONST_GYRO_DLPF_256, INVENS_CONST_GYRO_FCB_DISABLE, 0, INVENS_CONST_ACC_FCB_ENABLE, 2},
@@ -66,7 +68,8 @@ static const gyro_device_config mpu6500GyroConfig[] = {
     [LOOP_UH32] = {1, 0, INVENS_CONST_GYRO_FCB_32_8800, 0, INVENS_CONST_ACC_FCB_ENABLE, 8},
 };
 
-static const gyro_device_config mpu6000GyroConfig[] = {
+static const gyro_device_config mpu6000GyroConfig[] =
+{
     [LOOP_L1] = {1, INVENS_CONST_GYRO_DLPF_188, 0, 0, 0, 1},
     [LOOP_M1] = {8, INVENS_CONST_GYRO_DLPF_256, 0, 0, 0, 1},
     [LOOP_M2] = {4, INVENS_CONST_GYRO_DLPF_256, 0, 0, 0, 2},
@@ -89,14 +92,19 @@ int AccGyroDeviceInit(loopCtrl_e gyroLoop)
 {
 
     // the mpu6000 caps out at 8khz
-	if (deviceWhoAmI == MPU6000_WHO_AM_I) {
-		if (gyroLoop > LOOP_H8) {
+    if (deviceWhoAmI == MPU6000_WHO_AM_I)
+    {
+        if (gyroLoop > LOOP_H8)
+        {
 			gyroLoop = LOOP_H8;
 		}
 		gyroConfig = mpu6000GyroConfig[gyroLoop];
-	} else {
+    }
+    else
+    {
 	    // don't overflow array
-	    if (gyroLoop > LOOP_UH32) {
+        if (gyroLoop > LOOP_UH32)
+        {
 	        gyroLoop = LOOP_UH32;
 	    }
 	    gyroConfig = mpu6500GyroConfig[gyroLoop];
@@ -142,7 +150,7 @@ int AccGyroDeviceInit(loopCtrl_e gyroLoop)
     // enable data ready interrupt
     AccGyroVerifyWriteRegister(INVENS_RM_INT_ENABLE, INVENS_CONST_DATA_RDY_EN);
 
-    return 1;
+    return(1);
 }
 
 int AccGyroDeviceDetect(void)
@@ -263,7 +271,8 @@ void accgyroDeviceReadComplete(void)
         InlineUpdateGyro( gyroData, 0.060975609756098f ); // 1/16.4 is 0.060975609756098
 
         //32,767
-    if (accelUpdate) {
+    if (accelUpdate)
+    {
 		accelData[0] = (int32_t)(int16_t)((gyroRxFrame.accelX_H << 8) | gyroRxFrame.accelX_L);
 		accelData[1] = (int32_t)(int16_t)((gyroRxFrame.accelY_H << 8) | gyroRxFrame.accelY_L);
 		accelData[2] = (int32_t)(int16_t)((gyroRxFrame.accelZ_H << 8) | gyroRxFrame.accelZ_L);
@@ -280,7 +289,8 @@ void accgyroDeviceCalibrate(int32_t *gyroData)
 {
     uint8_t idx;
 
-    for (idx = 0; idx < 3; idx++) {
+    for (idx = 0; idx < 3; idx++)
+    {
         gyroCal[idx] = gyroData[idx];
     }
     /*//mpu 6500+ has gyro offset. Faster than using the old fashioned way above

@@ -2270,9 +2270,12 @@ int HandleMaxOsd(void)
     //only run every 100 ms
     static uint32_t lastTimeRun = 0;
 
+    if(mainConfig.telemConfig.telemRfOsd != TELEM_INTERNAL_OSD)
+        return(0);
+
     //disabled for now
-    return(0);
-    if (InlineMillis() - lastTimeRun > 100)
+    //return(0);
+    if (InlineMillis() - lastTimeRun > 3000)
         return(0);
 
     if ( (maxOsdRecord.type == OSD_TYPE_SPI) && (maxOsdRecord.videoMode == VIDEO_MODE_UNKNOWN) )
@@ -2347,7 +2350,7 @@ int InitMaxOsd(void)
             if (!mainConfig.gyroConfig.boardCalibrated)
             {
                 maxOsdRecord.status = OSD_STATUS_LOADING_CHAR_MAP;
-                UpdateCharMap();
+                //UpdateCharMap();
                 maxOsdRecord.status = OSD_STATUS_DISABLED;
                 //board not calibrated so we force flash the MAX chip's char map
             }
@@ -2388,7 +2391,7 @@ int InitMaxOsd(void)
                 if (!mainConfig.gyroConfig.boardCalibrated)
                 {
                     maxOsdRecord.status = OSD_STATUS_LOADING_CHAR_MAP;
-                    UpdateCharMap();
+                    //UpdateCharMap();
                     maxOsdRecord.status = OSD_STATUS_DISABLED;
                     //board not calibrated so we force flash the MAX chip's char map
                 }
@@ -2472,6 +2475,7 @@ static uint8_t MaxSendReceiveCommand(uint8_t address, uint8_t data, int blocking
     txBuffer[0] = address;
     txBuffer[1] = data;
 
+    blocking = 1;
     if(autoEnable)
         inlineDigitalLo(ports[board.maxOsd[0].csPort], board.maxOsd[0].csPin);
     if (blocking)

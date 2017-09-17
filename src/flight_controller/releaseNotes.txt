@@ -1464,6 +1464,21 @@ Version 0.337.131 BETA:
 	Add learning mode
 	Fix flash not logging
 
+Version 0.338.131 BETA:
+	Make logging only work when armed again
+
+Version 0.339.132 BETA:
+	Add Beep Mode
+		Only works when disarmed
+		Will beep motors using dshot command
+		Will not work with RX on USART 3
+	Adjusted QUOPA on time
+	Adjusted filter 1 defaults
+
+Version 0.340.133 BETA:
+	Adjust defaults to filter 1
+
+
 #Features in current development:
 #	MAVlink compatibility
 

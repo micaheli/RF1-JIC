@@ -4,10 +4,17 @@
 #define QUOPA_PATTERN_HOLD_MS 250
 
 volatile quopa_state quopaState;
+volatile quopa_state dshotBeepState;
 int oldEscProtocol;
 int oldEscFrequency;
 
 static void CommandToDshot(uint8_t *serialOutBuffer, uint32_t command);
+
+int InitDshotBeep(void)
+{
+    dshotBeepState = QUOPA_INACTIVE;
+    return(0);
+}
 
 int InitQuopaMode(void)
 {
@@ -116,39 +123,7 @@ int HandleQuopaMode(void)
                 delayUs(500); //let MCU stabilize 
             }
         }
-        //SKIP_GYRO=1;
-        //DelayMs(2); //let MCU stabilize 
-        /*
-        CommandToDshot(serialOutBuffer, 0);
-        for(uint32_t x=0;x<300;x++)
-        {
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
-            DelayMs(2); //let MCU stabilize 
-        }
-        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP4);
-        for(uint32_t x=0;x<100;x++)
-        {
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
-            DelayMs(2); //let MCU stabilize 
-        }
-        CommandToDshot(serialOutBuffer, DSHOT_CMD_SPIN_DIRECTION_REVERSED);
-        for(uint32_t x=0;x<70;x++)
-        {
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
-            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
-            DelayMs(2); //let MCU stabilize 
-        }
-        */
-        //SKIP_GYRO=0;
-        //DelayMs(100);
+
         SKIP_GYRO=1;
         DelayMs(2);
         CommandToDshot(serialOutBuffer, DSHOT_CMD_SPIN_DIRECTION_REVERSED);
@@ -170,227 +145,154 @@ int HandleQuopaMode(void)
             DelayMs(3); //let MCU stabilize 
         }
 
-
-        if(oldEscProtocol != -1)
-        {
-            /*
-            SKIP_GYRO=0;
-            DelayMs(100); //let MCU stabilize 
-            SKIP_GYRO=1;
-            DelayMs(2);
-            CommandToDshot(serialOutBuffer, DSHOT_CMD_SPIN_DIRECTION_REVERSED);
-            for(uint32_t x=0;x<60;x++)
-            {
-                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
-                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
-                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
-                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
-                DelayMs(3); //let MCU stabilize 
-            }
-            DelayMs(100); //let MCU stabilize 
-            CommandToDshot(serialOutBuffer, DSHOT_CMD_SPIN_DIRECTION_REVERSED);
-            for(uint32_t x=0;x<60;x++)
-            {
-                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
-                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
-                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
-                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
-                DelayMs(3); //let MCU stabilize 
-            }
-            */
-        }
-
         SKIP_GYRO=0;
         quopaState = QUOPA_ACTIVE;
-        //}
-        //else
-        //{
-        //    quopaState = QUOPA_INACTIVE;
-        //}
+
     }
     return(0);
 }
 
-int StartQuopaMode(void)
+int HandleDshotBeep(void)
 {
-    //flight is deinit, we need to reverse all ESCs
-    //step 1, check what ESCs are set to:
-    uint32_t x, outputNumber; //set
-    uint16_t value; // set
+    static int dshotBeepLatch = 0;
+    static uint32_t lastDshotBeep = 0;
+    uint8_t serialOutBuffer[3];
 
-    oneWireActive = 1;
-    if (OneWireInit() == 0)
+    if( 
+        !dshotBeepLatch &&
+        !boardArmed &&
+        !ModeActive(M_BEEP) &&
+        dshotBeepState == QUOPA_INACTIVE
+    )
     {
-        //esc read failiure, do nothing
-        quopaState = QUOPA_FAILED;
-        return(0);
+        //switch is inactive and is allowed to be active
+        dshotBeepLatch = 1;
     }
-    else
-    {
-        for (x = 0; x < MAX_MOTOR_NUMBER; x++)
-        {
-            outputNumber = mainConfig.mixerConfig.motorOutput[x];
-            if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
-            {
-                if (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled)
-                {
-                    //const oneWireParameterValue_t motorDirectionParameterList[] = {
-                    //    {0x01, "normal"},
-                    //    {0x02, "reversed"},
-                    //    {0x03, "bidirectional"},
-                    //    {0x04, "bidirectional_reversed"},
-                    //    {0, NULL},
-                    //};
 
-                    //put what the ESCs are supposed to be in this variable, 0 means we're not doing the operation
-                    mainConfig.mixerConfig.bitReverseEscHidden[x] = escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].oneWireCurrentValues.direction;
-                    switch(escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].oneWireCurrentValues.direction)
-                    {
-                        case 0x01:
-                            value = 0x02;
-                            break;
-                        case 0x02:
-                            value = 0x01;
-                            break;
-                        case 0x03:
-                            value = 0x04;
-                            break;
-                        case 0x04:
-                            value = 0x03;
-                            break;
-                        default:
-                            value = 0x01;
-                            break;
-                    }
-                    escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].oneWireCurrentValues.direction = value;
-                }
-                else
-                {
-                    //esc read unsuccessful, quopa mode failure
-                    quopaState = QUOPA_FAILED;
-                    return(0);
-                }
+    if(!boardArmed && !ModeActive(M_BEEP) && dshotBeepState == QUOPA_ACTIVE)
+    {
+        if ( IsDshotEnabled() )
+        {
+            SKIP_GYRO=1;
+            DelayMs(2); //let MCU stabilize 
+            CommandToDshot(serialOutBuffer, DSHOT_CMD_SPIN_DIRECTION_NORMAL);
+            for(uint32_t x=0;x<60;x++)
+            {
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+                DelayMs(3); //let MCU stabilize 
             }
+            CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP1);
+            for(uint32_t x=0;x<60;x++)
+            {
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+                DelayMs(3); //let MCU stabilize 
+            }
+            SKIP_GYRO=0;
+        }
+        if(oldEscProtocol != -1)
+        {
+            SKIP_GYRO=1;
+            DeinitFlight();
+            DelayMs(5); //let MCU stabilize 
+            mainConfig.mixerConfig.escProtocol = oldEscProtocol;
+            mainConfig.mixerConfig.escUpdateFrequency = oldEscFrequency;
+            oldEscProtocol = -1;
+            oldEscFrequency = -1;
+            InitFlight();
+            DelayMs(5); //let MCU stabilize 
+            SKIP_GYRO=0;
+            DelayMs(5); //let MCU stabilize 
+        }
+        dshotBeepState = QUOPA_INACTIVE;
+    }
+
+    if( 
+        dshotBeepLatch &&
+        !boardArmed &&
+        ModeActive(M_BEEP) &&
+        dshotBeepState == QUOPA_INACTIVE
+    )
+    {
+        //quopa mode has been latched and all conditions for quopa mode have been met
+        dshotBeepState = QUOPA_INIT;
+        dshotBeepLatch = 0;
+    }        
+
+    if( (InlineMillis() - lastDshotBeep > 4000) && (dshotBeepState == QUOPA_ACTIVE) && ModeActive(M_BEEP))
+    {
+        lastDshotBeep = InlineMillis();
+        SKIP_GYRO=1;
+        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP2);
+        for(uint32_t x=0;x<60;x++)
+        {
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+            DelayMs(3); //let MCU stabilize 
+        }
+        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP4);
+        for(uint32_t x=0;x<60;x++)
+        {
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+            DelayMs(3); //let MCU stabilize 
         }
     }
-    //save config here
-    mainConfig.mixerConfig.quopaReversed = 1;    
-    SaveConfig(ADDRESS_CONFIG_START);
 
-    //save ESC config here
-    for (x = 0; x < MAX_MOTOR_NUMBER; x++)
+    if(dshotBeepState == QUOPA_INIT)
     {
-        outputNumber = mainConfig.mixerConfig.motorOutput[x];
-        if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+        if ( !IsDshotEnabled() )
         {
-            if (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled)
+            DeinitFlight();
+            DelayMs(10); //let MCU stabilize 
+            oldEscProtocol  = mainConfig.mixerConfig.escProtocol;
+			oldEscFrequency = mainConfig.mixerConfig.escUpdateFrequency;
+            mainConfig.mixerConfig.escProtocol = ESC_DSHOT300;
+            mainConfig.mixerConfig.escUpdateFrequency = 8000;
+            InitFlight();
+            DelayMs(5); //let MCU stabilize 
+            SKIP_GYRO=1;
+            CommandToDshot(serialOutBuffer, 0);
+            for(uint32_t x=0;x<3000;x++)
             {
-                if (!OneWireSaveConfig(board.motors[outputNumber]))
-                {
-                    quopaState = QUOPA_FAILED;
-                }
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+                delayUs(500); //let MCU stabilize 
             }
         }
-    }
-    oneWireActive = 0;
-    quopaState = QUOPA_ACTIVE;
-    OneWireDeinit();
-    //mainConfig.mixerConfig.bitReverseEscHidden
-    //set config flag to reverse
-    return(0);
-}
-
-int CleanupQuopaMode(void)
-{
-    //flight is deinit, we need to reverse all ESCs
-    //step 1, check what ESCs are set to:
-    uint32_t x, outputNumber; //set
-    uint16_t value; // set
-
-    return(0);
-    if(mainConfig.mixerConfig.quopaReversed)
-    {
-
-        oneWireActive = 1;
-        if (OneWireInit() == 0)
+        SKIP_GYRO=1;
+        DelayMs(2);
+        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP2);
+        for(uint32_t x=0;x<60;x++)
         {
-            //esc read failiure, do nothing
-            quopaState = QUOPA_FAILED;
-            return(0);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+            DelayMs(3); //let MCU stabilize 
         }
-        else
+        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP4);
+        for(uint32_t x=0;x<60;x++)
         {
-            for (x = 0; x < MAX_MOTOR_NUMBER; x++)
-            {
-                outputNumber = mainConfig.mixerConfig.motorOutput[x];
-                if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
-                {
-                    if (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled)
-                    {
-                        //const oneWireParameterValue_t motorDirectionParameterList[] = {
-                        //    {0x01, "normal"},
-                        //    {0x02, "reversed"},
-                        //    {0x03, "bidirectional"},
-                        //    {0x04, "bidirectional_reversed"},
-                        //    {0, NULL},
-                        //};
-
-                        //put what the ESCs are supposed to be in this variable, 0 means we're not doing the operation
-                        mainConfig.mixerConfig.bitReverseEscHidden[x] = escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].oneWireCurrentValues.direction;
-                        switch(escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].oneWireCurrentValues.direction)
-                        {
-                            case 0x01:
-                                value = 0x02;
-                                break;
-                            case 0x02:
-                                value = 0x01;
-                                break;
-                            case 0x03:
-                                value = 0x04;
-                                break;
-                            case 0x04:
-                                value = 0x03;
-                                break;
-                            default:
-                                value = 0x01;
-                                break;
-                        }
-                        escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].oneWireCurrentValues.direction = value;
-                    }
-                    else
-                    {
-                        //esc read unsuccessful, quopa mode failure
-                        quopaState = QUOPA_FAILED;
-                        return(0);
-                    }
-                }
-            }
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+            DelayMs(3); //let MCU stabilize 
         }
-        //save config here
-        mainConfig.mixerConfig.quopaReversed = 0;    
-        SaveConfig(ADDRESS_CONFIG_START);
-
-        //save ESC config here
-        for (x = 0; x < MAX_MOTOR_NUMBER; x++)
-        {
-            outputNumber = mainConfig.mixerConfig.motorOutput[x];
-            if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
-            {
-                if (escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].enabled)
-                {
-                    if (!OneWireSaveConfig(board.motors[outputNumber]))
-                    {
-                        quopaState = QUOPA_FAILED;
-                    }
-                }
-            }
-        }
-        oneWireActive = 0;
-        quopaState = QUOPA_INACTIVE;
-        OneWireDeinit();
-        //mainConfig.mixerConfig.bitReverseEscHidden
-        //set config flag to reverse
-        return(0);
+        SKIP_GYRO=1;
+        dshotBeepState = QUOPA_ACTIVE;
     }
     return(0);
 }

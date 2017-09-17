@@ -80,6 +80,9 @@ void HandleRfOsd(void)
 {
     uint32_t serialNumber;
 
+	if(mainConfig.telemConfig.telemRfOsd == TELEM_INTERNAL_OSD)
+		return;
+
     if (!telemEnabled)
 		return;
 
