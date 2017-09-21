@@ -8,6 +8,10 @@ biquad_state lpfFilterStateKd[AXIS_NUMBER];
 biquad_state lpfFilterStateAcc[AXIS_NUMBER];
 biquad_state hpfFilterStateAcc[6];
 
+biquad_state geeForceZFilter;
+volatile float geeForceZ;
+
+int motorTrimHasHappened;
 int motorTrimCounter;
 int kiTrimCounter;
 float gyroFiltUsed[AXIS_NUMBER];
@@ -67,6 +71,28 @@ float InlineGetSetPoint(float curvedRcCommandF, uint32_t curveToUse, float rates
 float AverageGyroADCbuffer(uint32_t axis, volatile float currentData);
 static int TrimMotors(void);
 static int TrimKi(void);
+
+//0.1 to -0.1 fits within uint8_t 
+#define KI_LEARN_MULTIPLIER 0.00078740157186985015869140625f
+#define KI_LEARN_MULTIPLIER_I 1270.0f
+
+inline int8_t ConvertFloatToInt8ForKi(float kiNumber)
+{
+	//clamp the values to fit in an int8
+	if(kiNumber > 0.1f)
+		kiNumber = 0.1f;
+
+	if(kiNumber < -0.1f)
+		kiNumber = -0.1f;
+
+	return((int8_t)(kiNumber * KI_LEARN_MULTIPLIER_I));
+}
+
+inline float ConvertInt8ToFloatForKi(int8_t kiNumber)
+{
+	return((float)((float)kiNumber * KI_LEARN_MULTIPLIER));
+}
+
 
 void ArmBoard(void)
 {
@@ -265,6 +291,7 @@ void InitFlightCode(void)
 	uint32_t loopUsed = mainConfig.gyroConfig.loopCtrl;
 	uint32_t validLoopConfig = 0;
 
+	motorTrimHasHappened = 0;
 	motorTrimCounter = 0;
 	kiTrimCounter = 0;
 
@@ -589,6 +616,10 @@ void InlineInitGyroFilters(void)
 	//first time init
 	int32_t axis;
 
+	geeForceZ = 0.0f;
+	bzero(&geeForceZFilter, sizeof(geeForceZFilter));
+	InitBiquad(50, &geeForceZFilter, loopSpeed.accdT, FILTER_TYPE_LOWPASS, &geeForceZFilter, 1.0f);	
+
 	for (axis = 2; axis >= 0; --axis)
 	{
 		if ( (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 0) || (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 4) )
@@ -695,8 +726,8 @@ void InlineUpdateAttitude(float geeForceAccArray[])
 
 static int TrimKi(void)
 {
-	if (ModeSet(M_LEARN) && !ModeActive(M_LEARN))
-		return(0);
+	//if (ModeSet(M_LEARN) && !ModeActive(M_LEARN))
+	//	return(0);
 
 	if(!mainConfig.mixerConfig.foreAftMixerFixer)
 		return(0);
@@ -704,47 +735,75 @@ static int TrimKi(void)
 	if(!boardArmed)
 		return(0);
 
-	if(
-		(smoothedRcCommandF[PITCH] == 0.0f) &&
-		(smoothedRcCommandF[ROLL] == 0.0f) &&
-		(smoothedRcCommandF[YAW] == 0.0f)
-		//(ABS(flightSetPoints[PITCH] - filteredGyroData[PITCH]) < 50) &&
-		//(ABS(flightSetPoints[ROLL] - filteredGyroData[ROLL]) < 50) &&
-		//(ABS(flightSetPoints[YAW] - filteredGyroData[YAW]) < 50)
-	)
+	//if (ModeSet(M_LEARN) && ModeActive(M_LEARN))
+	//{
+		if(
+			//(motorTrimHasHappened) &&
+			(smoothedRcCommandF[PITCH] == 0.0f) &&
+			(smoothedRcCommandF[ROLL] == 0.0f) &&
+			(smoothedRcCommandF[YAW] == 0.0f)
+			//(ABS(flightSetPoints[PITCH] - filteredGyroData[PITCH]) < 50) &&
+			//(ABS(flightSetPoints[ROLL] - filteredGyroData[ROLL]) < 50) &&
+			//(ABS(flightSetPoints[YAW] - filteredGyroData[YAW]) < 50)
+		)
+		{
+			//need at least 20ms to trim motors, so 19+ will work
+			kiTrimCounter++;
+		}
+		else
+		{
+			kiTrimCounter = 0;
+		}
+	//}
+
+	//uint32_t position = lrint(smoothCurvedThrottle0_1*9);
+
+	//8bit storage
+
+	uint32_t position2 = lrintf(smoothCurvedThrottle0_1*19);
+
+	if ( (kiTrimCounter >= 10) )
 	{
-		//need at least 20ms to trim motors, so 19+ will work
-		kiTrimCounter++;
+
+		//8bit storage
+		//kiTrimCounter = 0;
+		//inline int8_t ConvertFloatToInt8ForKi(float kiNumber);
+		//inline float ConvertInt8ToFloatForKi(int8_t kiNumber);
+		persistance.data.yawKiTrim8[position2] = ConvertFloatToInt8ForKi(flightPids[YAW].ki);
+		persistance.data.rollKiTrim8[position2] = ConvertFloatToInt8ForKi(flightPids[ROLL].ki);
+		persistance.data.pitchKiTrim8[position2] = ConvertFloatToInt8ForKi(flightPids[PITCH].ki);
+		persistance.data.geeForce[position2] = lrintf( (float)(persistance.data.geeForce[position2] * 0.80f) + (float)((geeForceZ * 10.0f) * 0.20f));
+		//persistance.data.yawKiTrim8[position2] = ConvertFloatToInt8ForKi(( (float)ConvertInt8ToFloatForKi(persistance.data.yawKiTrim8[position2]) * 0.80f) + ((flightPids[YAW].ki) * 0.20f));
+		//persistance.data.rollKiTrim8[position2] = ConvertFloatToInt8ForKi(( (float)ConvertInt8ToFloatForKi(persistance.data.rollKiTrim8[position2]) * 0.80f) + ((flightPids[ROLL].ki) * 0.20f));
+		//persistance.data.pitchKiTrim8[position2] = ConvertFloatToInt8ForKi(( (float)ConvertInt8ToFloatForKi(persistance.data.pitchKiTrim8[position2]) * 0.80f) + ((flightPids[PITCH].ki) * 0.20f));
+		//filteredAccData[ACCZ]
+		//persistance.data.yawKiTrim[position] = (persistance.data.yawKiTrim[position] * 0.90f) + ((flightPids[YAW].ki) * 0.10f);
+		//persistance.data.rollKiTrim[position] = (persistance.data.rollKiTrim[position] * 0.90f) + ((flightPids[ROLL].ki) * 0.10f);
+		//persistance.data.pitchKiTrim[position] = (persistance.data.pitchKiTrim[position] * 0.90f) + ((flightPids[PITCH].ki) * 0.10f);
+	}
+
+	float remainder = (float)(smoothCurvedThrottle0_1*19.0f) - position2;
+
+	if(fullKiLatched)
+	{
+		//8bit storage
+		//kiTrim[YAW]   = ConvertFloatToInt8ForKi(persistance.data.yawKiTrim8[position2])   * (remainder) + (ConvertInt8ToFloatForKi(persistance.data.yawKiTrim8[position2+1]) * (1 - remainder));
+		//kiTrim[ROLL]  = ConvertInt8ToFloatForKi(persistance.data.rollKiTrim8[position2])  * (remainder) + (ConvertInt8ToFloatForKi(persistance.data.rollKiTrim8[position2+1]) * (1 - remainder));
+		//kiTrim[PITCH] = ConvertInt8ToFloatForKi(persistance.data.pitchKiTrim8[position2]) * (remainder) + (ConvertInt8ToFloatForKi(persistance.data.pitchKiTrim8[position2+1]) * (1 - remainder));	
+		kiTrim[YAW]   = ConvertInt8ToFloatForKi(persistance.data.yawKiTrim8[position2]) * 0.00001;
+		kiTrim[ROLL]  = ConvertInt8ToFloatForKi(persistance.data.rollKiTrim8[position2]) * 0.00001;
+		kiTrim[PITCH] = ConvertInt8ToFloatForKi(persistance.data.pitchKiTrim8[position2]) * 0.00001;
+		//kiTrim[YAW]   = persistance.data.yawKiTrim[position]   * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
+		//kiTrim[ROLL]  = persistance.data.rollKiTrim[position]  * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
+		//kiTrim[PITCH] = persistance.data.pitchKiTrim[position] * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
 	}
 	else
 	{
-		kiTrimCounter = 0;
+		kiTrim[YAW]   = 0;
+		kiTrim[ROLL]  = 0;
+		kiTrim[PITCH] = 0;
 	}
 
-	uint32_t position = (uint32_t)(smoothCurvedThrottle0_1*10);
-
-	if (kiTrimCounter >= 100)
-	{
-		//5% trim rate
-		persistance.data.yawKiTrim[position] = (persistance.data.yawKiTrim[position] * 0.80f) + ((flightPids[YAW].ki) * 0.20f);
-		persistance.data.rollKiTrim[position] = (persistance.data.rollKiTrim[position] * 0.80f) + ((flightPids[ROLL].ki) * 0.20f);
-		persistance.data.pitchKiTrim[position] = (persistance.data.pitchKiTrim[position] * 0.80f) + ((flightPids[PITCH].ki) * 0.20f);
-	}
-
-	float remainder = (float)(smoothCurvedThrottle0_1*10.0f) - position;
-
-	if(position >= 10)
-	{
-		kiTrim[YAW]   = persistance.data.yawKiTrim[10];
-		kiTrim[ROLL]  = persistance.data.rollKiTrim[10];
-		kiTrim[PITCH] = persistance.data.pitchKiTrim[10];
-	}
-	else
-	{
-		kiTrim[YAW]   = persistance.data.yawKiTrim[position]   * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
-		kiTrim[ROLL]  = persistance.data.rollKiTrim[position]  * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
-		kiTrim[PITCH] = persistance.data.pitchKiTrim[position] * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
-	}
 	/*
 	float attenuationValue = (smoothCurvedThrottle0_1 * (10)); 
 	float remainder = (float)((float)attenuationValue - (int)attenuationValue); 
@@ -771,8 +830,8 @@ static int TrimKi(void)
 
 static int TrimMotors(void)
 {
-	if (ModeSet(M_LEARN) && !ModeActive(M_LEARN))
-		return(0);
+	//if (ModeSet(M_LEARN) && !ModeActive(M_LEARN))
+	//	return(0);
 
 	if(!mainConfig.mixerConfig.foreAftMixerFixer)
 		return(0);
@@ -780,8 +839,14 @@ static int TrimMotors(void)
 	if(!boardArmed)
 		return(0);
 
+	if(smoothCurvedThrottle0_1 < 0.05)
+	{
+		//motorTrimHasHappened = 0;
+	}
+
 	//throttle is 100% and constrols in deadband range
 	if(
+		(motorTrimHasHappened == 0) &&
 		(smoothCurvedThrottle0_1 > 0.99f) &&
 		(smoothedRcCommandF[PITCH] == 0.0f) &&
 		(smoothedRcCommandF[ROLL] == 0.0f) &&
@@ -794,10 +859,16 @@ static int TrimMotors(void)
 	else
 	{
 		motorTrimCounter = 0;
+		if(motorTrimHasHappened == 1)
+			motorTrimHasHappened = 2;
 	}
 
 	if(motorTrimCounter>49)
 	{
+		if(motorTrimCounter>=99)
+			motorTrimCounter = 0;
+
+		motorTrimHasHappened = 1;
 		float tallestMotor = 0.0f;
 		//gradually trim motors
 		//only check active motors
@@ -805,7 +876,7 @@ static int TrimMotors(void)
 		//for now quad only
 		for(int xxx = 0; xxx < 4; xxx++)
 		{
-			persistance.data.motorTrim[xxx] = CONSTRAIN( (persistance.data.motorTrim[xxx] * 0.99f) + (motorOutput[xxx] * 0.01f), 0.85f, 1.0f);
+			persistance.data.motorTrim[xxx] = CONSTRAIN( (persistance.data.motorTrim[xxx] * 0.995f) + (motorOutput[xxx] * 0.005f), 0.85f, 1.0f);
 			if(tallestMotor < persistance.data.motorTrim[xxx])
 				tallestMotor = persistance.data.motorTrim[xxx];
 		}
@@ -872,6 +943,7 @@ void InlineFlightCode(float dpsGyroArray[])
 			filteredGyroData[axis] = (float)pafGyroStates[axis].output;
 			if((mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 4))
 				filteredGyroData[axis] = BiquadUpdate(filteredGyroData[axis], &lpfFilterState[axis]);
+				
 		}
 		else
 		{
@@ -1208,6 +1280,8 @@ void InlineFlightCode(float dpsGyroArray[])
 	gyroAdder[ROLL]  += filteredGyroData[ROLL];
 	gyroAdder[PITCH] += filteredGyroData[PITCH];
 	gyroAdder[YAW]   += filteredGyroData[YAW];
+
+	geeForceZ = BiquadUpdate(filteredAccData[ACCZ], &geeForceZFilter);
 
 	if (gyroAverager++ ==  loopSpeed.gyroAccDiv)
 	{

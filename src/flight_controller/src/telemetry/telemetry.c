@@ -13,7 +13,8 @@ volatile uint32_t telemEnabled = 1;
 volatile vtx_record vtxRequested;
 volatile vtx_record vtxRecord;
 
-static const int vtxBandChannelToFrequencyLookup[] = {
+static const int vtxBandChannelToFrequencyLookup[] =
+{
 	5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, //Boscam A
 	5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866, //Boscam B
 	5705, 5685, 5665, 5645, 5885, 5905, 5925, 5945, //Boscam E
@@ -24,6 +25,7 @@ static const int vtxBandChannelToFrequencyLookup[] = {
 void ProcessTelemtry(void)
 {
 	static uint32_t mspCase = 0;
+
 	if (!telemEnabled)
 		return;
 	//This function is run by the task manager quite often.
@@ -88,13 +90,13 @@ void ProcessTelemtry(void)
 
 	if (mainConfig.telemConfig.telemSport)
 	{
-		if ( (sendSmartPortAt) && ( sendSmartPortAt > Micros() ) )
+		if ( (sendSmartPortAt) && ( sendSmartPortAt >= InlineMillis() ) )
 		{
 			sendSmartPortAt = 0; //reset send time to 0 which disables it
 			SendSmartPort();     //send the data. Blind of soft or hard s.port
 
 		}
-		else if ( (sendSmartPortLuaAt) && ( sendSmartPortLuaAt > Micros() ) )
+		else if ( (sendSmartPortLuaAt) && ( sendSmartPortLuaAt >= InlineMillis() ) )
 		{
 			sendSmartPortLuaAt = 0; //reset send time to 0 which disables it
 			SendSmartPortLua();     //send the data. Blind of soft or hard s.port
@@ -168,9 +170,12 @@ int VtxBandAndChannelToBandChannel(volatile int vtxBand, volatile int channel)
 int VtxTurnOn(void)
 {
 	int returnValue;
+
 	static int mutex = 0;
+
 	if (mutex)
 		return(0);
+
 	mutex = 1;
 
 	switch(vtxRecord.vtxDevice)
@@ -204,8 +209,10 @@ int VtxTurnPit(void)
 {
 	uint32_t returnValue;
 	static uint32_t mutex = 0;
+
 	if (mutex)
 		return(0);
+
 	mutex = 1;
 
 	switch(vtxRecord.vtxDevice)
@@ -231,6 +238,7 @@ int VtxTurnPit(void)
 	}
 
 	mutex = 0;
+
 	return(0);
 
 }
@@ -239,8 +247,10 @@ int VtxBandChannel(int bandChannel)
 {
 	uint32_t returnValue;
 	static uint32_t mutex = 0;
+
 	if (mutex)
 		return(0);
+
 	mutex = 1;
 
 	switch(vtxRecord.vtxDevice)
@@ -266,6 +276,7 @@ int VtxBandChannel(int bandChannel)
 	}
 
 	mutex = 0;
+
 	return(0);
 
 }
@@ -274,8 +285,10 @@ int VtxPower(int power)
 {
 	int returnValue;
 	static int mutex = 0;
+
 	if (mutex)
 		return(0);
+
 	mutex = 1;
 
 	switch(vtxRecord.vtxDevice)

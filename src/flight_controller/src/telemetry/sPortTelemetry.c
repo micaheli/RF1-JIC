@@ -28,13 +28,14 @@ uint32_t          lastTimeSent = 0;
 volatile uint32_t luaPacketPendingTime = 0;
 volatile uint32_t noiseCounter = 0;
 
-static uint8_t  SmartPortGetByte(uint8_t inByte, uint16_t *crcp);
+static uint8_t  SmartPortGetByte(uint8_t dataByte, uint16_t *crcPointer);
 static void     SmartPortCreatePacket(uint32_t header, uint32_t id, int32_t val, uint8_t sPortPacket[]);
 static void     PutSportIntoReceiveState(motor_type actuator, uint32_t inverted);
 static void     PutSportIntoSendState(motor_type actuator, uint32_t inverted);
 static uint32_t IsSoftSerialLineIdle();
 
-enum {
+enum
+{
 	PROG_STAT_MENU_VTX       = 0,
 	PROG_STAT_MENU_ROLL_PID  = 1,
 	PROG_STAT_MENU_PITCH_PID = 2,
@@ -43,7 +44,8 @@ enum {
 	PROG_STAT_MENU_MAX       = 5,
 };
 
-enum {
+enum
+{
 	PROG_STAT_LINE1 = 0,
 	PROG_STAT_LINE2 = 1,
 	PROG_STAT_LINE3 = 2,
@@ -51,12 +53,14 @@ enum {
 	PROG_STAT_LINE5 = 4,
 };
 
-enum {
+enum
+{
 	PROG_STAT_LINE_INACTIVE = 0,
 	PROG_STAT_LINE_ACTIVE   = 1,
 };
 
-typedef struct {
+typedef struct
+{
 	int32_t  menu;
 	int32_t  lastMenu;
 	int32_t  menuCountdown;
@@ -70,29 +74,33 @@ typedef struct {
 
 program_status programStatus;
 
-static uint8_t SmartPortGetByte(uint8_t inByte, uint16_t *crcp) {
+static uint8_t SmartPortGetByte(uint8_t dataByte, uint16_t *crcPointer)
+{
 
-	uint8_t outByte;
+	uint8_t  outputDataByte;
 	uint16_t crc;
 
-	outByte = inByte;
+	outputDataByte = dataByte;
 
-    // smart port escape sequence
-    if (inByte == 0x7D || inByte == 0x7E) {
-    	outByte = BYTESTUFF;
-    	inByte ^= 0x20;
+	//need to bytestuff?
+	if ( (dataByte == 0x7D) || (dataByte == 0x7E) )
+	{
+    	outputDataByte = BYTESTUFF;
+    	dataByte ^= 0x20;
     }
 
-    if (crcp == NULL)
-    	return (outByte);
+    if (crcPointer == NULL)
+    	return(outputDataByte);
 
-    crc = *crcp;
-    crc += inByte;
+	//set the crc
+    crc = *crcPointer;
+    crc += dataByte;
     crc += crc >> 8;
     crc &= 0x00FF;
-    *crcp = crc;
+    *crcPointer = crc;
 
-    return (outByte);
+	//return the byte for conveinence
+    return(outputDataByte);
 }
 
 static void SmartPortCreatePacket(uint32_t header, uint32_t id, int32_t val, uint8_t sPortPacket[])
@@ -619,7 +627,7 @@ void CheckIfSportReadyToSend(void)
 		{
 			if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x1B) && (!progMode))
 			{
-				sendSmartPortAt = Micros() + 1000;
+				sendSmartPortAt = InlineMillis() + 2;
 				PutSportIntoSendState(sbusActuator, 1);
 
 			}
@@ -630,7 +638,7 @@ void CheckIfSportReadyToSend(void)
 				{
 					timeLastSent = InlineMillis();
 					FillLuaPacket();
-					sendSmartPortLuaAt = Micros() + 1000;
+					sendSmartPortLuaAt = InlineMillis() + 2;
 					PutSportIntoSendState(sbusActuator, 1);
 				}
 			}
@@ -638,11 +646,11 @@ void CheckIfSportReadyToSend(void)
 	}
 	else if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x1B) ) //normal serial?
 	{
-		sendSmartPortAt = Micros() + 1000; //send telemetry reply in 1.5 ms
+		sendSmartPortAt = InlineMillis() + 2; //send telemetry reply in about 2 ms
 	}
 	else if ( (telemtryRxBuffer[0] == 0x7E) && (telemtryRxBuffer[1] == 0x0D) )
 	{
-		sendSmartPortLuaAt = Micros() + 1000; //send telemetry reply in 1.5 ms
+		sendSmartPortLuaAt = InlineMillis() + 2; //send telemetry reply in about 2 ms
 	}
 	telemtryRxBuffer[0] = 0;
 	telemtryRxBuffer[1] = 0;
@@ -686,6 +694,7 @@ void SendSmartPort(void)
 	uint8_t sPortPacket[SPORT_PACKET_SIZE];
 
 	//create the s.port packet using the sensor id, sensor data ranged to what it needs to be and a buffer to store the packet.
+	//sending too quickly will freeze up the RX, send every other time for now
 	switch(sPortTelemCount++)
 	{
 		case 0:

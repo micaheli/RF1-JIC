@@ -793,9 +793,13 @@ int ResetPersistance(int preserveGeneration)
 	persistance.data.motorTrim[5]   = 1.0f;
 	persistance.data.motorTrim[6]   = 1.0f;
 	persistance.data.motorTrim[7]   = 1.0f;
-	bzero((uint8_t *)&persistance.data.yawKiTrim, sizeof(persistance.data.yawKiTrim));
-	bzero((uint8_t *)&persistance.data.rollKiTrim, sizeof(persistance.data.rollKiTrim));
-	bzero((uint8_t *)&persistance.data.pitchKiTrim, sizeof(persistance.data.pitchKiTrim));
+	//bzero((uint8_t *)&persistance.data.yawKiTrim, sizeof(persistance.data.yawKiTrim));
+	//bzero((uint8_t *)&persistance.data.rollKiTrim, sizeof(persistance.data.rollKiTrim));
+	//bzero((uint8_t *)&persistance.data.pitchKiTrim, sizeof(persistance.data.pitchKiTrim));
+	memset((uint8_t *)&persistance.data.yawKiTrim8, 0, sizeof(persistance.data.yawKiTrim8) );
+	memset((uint8_t *)&persistance.data.rollKiTrim8, 0, sizeof(persistance.data.rollKiTrim8) );
+	memset((uint8_t *)&persistance.data.pitchKiTrim8, 0, sizeof(persistance.data.pitchKiTrim8) );
+	memset((uint8_t *)&persistance.data.geeForce, 10, sizeof(persistance.data.geeForce) );
 	persistance.currentWriteAddress = persistance.start1;
 	DelayMs(10); //give flash time to write page
 	SavePersistance();

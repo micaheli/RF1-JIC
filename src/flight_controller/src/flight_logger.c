@@ -49,7 +49,7 @@
 "H Firmware date:Oct 31 2015 22:44:00\n" \
 "P interval:1/1\n" \
 "H rcRate:100\n" \
-"H minthrottle:1100\n" \
+"H minthrottle:1000\n" \
 "H maxthrottle:2000\n" \
 "H gyro.scale:0x41600000\n" \
 "H acc_1G:1\n\0"
@@ -84,7 +84,7 @@ float      currRcCommandF[4];
 float      currIteration;
 float      currTime;
 
-#define MAX_BB_VALUES 32
+#define MAX_BB_VALUES 29
 
 typedef struct
 {
@@ -97,14 +97,14 @@ typedef struct
 	float dataMultiplier;
 	uint32_t dataType;
 	void *data;
-} bb_ip_value;
+} __attribute__ ((__packed__)) bb_ip_value;
 
 typedef struct
 {
 	int bbValuesTotal;
 	const bb_ip_value *bbPtr[MAX_BB_VALUES];
 
-} bb_values_used;
+} __attribute__ ((__packed__)) bb_values_used;
 
 bb_values_used bbValues;
 
@@ -123,10 +123,24 @@ const bb_ip_value bb_data[MAX_BB_VALUES] =
 		{ "axisD[0],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currFlightPids[1].kd },
 		{ "axisD[1],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currFlightPids[2].kd },
 
+		{ "uMotor[1],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currMotorOutput[0]},
+		{ "uMotor[2],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currMotorOutput[1]},
+		{ "uMotor[3],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currMotorOutput[2]},
+		{ "uMotor[4],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currMotorOutput[3]},
+		
 		{ "rcCommand[2],",  "1,", "0,", "0,", "1,", "0,", 500,   typeFLOAT, &currRcCommandF[YAW]},
 		{ "rcCommand[0],",  "1,", "0,", "0,", "1,", "0,", 500,   typeFLOAT, &currRcCommandF[ROLL]},
 		{ "rcCommand[1],",  "1,", "0,", "0,", "1,", "0,", 500,   typeFLOAT, &currRcCommandF[PITCH]},
 		{ "rcCommand[3],",  "1,", "0,", "0,", "1,", "0,", 1,     typeFLOAT, &currRcCommandF[THROTTLE]},
+
+		//{ "accSmooth[2],",  "1,", "0,", "0,", "1,", "0,", 2048,  typeFLOAT, &currFilteredAccData[ACCX]},
+		//{ "accSmooth[0],",  "1,", "0,", "0,", "1,", "0,", 2048,  typeFLOAT, &currFilteredAccData[ACCY]},
+		//{ "accSmooth[1],",  "1,", "0,", "0,", "1,", "0,", 2048,  typeFLOAT, &currFilteredAccData[ACCZ]},
+
+		{ "current,",       "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &adcCurrent},
+		{ "voltageRaw,",    "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &adcVoltage},
+		{ "voltageAvg,",    "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &averageVoltage},
+		
 
 		{ "debug[2],",      "1,", "0,", "0,", "1,", "0,", 16.4,  typeFLOAT, &currFlightSetPoints[YAW]},
 		{ "debug[0],",      "1,", "0,", "0,", "1,", "0,", 16.4,  typeFLOAT, &currFlightSetPoints[ROLL]},
@@ -136,31 +150,15 @@ const bb_ip_value bb_data[MAX_BB_VALUES] =
 		{ "ugyroADC[0],",   "1,", "0,", "0,", "1,", "0,", 16.4,  typeFLOAT, &currFilteredGyroData[ROLL]},
 		{ "ugyroADC[1],",   "1,", "0,", "0,", "1,", "0,", 16.4,  typeFLOAT, &currFilteredGyroData[PITCH]},
 
-		{ "accSmooth[2],",  "1,", "0,", "0,", "1,", "0,", 2048,  typeFLOAT, &currFilteredAccData[ACCX]},
-		{ "accSmooth[0],",  "1,", "0,", "0,", "1,", "0,", 2048,  typeFLOAT, &currFilteredAccData[ACCY]},
-		{ "accSmooth[1],",  "1,", "0,", "0,", "1,", "0,", 2048,  typeFLOAT, &currFilteredAccData[ACCZ]},
-
-		{ "motor[0],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currMotorOutput[0]},
-		{ "motor[1],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currMotorOutput[1]},
-		{ "motor[2],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currMotorOutput[2]},
-		{ "motor[3],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currMotorOutput[3]},
-
 		//{ "tVelocity,",     "1,", "0,", "0,", "1,", "0,", 100,   typeFLOAT, &currThrottleVelocity},
-		{ "voltageRaw,",    "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &adcVoltage},
-		{ "voltageAvg,",    "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &averageVoltage},
-		{ "current,",       "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &adcCurrent},
-
 		//{ "axisT[YAW],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currKiTrim[YAW] },
 		//{ "axisT[ROLL],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currKiTrim[ROLL] },
 		//{ "axisT[PITCH],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currKiTrim[PITCH] },
 		//{ "filty,",    "1,", "0,", "0,", "1,", "0,", 1000000,  typeFLOAT, &pafGyroStates[YAW].k},
 		//{ "filtr,",    "1,", "0,", "0,", "1,", "0,", 1000000,  typeFLOAT, &pafGyroStates[ROLL].k},
 		//{ "filtp,",     "1,", "0,", "0,", "1,", "0,", 1000000,  typeFLOAT, &pafGyroStates[PITCH].k},
-		
 
 };
-
-
 
 static int PrintLogHeaderToBuffer(void);
 static int SetupLog(void);
@@ -397,7 +395,8 @@ uint32_t ZigzagEncode(int32_t value)
 
 void BlackboxWriteUnsignedVB(uint32_t value)
 {
-    while (value > 127) { // one acceptable use of while loop, because 3 shifts is 0, guaranteeed P.G.
+	while (value > 127)
+	{ // one acceptable use of while loop, because 3 shifts is 0, guaranteeed P.G.
     	WriteByteToFlash((uint8_t) (value | 0x80)); // Set the high bit to mean "more bytes follow"
         value >>= 7;
     }
@@ -554,10 +553,10 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 					currFilteredAccData[finishX]  = ( (filteredAccData[finishX] + lastFilteredAccData[finishX]) * 0.5);
 				}
 
-				currMotorOutput[0] = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5) + 1.000f;
-				currMotorOutput[1] = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5) + 1.000f;
-				currMotorOutput[2] = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5) + 1.000f;
-				currMotorOutput[3] = ( (motorOutput[3] + lastMotorOutput[3]) * 0.5) + 1.000f;
+				currMotorOutput[0] = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5f) + 1.000f;
+				currMotorOutput[1] = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5f) + 1.000f;
+				currMotorOutput[2] = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5f) + 1.000f;
+				currMotorOutput[3] = ( (motorOutput[3] + lastMotorOutput[3]) * 0.5f) + 1.000f;
 
 				currKiTrim[0] = kiTrim[0];
 				currKiTrim[1] = kiTrim[1];
@@ -588,8 +587,8 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				lastMotorOutput[2] = motorOutput[2];
 				lastMotorOutput[3] = motorOutput[3];
 
-				currRcCommandF[YAW] = smoothedRcCommandF[YAW];
-				currRcCommandF[ROLL] = smoothedRcCommandF[ROLL];
+				currRcCommandF[YAW]   = smoothedRcCommandF[YAW];
+				currRcCommandF[ROLL]  = smoothedRcCommandF[ROLL];
 				currRcCommandF[PITCH] = smoothedRcCommandF[PITCH];
 				//1000 to 1850
 				currRcCommandF[THROTTLE] = ( ((smoothedRcCommandF[THROTTLE] + 1) * 500) + 1000) ;
@@ -637,6 +636,11 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 							temp3 = (*(float *)bbValues.bbPtr[x]->data);
 							temp3 *= (float)bbValues.bbPtr[x]->dataMultiplier;
 							BlackboxWriteSignedVB( (int)( temp3 ));
+							break;
+						case typeFLOATu:
+							temp3 = (*(float *)bbValues.bbPtr[x]->data);
+							temp3 *= (float)bbValues.bbPtr[x]->dataMultiplier;
+							BlackboxWriteUnsignedVB( (uint32_t)( temp3 ));
 							break;
 					}
 				}

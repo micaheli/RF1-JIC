@@ -1478,6 +1478,20 @@ Version 0.339.132 BETA:
 Version 0.340.133 BETA:
 	Adjust defaults to filter 1
 
+Version 0.341.133 BETA:
+	Smooth learning process
+
+Version 0.342.133 BETA:
+	Change learning
+
+Version 0.343.133 BETA:
+	Latch part of the learning to once per flight
+
+Version 0.343.133 BETA:
+	Adjusted bb logging
+
+Version 0.345.134 BETA:
+	Added Turkey mode
 
 #Features in current development:
 #	MAVlink compatibility

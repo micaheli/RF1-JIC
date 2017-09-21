@@ -124,7 +124,7 @@ void InitActuators(void)
 			disarmUs3d  = 13.75;
 			disarmUs    = 4.850;
 			calibrateUs = 5.000;
-			walledUs    = 23.00;
+			walledUs    = 22.60;
 			calibrateWalledUs = 22.50;
 			pwmHz       = 32000;
 			timerHz     = 48000000; // full resolution

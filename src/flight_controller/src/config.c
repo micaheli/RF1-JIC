@@ -2168,6 +2168,48 @@ void ProcessCommand(char *inString)
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me t 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.motorTrim[0] * 100), (int)(persistance.data.motorTrim[1] * 100), (int)(persistance.data.motorTrim[2] * 100), (int)(persistance.data.motorTrim[3] * 100));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
+			//8bit storage
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me y ");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			for(uint32_t x=0;x<20;x++)
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%i,",(int)(persistance.data.yawKiTrim8[x]));
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me r ");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			for(uint32_t x=0;x<20;x++)
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%i,",(int)(persistance.data.rollKiTrim8[x]));
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me p ");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			for(uint32_t x=0;x<20;x++)
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%i,",(int)(persistance.data.pitchKiTrim8[x]));
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me g ");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			for(uint32_t x=0;x<20;x++)
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%i,",(int)(persistance.data.geeForce[x]));
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
+			/*
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me y 1, 2, 3, 4, 5: %i, %i, %i, %i, %i\n",(int)(persistance.data.yawKiTrim[0] * 1000000), (int)(persistance.data.yawKiTrim[1] * 1000000), (int)(persistance.data.yawKiTrim[2] * 1000000), (int)(persistance.data.yawKiTrim[3] * 1000000), (int)(persistance.data.yawKiTrim[5] * 1000000));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me y 6, 7, 8, 9, 10: %i, %i, %i, %i, %i\n",(int)(persistance.data.yawKiTrim[5] * 1000000), (int)(persistance.data.yawKiTrim[6] * 1000000), (int)(persistance.data.yawKiTrim[7] * 1000000), (int)(persistance.data.yawKiTrim[8] * 1000000), (int)(persistance.data.yawKiTrim[9] * 1000000));
@@ -2182,6 +2224,7 @@ void ProcessCommand(char *inString)
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me p 6, 7, 8, 9, 10: %i, %i, %i, %i, %i\n",(int)(persistance.data.pitchKiTrim[5] * 1000000), (int)(persistance.data.pitchKiTrim[6] * 1000000), (int)(persistance.data.pitchKiTrim[7] * 1000000), (int)(persistance.data.pitchKiTrim[8] * 1000000), (int)(persistance.data.pitchKiTrim[9] * 1000000));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
+			*/
 		}
 	else if (!strcmp("iffy", inString))
 		{
