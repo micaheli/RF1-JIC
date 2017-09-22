@@ -424,6 +424,7 @@ typedef struct {
 	uint32_t				activeTim;
 	uint32_t				timCCR;
 	uint32_t				polarity;
+	uint32_t				isNChannel;
 	uint32_t				actuatorArrayNum;
 	uint32_t				Dma;
 	uint32_t				dmaEnabled;

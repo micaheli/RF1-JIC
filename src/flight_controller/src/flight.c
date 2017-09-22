@@ -790,9 +790,9 @@ static int TrimKi(void)
 		//kiTrim[YAW]   = ConvertFloatToInt8ForKi(persistance.data.yawKiTrim8[position2])   * (remainder) + (ConvertInt8ToFloatForKi(persistance.data.yawKiTrim8[position2+1]) * (1 - remainder));
 		//kiTrim[ROLL]  = ConvertInt8ToFloatForKi(persistance.data.rollKiTrim8[position2])  * (remainder) + (ConvertInt8ToFloatForKi(persistance.data.rollKiTrim8[position2+1]) * (1 - remainder));
 		//kiTrim[PITCH] = ConvertInt8ToFloatForKi(persistance.data.pitchKiTrim8[position2]) * (remainder) + (ConvertInt8ToFloatForKi(persistance.data.pitchKiTrim8[position2+1]) * (1 - remainder));	
-		kiTrim[YAW]   = ConvertInt8ToFloatForKi(persistance.data.yawKiTrim8[position2]) * 0.00001;
-		kiTrim[ROLL]  = ConvertInt8ToFloatForKi(persistance.data.rollKiTrim8[position2]) * 0.00001;
-		kiTrim[PITCH] = ConvertInt8ToFloatForKi(persistance.data.pitchKiTrim8[position2]) * 0.00001;
+		kiTrim[YAW]   = ConvertInt8ToFloatForKi(persistance.data.yawKiTrim8[position2]) * 0.0000001;
+		kiTrim[ROLL]  = ConvertInt8ToFloatForKi(persistance.data.rollKiTrim8[position2]) * 0.0000001;
+		kiTrim[PITCH] = ConvertInt8ToFloatForKi(persistance.data.pitchKiTrim8[position2]) * 0.0000001;
 		//kiTrim[YAW]   = persistance.data.yawKiTrim[position]   * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
 		//kiTrim[ROLL]  = persistance.data.rollKiTrim[position]  * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
 		//kiTrim[PITCH] = persistance.data.pitchKiTrim[position] * (remainder) + (persistance.data.yawKiTrim[position+1] * (1 - remainder));
@@ -830,6 +830,8 @@ static int TrimKi(void)
 
 static int TrimMotors(void)
 {
+	if (!ModeSet(M_LEARN))
+		return(0);
 	//if (ModeSet(M_LEARN) && !ModeActive(M_LEARN))
 	//	return(0);
 
@@ -846,7 +848,8 @@ static int TrimMotors(void)
 
 	//throttle is 100% and constrols in deadband range
 	if(
-		(motorTrimHasHappened == 0) &&
+		ModeActive(M_LEARN) &&
+		//(motorTrimHasHappened == 0) &&
 		(smoothCurvedThrottle0_1 > 0.99f) &&
 		(smoothedRcCommandF[PITCH] == 0.0f) &&
 		(smoothedRcCommandF[ROLL] == 0.0f) &&
@@ -876,13 +879,17 @@ static int TrimMotors(void)
 		//for now quad only
 		for(int xxx = 0; xxx < 4; xxx++)
 		{
-			persistance.data.motorTrim[xxx] = CONSTRAIN( (persistance.data.motorTrim[xxx] * 0.995f) + (motorOutput[xxx] * 0.005f), 0.85f, 1.0f);
+			persistance.data.motorTrim[xxx] = CONSTRAIN( (persistance.data.motorTrim[xxx] * 0.95f) + (motorOutput[xxx] * 0.05f), 0.85f, 1.0f);
 			if(tallestMotor < persistance.data.motorTrim[xxx])
 				tallestMotor = persistance.data.motorTrim[xxx];
 		}
 
 		for(int xxx = 0; xxx < 4; xxx++)
+		{
 			persistance.data.motorTrim[xxx] += (1.0f - tallestMotor);
+		}
+
+			//#me t 1, 2, 3, 4: 98, 91, 100, 95
 	}
 
 	return(0);

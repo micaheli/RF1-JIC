@@ -1493,6 +1493,23 @@ Version 0.343.133 BETA:
 Version 0.345.134 BETA:
 	Added Turkey mode
 
+Version 0.346.134 BETA:
+	Learning only on switch
+
+Version 0.347.134 BETA:
+	Change logging to the last that worked
+	Learn mode only applies if learn mode is set and not active
+	Learn mode only learns when learn mode active
+
+Version 0.348.134 BETA:
+	Change learning
+	Fix Logging
+
+Version 0.349.134 BETA:
+	Fix learning
+	To turn off learning do not set learn mode to a switch
+
+
 #Features in current development:
 #	MAVlink compatibility
 

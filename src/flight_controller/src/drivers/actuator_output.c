@@ -148,8 +148,8 @@ void InitActuators(void)
 	walledPulseValue           = ((uint32_t)(walledUs * timerHz))          / 1000000;
 	calibrateWalledPulseValue  = ((uint32_t)(calibrateWalledUs * timerHz)) / 1000000;
 
-	pulseValueRange         = walledPulseValue - idlePulseValue;        //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
-	boostedPulseValueRange  = walledPulseValue - boostedIdlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
+	pulseValueRange            = walledPulseValue - idlePulseValue;        //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
+	boostedPulseValueRange     = walledPulseValue - boostedIdlePulseValue; //throttle for motor output is float motorThrottle * pulseValueRange + idlePulseValue;
 	
 	for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
 	{
@@ -169,7 +169,12 @@ void InitActuators(void)
 		if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
 		{
 			HAL_TIM_Base_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum]);
-			HAL_TIM_PWM_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum], board.motors[outputNumber].timChannel);
+
+			if(board.motors[outputNumber].isNChannel)
+				HAL_TIMEx_PWMN_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum], board.motors[outputNumber].timChannel);
+			else
+				HAL_TIM_PWM_Start(&pwmTimers[board.motors[outputNumber].actuatorArrayNum], board.motors[outputNumber].timChannel);
+			
 		}
 	}
 
@@ -200,6 +205,11 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStruct);
 
 	// Initialize timer
+	//#define TIM_OCPOLARITY_HIGH                ((uint32_t)0x00000000U)
+	//#define TIM_OCPOLARITY_LOW                 (TIM_CCER_CC1P)
+	//#define TIM_OCNPOLARITY_HIGH               ((uint32_t)0x00000000U)
+	//#define TIM_OCNPOLARITY_LOW                (TIM_CCER_CC1NP)
+
 	pwmTimers[actuator.actuatorArrayNum].Instance           = timers[actuator.timer];
 	pwmTimers[actuator.actuatorArrayNum].Init.Prescaler     = timerPrescaler;
 	pwmTimers[actuator.actuatorArrayNum].Init.CounterMode   = TIM_COUNTERMODE_UP;
@@ -213,16 +223,30 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	HAL_TIM_PWM_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
 	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sMasterConfig);
 
 	// Initialize timer pwm channel
-
-	sConfigOC.OCMode      = TIM_OCMODE_PWM2;
+	//sConfigOC.OCMode      = TIM_OCMODE_PWM2;
+	sConfigOC.OCMode      = TIM_OCMODE_PWM1;
 	sConfigOC.Pulse       = 0;
-	sConfigOC.OCPolarity  = actuator.polarity;
-	sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
-	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
+	//sConfigOC.OCFastMode  = TIM_OCFAST_ENABLE;
+	sConfigOC.OCFastMode  = TIM_OCFAST_DISABLE;
+
+	if(actuator.isNChannel)
+	{
+		sConfigOC.OCIdleState  = TIM_OCIDLESTATE_RESET;
+		sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+		sConfigOC.OCPolarity   = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCPOLARITY_LOW : TIM_OCPOLARITY_HIGH;
+		sConfigOC.OCNPolarity  = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCNPOLARITY_LOW : TIM_OCNPOLARITY_HIGH;
+	}
+	else
+	{
+		sConfigOC.OCIdleState  = TIM_OCIDLESTATE_SET;
+		sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
+		sConfigOC.OCPolarity   = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW;
+		sConfigOC.OCNPolarity  = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
+	}
 
 	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfigOC, actuator.timChannel);
 
@@ -308,6 +332,7 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 	{
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
 		{
+
 			outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
 			if (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) 
 			{

@@ -277,6 +277,7 @@ int GetBoardHardwareDefs(void)
 	board.motors[0].activeTim	      = ACTUATOR1_ACTIVE_TIM;
 	board.motors[0].timCCR            = ACTUATOR1_TIM_CCR;
 	board.motors[0].polarity          = ACTUATOR1_POLARITY;
+	board.motors[0].isNChannel        = ACTUATOR1_IS_N_CHANNEL;
 	board.motors[0].Dma               = ACTUATOR1_DMA;
 	board.motors[0].dmaIRQn           = ACTUATOR1_DMA_IRQN;
 	board.motors[0].dmaChannel        = ACTUATOR1_DMA_CHANNEL;
@@ -305,6 +306,7 @@ int GetBoardHardwareDefs(void)
 	board.motors[1].activeTim	      = ACTUATOR2_ACTIVE_TIM;
 	board.motors[1].timCCR            = ACTUATOR2_TIM_CCR;
 	board.motors[1].polarity          = ACTUATOR2_POLARITY;
+	board.motors[1].isNChannel        = ACTUATOR2_IS_N_CHANNEL;
 	board.motors[1].Dma               = ACTUATOR2_DMA;
 	board.motors[1].dmaIRQn           = ACTUATOR2_DMA_IRQN;
 	board.motors[1].dmaChannel        = ACTUATOR2_DMA_CHANNEL;
@@ -332,6 +334,7 @@ int GetBoardHardwareDefs(void)
 	board.motors[2].activeTim	      = ACTUATOR3_ACTIVE_TIM;
 	board.motors[2].timCCR            = ACTUATOR3_TIM_CCR;
 	board.motors[2].polarity          = ACTUATOR3_POLARITY;
+	board.motors[2].isNChannel        = ACTUATOR3_IS_N_CHANNEL;
 	board.motors[2].Dma               = ACTUATOR3_DMA;
 	board.motors[2].dmaIRQn           = ACTUATOR3_DMA_IRQN;
 	board.motors[2].dmaChannel        = ACTUATOR3_DMA_CHANNEL;
@@ -360,6 +363,7 @@ int GetBoardHardwareDefs(void)
 	board.motors[3].activeTim	      = ACTUATOR4_ACTIVE_TIM;
 	board.motors[3].timCCR            = ACTUATOR4_TIM_CCR;
 	board.motors[3].polarity          = ACTUATOR4_POLARITY;
+	board.motors[3].isNChannel        = ACTUATOR4_IS_N_CHANNEL;
 	board.motors[3].Dma               = ACTUATOR4_DMA;
 	board.motors[3].dmaIRQn           = ACTUATOR4_DMA_IRQN;
 	board.motors[3].dmaChannel        = ACTUATOR4_DMA_CHANNEL;
@@ -387,6 +391,7 @@ int GetBoardHardwareDefs(void)
 	board.motors[5].activeTim	      = ACTUATOR6_ACTIVE_TIM;
 	board.motors[5].timCCR            = ACTUATOR6_TIM_CCR;
 	board.motors[5].polarity          = ACTUATOR6_POLARITY;
+	board.motors[5].isNChannel        = ACTUATOR6_IS_N_CHANNEL;
 	board.motors[5].Dma               = ACTUATOR6_DMA;
 	board.motors[5].dmaIRQn           = ACTUATOR6_DMA_IRQN;
 	board.motors[5].dmaChannel        = ACTUATOR6_DMA_CHANNEL;
@@ -418,6 +423,7 @@ int GetBoardHardwareDefs(void)
 	board.motors[6].activeTim	      = ACTUATOR7_ACTIVE_TIM;
 	board.motors[6].timCCR            = ACTUATOR7_TIM_CCR;
 	board.motors[6].polarity          = ACTUATOR7_POLARITY;
+	board.motors[6].isNChannel        = ACTUATOR7_IS_N_CHANNEL;
 	board.motors[6].Dma               = ACTUATOR7_DMA;
 	board.motors[6].dmaIRQn           = ACTUATOR7_DMA_IRQN;
 	board.motors[6].dmaChannel        = ACTUATOR7_DMA_CHANNEL;
@@ -446,6 +452,7 @@ int GetBoardHardwareDefs(void)
 	board.motors[7].activeTim	      = ACTUATOR8_ACTIVE_TIM;
 	board.motors[7].timCCR            = ACTUATOR8_TIM_CCR;
 	board.motors[7].polarity          = ACTUATOR8_POLARITY;
+	board.motors[7].isNChannel        = ACTUATOR8_IS_N_CHANNEL;
 	board.motors[7].Dma               = ACTUATOR8_DMA;
 	board.motors[7].dmaIRQn           = ACTUATOR8_DMA_IRQN;
 	board.motors[7].dmaChannel        = ACTUATOR8_DMA_CHANNEL;

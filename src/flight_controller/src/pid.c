@@ -153,15 +153,15 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 
 		if( ModeActive(M_TURKEY) && ABS(smoothedRcCommandF[axis]) > 0.3f)
 		{
-			float thisMultiplier = (ABS(smoothedRcCommandF[axis]) - 0.3f) * 0.5f;
-			pidsUsedThisTime[axis].kp = pidsUsed[axis].kp + (pidsUsed[axis].kp * thisMultiplier);
+			float thisMultiplier = (ABS(smoothedRcCommandF[axis]) - 0.3f);// * 1.0f;
+			//pidsUsedThisTime[axis].kp = pidsUsed[axis].kp + (pidsUsed[axis].kp * thisMultiplier);
 			pidsUsedThisTime[axis].ki = pidsUsed[axis].ki - (pidsUsed[axis].ki * thisMultiplier);
 		}
 		else
 		{
-			pidsUsedThisTime[axis].kp = pidsUsed[axis].kp;
 			pidsUsedThisTime[axis].ki = pidsUsed[axis].ki;
 		}
+		pidsUsedThisTime[axis].kp = pidsUsed[axis].kp;
 		pidsUsedThisTime[axis].kd = pidsUsed[axis].kd;
 		
 		pidError = flightSetPoints[axis] - filteredGyroData[axis];
