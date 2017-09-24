@@ -50,20 +50,21 @@ typedef struct {
 } buffer_record;
 
 //8bit storage
-#define PERSISTANCE_VERSION 003
+#define PERSISTANCE_VERSION 004
 //#define PERSISTANCE_VERSION 002
 
 //8bit storage
 typedef struct
 {
-	uint8_t version;
-	uint16_t generation;
-	uint8_t itteration;
-	volatile float motorTrim[8];
-	volatile int8_t yawKiTrim8[20];
-	volatile int8_t rollKiTrim8[20];
-	volatile int8_t pitchKiTrim8[20];
-	volatile int8_t geeForce[20];
+	uint8_t           version;
+	uint16_t          generation;
+	uint8_t           itteration;
+	volatile float    motorTrim[8];
+	volatile int8_t   yawKiTrim8[20];
+	volatile int8_t   rollKiTrim8[20];
+	volatile int8_t   pitchKiTrim8[20];
+	volatile int8_t   geeForce[20];
+	volatile uint32_t rememberence[20];
 	uint8_t crc;
 } __attribute__ ((__packed__)) persistance_data_record;
 

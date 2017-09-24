@@ -235,17 +235,17 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 
 	if(actuator.isNChannel)
 	{
-		sConfigOC.OCIdleState  = TIM_OCIDLESTATE_RESET;
-		sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-		sConfigOC.OCPolarity   = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCPOLARITY_LOW : TIM_OCPOLARITY_HIGH;
+		//sConfigOC.OCIdleState  = TIM_OCIDLESTATE_RESET;
+		//sConfigOC.OCPolarity   = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCPOLARITY_LOW : TIM_OCPOLARITY_HIGH;
+		sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
 		sConfigOC.OCNPolarity  = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCNPOLARITY_LOW : TIM_OCNPOLARITY_HIGH;
 	}
 	else
 	{
-		sConfigOC.OCIdleState  = TIM_OCIDLESTATE_SET;
-		sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
+		sConfigOC.OCIdleState  = TIM_OCIDLESTATE_RESET;
 		sConfigOC.OCPolarity   = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW;
-		sConfigOC.OCNPolarity  = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
+		//sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
+		//sConfigOC.OCNPolarity  = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
 	}
 
 	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfigOC, actuator.timChannel);

@@ -773,6 +773,7 @@ static int TrimKi(void)
 		persistance.data.rollKiTrim8[position2] = ConvertFloatToInt8ForKi(flightPids[ROLL].ki);
 		persistance.data.pitchKiTrim8[position2] = ConvertFloatToInt8ForKi(flightPids[PITCH].ki);
 		persistance.data.geeForce[position2] = lrintf( (float)(persistance.data.geeForce[position2] * 0.80f) + (float)((geeForceZ * 10.0f) * 0.20f));
+		persistance.data.rememberence[position2]++;
 		//persistance.data.yawKiTrim8[position2] = ConvertFloatToInt8ForKi(( (float)ConvertInt8ToFloatForKi(persistance.data.yawKiTrim8[position2]) * 0.80f) + ((flightPids[YAW].ki) * 0.20f));
 		//persistance.data.rollKiTrim8[position2] = ConvertFloatToInt8ForKi(( (float)ConvertInt8ToFloatForKi(persistance.data.rollKiTrim8[position2]) * 0.80f) + ((flightPids[ROLL].ki) * 0.20f));
 		//persistance.data.pitchKiTrim8[position2] = ConvertFloatToInt8ForKi(( (float)ConvertInt8ToFloatForKi(persistance.data.pitchKiTrim8[position2]) * 0.80f) + ((flightPids[PITCH].ki) * 0.20f));
@@ -1431,8 +1432,8 @@ int InitFlight(void)
     InitFlightCode();     //flight code before PID code is a must since flight.c contains loop time settings the pid.c uses.
     InitPid();            //Relies on InitFlightCode for proper activations.
     DeInitActuators();    //Deinit before Init is a shotgun startup
-    InitActuators();      //Actuator init should happen after soft serial init.
-    ZeroActuators(1000);  //output actuators to idle after timers are stable;
+    //InitActuators();      //Actuator init should happen after soft serial init.
+    //ZeroActuators(1000);  //output actuators to idle after timers are stable;
 
 	InitAdc();            //init ADC functions
     InitModes();          //set flight modes mask to zero.
@@ -1472,8 +1473,8 @@ int InitFlight(void)
 	}
 
     //DeInitActuators();    //Deinit before Init is a shotgun startup
-    InitActuators();      //Actuator init should happen after soft serial init.
-    ZeroActuators(1000);  //output actuators to idle after timers are stable;
+    InitActuators();        //Actuator init should happen after soft serial init.
+    ZeroActuators(500);     //output actuators to idle after timers are stable;
 
 	//InitTransponderTimer();
 	DelayMs(2);

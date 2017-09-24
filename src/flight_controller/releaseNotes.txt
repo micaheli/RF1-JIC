@@ -1509,6 +1509,9 @@ Version 0.349.134 BETA:
 	Fix learning
 	To turn off learning do not set learn mode to a switch
 
+Version 0.350.134 BETA:
+	dshot changes
+	learning changes
 
 #Features in current development:
 #	MAVlink compatibility

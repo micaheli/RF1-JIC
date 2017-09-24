@@ -356,8 +356,8 @@ uint32_t DoesDmaConflictWithDshot(motor_type dShotActuator, motor_type actuator)
 
 	if (dShotActuator.Dma == actuator.Dma)
 		return 1;
-
-	return 0;
+	else
+		return 0;
 }
 
 void SetActiveDmaToActuatorDma(motor_type actuator) {
@@ -382,6 +382,7 @@ void SetActiveDmaToActuatorDma(motor_type actuator) {
 
 uint32_t DoesDmaConflictWithActiveDmas(motor_type actuator) {
 
+	//todo: I don't like how this function operates
 	uint32_t x;
 
 	for (x=0;x<16;x++)
@@ -496,7 +497,7 @@ void DeInitDmaOutputForSoftSerial(motor_type actuator)
 		//keep timer and GPIO settings as they were.
 
 		HAL_DMA_DeInit(pwmTimers[actuator.actuatorArrayNum].hdma[actuator.CcDmaHandle]); //disable DMA
-		board.dmasActive[board.dmasMotor[actuator.actuatorArrayNum].dmaHandle].enabled = 0;
+		board.dmasActive[actuator.Dma].enabled = 0;
 	}
 
 }
@@ -688,7 +689,7 @@ void InitDshotOutputOnMotors(uint32_t usedFor)
 	for (uint32_t motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
 	{
 		outputNumber = mainConfig.mixerConfig.motorOutput[motorNum];
-		if ( (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (board.dmasMotor[board.motors[outputNumber].Dma].enabled) )
+		if ( (board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR) && (board.dmasMotor[board.motors[outputNumber].actuatorArrayNum].enabled) )
 		{
 			SetActiveDmaToActuatorDma(board.motors[outputNumber]);
 			alonePulseWidth[board.motors[outputNumber].actuatorArrayNum+1]  = alonePulse;
@@ -734,20 +735,36 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 	sConfigOCHandles[actuator.actuatorArrayNum].OCMode       = TIM_OCMODE_PWM1;
 	sConfigOCHandles[actuator.actuatorArrayNum].OCFastMode   = TIM_OCFAST_DISABLE;
 	sConfigOCHandles[actuator.actuatorArrayNum].Pulse        = 0;
+
 	if(actuator.isNChannel)
 	{
-		sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity   = inverted ? TIM_OCPOLARITY_LOW : TIM_OCPOLARITY_HIGH; //High polarity if inverted, low if not
-		sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = inverted ? TIM_OCIDLESTATE_SET : TIM_OCIDLESTATE_RESET; //Reset if inverted, set if not
-		sConfigOCHandles[actuator.actuatorArrayNum].OCNPolarity  = inverted ? TIM_OCNPOLARITY_LOW : TIM_OCNPOLARITY_HIGH; //High polarity if inverted, low if not
-		sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = inverted ? TIM_OCNIDLESTATE_SET : TIM_OCNIDLESTATE_RESET; //Reset if inverted, set if not
+		//sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_RESET;
+		//sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity   = (inverted) ? TIM_OCPOLARITY_LOW : TIM_OCPOLARITY_HIGH;
+		sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = TIM_OCNIDLESTATE_RESET;
+		sConfigOCHandles[actuator.actuatorArrayNum].OCNPolarity  = (inverted) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
 	}
 	else
 	{
-		sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity   = inverted ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW; //High polarity if inverted, low if not
-		sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = inverted ? TIM_OCIDLESTATE_RESET : TIM_OCIDLESTATE_SET; //Reset if inverted, set if not
-		sConfigOCHandles[actuator.actuatorArrayNum].OCNPolarity  = inverted ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW; //High polarity if inverted, low if not
-		sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = inverted ? TIM_OCNIDLESTATE_RESET : TIM_OCNIDLESTATE_SET; //Reset if inverted, set if not
+		sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_RESET;
+		sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity   = (inverted) ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW;
+		//sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = TIM_OCNIDLESTATE_SET;
+		//sConfigOCHandles[actuator.actuatorArrayNum].OCNPolarity  = (inverted) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
 	}
+
+	//if(actuator.isNChannel)
+	//{
+	//	//sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_RESET;
+	//	sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = TIM_OCNIDLESTATE_RESET;
+	//	sConfigOCHandles[actuator.actuatorArrayNum].OCNPolarity  = inverted ? TIM_OCNPOLARITY_LOW : TIM_OCNPOLARITY_HIGH; //High polarity if inverted, low if not
+	//	
+	//}
+	//else
+	//{
+	//	sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_SET;
+	//	//sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = TIM_OCNIDLESTATE_SET;
+	//	sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity   = inverted ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW; //High polarity if inverted, low if not
+	//	//sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = inverted ? TIM_OCIDLESTATE_RESET : TIM_OCIDLESTATE_SET; //Reset if inverted, set if not
+	//}
 
 
 	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfigOCHandles[actuator.actuatorArrayNum], actuator.timChannel);

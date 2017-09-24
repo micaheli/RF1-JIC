@@ -1,6 +1,6 @@
 #include "includes.h"
 
-#define TRAMP_RETRIES 2
+#define TRAMP_RETRIES 3
 #define TRAMP_BUFFER_SIZE 16
 
 static uint8_t  trampIoBuffer[TRAMP_BUFFER_SIZE];     //set
@@ -363,7 +363,7 @@ static int TrampSendCommand(uint8_t cmd, uint16_t param, int waitForResponse)
                 if (board.serials[serialNumber].Protocol == USING_TRAMP)
                 {
 
-                    responseBack = HAL_UART_Transmit(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)trampIoBuffer,TRAMP_BUFFER_SIZE, 30);
+                    responseBack = HAL_UART_Transmit(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)trampIoBuffer,TRAMP_BUFFER_SIZE, 45);
                     bzero(trampIoBuffer, sizeof(trampIoBuffer));
 
                     if (responseBack == HAL_OK)
@@ -374,8 +374,8 @@ static int TrampSendCommand(uint8_t cmd, uint16_t param, int waitForResponse)
                         }
                         else
                         {
-                            DelayMs(15);
-                            responseBack = HAL_UART_Receive(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)trampIoBuffer, TRAMP_BUFFER_SIZE, 150);
+                            DelayMs(5);
+                            responseBack = HAL_UART_Receive(&uartHandles[board.serials[serialNumber].usartHandle], (uint8_t *)trampIoBuffer, TRAMP_BUFFER_SIZE, 200);
                         }
                     }
 

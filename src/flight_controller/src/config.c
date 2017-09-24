@@ -2209,6 +2209,16 @@ void ProcessCommand(char *inString)
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me r ");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+			for(uint32_t x=0;x<20;x++)
+			{
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%i,",(int)(persistance.data.rememberence[x]));
+				RfCustomReplyBuffer(rf_custom_out_buffer);
+			}
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+
 			/*
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me y 1, 2, 3, 4, 5: %i, %i, %i, %i, %i\n",(int)(persistance.data.yawKiTrim[0] * 1000000), (int)(persistance.data.yawKiTrim[1] * 1000000), (int)(persistance.data.yawKiTrim[2] * 1000000), (int)(persistance.data.yawKiTrim[3] * 1000000), (int)(persistance.data.yawKiTrim[5] * 1000000));
 			RfCustomReplyBuffer(rf_custom_out_buffer);

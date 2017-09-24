@@ -142,7 +142,7 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 	static float   longKi[3] = {0,};
 	static float   shortKi[3] = {0,};
 	static float lastfilteredGyroData[AXIS_NUMBER] = {0,};
-	float kiToUse[3];
+	//float kiToUse[3];
 	//static float setPointSmoother[AXIS_NUMBER] = {0,};
 	
 	(void)(actuatorRange);
