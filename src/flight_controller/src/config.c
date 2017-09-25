@@ -150,6 +150,7 @@ const config_variables_rec valueTable[] = {
 		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,					0, MIXER_END, MIXER_X1234, "" },
 
 		{ "famx", 				typeUINT,  "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0, 1, 1, "" },
+		{ "bounce_guard", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.bounceGuard,					0, 0.2f, 0.1f, "" },
 		{ "mixer_style", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerStyle,					0, 1, 0, "" },
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtocol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
 		{ "bit_reverse_esc_1",	typeINT,   "mixr", &mainConfig.mixerConfig.bitReverseEsc[0],			0, 1, -1, "" },
@@ -651,6 +652,7 @@ static void DoIdleStop(void)
 	taskIdleActuators[5]=0;
 	taskIdleActuators[6]=0;
 	taskIdleActuators[7]=0;
+	taskDshotActuators = 0;
 }
 
 void GenerateConfig(void)
@@ -1124,13 +1126,34 @@ void ProcessCommand(char *inString)
 			else
 			{
 				uint32_t motorToSpin = CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER);
+				uint8_t serialOutBuffer[3];
+
 				DisarmBoard();
 				SKIP_GYRO=1;
 
 				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Spinning Motor %lu\n", motorToSpin );
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 
-				DelayMs(10);
+				if ( IsDshotEnabled() )
+				{
+					if(!taskDshotActuators)
+					{
+						for(uint32_t xxx=0;xxx<2000;xxx++)
+						{
+							ThrottleToDshot(serialOutBuffer, 0, 0, 0);
+							OutputSerialDmaByte(serialOutBuffer, 2, board.motors[mainConfig.mixerConfig.motorOutput[0]], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
+							OutputSerialDmaByte(serialOutBuffer, 2, board.motors[mainConfig.mixerConfig.motorOutput[1]], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
+							OutputSerialDmaByte(serialOutBuffer, 2, board.motors[mainConfig.mixerConfig.motorOutput[2]], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
+							OutputSerialDmaByte(serialOutBuffer, 2, board.motors[mainConfig.mixerConfig.motorOutput[3]], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
+							DelayMs(1);
+						}
+						taskDshotActuators = 1;
+					}
+				}
+				else
+				{
+					DelayMs(1500);
+				}
 				taskIdleActuators[motorToSpin]=1;
 				IdleActuator( motorToSpin );
 			}
@@ -2163,7 +2186,7 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("purse", inString))
 		{
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me purse v, g, i: %i, %i, %i\n",persistance.data.version,persistance.data.generation,persistance.data.itteration);
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me purse v, g, i, v: %i, %i, %i, %i.%i\n",persistance.data.version,persistance.data.generation,persistance.data.itteration, FIRMWARE_VERSION_INT, CONFIG_VERSION);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me t 1, 2, 3, 4: %i, %i, %i, %i\n",(int)(persistance.data.motorTrim[0] * 100), (int)(persistance.data.motorTrim[1] * 100), (int)(persistance.data.motorTrim[2] * 100), (int)(persistance.data.motorTrim[3] * 100));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -2213,7 +2236,7 @@ void ProcessCommand(char *inString)
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			for(uint32_t x=0;x<20;x++)
 			{
-				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%i,",(int)(persistance.data.rememberence[x]));
+				snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "%lu,",(persistance.data.rememberence[x]));
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 			}
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "\n");

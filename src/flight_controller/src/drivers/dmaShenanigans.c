@@ -152,12 +152,14 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 	if (noEndPadding)
 	{
 		outBuffer[bufferIdx - 2] = 0;
+		outBuffer[bufferIdx - 1] = 0;
+		outBuffer[bufferIdx] = 0;
 	}
 
 	if(actuator.isNChannel)
-		HAL_TIMEx_PWMN_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)outBuffer, bufferIdx);
+		HAL_TIMEx_PWMN_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)outBuffer, bufferIdx-1);
 	else
-		HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)outBuffer, bufferIdx);
+		HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)outBuffer, bufferIdx-1);
 	
 }
 
@@ -738,17 +740,17 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 
 	if(actuator.isNChannel)
 	{
-		//sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_RESET;
-		//sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity   = (inverted) ? TIM_OCPOLARITY_LOW : TIM_OCPOLARITY_HIGH;
+		sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_RESET;
+		sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity   = (inverted) ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW;
 		sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = TIM_OCNIDLESTATE_RESET;
 		sConfigOCHandles[actuator.actuatorArrayNum].OCNPolarity  = (inverted) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
 	}
 	else
 	{
-		sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_RESET;
+		sConfigOCHandles[actuator.actuatorArrayNum].OCIdleState  = TIM_OCIDLESTATE_SET;
 		sConfigOCHandles[actuator.actuatorArrayNum].OCPolarity   = (inverted) ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW;
-		//sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = TIM_OCNIDLESTATE_SET;
-		//sConfigOCHandles[actuator.actuatorArrayNum].OCNPolarity  = (inverted) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
+		sConfigOCHandles[actuator.actuatorArrayNum].OCNIdleState = TIM_OCNIDLESTATE_SET;
+		sConfigOCHandles[actuator.actuatorArrayNum].OCNPolarity  = (inverted) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
 	}
 
 	//if(actuator.isNChannel)
@@ -775,15 +777,18 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
     HAL_NVIC_SetPriority(actuator.timerIRQn, 3, 0);
     HAL_NVIC_EnableIRQ(actuator.timerIRQn);
 
-    HAL_TIM_Base_Start(&pwmTimers[actuator.actuatorArrayNum]);
-
-    GPIO_InitStructure.Pin       = actuator.pin;
-    GPIO_InitStructure.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP
-    GPIO_InitStructure.Pull      = inverted ? GPIO_PULLDOWN : GPIO_PULLUP; //pull down for inverted, pull up for non inverted
-    GPIO_InitStructure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStructure.Alternate = actuator.AF;
-
-    HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStructure);
+	HAL_TIM_Base_Start(&pwmTimers[actuator.actuatorArrayNum]);
+	
+	HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
+	
+	GPIO_InitStructure.Pin       = actuator.pin;
+	GPIO_InitStructure.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP
+	GPIO_InitStructure.Pull      = inverted ? GPIO_PULLDOWN : GPIO_PULLUP; //pull down for inverted, pull up for non inverted
+	GPIO_InitStructure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+	GPIO_InitStructure.Alternate = actuator.AF;
+	
+	HAL_GPIO_Init(ports[actuator.port], &GPIO_InitStructure);
+	
 }
 
 static void TimDmaInit(TIM_HandleTypeDef *htim, uint32_t handlerIndex, board_dma actuatorDma)

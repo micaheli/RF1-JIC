@@ -800,7 +800,7 @@ int ResetPersistance(int preserveGeneration)
 	memset((uint8_t *)&persistance.data.rollKiTrim8, 0, sizeof(persistance.data.rollKiTrim8) );
 	memset((uint8_t *)&persistance.data.pitchKiTrim8, 0, sizeof(persistance.data.pitchKiTrim8) );
 	memset((uint8_t *)&persistance.data.geeForce, 10, sizeof(persistance.data.geeForce) );
-	memset((uint8_t *)&persistance.data.rememberence, 10, sizeof(persistance.data.rememberence) );
+	memset((uint8_t *)&persistance.data.rememberence, 0, sizeof(persistance.data.rememberence) );
 	persistance.currentWriteAddress = persistance.start1;
 	DelayMs(10); //give flash time to write page
 	SavePersistance();

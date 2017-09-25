@@ -3,6 +3,7 @@
 extern volatile int escFrequency;
 extern volatile float boostIdle;
 
+extern void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int reverse);
 extern void DeInitActuators(void);
 extern void InitActuators(void);
 extern void OutputActuators(volatile float motorOutputHere[], volatile float servoOutput[]);

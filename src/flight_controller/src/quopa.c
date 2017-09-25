@@ -8,7 +8,6 @@ volatile quopa_state dshotBeepState;
 int oldEscProtocol;
 int oldEscFrequency;
 
-static void CommandToDshot(uint8_t *serialOutBuffer, uint32_t command);
 
 int InitDshotBeep(void)
 {
@@ -297,7 +296,7 @@ int HandleDshotBeep(void)
     return(0);
 }
 
-static void CommandToDshot(uint8_t *serialOutBuffer, uint32_t command)
+void CommandToDshot(uint8_t *serialOutBuffer, uint32_t command)
 {
 	uint32_t digitalThrottle;
 	int      checksum = 0;

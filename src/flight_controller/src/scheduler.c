@@ -12,6 +12,7 @@ TIM_HandleTypeDef schedulerTimer;
 
 volatile int taskIdleActuators[8];
 volatile int taskDdsActuators;
+volatile int taskDshotActuators;
 
 //soft serial buffer handling. TODO: make a structure
 volatile uint32_t softSerialEnabled = 0;
@@ -120,6 +121,7 @@ void InitScheduler(void)
 {
 	safeLoopCounter  = 0;
 	taskDdsActuators = 0;
+	taskDshotActuators = 0;
 	taskIdleActuators[0]=0;
 	taskIdleActuators[1]=0;
 	taskIdleActuators[2]=0;
@@ -481,7 +483,10 @@ void TaskIdleActuators(void)
 
 	if (boardArmed)
 		return;
-	
+
+	//if(runEveryUs == 0)
+	//	ZeroActuators(500);
+
 	if (InlineMillis() > runEveryMs)
 	{
 		runEveryMs = InlineMillis();
@@ -492,12 +497,32 @@ void TaskIdleActuators(void)
 			OutputDDShotDma(board.motors[2], 0, taskDdsActuators);
 			OutputDDShotDma(board.motors[3], 0, taskDdsActuators);
 		}
+		else if (taskDshotActuators)
+		{
+			uint8_t serialOutBuffer[2];
+			uint32_t outputNumber;
+			for (x=0;x<4;x++)
+			{
+				outputNumber = mainConfig.mixerConfig.motorOutput[x];
+				if(taskIdleActuators[x] == 1)
+				{
+					ThrottleToDshot(serialOutBuffer, 0.001f, mainConfig.mixerConfig.idlePercent, mainConfig.mixerConfig.bitReverseEsc[x]);
+					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
+				}
+				else
+				{
+					ThrottleToDshot(serialOutBuffer, 0, 0, 0);
+					OutputSerialDmaByte(serialOutBuffer, 2, board.motors[outputNumber], 1, 0, 1); //buffer with data, number of bytes, actuator to output on, msb, no serial frame
+				}
+			}	
+		}
 		else
 		{
 			for (x=0;x<8;x++)
 			{
-				if(taskIdleActuators[x])
-					IdleActuator( x );
+				if(taskIdleActuators[x] == 1)
+					IdleActuator(x);
+
 			}
 		}
 	}

@@ -12,7 +12,6 @@ volatile int escFrequency = 0;
 volatile float boostIdle = 0.0f;
 
 static void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz);
-static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int reverse);
 static uint32_t ThrottleToDDshot(float throttle, float idle);
 
 //motor_output_array motorOutputArray[MAX_MOTOR_NUMBER];
@@ -122,9 +121,9 @@ void InitActuators(void)
 		case ESC_MULTISHOT:
 		default:
 			disarmUs3d  = 13.75;
-			disarmUs    = 4.850;
+			disarmUs    = 4.900;
 			calibrateUs = 5.000;
-			walledUs    = 22.60;
+			walledUs    = 22.54;
 			calibrateWalledUs = 22.50;
 			pwmHz       = 32000;
 			timerHz     = 48000000; // full resolution
@@ -217,14 +216,14 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 	pwmTimers[actuator.actuatorArrayNum].Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	HAL_TIM_Base_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
-	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-	HAL_TIM_ConfigClockSource(&pwmTimers[actuator.actuatorArrayNum], &sClockSourceConfig);
+	//sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+	//HAL_TIM_ConfigClockSource(&pwmTimers[actuator.actuatorArrayNum], &sClockSourceConfig);
 
 	HAL_TIM_PWM_Init(&pwmTimers[actuator.actuatorArrayNum]);
 
-	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-	sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
-	HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sMasterConfig);
+	//sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	//sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+	//HAL_TIMEx_MasterConfigSynchronization(&pwmTimers[actuator.actuatorArrayNum], &sMasterConfig);
 
 	// Initialize timer pwm channel
 	//sConfigOC.OCMode      = TIM_OCMODE_PWM2;
@@ -235,24 +234,24 @@ void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz)
 
 	if(actuator.isNChannel)
 	{
-		//sConfigOC.OCIdleState  = TIM_OCIDLESTATE_RESET;
-		//sConfigOC.OCPolarity   = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCPOLARITY_LOW : TIM_OCPOLARITY_HIGH;
-		sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
-		sConfigOC.OCNPolarity  = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCNPOLARITY_LOW : TIM_OCNPOLARITY_HIGH;
+		sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+		sConfigOC.OCNPolarity  = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
+		sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+		sConfigOC.OCPolarity  = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW;
 	}
 	else
 	{
 		sConfigOC.OCIdleState  = TIM_OCIDLESTATE_RESET;
 		sConfigOC.OCPolarity   = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCPOLARITY_HIGH : TIM_OCPOLARITY_LOW;
-		//sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
-		//sConfigOC.OCNPolarity  = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
+		sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+		sConfigOC.OCNPolarity  = (actuator.polarity == TIM_OCPOLARITY_LOW) ? TIM_OCNPOLARITY_HIGH : TIM_OCNPOLARITY_LOW;
 	}
 
 	HAL_TIM_PWM_ConfigChannel(&pwmTimers[actuator.actuatorArrayNum], &sConfigOC, actuator.timChannel);
 
 }
 
-static void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int reverse)
+void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int reverse)
 {
 	uint32_t digitalThrottle;
 	int      checksum = 0;

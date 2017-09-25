@@ -227,7 +227,7 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 
 				//ag3=CONSTRAIN(ag1+ag2,0,3);
 
-				if (axis != YAW)
+				if ( (mainConfig.mixerConfig.bounceGuard > 0.0f) && (axis != YAW) )
 				{
 					if (ABS(flightSetPoints[axis]) > 360)
 						bounceStopperIdleBoost[axis]++;
@@ -241,7 +241,7 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 						float tempBoostIdle = (bounceStopperIdleBoost[axis] * 0.0002);
 						if(tempBoostIdle > boostIdle)
 						{
-							boostIdle = CONSTRAIN(tempBoostIdle,0.0f,0.15f);
+							boostIdle = CONSTRAIN(tempBoostIdle,0.0f,mainConfig.mixerConfig.bounceGuard);
 						}
 					}
 				}

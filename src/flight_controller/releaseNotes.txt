@@ -1512,6 +1512,19 @@ Version 0.349.134 BETA:
 Version 0.350.134 BETA:
 	dshot changes
 	learning changes
+	PWM output changes
+
+Version 0.351.135 BETA:
+	Added set bounce_guard=0.1 variable
+		affects strength of bounce guard
+	Changed learning
+	Changed how learning is applied
+	Created a few special builds for testing with hard coded variables
+
+Version 0.352.135 BETA:
+	Minor dshot changes
+	Dshot works with wizards now
+
 
 #Features in current development:
 #	MAVlink compatibility

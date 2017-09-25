@@ -34,6 +34,7 @@ extern volatile int retValChk;
 #include "filter.h"
 #include "wizard.h"
 #include "watchdog.h"
+#include "learning.h"
 #include "scheduler.h"
 #include "newSoftSerial.h"
 #include "flight_logger.h"

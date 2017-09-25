@@ -21,7 +21,8 @@ typedef struct
 
 typedef struct
 {
-    int      foreAftMixerFixer;
+	int      foreAftMixerFixer;
+	float    bounceGuard;
     uint32_t mixerType;
     uint32_t mixerStyle;
     uint32_t escProtocol;
