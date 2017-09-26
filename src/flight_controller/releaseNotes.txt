@@ -1536,7 +1536,7 @@ Version 0.354.135 BETA:
 		Learning only learns when learn mode is active
 		New learning model which was learned during a flight will not apply until after a disarm and rearm
 		Learn mode must be set for the learn model to apply to flight
-
+		
 
 
 
