@@ -1525,6 +1525,12 @@ Version 0.352.135 BETA:
 	Minor dshot changes
 	Dshot works with wizards now
 
+Version 0.353.135 BETA:
+	Several robustness enhancements to throttle, PWM, and soft serial drivers
+	Rearranged and spedup flight init
+	Made flight init more robust
+	Added new internal command handler
+
 
 #Features in current development:
 #	MAVlink compatibility

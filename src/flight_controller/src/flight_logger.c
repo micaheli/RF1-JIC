@@ -414,9 +414,6 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	static int32_t  disarmLast = 0;
 	volatile int toWrite;
 	int x;
-	
-	//if (IsDshotEnabled())
-	//	return;
 
 #ifndef LOG32
 

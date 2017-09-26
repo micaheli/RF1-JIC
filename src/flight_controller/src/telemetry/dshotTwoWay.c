@@ -6,15 +6,188 @@ uint32_t dshotOutBuffer[DSHOT_OUT_BUFFER_SIZE];
 uint32_t dshotInBuffer[DSHOT_OUT_BUFFER_SIZE*8];  
 
 
-static void DshotTimerInit(uint32_t timer, uint32_t pwmHz, uint32_t timerHz); //make general function?
-static void DshotDmaInit(void);
-static void DshotTransferComplete(uint32_t callbackNumber);
-static void FillDshotBuffer(uint16_t data, uint32_t gpio);
+//static void DshotTimerInit(uint32_t timer, uint32_t pwmHz, uint32_t timerHz); //make general function?
+//static void DshotDmaInit(void);
+//static void DshotTransferComplete(uint32_t callbackNumber);
+//static void FillDshotBuffer(uint16_t data, uint32_t gpio);
 
 //DSHOT timer
 TIM_HandleTypeDef dshotTimer;
 
+volatile dshot_command_handler dshotCommandHandler;
 
+int InitDshotCommandState(void)
+{
+    dshotCommandHandler.dshotCommandState   = DSC_MODE_INACTIVE;
+    dshotCommandHandler.requestActivation   = 0; //this enabled the state. Set by external things like modes or config commands
+    dshotCommandHandler.timeSinceLastAction = 0; //the time an action last occurred
+    dshotCommandHandler.commandToSend       = 0; //the command we sent
+    dshotCommandHandler.commandReceived     = 0; //the command we received
+    dshotCommandHandler.motorCommMask       = 0; //what motors do we communicate with?
+    return(0);
+}
+
+int HandleDshotCommands(void)
+{
+    uint8_t serialOutBuffer[2];
+
+    //nothing allowed here if board is armed
+    if(boardArmed)
+        return(1);
+
+    //request to use the commands is off, and mode is active. Let's disable the mode
+    if(
+        (!dshotCommandHandler.requestActivation) &&
+        (dshotCommandHandler.dshotCommandState == DSC_MODE_ACTIVE)
+    )
+    {
+        //if not using dshot, go back to other protocol
+        if ( !IsDshotEnabled() )
+        {
+            //dshot is not on, go back to ms
+            SKIP_GYRO=1;
+            DeinitFlight();
+            DelayMs(5); //let MCU stabilize 
+            InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
+            DelayMs(5); //let MCU stabilize 
+            SKIP_GYRO=0;
+            DelayMs(5); //let MCU stabilize 
+        }
+        dshotCommandHandler.dshotCommandState = DSC_MODE_INACTIVE;
+    }
+
+    //init handler, no latch needed
+    if( 
+        (dshotCommandHandler.requestActivation) &&
+        (dshotCommandHandler.dshotCommandState == DSC_MODE_INACTIVE)
+    )
+    {
+        //mode has been latched and all conditions for mode have been met
+        dshotCommandHandler.dshotCommandState = DSC_MODE_INIT;
+    }        
+
+    //send command?
+    if(dshotCommandHandler.dshotCommandState == DSC_MODE_SEND)
+    {
+        SKIP_GYRO=1;
+
+        //allow throttle or not?
+        //dshotCommandHandler.commandToSend = CONSTRAIN(dshotCommandHandler.commandToSend, 0, DSHOT_CMD_MAX);
+        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP2);
+        for(uint32_t x=0;x<60;x++)
+        {
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+            DelayMs(3); //let MCU stabilize 
+        }
+        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP4);
+        for(uint32_t x=0;x<60;x++)
+        {
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+            DelayMs(3); //let MCU stabilize 
+        }
+    }
+
+    //init
+    if(dshotCommandHandler.dshotCommandState == DSC_MODE_INIT)
+    {
+        if ( !IsDshotEnabled() )
+        {
+            //dshot not used, let's put fc into dshot mode
+            //SKIP_GYRO=1;
+            DeinitFlight();
+            DelayMs(10); //let MCU stabilize 
+            InitFlight(ESC_DSHOT300, 4000);
+            DelayMs(5); //let MCU stabilize 
+            SKIP_GYRO=1;
+
+            CommandToDshot(serialOutBuffer, 0);
+            for(uint32_t x=0;x<3500;x++)
+            {
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+                OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+                delayUs(500); //let MCU stabilize 
+            }
+        }
+
+        SKIP_GYRO=1;
+        DelayMs(2);
+        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP2);
+        for(uint32_t x=0;x<60;x++)
+        {
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+            DelayMs(3); //let MCU stabilize 
+        }
+        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP4);
+        for(uint32_t x=0;x<60;x++)
+        {
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[2], 1, 0, 1);
+            OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
+            DelayMs(3); //let MCU stabilize 
+        }
+        SKIP_GYRO=1;
+        dshotCommandHandler.dshotCommandState = DSC_MODE_ACTIVE;
+    }
+    return(0);
+}
+
+void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int reverse)
+{
+	uint16_t currThrottle;
+    
+	(void)(reverse);
+
+    //limit motor spinning
+	if( (quopaState == QUOPA_ACTIVE) && mainConfig.mixerConfig.quopaStyle == 1)
+        if(throttle < 0.15f)
+            throttle = 0.0f;
+
+	if (idle > 0.0f)
+	{
+        //lrintf is faster than typecasting
+		currThrottle = lrintf(InlineChangeRangef(throttle, 1.0f, 0.0f, 2047.0f, (2000.0f * idle * 0.01f)+48.0f));
+        CommandToDshot(serialOutBuffer, currThrottle);
+	}
+	else
+	{
+        CommandToDshot(serialOutBuffer, 0);
+	}
+    
+}
+
+void CommandToDshot(uint8_t *serialOutBuffer, uint16_t command)
+{
+	uint16_t digitalThrottle;
+
+	digitalThrottle = ( ( command << 1 ) | 0); //0 is no telem request, 1 is telem request
+
+    // append checksum
+    digitalThrottle = ( (digitalThrottle << 4) | CRC4_12(digitalThrottle) );
+
+    serialOutBuffer[0] = (uint8_t)(digitalThrottle >> 8);
+    serialOutBuffer[1] = (uint8_t)(digitalThrottle & 0x00ff);
+}
+
+
+
+
+
+
+///////////////////////////GPIO Manipulation method:
+
+/*
 void FillDshotBuffer(uint16_t data, uint32_t gpio)
 {
     int bitIndex;
@@ -65,21 +238,20 @@ void DshotInit(int offlineMode)
     bzero(dshotOutBuffer, sizeof(dshotOutBuffer));
     for(motorNum=0;motorNum<MAX_MOTOR_NUMBER;motorNum++)
     {
-        /*
-        outputNumber = mainConfig.mixerConfig.motorOutput[motorNum]; //get output number from quad's POV
-        if(board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
-        {
-            InitializeGpio(ports[board.motors[outputNumber].port], board.motors[outputNumber].pin, 0);
-            //todo this can be changed to a constant lookup table
-            FillDshotBuffer(0xAAAA, board.motors[outputNumber].pin);
+        
+        //outputNumber = mainConfig.mixerConfig.motorOutput[motorNum]; //get output number from quad's POV
+        //if(board.motors[outputNumber].enabled == ENUM_ACTUATOR_TYPE_MOTOR)
+        //{
+        //    InitializeGpio(ports[board.motors[outputNumber].port], board.motors[outputNumber].pin, 0);
+        //    //todo this can be changed to a constant lookup table
+        //    FillDshotBuffer(0xAAAA, board.motors[outputNumber].pin);
 
-            //source is dshot buffer, destination is motor GPIO (LED for first testing)
-            if (HAL_DMA_Start_IT(&dmaHandles[ENUM_DMA2_STREAM_5], (uint32_t)&dshotOutBuffer, (uint32_t)&ports[board.motors[outputNumber].port]->ODR, DSHOT_OUT_BUFFER_SIZE) != HAL_OK)
-            {
-                while(1);
-            }
-        }
-        */
+        //    //source is dshot buffer, destination is motor GPIO (LED for first testing)
+        //    if (HAL_DMA_Start_IT(&dmaHandles[ENUM_DMA2_STREAM_5], (uint32_t)&dshotOutBuffer, (uint32_t)&ports[board.motors[outputNumber].port]->ODR, DSHOT_OUT_BUFFER_SIZE) != HAL_OK)
+        //    {
+        //        while(1);
+        //    }
+        //}
 
     }
     InitializeGpio(ports[ENUM_PORTA], GPIO_PIN_2, 1); //use B5 to test output on LED
@@ -144,7 +316,6 @@ static void DshotTransferComplete(uint32_t callbackNumber)
     //inlineDigitalHi(ports[ENUM_PORTA], GPIO_PIN_2);
     TIM1->DIER |= 0x00000100;
 }
-
 
 static void DshotDmaInit(void) //make general function?
 {
@@ -233,3 +404,4 @@ static void DshotTimerInit(uint32_t timer, uint32_t pwmHz, uint32_t timerHz) //m
 void BlockingReadGPIO()
 {
 }
+*/

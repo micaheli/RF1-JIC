@@ -693,7 +693,7 @@ void SaveConfig (uint32_t addresConfigStart)
 	if (resetBoard) {
 
 		//This function does a shotgun startup of the flight code.
-		InitFlight();
+		InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
 
 	}
 
@@ -1134,6 +1134,7 @@ void ProcessCommand(char *inString)
 				snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Spinning Motor %lu\n", motorToSpin );
 				RfCustomReplyBuffer(rf_custom_out_buffer);
 
+				//won't work if dshot command handler is active, or beep is active, or quopa is active
 				if ( IsDshotEnabled() )
 				{
 					if(!taskDshotActuators)
@@ -1161,6 +1162,16 @@ void ProcessCommand(char *inString)
 	else if (!strcmp("idlestop", inString))
 		{
 			DoIdleStop();
+		}
+	else if (!strcmp("dsbeep", inString))
+		{
+			EnableMode(M_BEEP);
+			RfCustomReplyBuffer("#me Beep!\n");
+		}
+	else if (!strcmp("dsbeepstop", inString))
+		{
+			DisableMode(M_BEEP);
+			RfCustomReplyBuffer("#me Boop!\n");
 		}
 	else if (!strcmp("error", inString))
 		{

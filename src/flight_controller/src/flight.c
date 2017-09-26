@@ -77,6 +77,10 @@ void ArmBoard(void)
 	if(ModeActive(M_BEEP))
 		return;
 
+	//no arming when dshot commands happening
+	if(dshotCommandHandler.dshotCommandState != DSC_MODE_INACTIVE)
+		return;
+
 	InitWatchdog(WATCHDOG_TIMEOUT_30MS);
 	boardArmed = 1;
 	timeSinceSelfLevelActivated = 0;
@@ -258,20 +262,12 @@ float AverageGyroADCbuffer(uint32_t axis, volatile float currentData)
 	return currentData;
 }
 
-void InitFlightCode(void)
+void InitFlightCode(uint32_t loopUsed)
 {
-
-	uint32_t loopUsed = mainConfig.gyroConfig.loopCtrl;
-	uint32_t validLoopConfig = 0;
 
 	SKIP_GYRO = 0;
 	armedTime = 0;
-	//biquad doesn't work unless we do this
-	//kdFiltUsed[YAW]   = mainConfig.filterConfig[YAW].kd.r;
-	//kdFiltUsed[ROLL]  = mainConfig.filterConfig[ROLL].kd.r;
-	//kdFiltUsed[PITCH] = mainConfig.filterConfig[PITCH].kd.r;
 
-	//bzero(lpfFilterStateNoise,sizeof(lpfFilterStateNoise));
 	bzero(lpfFilterState,          sizeof(lpfFilterState));
 	bzero(lpfFilterStateKd,        sizeof(lpfFilterStateKd));
 	bzero(averagedGyroData,        sizeof(averagedGyroData));
@@ -291,113 +287,6 @@ void InitFlightCode(void)
 	usedGa[0] = mainConfig.tuneProfile[activeProfile].filterConfig[0].ga;
 	usedGa[1] = mainConfig.tuneProfile[activeProfile].filterConfig[1].ga;
 	usedGa[2] = mainConfig.tuneProfile[activeProfile].filterConfig[2].ga;
-
-	//validLoopConfig = 1;
-	//Sanity Check!: make sure ESC Frequency, protocol and looptime gel:
-	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 32000) )
-	{
-		escFrequency = 32000;
-		//mainConfig.gyroConfig.loopCtrl            = LOOP_UH32;
-		loopUsed = LOOP_UH32;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-		{
-			validLoopConfig = 1;
-		}
-	}
-	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 16000) )
-	{
-		escFrequency = 16000; 
-		loopUsed = LOOP_UH16;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-		{
-			validLoopConfig = 1;
-		}
-	}
-	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 8000) )
-	{
-		escFrequency = 8000;
-		loopUsed = LOOP_UH8;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-		{
-			validLoopConfig = 1;
-			if (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600)
-			{
-				if (mainConfig.mixerConfig.escUpdateFrequency > 16000)
-				{
-					mainConfig.mixerConfig.escUpdateFrequency = 16000;
-				}
-			}
-		}
-	}
-	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 4000) )
-	{
-		escFrequency = 4000;
-		loopUsed = LOOP_UH4;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-		{
-			validLoopConfig = 1;
-		}
-	}
-	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 2000) )
-	{
-		escFrequency = 2000;
-		loopUsed = LOOP_UH2;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-		{
-			validLoopConfig = 1;
-		}
-	}
-	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 1000) )
-	{
-		escFrequency = 1000;
-		loopUsed = LOOP_UH1;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-		{
-			validLoopConfig = 1;
-		}
-	}
-	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 500) )
-	{
-		escFrequency = 500;
-		loopUsed = LOOP_UH_500;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-		{
-			validLoopConfig = 1;
-		}
-	}
-	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 250) )
-	{
-		escFrequency = 250;
-		loopUsed = LOOP_UH_250;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-		{
-			validLoopConfig = 1;
-		}
-	}
-	if ( (!validLoopConfig) && (mainConfig.mixerConfig.escUpdateFrequency >= 62) )
-	{
-		escFrequency = 62;
-		loopUsed = LOOP_UH_062;
-		if ( (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_PWM) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT) || (mainConfig.mixerConfig.escProtocol == ESC_ONESHOT42) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT25)  || (mainConfig.mixerConfig.escProtocol == ESC_MULTISHOT125) )
-		{
-			validLoopConfig = 1;
-		}
-	}
-
-	//skunk below 0.5f will set 32 KHz to 16 KHz operation
-	if(usedSkunk == 0)
-	{
-		//true 32Khz
-		if (loopUsed == LOOP_UH32)
-		{
-			loopUsed = LOOP_UH16;
-		}
-		else if (loopUsed == LOOP_H32)
-		{
-			loopUsed = LOOP_H16;
-		}
-
-	}
 
 	//set loopSpeed variables based on requested option
 	switch (loopUsed)
@@ -1187,10 +1076,12 @@ void DeinitFlight(void)
 uint32_t used1Wire = 0;
 #endif
 //init the board
-int InitFlight(void)
+
+int InitFlight(uint32_t escProtocol, uint32_t escFrequency)
 {
 
 	volatile int retValChk;
+	uint32_t loopUsed;
 
     //TODO: move the check into the init functions.
 	InitOrientation();
@@ -1198,24 +1089,7 @@ int InitFlight(void)
 
 	retValChk = LearningInit();
 
-	usedSkunk = mainConfig.gyroConfig.skunk;
-	usedSkunk = 0; 
-	if (!FULL_32)
-	{
-		//16 KHz on F4s if quaternions are needed.
-		if ( 
-			ModeSet(M_ATTITUDE) ||
-			ModeSet(M_HORIZON)  ||
-			ModeSet(M_QUOPA)
-			//ModeSet(M_HORIZON)  || 
-			//ModeSet(M_GLUE)     ||
-			//ModeSet(M_CATMODE)
-		)
-		{
-			//set skunk to 0 which is 16 KHz w/ACC if ACC mode is needed
-			usedSkunk = 0; 
-		}
-	}
+	loopUsed = SanityCheckEscProtocolAndFrequency(&escProtocol, &escFrequency);
 
 	DeInitAllowedSoftOutputs();
 
@@ -1228,16 +1102,15 @@ int InitFlight(void)
 
     InitVbusSensing();
     InitRcData();
-    InitMixer();          //init mixders
-    InitFlightCode();     //flight code before PID code is a must since flight.c contains loop time settings the pid.c uses.
-    InitPid();            //Relies on InitFlightCode for proper activations.
-    DeInitActuators();    //Deinit before Init is a shotgun startup
-    //InitActuators();      //Actuator init should happen after soft serial init.
-    //ZeroActuators(1000);  //output actuators to idle after timers are stable;
+    InitMixer();              //init mixers
+    InitFlightCode(loopUsed); //flight code before PID code is a must since flight.c contains loop time settings the pid.c uses.
+    InitPid();                //Relies on InitFlightCode for proper activations.
+    //InitActuators();        //Actuator init should happen after soft serial init.
+    //ZeroActuators(1000);    //output actuators to idle after timers are stable;
 
-	InitAdc();            //init ADC functions
-    InitModes();          //set flight modes mask to zero.
-    InitBoardUsarts();    //most important thing is activated last, the ability to control the craft.
+	InitAdc();                //init ADC functions
+    InitModes();              //set flight modes mask to zero.
+    InitBoardUsarts();        //most important thing is activated last, the ability to control the craft.
 
 	InitMaxOsd();
 
@@ -1272,9 +1145,8 @@ int InitFlight(void)
 		retValChk = InitWs2812();
 	}
 
-    InitActuators();        //Actuator init should happen after soft serial init.
     DeInitActuators();    //Deinit before Init is a shotgun startup
-    InitActuators();        //Actuator init should happen after soft serial init.
+	InitActuators(escProtocol, escFrequency); //Actuator init should happen after soft serial init.
     ZeroActuators(500);     //output actuators to idle after timers are stable;
 
 	//InitTransponderTimer();
@@ -1293,4 +1165,138 @@ static float BoostModify(volatile float throttleIn)
 	//adcMAh;     //current MAh used
 	throttleOut = CONSTRAIN(throttleIn, 0.0f, 1.0f);
 	return( throttleOut );
+}
+
+uint32_t SanityCheckEscProtocolAndFrequency(uint32_t *escProtocol, uint32_t *escFrequency)
+{
+	uint32_t loopUsed = mainConfig.gyroConfig.loopCtrl;
+	int validLoopConfig = 0;
+	uint32_t finalEscFrequency = (*escFrequency);
+	if ( (!validLoopConfig) && ((*escFrequency) >= 32000) )
+	{
+		finalEscFrequency = 32000;
+		//mainConfig.gyroConfig.loopCtrl            = LOOP_UH32;
+		loopUsed = LOOP_UH32;
+		if ( ((*escProtocol) == ESC_MULTISHOT) || ((*escProtocol) == ESC_MULTISHOT25)  || ((*escProtocol) == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && ((*escFrequency) >= 16000) )
+	{
+		finalEscFrequency = 16000; 
+		loopUsed = LOOP_UH16;
+		if ( ((*escProtocol) == ESC_DSHOT600) || ((*escProtocol) == ESC_MULTISHOT)  || ((*escProtocol) == ESC_MULTISHOT25)  || ((*escProtocol) == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && ((*escFrequency) >= 8000) )
+	{
+		finalEscFrequency = 8000;
+		loopUsed = LOOP_UH8;
+		if ( ((*escProtocol) == ESC_DDSHOT) || ((*escProtocol) == ESC_ONESHOT42) || ((*escProtocol) == ESC_DSHOT300) || ((*escProtocol) == ESC_DSHOT600) || ((*escProtocol) == ESC_DSHOT1200) || ((*escProtocol) == ESC_MULTISHOT)  || ((*escProtocol) == ESC_MULTISHOT25)  || ((*escProtocol) == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+			if ((*escProtocol) == ESC_DSHOT600)
+			{
+				if ((*escFrequency) > 16000)
+				{
+					(*escFrequency) = 16000;
+				}
+			}
+		}
+	}
+	if ( (!validLoopConfig) && ((*escFrequency) >= 4000) )
+	{
+		finalEscFrequency = 4000;
+		loopUsed = LOOP_UH4;
+		if ( ((*escProtocol) == ESC_DDSHOT) || ((*escProtocol) == ESC_ONESHOT) || ((*escProtocol) == ESC_ONESHOT42) || ((*escProtocol) == ESC_DSHOT150) || ((*escProtocol) == ESC_DSHOT300) || ((*escProtocol) == ESC_DSHOT600) || ((*escProtocol) == ESC_DSHOT1200) || ((*escProtocol) == ESC_MULTISHOT)  || ((*escProtocol) == ESC_MULTISHOT25)  || ((*escProtocol) == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && ((*escFrequency) >= 2000) )
+	{
+		finalEscFrequency = 2000;
+		loopUsed = LOOP_UH2;
+		if ( ((*escProtocol) == ESC_DDSHOT) || ((*escProtocol) == ESC_ONESHOT) || ((*escProtocol) == ESC_ONESHOT42) || ((*escProtocol) == ESC_DSHOT150) || ((*escProtocol) == ESC_DSHOT300) || ((*escProtocol) == ESC_DSHOT600) || ((*escProtocol) == ESC_DSHOT1200) || ((*escProtocol) == ESC_MULTISHOT)  || ((*escProtocol) == ESC_MULTISHOT25)  || ((*escProtocol) == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && ((*escFrequency) >= 1000) )
+	{
+		finalEscFrequency = 1000;
+		loopUsed = LOOP_UH1;
+		if ( ((*escProtocol) == ESC_DDSHOT) || ((*escProtocol) == ESC_ONESHOT) || ((*escProtocol) == ESC_ONESHOT42) || ((*escProtocol) == ESC_DSHOT150) || ((*escProtocol) == ESC_DSHOT300) || ((*escProtocol) == ESC_DSHOT600) || ((*escProtocol) == ESC_DSHOT1200) || ((*escProtocol) == ESC_MULTISHOT)  || ((*escProtocol) == ESC_MULTISHOT25)  || ((*escProtocol) == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && ((*escFrequency) >= 500) )
+	{
+		finalEscFrequency = 500;
+		loopUsed = LOOP_UH_500;
+		if ( ((*escProtocol) == ESC_DDSHOT) || ((*escProtocol) == ESC_PWM) || ((*escProtocol) == ESC_ONESHOT) || ((*escProtocol) == ESC_ONESHOT42) || ((*escProtocol) == ESC_DSHOT150) || ((*escProtocol) == ESC_DSHOT300) || ((*escProtocol) == ESC_DSHOT600) || ((*escProtocol) == ESC_DSHOT1200) || ((*escProtocol) == ESC_MULTISHOT)  || ((*escProtocol) == ESC_MULTISHOT25)  || ((*escProtocol) == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && ((*escFrequency) >= 250) )
+	{
+		finalEscFrequency = 250;
+		loopUsed = LOOP_UH_250;
+		if ( ((*escProtocol) == ESC_DDSHOT) || ((*escProtocol) == ESC_PWM) || ((*escProtocol) == ESC_ONESHOT) || ((*escProtocol) == ESC_ONESHOT42) || ((*escProtocol) == ESC_DSHOT150) || ((*escProtocol) == ESC_DSHOT300) || ((*escProtocol) == ESC_DSHOT600) || ((*escProtocol) == ESC_DSHOT1200) || ((*escProtocol) == ESC_MULTISHOT)  || ((*escProtocol) == ESC_MULTISHOT25)  || ((*escProtocol) == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+	if ( (!validLoopConfig) && ((*escFrequency) >= 62) )
+	{
+		finalEscFrequency = 62;
+		loopUsed = LOOP_UH_062;
+		if ( ((*escProtocol) == ESC_DDSHOT) || ((*escProtocol) == ESC_PWM) || ((*escProtocol) == ESC_ONESHOT) || ((*escProtocol) == ESC_ONESHOT42) || ((*escProtocol) == ESC_DSHOT150) || ((*escProtocol) == ESC_DSHOT300) || ((*escProtocol) == ESC_DSHOT600) || ((*escProtocol) == ESC_DSHOT1200) || ((*escProtocol) == ESC_MULTISHOT)  || ((*escProtocol) == ESC_MULTISHOT25)  || ((*escProtocol) == ESC_MULTISHOT125) )
+		{
+			validLoopConfig = 1;
+		}
+	}
+
+	(*escFrequency) = finalEscFrequency;
+
+	usedSkunk = mainConfig.gyroConfig.skunk;
+	usedSkunk = 0; 
+	if (!FULL_32)
+	{
+		//16 KHz on F4s if quaternions are needed.
+		if ( 
+			ModeSet(M_ATTITUDE) ||
+			ModeSet(M_HORIZON)  ||
+			ModeSet(M_QUOPA)
+			//ModeSet(M_HORIZON)  || 
+			//ModeSet(M_GLUE)     ||
+			//ModeSet(M_CATMODE)
+		)
+		{
+			//set skunk to 0 which is 16 KHz w/ACC if ACC mode is needed
+			usedSkunk = 0; 
+		}
+	}
+
+	//skunk below 0.5f will set 32 KHz to 16 KHz operation
+	if(usedSkunk == 0)
+	{
+		//true 32Khz
+		if (loopUsed == LOOP_UH32)
+		{
+			loopUsed = LOOP_UH16;
+		}
+		else if (loopUsed == LOOP_H32)
+		{
+			loopUsed = LOOP_H16;
+		}
+
+	}
+	
+	return(loopUsed);
 }

@@ -157,9 +157,9 @@ void OutputSerialDmaByte(uint8_t *serialOutBuffer, uint32_t outputLength, motor_
 	}
 
 	if(actuator.isNChannel)
-		HAL_TIMEx_PWMN_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)outBuffer, bufferIdx-1);
+		HAL_TIMEx_PWMN_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)outBuffer, bufferIdx);
 	else
-		HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)outBuffer, bufferIdx-1);
+		HAL_TIM_PWM_Start_DMA(&pwmTimers[actuator.actuatorArrayNum], actuator.timChannel, (uint32_t *)outBuffer, bufferIdx);
 	
 }
 
@@ -335,14 +335,17 @@ void InitDmaInputOnMotors(motor_type actuator) {
 	HAL_TIM_Base_Init(&pwmTimers[actuator.actuatorArrayNum]);
 }
 
-uint32_t IsDshotEnabled() {
-	if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) ) {
+uint32_t IsDshotEnabled()
+{
+	if ( (mainConfig.mixerConfig.escProtocol == ESC_DSHOT1200) || (mainConfig.mixerConfig.escProtocol == ESC_DDSHOT) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT600) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT300) || (mainConfig.mixerConfig.escProtocol == ESC_DSHOT150) )
+	{
 		return(1);
 	}
 	return(0);
 }
 
-uint32_t IsDshotActiveOnActuator(motor_type actuator) {
+uint32_t IsDshotActiveOnActuator(motor_type actuator)
+{
 
 	if ( !IsDshotEnabled() )
 		return 0;
@@ -354,7 +357,8 @@ uint32_t IsDshotActiveOnActuator(motor_type actuator) {
 
 }
 
-uint32_t DoesDmaConflictWithDshot(motor_type dShotActuator, motor_type actuator) {
+uint32_t DoesDmaConflictWithDshot(motor_type dShotActuator, motor_type actuator)
+{
 
 	if (dShotActuator.Dma == actuator.Dma)
 		return 1;
@@ -362,7 +366,8 @@ uint32_t DoesDmaConflictWithDshot(motor_type dShotActuator, motor_type actuator)
 		return 0;
 }
 
-void SetActiveDmaToActuatorDma(motor_type actuator) {
+void SetActiveDmaToActuatorDma(motor_type actuator)
+{
 
 	memcpy( &board.dmasActive[actuator.Dma], &board.dmasMotor[actuator.actuatorArrayNum], sizeof(board_dma) );
 

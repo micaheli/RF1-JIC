@@ -21,12 +21,12 @@ int BuildLearnedKiModel(void)
     //y=41.4291581108829x+0.721149897330598
     //y=9.38809034907598x+-20.9593429158111
     
-    learnedKiModel[YAW].b = -58.8418891170431f;
-    learnedKiModel[ROLL].b = 41.4291581108829f;
-    learnedKiModel[PITCH].b = 9.38809034907598f;
-    learnedKiModel[YAW].m = 2.54989733059548f;
-    learnedKiModel[ROLL].m = 0.721149897330598f;
-    learnedKiModel[PITCH].m = -20.9593429158111f;
+    //learnedKiModel[YAW].b = -58.8418891170431f;
+    //learnedKiModel[ROLL].b = 41.4291581108829f;
+    //learnedKiModel[PITCH].b = 9.38809034907598f;
+    //learnedKiModel[YAW].m = 2.54989733059548f;
+    //learnedKiModel[ROLL].m = 0.721149897330598f;
+    //learnedKiModel[PITCH].m = -20.9593429158111f;
 
     //for techsavy's quad:
     //yaw = y=74.8049281314168x+9.517659137577
@@ -85,7 +85,10 @@ inline float ConvertInt8ToFloatForKi(int8_t kiNumber)
 int TrimKi(pid_output flightPids[])
 {
 
-	if(!mainConfig.mixerConfig.foreAftMixerFixer)
+	if (!ModeActive(M_LEARN))
+        return(0);
+    
+    if(!mainConfig.mixerConfig.foreAftMixerFixer)
 		return(0);
 
 	if(!boardArmed)

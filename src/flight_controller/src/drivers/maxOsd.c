@@ -2176,6 +2176,7 @@ static int SpiInit(uint32_t baudRatePrescaler)
 
 }
 
+/*
 static void UpdateCharMap(void)
 {
     int     x;             //set
@@ -2191,6 +2192,7 @@ static void UpdateCharMap(void)
         WriteNvm(x, character);
     }
 }
+*/
 
 //blocking
 static void WriteNvm(uint8_t charAddress, uint8_t character[])

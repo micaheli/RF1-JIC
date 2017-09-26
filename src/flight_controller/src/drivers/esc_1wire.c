@@ -359,7 +359,7 @@ uint32_t OneWireInit(void)
 		}
 		else if (atLeastOneWorks || tries < 3) //try at least twice, even if not a single ESC detected
 		{
-			InitActuators();
+			InitActuators(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
 			DelayMs(3500);
 			snprintf((char *)reportOut, 49, "Reading ESCs...");
 			SendStatusReport((char *)reportOut);
@@ -888,7 +888,7 @@ void OneWireDeinit(void) {
 	}
 
 	DelayMs(5);
-	InitFlight();
+	InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
 
 }
 

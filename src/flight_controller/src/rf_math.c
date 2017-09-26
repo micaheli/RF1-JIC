@@ -67,6 +67,18 @@ uint8_t SmCrc8(const uint8_t * ptr, uint8_t len)
 	return(crc);
 }
 
+//4 bit crc for a 16 bit packet
+uint8_t CRC4_12(uint16_t crcData)
+{
+    uint16_t crc = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        crc ^=  crcData;   // xor data by nibbles
+        crcData >>= 4;
+    }
+    return(crc & 0xf);
+}
+
 inline uint8_t BitReverse8(uint8_t byteToConvert)
 {
 	return (BitReverseTable256[byteToConvert]);

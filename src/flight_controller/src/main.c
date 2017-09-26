@@ -34,10 +34,11 @@ int main(void)
 
     retValChk = InitUsb();
 
-    retValChk = InitFlight();
+    retValChk = InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
 
     retValChk = InitQuopaMode();
     retValChk = InitDshotBeep();
+    retValChk = InitDshotCommandState(); // send dshot commands and listen back if needed
     
     retValChk = InitWatchdog(WATCHDOG_TIMEOUT_32S);
 

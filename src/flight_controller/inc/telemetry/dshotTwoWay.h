@@ -28,6 +28,35 @@ enum
     DSHOT_CMD_MAX                     = 47,
 };
 
+typedef enum dshot_command_state_t
+{
+    DSC_MODE_INACTIVE  = 0, //not in use
+    DSC_MODE_ACTIVE    = 1, //ready to do something
+    DSC_MODE_INIT      = 2, //in init phase
+    DSC_MODE_SEND      = 3, //send a command
+    DSC_MODE_SENDING   = 4, //sending a command
+    DSC_MODE_SENT      = 5, //command was send
+    DSC_MODE_RECEIVE   = 6, //receive and wait
+    DSC_MODE_RECEIVING = 7, //currently receiving
+    DSC_MODE_RECEIVED  = 8, //command received
+} dshot_command_state;
+
+typedef struct
+{
+	dshot_command_state dshotCommandState;
+	uint32_t            requestActivation;
+	uint32_t            timeSinceLastAction;
+	uint16_t            commandToSend;
+    uint16_t            commandReceived;
+    uint32_t            motorCommMask;
+} dshot_command_handler;
+
+extern volatile dshot_command_handler dshotCommandHandler;
+
 extern int dShotFeedTheDog;
 
 extern void DshotInit(int offlineMode);
+extern int  InitDshotCommandState(void);
+extern int  HandleDshotCommands(void);
+extern void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int reverse);
+extern void CommandToDshot(uint8_t *serialOutBuffer, uint16_t command);

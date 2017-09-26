@@ -10,11 +10,9 @@ typedef enum quopa_state_t
     QUOPA_FAILED   = 3,
 } quopa_state;
 
-
 extern volatile quopa_state quopaState;
 extern volatile quopa_state dshotBeepState;
 
-extern void CommandToDshot(uint8_t *serialOutBuffer, uint32_t command);
 extern int InitDshotBeep(void);
 extern int InitQuopaMode(void);
 extern int HandleQuopaMode(void);

@@ -303,7 +303,7 @@ void TaskProcessArmingStructure(void)
 	ProcessArmingStructure();
 	if (!boardArmed)
  	{
-		if ( (InlineMillis() - lastSwitch) < 2000 )
+		if ( (InlineMillis() - lastSwitch) < 1000 )
 			return;
 
  		if (ModeActive(M_PROFILE3)) // is profile 3 active?
@@ -312,7 +312,7 @@ void TaskProcessArmingStructure(void)
  			{
  				DeinitFlight();
  				activeProfile = PROFILE3;
- 				InitFlight();
+ 				InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
  				activeProfile = PROFILE3;
 				lastSwitch = InlineMillis();
  			}
@@ -323,7 +323,7 @@ void TaskProcessArmingStructure(void)
  			{
  				DeinitFlight();
  				activeProfile = PROFILE2;
- 				InitFlight();
+ 				InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
  				activeProfile = PROFILE2;
 				lastSwitch = InlineMillis();
  			}
@@ -334,7 +334,7 @@ void TaskProcessArmingStructure(void)
  			{
  				DeinitFlight();
  				activeProfile = PROFILE1;
- 				InitFlight();
+ 				InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
  				activeProfile = PROFILE1;
 				lastSwitch = InlineMillis();
  			}

@@ -134,6 +134,7 @@ void InitPid (void)
 inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoints[], pid_output flightPids[], float actuatorRange)
 {
 
+	float boostIdle;
 	int32_t axis;
 	//static int bounceStopper[3] = {0,};
 	static int bounceStopperIdleBoost[3] = {0,};

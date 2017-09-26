@@ -685,8 +685,8 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 	{
 		//motorOutput[i] = ForeAftMixerFixer( motorOutput[i], throttle, i);
 		motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f);
-		if(ModeSet(M_LEARN) && !ModeActive(M_LEARN))
-			motorOutput[i] = InlineConstrainf(motorOutput[i] * persistance.data.motorTrim[i], 0.0f, 1.0f);
+		//if(ModeSet(M_LEARN) && !ModeActive(M_LEARN))
+		//	motorOutput[i] = InlineConstrainf(motorOutput[i] * persistance.data.motorTrim[i], 0.0f, 1.0f);
 			
 	}
 
@@ -748,8 +748,8 @@ inline float InlineApplyMotorMixer1(pid_output pids[], float throttleIn)
  	for(i=7; i>=0; i--)
  	{
 			motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f);
-			if(ModeSet(M_LEARN) && !ModeActive(M_LEARN))
-				motorOutput[i] = InlineConstrainf(motorOutput[i] * persistance.data.motorTrim[i], 0.0f, 1.0f);
+			//if(ModeSet(M_LEARN) && !ModeActive(M_LEARN))
+			//	motorOutput[i] = InlineConstrainf(motorOutput[i] * persistance.data.motorTrim[i], 0.0f, 1.0f);
 	}
  	return(actuatorRange);
  }

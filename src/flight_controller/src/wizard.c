@@ -480,7 +480,7 @@ uint32_t WizRxCheckProtocol(uint32_t rxProtocol, uint32_t usart)
 	DelayMs(2);
 	SetRxDefaults(rxProtocol,usart);
 	DelayMs(2);
-	InitFlight();
+	InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
 	bzero(rxDataRaw, sizeof(rxDataRaw));
 	bzero(rxData, sizeof(rxData));
 	trueRcCommandF[0] = -1.1;
@@ -625,7 +625,7 @@ void SetupWizard(char *inString)
 			DisarmBoard();
 			mainConfig.telemConfig.telemSmartAudio = 0;
 			mainConfig.telemConfig.telemSport = 0;
-			InitFlight();
+			InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
 		}
 		if (wizardStatus.currentWizard != WIZ_RX)
 		{

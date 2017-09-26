@@ -31,12 +31,13 @@ extern volatile float geeForceZ;
 
 enum { CALIBRATE_BOARD_FAILED = 0, CALIBRATE_BOARD_UPRIGHT = 1, CALIBRATE_BOARD_INVERTED = 2, };
 
-extern void  DeinitFlight(void);
-extern int   InitFlight(void);
-extern void  ArmBoard(void);
-extern void  DisarmBoard(void);
-extern int   SetCalibrate1(void);
-extern int   SetCalibrate2(void);
-extern void  InitFlightCode(void);
-extern void  InlineFlightCode(float dpsGyroArray[]);
-extern void  InlineUpdateAttitude(float geeForceAccArray[]);
+extern void     DeinitFlight(void);
+extern int      InitFlight(uint32_t escProtocol, uint32_t escFrequency);
+extern void     ArmBoard(void);
+extern void     DisarmBoard(void);
+extern int      SetCalibrate1(void);
+extern int      SetCalibrate2(void);
+extern void     InitFlightCode(uint32_t loopUsed);
+extern void     InlineFlightCode(float dpsGyroArray[]);
+extern void     InlineUpdateAttitude(float geeForceAccArray[]);
+extern uint32_t SanityCheckEscProtocolAndFrequency(uint32_t *escProtocol, uint32_t *escFrequency);
