@@ -3,43 +3,28 @@
 //0.1 to -0.1 fits within uint8_t 
 #define KI_LEARN_MULTIPLIER 0.00078740157186985015869140625f
 #define KI_LEARN_MULTIPLIER_I 1270.0f
+
+//for 20 value table:
+#define KI_TRIM_TABLE_SIZE 20
 //for 20 value table:
 #define X_LEARNING_AVERAGE 52.5f
+//for 20 steps
+#define X_STEP 0.05f
 
-volatile float xAverage;
-volatile float yAverage[AXIS_NUMBER];
 volatile learned_ki_model learnedKiModel[AXIS_NUMBER];
 
 int motorTrimHasHappened;
 int motorTrimCounter;
 int kiTrimCounter;
 
+static int GenerateTheKiTables(volatile int8_t kiTrim[], volatile float *mTemp, volatile float *bTemp);
+static int BuildKiModel(volatile int8_t kiTrim[], volatile learned_ki_model *learnedKiModel);
+
 int BuildLearnedKiModel(void)
 {
-    //apov
-    //y=-58.8418891170431x+2.54989733059548
-    //y=41.4291581108829x+0.721149897330598
-    //y=9.38809034907598x+-20.9593429158111
-    
-    //learnedKiModel[YAW].b = -58.8418891170431f;
-    //learnedKiModel[ROLL].b = 41.4291581108829f;
-    //learnedKiModel[PITCH].b = 9.38809034907598f;
-    //learnedKiModel[YAW].m = 2.54989733059548f;
-    //learnedKiModel[ROLL].m = 0.721149897330598f;
-    //learnedKiModel[PITCH].m = -20.9593429158111f;
-
-    //for techsavy's quad:
-    //yaw = y=74.8049281314168x+9.517659137577
-    //roll = y=-2.50924024640657x+9.34188911704312
-    //pitch = y=-80.4024640657084x+-6.7088295687885
-
-    //learnedKiModel[YAW].b = 9.517659137577f;
-    //learnedKiModel[ROLL].b = 9.34188911704312f;
-    //learnedKiModel[PITCH].b = -6.7088295687885f;
-    //learnedKiModel[YAW].m = 74.8049281314168f;
-    //learnedKiModel[ROLL].m = -2.50924024640657f;
-    //learnedKiModel[PITCH].m = -80.4024640657084f;
-
+    BuildKiModel(persistance.data.yawKiTrim8, YAW);
+    BuildKiModel(persistance.data.rollKiTrim8, &learnedKiModel[ROLL]);
+    BuildKiModel(persistance.data.pitchKiTrim8, &learnedKiModel[PITCH]);
     return(0);
 }
 
@@ -54,14 +39,17 @@ int LearningInit(void)
     {
         learnedKiModel[x].b = 0;
         learnedKiModel[x].m = 0;
-        yAverage[x] = 0.0f;
     }
-    xAverage = X_LEARNING_AVERAGE;
 
     motorTrimHasHappened = 0;
 	motorTrimCounter = 0;
     kiTrimCounter = 0;
 
+    return( 0 );
+}
+
+int LearningModelInit(void)
+{
     return( BuildLearnedKiModel() );
 }
 
@@ -85,7 +73,7 @@ inline float ConvertInt8ToFloatForKi(int8_t kiNumber)
 int TrimKi(pid_output flightPids[])
 {
 
-	if (!ModeActive(M_LEARN))
+	if (!ModeSet(M_LEARN))
         return(0);
     
     if(!mainConfig.mixerConfig.foreAftMixerFixer)
@@ -111,7 +99,7 @@ int TrimKi(pid_output flightPids[])
 
 	uint32_t position = lrintf(smoothCurvedThrottle0_1*19);
 
-	if ( (kiTrimCounter >= 10) )
+	if ( ModeActive(M_LEARN) && (kiTrimCounter >= 10) )
 	{
 		persistance.data.yawKiTrim8[position] = ConvertFloatToInt8ForKi(flightPids[YAW].ki + kiTrim[YAW]);
 		persistance.data.rollKiTrim8[position] = ConvertFloatToInt8ForKi(flightPids[ROLL].ki + kiTrim[ROLL]);
@@ -198,4 +186,93 @@ int TrimMotors(void)
 	}
 
 	return(0);
+}
+
+static int GenerateTheKiTables(volatile int8_t kiTrim[], volatile float *mTemp, volatile float *bTemp)
+{
+	int   x;
+	float xStep = 1.0f / (float)KI_TRIM_TABLE_SIZE;
+	float xTemp = 0.0f;
+	float xAverage = 0;
+	float yAverage = 0;
+	float xixaTable[KI_TRIM_TABLE_SIZE];
+	float yiyaTable[KI_TRIM_TABLE_SIZE];
+	float xTxSum = 0.0f;
+	float xTySum = 0.0f;
+
+	//get average of x values
+	for (x=0;x<KI_TRIM_TABLE_SIZE;x++)
+	{
+		xAverage += xTemp;
+		xTemp += xStep;
+	}
+	xAverage /= KI_TRIM_TABLE_SIZE;
+
+	//get average of y values
+	for (x=0;x<KI_TRIM_TABLE_SIZE;x++)
+	{
+		yAverage += (float)(kiTrim[x]);
+	}
+	yAverage /= KI_TRIM_TABLE_SIZE;
+
+	//calculate table of Xi - Xa
+	xTemp = 0;
+	for (x=0;x<KI_TRIM_TABLE_SIZE;x++)
+	{
+		xixaTable[x] = xTemp - xAverage;
+		xTemp += xStep;
+	}
+
+	//calculate table of Yi - Ya
+	for (x=0;x<KI_TRIM_TABLE_SIZE;x++)
+	{
+		yiyaTable[x] = kiTrim[x] - yAverage;
+	}
+
+	//build x*y and x*x table sums
+	for (x=0;x<KI_TRIM_TABLE_SIZE;x++)
+	{
+		xTySum += (xixaTable[x] * yiyaTable[x]);
+		xTxSum += (xixaTable[x] * xixaTable[x]);
+	}
+
+	//set m and b
+	(*mTemp) = xTySum/xTxSum;
+	(*bTemp) = (yAverage - ((*mTemp) * xAverage) );
+
+    return(0);
+}
+
+static int BuildKiModel(volatile int8_t kiTrim[], volatile learned_ki_model *learnedKiModel)
+{
+    //for 20 steps
+	volatile int8_t tempKiTrim[KI_TRIM_TABLE_SIZE];
+	volatile float mTemp;
+	volatile float bTemp;
+	int   x;
+	float xStep = 1.0f / (float)KI_TRIM_TABLE_SIZE;
+	float xTemp = 0.0f;
+
+	//generate the first set
+	GenerateTheKiTables(kiTrim, &mTemp, &bTemp);
+
+	//take care of outliers
+	xTemp = 0;
+	for (x=0;x<KI_TRIM_TABLE_SIZE;x++)
+	{
+		if( ABS(kiTrim[x]-lrintf(mTemp*xTemp + bTemp)) > 20)
+		{
+			tempKiTrim[x] = lrintf(mTemp*xTemp + bTemp);
+		}
+		else
+		{
+			tempKiTrim[x] = kiTrim[x];
+		}
+		xTemp += xStep;
+	}
+
+	//generate the second set with fixed outliers
+	GenerateTheKiTables(tempKiTrim, &(learnedKiModel->m), &(learnedKiModel->b) );
+
+    return(0);    
 }

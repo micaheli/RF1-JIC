@@ -9,6 +9,7 @@ typedef struct
 extern volatile learned_ki_model learnedKiModel[3];
 
 extern int LearningInit(void);
+extern int LearningModelInit(void);
 extern float ApplyLearningModelToKi(float throttle, uint32_t axis);
 extern int TrimKi(pid_output flightPids[]);
 extern int TrimMotors(void);

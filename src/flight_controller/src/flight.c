@@ -81,6 +81,11 @@ void ArmBoard(void)
 	if(dshotCommandHandler.dshotCommandState != DSC_MODE_INACTIVE)
 		return;
 
+	if (board.flash[0].enabled)
+	{
+		LearningModelInit(); //needs flash
+	}
+
 	InitWatchdog(WATCHDOG_TIMEOUT_30MS);
 	boardArmed = 1;
 	timeSinceSelfLevelActivated = 0;
@@ -1087,19 +1092,20 @@ int InitFlight(uint32_t escProtocol, uint32_t escFrequency)
 	InitOrientation();
 	CheckRxToModes(); //check which modes are set whether or not they're enabled
 
-	retValChk = LearningInit();
-
 	loopUsed = SanityCheckEscProtocolAndFrequency(&escProtocol, &escFrequency);
 
 	DeInitAllowedSoftOutputs();
+
+	retValChk = LearningInit();
 
 	if (board.flash[0].enabled)
     {
 		//persistance data stored here
     	InitFlashChip();
-    	InitFlightLogger();
+		InitFlightLogger();
+		retValChk = LearningModelInit(); //needs flash
 	}
-
+	
     InitVbusSensing();
     InitRcData();
     InitMixer();              //init mixers
