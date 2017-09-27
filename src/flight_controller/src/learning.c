@@ -18,13 +18,13 @@ int motorTrimCounter;
 int kiTrimCounter;
 
 static int GenerateTheKiTables(volatile int8_t kiTrim[], volatile float *mTemp, volatile float *bTemp);
-static int BuildKiModel(volatile int8_t kiTrim[], volatile learned_ki_model *learnedKiModel);
+static int BuildKiModel(volatile int8_t kiTrim[], volatile int8_t confidenceLevel[], volatile learned_ki_model *learnedKiModel);
 
 int BuildLearnedKiModel(void)
 {
-    BuildKiModel(persistance.data.yawKiTrim8, YAW);
-    BuildKiModel(persistance.data.rollKiTrim8, &learnedKiModel[ROLL]);
-    BuildKiModel(persistance.data.pitchKiTrim8, &learnedKiModel[PITCH]);
+    BuildKiModel(persistance.data.yawKiTrim8, persistance.data.rememberence, &learnedKiModel[YAW]);
+    BuildKiModel(persistance.data.rollKiTrim8, persistance.data.rememberence, &learnedKiModel[ROLL]);
+    BuildKiModel(persistance.data.pitchKiTrim8, persistance.data.rememberence, &learnedKiModel[PITCH]);
     return(0);
 }
 
@@ -252,7 +252,7 @@ static int GenerateTheKiTables(volatile int8_t kiTrim[], volatile float *mTemp, 
     return(0);
 }
 
-static int BuildKiModel(volatile int8_t kiTrim[], volatile learned_ki_model *learnedKiModel)
+static int BuildKiModel(volatile int8_t kiTrim[], volatile int8_t confidenceLevel[], volatile learned_ki_model *learnedKiModel)
 {
     //for 20 steps
 	volatile int8_t tempKiTrim[KI_TRIM_TABLE_SIZE];
@@ -262,6 +262,24 @@ static int BuildKiModel(volatile int8_t kiTrim[], volatile learned_ki_model *lea
 	float xStep = 1.0f / (float)KI_TRIM_TABLE_SIZE;
 	float xTemp = 0.0f;
 
+	//only build model if confidence level is high enough
+	if( 
+		(confidenceLevel[KI_TRIM_TABLE_SIZE-1] > 50) &&
+		(confidenceLevel[KI_TRIM_TABLE_SIZE-2] > 50) &&
+		(confidenceLevel[KI_TRIM_TABLE_SIZE-3] > 50) &&
+		(confidenceLevel[KI_TRIM_TABLE_SIZE-4] > 50) &&
+		(confidenceLevel[3] > 50) &&
+		(confidenceLevel[2] > 50) &&
+		(confidenceLevel[1] > 50) &&
+		(confidenceLevel[0] > 50)
+	)
+	{
+		//nothing
+	}
+	else
+	{
+		return(0);
+	}
 	//generate the first set
 	GenerateTheKiTables(kiTrim, &mTemp, &bTemp);
 

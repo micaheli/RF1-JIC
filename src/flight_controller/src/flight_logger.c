@@ -98,9 +98,13 @@ const bb_ip_value bb_data[MAX_BB_VALUES] =
 		{ "rcCommand[1],",  "1,", "0,", "0,", "1,", "0,", 500,   typeFLOAT, &currRcCommandF[PITCH]},
 		{ "rcCommand[3],",  "1,", "0,", "0,", "1,", "0,", 1,     typeFLOAT, &currRcCommandF[THROTTLE]},
 
-		{ "debug[2],",      "1,", "0,", "0,", "1,", "0,", 16.4,  typeFLOAT, &currFlightSetPoints[YAW]},
-		{ "debug[0],",      "1,", "0,", "0,", "1,", "0,", 16.4,  typeFLOAT, &currFlightSetPoints[ROLL]},
-		{ "debug[1],",      "1,", "0,", "0,", "1,", "0,", -16.4, typeFLOAT, &currFlightSetPoints[PITCH]},
+		//{ "debug[2],",      "1,", "0,", "0,", "1,", "0,", 16.4,  typeFLOAT, &currFlightSetPoints[YAW]},
+		//{ "debug[0],",      "1,", "0,", "0,", "1,", "0,", 16.4,  typeFLOAT, &currFlightSetPoints[ROLL]},
+		//{ "debug[1],",      "1,", "0,", "0,", "1,", "0,", -16.4, typeFLOAT, &currFlightSetPoints[PITCH]},
+
+		{ "debug[2],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currFlightSetPoints[YAW]},
+		{ "debug[0],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currFlightSetPoints[ROLL]},
+		{ "debug[1],",      "1,", "0,", "0,", "1,", "0,", 1000,  typeFLOAT, &currFlightSetPoints[PITCH]},
 
 		{ "ugyroADC[2],",   "1,", "0,", "0,", "1,", "0,", 16.4,  typeFLOAT, &currFilteredGyroData[YAW]},
 		{ "ugyroADC[0],",   "1,", "0,", "0,", "1,", "0,", 16.4,  typeFLOAT, &currFilteredGyroData[ROLL]},
@@ -536,8 +540,8 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				}
 
 				//running std dev
-				currFlightSetPoints[0]  = CalculateSDSize(stdDevKp, 10);
-				currFlightSetPoints[1]  = CalculateSDSize(stdDevKd, 10);
+				currFlightSetPoints[0]  = CalculateSDSize(stdDevKp, 10) * 10.0f;
+				currFlightSetPoints[1]  = CalculateSDSize(stdDevKd, 10) * 10.0f;
 				currFlightSetPoints[2]  = stdDevAxis;
 
 				//changed  axis every 100 times
