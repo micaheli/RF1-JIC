@@ -4,36 +4,6 @@
 #define UPDATE_BB_TOTAL_HEADER_SIZE 256 //good for 100 days of logging
 #define UPDATE_BB_DATA_SIZE 32 //good for 100 days of logging
 
-#define HEADER      \
-	"STARTLOG\n"    \
-	"VER=002\n"     \
-	"STYLE=RAT\n\0" 
-
-
-#define HEADER2      \
-"H Product:Blackbox flight data recorder by Nicholas Sherlock\n" \
-"H Data version:2\n" \
-"H I interval:1\n" \
-"H Field I name:loopIteration,time,axisP[2],axisI[2],axisD[2],axisP[0],axisI[0],axisD[0],axisP[1],axisI[1],axisD[1],rcCommand[2],rcCommand[0],rcCommand[1],rcCommand[3],debug[2],debug[0],debug[1],ugyroADC[2],ugyroADC[0],ugyroADC[1],accSmooth[2],accSmooth[0],accSmooth[1],motor[0],motor[1],motor[2],motor[3]\n" \
-"H Field I signed:0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1\n" \
-"H Field I predictor:0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n" \
-"H Field I encoding:1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n" \
-"H Field P predictor:6,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1\n" \
-"H Field P encoding:9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n" \
-"H Field S name:flightModeFlags,stateFlags,failsafePhase,rxSignalReceived,rxFlightChannelsValid\n" \
-"H Field S signed:0,0,0,0,0\n" \
-"H Field S predictor:0,0,0,0,0\n" \
-"H Field S encoding:1,1,7,7,7\n" \
-"H Firmware type:Raceflight\n" \
-"H Firmware revision:One\n" \
-"H Firmware date:Oct 31 2015 22:44:00\n" \
-"P interval:1/1\n" \
-"H rcRate:100\n" \
-"H minthrottle:1100\n" \
-"H maxthrottle:2000\n" \
-"H gyro.scale:0x41600000\n" \
-"H acc_1G:1\n\0"
-
 #define BB_HEADER1 \
 "H Product:Blackbox flight data recorder by Nicholas Sherlock\n" \
 "H Data version:2\n" \
@@ -516,8 +486,11 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				if(usedSkunk == 2)
 					logItterationCounter = 4;	//TODO make this configurable value. Capture rate = 1khz/value
 				else
-					logItterationCounter = 4;	//TODO make this configurable value. Capture rate = 1khz/value
+					logItterationCounter = 2;	//TODO make this configurable value. Capture rate = 1khz/value
 				
+				if (IsDshotEnabled())
+					logItterationCounter = 4;
+
 				//no logging until header is written
 				if(headerWritten < headerToWrite)
 				{
@@ -540,12 +513,42 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 					currFlightPids[finishX].kp    = ( (flightPids[finishX].kp + lastFlightPids[finishX].kp) * 0.5);
 					currFlightPids[finishX].ki    = ( (flightPids[finishX].ki + lastFlightPids[finishX].ki) * 0.5);
 					currFlightPids[finishX].kd    = ( (flightPids[finishX].kd + lastFlightPids[finishX].kd) * 0.5);
-					currFlightSetPoints[finishX]  = ( (flightSetPoints[finishX] + lastFlightSetPoints[finishX]) * 0.5);
+					//currFlightSetPoints[finishX]  = ( (flightSetPoints[finishX] + lastFlightSetPoints[finishX]) * 0.5);
 					currFilteredGyroData[finishX] = ( (filteredGyroData[finishX] + lastFilteredGyroData[finishX]) * 0.5);
 					currDpsGyroArray[finishX]     = ( (dpsGyroArray[finishX] + lastDpsGyroArray[finishX]) * 0.5);
 					currFilteredAccData[finishX]  = ( (filteredAccData[finishX] + lastFilteredAccData[finishX]) * 0.5);
 				}
 
+				static float stdDevKp[10] = {0.0f,};
+				static float stdDevKd[10] = {0.0f,};
+				static int   stdDevCtr    = 0;
+				static int   stdDevAxis   = 0;
+				static int   axisOverflow = 0;
+				
+				stdDevKp[stdDevCtr]   = flightPids[stdDevAxis].kp;
+				stdDevKd[stdDevCtr++] = flightPids[stdDevAxis].kd;
+
+				//std dev of last 10
+				if(stdDevCtr == 10)
+				{
+					stdDevCtr = 0;
+					axisOverflow++;
+				}
+
+				//running std dev
+				currFlightSetPoints[0]  = CalculateSDSize(stdDevKp, 10);
+				currFlightSetPoints[1]  = CalculateSDSize(stdDevKd, 10);
+				currFlightSetPoints[2]  = stdDevAxis;
+
+				//changed  axis every 100 times
+				if(axisOverflow == 10)
+				{
+					axisOverflow = 0;
+					stdDevAxis++;
+					if(stdDevAxis == 3)
+						stdDevAxis = 0;
+				}
+				
 				currMotorOutput[0] = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5f) + 1.000f;
 				currMotorOutput[1] = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5f) + 1.000f;
 				currMotorOutput[2] = ( (motorOutput[2] + lastMotorOutput[2]) * 0.5f) + 1.000f;
