@@ -204,7 +204,8 @@ uint32_t AccGyroVerifyWriteRegister(uint8_t reg, uint8_t data)
 {
     uint8_t attempt, data_verify;
 
-    for (attempt = 0; attempt < 20; attempt++) {
+    for (attempt = 0; attempt < 20; attempt++)
+    {
     	AccGyroWriteRegister(reg, data);
         DelayMs(2);
 

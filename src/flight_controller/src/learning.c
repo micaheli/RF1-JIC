@@ -30,7 +30,10 @@ int BuildLearnedKiModel(void)
 
 inline float ApplyLearningModelToKi(float throttle, uint32_t axis)
 {
-    return( ConvertInt8ToFloatForKi( (throttle * learnedKiModel[axis].m) + learnedKiModel[axis].b ) );
+	if(mainConfig.mixerConfig.foreAftMixerFixer == 0)
+		return(0.0f);
+	else
+    	return( ConvertInt8ToFloatForKi( (throttle * learnedKiModel[axis].m) + learnedKiModel[axis].b ) );
 }
 
 int LearningInit(void)
@@ -73,10 +76,11 @@ inline float ConvertInt8ToFloatForKi(int8_t kiNumber)
 int TrimKi(pid_output flightPids[])
 {
 
-	if (!ModeSet(M_LEARN))
-        return(0);
+	if ( !(mainConfig.mixerConfig.foreAftMixerFixer == 2) )
+		if (!ModeSet(M_LEARN))
+        	return(0);
     
-    if(!mainConfig.mixerConfig.foreAftMixerFixer)
+    if(mainConfig.mixerConfig.foreAftMixerFixer == 0)
 		return(0);
 
 	if(!boardArmed)
@@ -99,7 +103,11 @@ int TrimKi(pid_output flightPids[])
 
 	uint32_t position = lrintf(smoothCurvedThrottle0_1*19);
 
-	if ( ModeActive(M_LEARN) && (kiTrimCounter >= 10) )
+	if (
+		( (mainConfig.mixerConfig.foreAftMixerFixer == 2) ||
+		ModeActive(M_LEARN) ) &&
+		(kiTrimCounter >= 10)
+	)
 	{
 		persistance.data.yawKiTrim8[position] = ConvertFloatToInt8ForKi(flightPids[YAW].ki + kiTrim[YAW]);
 		persistance.data.rollKiTrim8[position] = ConvertFloatToInt8ForKi(flightPids[ROLL].ki + kiTrim[ROLL]);
@@ -126,10 +134,11 @@ int TrimKi(pid_output flightPids[])
 
 int TrimMotors(void)
 {
-	if (!ModeSet(M_LEARN))
-		return(0);
+	if ( !(mainConfig.mixerConfig.foreAftMixerFixer == 2) )
+		if (!ModeSet(M_LEARN))
+			return(0);
 
-	if(!mainConfig.mixerConfig.foreAftMixerFixer)
+	if(!mainConfig.mixerConfig.foreAftMixerFixer == 0)
 		return(0);
 
 	if(!boardArmed)
@@ -142,7 +151,7 @@ int TrimMotors(void)
 
 	//throttle is 100% and constrols in deadband range
 	if(
-		ModeActive(M_LEARN) &&
+		( (mainConfig.mixerConfig.foreAftMixerFixer == 2) || ModeActive(M_LEARN) ) &&
 		//(motorTrimHasHappened == 0) &&
 		(smoothCurvedThrottle0_1 > 0.99f) &&
 		(smoothedRcCommandF[PITCH] == 0.0f) &&

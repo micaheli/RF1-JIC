@@ -1537,8 +1537,19 @@ Version 0.354.135 BETA:
 		New learning model which was learned during a flight will not apply until after a disarm and rearm
 		Learn mode must be set for the learn model to apply to flight
 
+Version 0.355.135 BETA:
+	Changed famx functionallity
+		set famx=0 will disable learning data entirely
+		set famx=1 will rely on LEARN mode for learn handling
+			This is the current default modeof operation
+			Learning only learns when learn mode is active
+			New learning model which was learned during a flight will not apply until after a disarm and rearm
+			Learn mode must be set for the learn model to apply to flight
+		set famx=2 will let the FC decide when the best time to learn is and LEARN mode isignored
+			Application of the learning model will still only reapply upon arm like when using LEARM mode
 
-
+Version 0.356.135 BETA:
+	S.port changes
 
 
 #Features in current development:
