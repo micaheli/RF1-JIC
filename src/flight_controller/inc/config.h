@@ -1,9 +1,9 @@
 #pragma once
 
-#define FIRMWARE_VERSION_INT	(uint16_t)(356U)
-#define CONFIG_VERSION			(uint8_t)(135U)
-#define CONFIG_VERSION_STR		"135"
-#define FIRMWARE_VERSION		"0.358.135 BETA" //RC19 is next
+#define FIRMWARE_VERSION_INT	(uint16_t)(368U)
+#define CONFIG_VERSION			(uint8_t)(137U)
+#define CONFIG_VERSION_STR		"137"
+#define FIRMWARE_VERSION		"0.368.137 BETA" //RC19 is next
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n\0"
 
@@ -11,6 +11,9 @@
 #define FLIGHT_MODE_ARRAY_SIZE 96
 
 #define PROFILE_COUNT 3
+
+//test
+extern char	   foundCraftName[16];
 
 enum
 {
@@ -33,6 +36,10 @@ typedef struct
 
 typedef struct
 {
+	uint32_t		  marker1;
+	uint32_t		  marker2;
+	char			  craftName[16];
+	uint32_t		  marker3;
 	tune_profile      tuneProfile[PROFILE_COUNT];
 	rc_control_config rcControlsConfig;
 	gyro_config       gyroConfig;
@@ -103,4 +110,4 @@ extern void    SaveAndSend(void);
 
 extern int     RfCustomReplyBuffer(char *rfCustomSendBufferAdder);
 extern int     SendRfCustomReplyBuffer(void);
-extern void    OutputVarSet(uint32_t position);
+extern void    OutputVarSet(uint32_t position, int doDiff);

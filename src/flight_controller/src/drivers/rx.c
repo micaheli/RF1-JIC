@@ -968,35 +968,19 @@ inline void InlineCollectRcCommand (void)
 
 	uint32_t axis  = 0;
 	float rangedRx = 0.0f;
+	float deadBandToUse = 0.0f;
 
 	isRxDataNew = 1; //this function is to be called by reception of vali RX data, so we know we have new RX data now
-
-	//TAER
-	//YAET
-	//scale
-    //////masterConfig.rxConfig.midrc = 1500;
-    //////masterConfig.rxConfig.mincheck = 1005;
-    //////masterConfig.rxConfig.maxcheck = 1990;
-    //into a -1 to 1 float;
-	//because of how midrc works we must do this separately or negative and positive values.
-	//this method won't require a __disable_irq
-	//////rcData is 1000 to 2000. It can never be negative.
 
 
 	//calculate main controls.
 	//rc data is taken from RX and using the map is put into the correct "axis"
 	for (axis = 0; axis < MAXCHANNELS; axis++)
 	{
-
-		//range with deadband in mind to produce smooth movement
-		//if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
-		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.00f + mainConfig.rcControlsConfig.deadBand[axis], -1.0f); //-1 to 0
-		//else if ( (axis == THROTTLE) && (!mainConfig.rcControlsConfig.shortThrow) ) //add 5% deadband to top of throttle
-		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.05f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1.05
-		//else if ( (axis == THROTTLE) ) //add 10% deadband to top of throttle
-		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.10f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1.10
-		//else
-		//	rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.00f, 0.0f - mainConfig.rcControlsConfig.deadBand[axis]); //0 to +1
+		deadBandToUse = mainConfig.rcControlsConfig.deadBand[axis];
+		
+		if(	ModeActive(M_LEARN) )
+			deadBandToUse = 0.05f;
 
 		if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
 			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.00f, -1.0f); //-1 to 0
@@ -1008,18 +992,18 @@ inline void InlineCollectRcCommand (void)
 			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.maxRc[(axis)], mainConfig.rcControlsConfig.midRc[(axis)], 1.00f, 0.0f); //0 to +1
 
 		//do we want to apply deadband to trueRcCommandF? right now I think yes
-		if (ABS(rangedRx) >= mainConfig.rcControlsConfig.deadBand[axis])
+		if (ABS(rangedRx) >= deadBandToUse)
 		{
 			//range with deadband in mind to produce smooth movement
 			if(axis != THROTTLE)
 			{
 				if (rangedRx > 0)
 				{
-					rangedRx = InlineChangeRangef(rangedRx, 1.0f, mainConfig.rcControlsConfig.deadBand[axis], 1.0f, 0.0f);
+					rangedRx = InlineChangeRangef(rangedRx, 1.0f, deadBandToUse, 1.0f, 0.0f);
 				}
 				else
 				{
-					rangedRx = InlineChangeRangef(rangedRx, -mainConfig.rcControlsConfig.deadBand[axis], -1.0f, 0.0f, -1.0f);
+					rangedRx = InlineChangeRangef(rangedRx, -deadBandToUse, -1.0f, 0.0f, -1.0f);
 				}
 			}
 
@@ -1229,8 +1213,17 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
     static float   deltaRC[4]          = {0.0f,};
     static int32_t factor              = 0;
     int32_t        channel             = 0;
+	float          smoothToUse         = mainConfig.tuneProfile[activeProfile].rcRates.rcSmoothingFactor;
 
-	if ( (mainConfig.tuneProfile[activeProfile].rcRates.rcSmoothingFactor < 0.1f) || ModeActive(M_DIRECT) || (mainConfig.tuneProfile[activeProfile].rcRates.useCurve == BETAFLOP_EXPO) || (mainConfig.tuneProfile[activeProfile].rcRates.useCurve == KISS_EXPO) )
+	//direct mode is smoothing 0
+	if( ModeActive(M_DIRECT) )
+		smoothToUse = 0.0f;
+
+	//smoothing always 1 when learning
+	if(	ModeActive(M_LEARN) )
+		smoothToUse = 1.0f;
+	
+	if ( ( smoothToUse < 0.1f) || (mainConfig.tuneProfile[activeProfile].rcRates.useCurve == BETAFLOP_EXPO) || (mainConfig.tuneProfile[activeProfile].rcRates.useCurve == KISS_EXPO) )
 	{
 		for (channel=3; channel >= 0; channel--)
 		{
@@ -1242,7 +1235,7 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 		return;
 	}
 
-	smoothingInterval = lrintf((float)loopSpeed.khzDivider * (float)packetTime * mainConfig.tuneProfile[activeProfile].rcRates.rcSmoothingFactor ); //todo: calculate this number to be number of loops between PID loops
+	smoothingInterval = lrintf((float)loopSpeed.khzDivider * (float)packetTime * smoothToUse ); //todo: calculate this number to be number of loops between PID loops
 	//smoothingIntervalThrottle = lrintf((float)loopSpeed.khzDivider * (float)packetTime ); //todo: calculate this number to be number of loops between PID loops
 
     if (isRxDataNew)

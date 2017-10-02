@@ -485,38 +485,15 @@ void InlineInitGyroFilters(void)
 
 	for (axis = 2; axis >= 0; --axis)
 	{
-		if ( (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 0) || (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 4) )
+		if ( mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 0 )
 		{
-			OldInitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], 88.0f, 0.0f, filteredGyroData[axis]);
-			if(mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 4)
-				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);	
+			OldInitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r, 0.0f, filteredGyroData[axis]);
+			InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);	
 		}		
 		else 
 		{
-			if(mainConfig.tuneProfile[0].filterConfig[YAW].omega0 == 678)
-			{
-				InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[0].filterConfig[axis].omega1, mainConfig.tuneProfile[0].filterConfig[axis].omega2, 0.0f, filteredGyroData[axis]);
-				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
-			}
-			else
-			{
-				//set omega1_yaw=50.000
-				//set omega1_roll=90.000
-				//set omega1_pitch=90.000
-				//set omega2_yaw=0.980
-				//set omega2_roll=0.980
-				//set omega2_pitch=0.980
-				if(axis == YAW)
-				{
-					InitPaf( &pafGyroStates[axis], 50.000f, 0.980f, 0.0f, filteredGyroData[axis]);
-					InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
-				}
-				else
-				{
-					InitPaf( &pafGyroStates[axis], 90.000f, 0.980f, 0.0f, filteredGyroData[axis]);
-					InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
-				}
-			}
+			InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r / 100.0f, 0.0f, filteredGyroData[axis]);
+			InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
 		}
 	}
 
@@ -721,7 +698,19 @@ void InlineFlightCode(float dpsGyroArray[])
 
 			
 		}
-		else if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON) || (quopaState == QUOPA_ACTIVE) ) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
+		else if (
+			ModeActive(M_ATTITUDE) ||
+			ModeActive(M_HORIZON)  ||
+			(
+				(quopaState == QUOPA_ACTIVE) &&
+				(
+					(mainConfig.mixerConfig.quopaStyle == QUOPA_STYLE_AUTO)       ||
+					(mainConfig.mixerConfig.quopaStyle == QUOPA_STYLE_SEMIAUTO)   ||
+					(mainConfig.mixerConfig.quopaStyle == QUOPA_STYLE_AUTO_2)     ||
+					(mainConfig.mixerConfig.quopaStyle == QUOPA_STYLE_SEMIAUTO_2)
+				)
+			)
+		) //we're in a self level mode, let's find the set point based on angle of sticks and angle of craft
 		{
 			if (!timeSinceSelfLevelActivated)
 				timeSinceSelfLevelActivated = InlineMillis();
@@ -785,13 +774,26 @@ void InlineFlightCode(float dpsGyroArray[])
 				flightSetPoints[ROLL]    = ( rollAttitudeError  * 15) + rollAttitudeErrorKi  + (rollAttitudeErrorKdelta  / loopSpeed.truedT * sldUsed);
 				flightSetPoints[PITCH]   = ( pitchAttitudeError * 15) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.truedT * sldUsed);
 			}
-			else if (ModeActive(M_ATTITUDE) || (quopaState == QUOPA_ACTIVE) ) //if M_ATTITUDE mode
+			else if (
+				ModeActive(M_ATTITUDE) ||
+				(
+					quopaState == QUOPA_ACTIVE &&
+					(mainConfig.mixerConfig.quopaStyle == QUOPA_STYLE_AUTO || mainConfig.mixerConfig.quopaStyle == QUOPA_STYLE_AUTO_2 )
+				)
+			) //if M_ATTITUDE mode
 			{
 				//roll and pitch are set directly from self level mode
 				flightSetPoints[ROLL]    = InlineConstrainf( (rollAttitudeError * slpUsed) + rollAttitudeErrorKi + (rollAttitudeErrorKdelta / loopSpeed.truedT * sldUsed), -300.0, 300.0);
 				flightSetPoints[PITCH]   = InlineConstrainf( (pitchAttitudeError * slpUsed) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.truedT * sldUsed), -300.0, 300.0);
 			}
-			else if (ModeActive(M_HORIZON)) //if M_HORIZON mode
+			else if (
+				ModeActive(M_HORIZON) ||
+				(
+					quopaState == QUOPA_ACTIVE &&
+					(mainConfig.mixerConfig.quopaStyle == QUOPA_STYLE_SEMIAUTO || mainConfig.mixerConfig.quopaStyle == QUOPA_STYLE_SEMIAUTO_2 )
+				)
+			
+			) //if M_HORIZON mode
 			{
 				//roll and pitch and modified by stick angle proportionally to stick angle
 				if ( (ABS(trueRcCommandF[PITCH]) < 0.75f) && (ABS(trueRcCommandF[ROLL]) < 0.75f) && ABS(pitchAttitude) < 75.0f ) //prevent gimbal lock since PIDc uses euler angles
@@ -1135,9 +1137,6 @@ int InitFlight(uint32_t escProtocol, uint32_t escFrequency)
 	//make sure gyro is interrupting and init scheduler
 	InitScheduler();
 
-	//init telemtry, if there's a gyro EXTI and soft serial collision then the fake EXTI will be used in place of the actual gyro EXTI
-	InitTelemtry();
-
 #ifdef STM32F446xx
 	InitLaptimer();
 #endif
@@ -1154,6 +1153,9 @@ int InitFlight(uint32_t escProtocol, uint32_t escFrequency)
     DeInitActuators();    //Deinit before Init is a shotgun startup
 	InitActuators(escProtocol, escFrequency); //Actuator init should happen after soft serial init.
     ZeroActuators(500);     //output actuators to idle after timers are stable;
+
+	//init telemtry, if there's a gyro EXTI and soft serial collision then the fake EXTI will be used in place of the actual gyro EXTI
+	InitTelemtry();
 
 	//InitTransponderTimer();
 	DelayMs(2);
@@ -1271,11 +1273,11 @@ uint32_t SanityCheckEscProtocolAndFrequency(uint32_t *escProtocol, uint32_t *esc
 	(*escFrequency) = finalEscFrequency;
 
 	usedSkunk = mainConfig.gyroConfig.skunk;
-	usedSkunk = 0; 
 	if (!FULL_32)
 	{
 		//16 KHz on F4s if quaternions are needed.
 		if ( 
+			//(mainConfig.mixerConfig.foreAftMixerFixer == 2) ||
 			ModeSet(M_ATTITUDE) ||
 			ModeSet(M_HORIZON)  ||
 			ModeSet(M_QUOPA)

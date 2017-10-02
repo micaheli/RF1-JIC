@@ -98,6 +98,7 @@ void InitPid (void)
 			pidsUsed[PITCH].wc = (mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].ga * 0.333);
 	}
 
+	/*
 	if (loopSpeed.khzDivider == 32)
 	{
 		pidsUsed[0].kd *= 1.0f;
@@ -122,6 +123,7 @@ void InitPid (void)
 		pidsUsed[1].kd *= 8.0f;
 		pidsUsed[2].kd *= 8.0f;
 	}
+	*/
 
 	for (axis = 2; axis >= 0; --axis)
 	{

@@ -1,7 +1,7 @@
 #include "includes.h"
 
 //0.1 to -0.1 fits within uint8_t 
-#define KI_LEARN_MULTIPLIER 0.00078740157186985015869140625f
+#define KI_LEARN_MULTIPLIER   0.00078740157186985015869140625f
 #define KI_LEARN_MULTIPLIER_I 1270.0f
 
 //for 20 value table:
@@ -9,7 +9,7 @@
 //for 20 value table:
 #define X_LEARNING_AVERAGE 52.5f
 //for 20 steps
-#define X_STEP 0.05f
+#define X_STEP             0.05f
 
 volatile learned_ki_model learnedKiModel[AXIS_NUMBER];
 
@@ -18,7 +18,7 @@ int motorTrimCounter;
 int kiTrimCounter;
 
 static int GenerateTheKiTables(volatile int8_t kiTrim[], volatile float *mTemp, volatile float *bTemp);
-static int BuildKiModel(volatile int8_t kiTrim[], volatile int8_t confidenceLevel[], volatile learned_ki_model *learnedKiModel);
+static int BuildKiModel(volatile int8_t kiTrim[], volatile uint32_t confidenceLevel[], volatile learned_ki_model *learnedKiModel);
 
 int BuildLearnedKiModel(void)
 {
@@ -33,7 +33,8 @@ inline float ApplyLearningModelToKi(float throttle, uint32_t axis)
 	if(mainConfig.mixerConfig.foreAftMixerFixer == 0)
 		return(0.0f);
 	else
-    	return( ConvertInt8ToFloatForKi( (throttle * learnedKiModel[axis].m) + learnedKiModel[axis].b ) );
+		return( ConvertInt8ToFloatForKi( (throttle * learnedKiModel[axis].m) + learnedKiModel[axis].b ) );
+	//return( ConvertInt8ToFloatForKi( (throttle * learnedKiModel[axis].m) ) );
 }
 
 int LearningInit(void)
@@ -76,6 +77,9 @@ inline float ConvertInt8ToFloatForKi(int8_t kiNumber)
 int TrimKi(pid_output flightPids[])
 {
 
+	if(!fullKiLatched)
+		return(0);
+
 	if ( !(mainConfig.mixerConfig.foreAftMixerFixer == 2) )
 		if (!ModeSet(M_LEARN))
         	return(0);
@@ -106,13 +110,13 @@ int TrimKi(pid_output flightPids[])
 	if (
 		( (mainConfig.mixerConfig.foreAftMixerFixer == 2) ||
 		ModeActive(M_LEARN) ) &&
-		(kiTrimCounter >= 10)
+		(kiTrimCounter > 19)
 	)
 	{
-		persistance.data.yawKiTrim8[position] = ConvertFloatToInt8ForKi(flightPids[YAW].ki + kiTrim[YAW]);
-		persistance.data.rollKiTrim8[position] = ConvertFloatToInt8ForKi(flightPids[ROLL].ki + kiTrim[ROLL]);
-		persistance.data.pitchKiTrim8[position] = ConvertFloatToInt8ForKi(flightPids[PITCH].ki + kiTrim[PITCH]);
-		persistance.data.geeForce[position] = lrintf( (float)(persistance.data.geeForce[position] * 0.80f) + (float)((geeForceZ * 10.0f) * 0.20f));
+		persistance.data.yawKiTrim8[position] = (persistance.data.yawKiTrim8[position] * 0.95f) + (ConvertFloatToInt8ForKi(flightPids[YAW].ki + kiTrim[YAW]) * 0.05f);
+		persistance.data.rollKiTrim8[position] = (persistance.data.rollKiTrim8[position] * 0.95f) + (ConvertFloatToInt8ForKi(flightPids[ROLL].ki + kiTrim[ROLL]) * 0.05f);
+		persistance.data.pitchKiTrim8[position] = (persistance.data.pitchKiTrim8[position] * 0.95f) + (ConvertFloatToInt8ForKi(flightPids[PITCH].ki + kiTrim[PITCH]) * 0.05f);
+		persistance.data.geeForce[position] = lrintf( (float)(persistance.data.geeForce[position] * 0.95f) + (float)((geeForceZ * 10.0f) * 0.05f));
 		persistance.data.rememberence[position]++;
 	}
 
@@ -134,11 +138,14 @@ int TrimKi(pid_output flightPids[])
 
 int TrimMotors(void)
 {
+	if(!fullKiLatched)
+	return(0);
+
 	if ( !(mainConfig.mixerConfig.foreAftMixerFixer == 2) )
 		if (!ModeSet(M_LEARN))
 			return(0);
 
-	if(!mainConfig.mixerConfig.foreAftMixerFixer == 0)
+	if(mainConfig.mixerConfig.foreAftMixerFixer == 0)
 		return(0);
 
 	if(!boardArmed)
@@ -252,7 +259,7 @@ static int GenerateTheKiTables(volatile int8_t kiTrim[], volatile float *mTemp, 
     return(0);
 }
 
-static int BuildKiModel(volatile int8_t kiTrim[], volatile int8_t confidenceLevel[], volatile learned_ki_model *learnedKiModel)
+static int BuildKiModel(volatile int8_t kiTrim[], volatile uint32_t confidenceLevel[], volatile learned_ki_model *learnedKiModel)
 {
     //for 20 steps
 	volatile int8_t tempKiTrim[KI_TRIM_TABLE_SIZE];
@@ -264,14 +271,14 @@ static int BuildKiModel(volatile int8_t kiTrim[], volatile int8_t confidenceLeve
 
 	//only build model if confidence level is high enough
 	if( 
-		(confidenceLevel[KI_TRIM_TABLE_SIZE-1] > 50) &&
-		(confidenceLevel[KI_TRIM_TABLE_SIZE-2] > 50) &&
-		(confidenceLevel[KI_TRIM_TABLE_SIZE-3] > 50) &&
-		(confidenceLevel[KI_TRIM_TABLE_SIZE-4] > 50) &&
-		(confidenceLevel[3] > 50) &&
-		(confidenceLevel[2] > 50) &&
-		(confidenceLevel[1] > 50) &&
-		(confidenceLevel[0] > 50)
+		(confidenceLevel[KI_TRIM_TABLE_SIZE-1] > 50)
+		//(confidenceLevel[KI_TRIM_TABLE_SIZE-2] > 50) &&
+		//(confidenceLevel[KI_TRIM_TABLE_SIZE-3] > 50) &&
+		//(confidenceLevel[KI_TRIM_TABLE_SIZE-4] > 50) &&
+		//(confidenceLevel[3] > 50) &&
+		//(confidenceLevel[2] > 50) &&
+		//(confidenceLevel[1] > 50) &&
+		//(confidenceLevel[0] > 50)
 	)
 	{
 		//nothing
@@ -287,7 +294,15 @@ static int BuildKiModel(volatile int8_t kiTrim[], volatile int8_t confidenceLeve
 	xTemp = 0;
 	for (x=0;x<KI_TRIM_TABLE_SIZE;x++)
 	{
-		if( ABS(kiTrim[x]-lrintf(mTemp*xTemp + bTemp)) > 20)
+		if (x==0)
+		{
+			tempKiTrim[x] = kiTrim[x];  //ignore this one
+		}
+		else if( (x<4) && ABS(kiTrim[x]-lrintf(mTemp*xTemp + bTemp)) > 15)
+		{
+			tempKiTrim[x] = lrintf(mTemp*xTemp + bTemp);
+		}
+		else if( ABS(kiTrim[x]-lrintf(mTemp*xTemp + bTemp)) > 25)
 		{
 			tempKiTrim[x] = lrintf(mTemp*xTemp + bTemp);
 		}

@@ -729,7 +729,7 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 
 	timerPrescaler = (uint16_t)(SystemCoreClock / TimerPrescalerDivisor(actuator.timer) / timerHz) - 1;
 
-	HAL_TIM_PWM_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
+	//HAL_TIM_PWM_DeInit(&pwmTimers[actuator.actuatorArrayNum]);
 	pwmTimers[actuator.actuatorArrayNum].Instance           	= timer;
 	pwmTimers[actuator.actuatorArrayNum].Init.Prescaler     	= timerPrescaler;
 	pwmTimers[actuator.actuatorArrayNum].Init.CounterMode   	= TIM_COUNTERMODE_UP;
@@ -784,7 +784,7 @@ static void InitOutputForDma(motor_type actuator, uint32_t pwmHz, uint32_t timer
 
 	HAL_TIM_Base_Start(&pwmTimers[actuator.actuatorArrayNum]);
 	
-	HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
+	//HAL_GPIO_DeInit(ports[actuator.port], actuator.pin);
 	
 	GPIO_InitStructure.Pin       = actuator.pin;
 	GPIO_InitStructure.Mode      = GPIO_MODE_AF_PP; //GPIO_MODE_AF_PP

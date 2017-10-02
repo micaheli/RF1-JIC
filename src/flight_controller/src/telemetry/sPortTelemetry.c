@@ -27,7 +27,7 @@ static uint32_t   sPortTelemCount;
 uint32_t          lastTimeSent = 0;
 volatile uint32_t luaPacketPendingTime = 0;
 volatile uint32_t noiseCounter = 0;
-static uint32_t counter=0; // sport lua packet counter
+  static uint32_t counter=0; // sport lua packet counter
 
 static uint8_t  SmartPortGetByte(uint8_t dataByte, uint16_t *crcPointer);
 static void     SmartPortCreatePacket(uint32_t header, uint32_t id, int32_t val, uint8_t sPortPacket[]);
@@ -146,8 +146,6 @@ uint8_t GenerateMenus(void)
 {
   uint32_t cursor = 0;
   static uint32_t directionLatch = 0;
-  counter = 0;
-	
   //default is to send a print command
   uint8_t command = ID_CMD_PRINT;
 
@@ -165,6 +163,7 @@ uint8_t GenerateMenus(void)
     if (programStatus.updateTime == 0)
     {
       //init
+      counter = 0;
       vtxRequested.vtxBandChannel = vtxRecord.vtxBandChannel;
       vtxRequested.vtxBand        = vtxRecord.vtxBand;
       vtxRequested.vtxChannel     = vtxRecord.vtxChannel;
@@ -196,13 +195,13 @@ uint8_t GenerateMenus(void)
       if ( ( ABS(trueRcCommandF[PITCH]) > 0.95) || ( ABS(trueRcCommandF[ROLL]) > 0.95) )
         directionLatch = 1;
  
-      if ( (programStatus.lineActive == PROG_STAT_LINE_INACTIVE) && ABS(trueRcCommandF[PITCH] > 0.95) ) {
+      if ( (programStatus.lineActive == PROG_STAT_LINE_INACTIVE) && (ABS(trueRcCommandF[PITCH]) > 0.95) ) {
         // inactive, we're in navigation mode
         programStatus.line = InlineConstrainui(programStatus.line + ((trueRcCommandF[PITCH] > 0.95) ? -1 : 1) , 0, 4); //cursor up or down
         programStatus.updateTime = InlineMillis();
         counter = 24;
       } 
-      else if ( (programStatus.lineActive = PROG_STAT_LINE_ACTIVE) && ABS(trueRcCommandF[PITCH] > 0.95) ) {
+      else if ( (programStatus.lineActive == PROG_STAT_LINE_ACTIVE) && (ABS(trueRcCommandF[PITCH]) > 0.95) ) {
         // active, we're in 'variable adjust' mode
         if (programStatus.menu == PROG_STAT_MENU_VTX) 
         {
@@ -247,14 +246,14 @@ uint8_t GenerateMenus(void)
           programStatus.updateTime = InlineMillis();
         }
       }
-      else if (ABS(trueRcCommandF[ROLL]) > 0.95)  // roll left/right
+      else if ( ABS(trueRcCommandF[ROLL]) > 0.95)  // roll left/right
       {
         if (programStatus.line == 0) // we're on the menu bar
         {
           programStatus.menu += (trueRcCommandF[ROLL] > 0.95) ? 1 : -1; //blindly increment and deincrement. Menu is clamped (rolls over) below
           programStatus.updateTime = InlineMillis();
         }
-        else if (trueRcCommandF[ROLL] > 0.95) // only save/exit on roll right
+        else if ( (trueRcCommandF[ROLL]) > 0.95f) // only save/exit on roll right
         {
           if ( (programStatus.menu == PROG_STAT_MENU_EXIT) )
           {
@@ -283,6 +282,14 @@ uint8_t GenerateMenus(void)
             programStatus.lineActive = PROG_STAT_LINE_ACTIVE; //cursor active
           }
           programStatus.updateTime = InlineMillis();
+        }
+        else 
+        {
+          if (programStatus.line != 0 && programStatus.line !=4)
+          {
+            programStatus.lineActive = PROG_STAT_LINE_INACTIVE; //cursor /inactive
+            programStatus.updateTime = InlineMillis();
+          }
         }
       }
     }
@@ -335,18 +342,18 @@ uint8_t GenerateMenus(void)
       
       switch(programStatus.menu) {
         case PROG_STAT_MENU_VTX:
-          strcpy(charMatrix[0]+titleLength, menuTitles[0]); // VTx
+          strcpy(&charMatrix[0][titleLength], menuTitles[0]); // VTx
           break;
         case PROG_STAT_MENU_EXIT:
-          strcpy(charMatrix[0]+titleLength, menuTitles[2]); // Exit
+          strcpy(&charMatrix[0][titleLength], menuTitles[2]); // Exit
           break;
         default:
-          strcpy(charMatrix[0]+titleLength, menuTitles[1]); // PIDs
+          strcpy(&charMatrix[0][titleLength], menuTitles[1]); // PIDs
       }
 
       // Menu title
       strcpy(charMatrix[1], " ");
-      strcpy(charMatrix[1]+1, subMenuTitles[programStatus.menu]); 
+      strcpy(&charMatrix[1][1], subMenuTitles[programStatus.menu]); 
       
       /// Menu entries
       // PIDs
@@ -372,14 +379,14 @@ uint8_t GenerateMenus(void)
         {
           // Setup menu options
           for (uint32_t i=2; i<=5; i++) {
-            const char* items[] = { "Band", "Channel", "Power", "Set and Exit" };
+            const char* items[] = { "Band", "Channel ", "Power", "Set and Exit" };
             strcpy(charMatrix[i], " ");
             strcpy(charMatrix[i]+1, items[i-2]);
           } 
           // Set current band
           const char* lookup[] = { "Band A", "Band B", "Band E", "Band FatShark", "Band Race", "Band Unknown" };
           strcpy(charMatrix[2], " ");
-          strcpy(charMatrix[2]+1, lookup[vtxRequested.vtxBand]);
+          strcpy(&charMatrix[2][1], lookup[vtxRequested.vtxBand]);
 
           // Set current channel
           itoa(vtxRequested.vtxChannel+1, &charMatrix[3][9], 10);
@@ -390,11 +397,11 @@ uint8_t GenerateMenus(void)
 
           strcpy(charMatrix[4], " Power ");
           if (vtxRequested.vtxPower > 4 || vtxRequested.vtxPower < 0)  // unknown if out of scope
-            strcpy(charMatrix[4]+7, "Unknown");
+            strcpy(&charMatrix[4][7], "Unknown");
           else if(vtxRecord.vtxDevice == VTX_DEVICE_TRAMP)
-            strcpy(charMatrix[4]+7, trampLookup[vtxRequested.vtxPower]);
+            strcpy(&charMatrix[4][7], trampLookup[vtxRequested.vtxPower]);
           else
-            strcpy(charMatrix[4]+7, unifyLookup[vtxRequested.vtxPower]);
+            strcpy(&charMatrix[4][7], unifyLookup[vtxRequested.vtxPower]);
         } 
         else
         {

@@ -50,7 +50,7 @@ typedef struct {
 } buffer_record;
 
 //8bit storage
-#define PERSISTANCE_VERSION 004
+#define PERSISTANCE_VERSION 005
 //#define PERSISTANCE_VERSION 002
 
 //8bit storage

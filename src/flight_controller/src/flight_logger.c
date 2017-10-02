@@ -211,7 +211,7 @@ static int PrintLogHeaderToBuffer(void)
 	PrintModes();
 	PrintTpaCurves();
 	for (x=0;x<(int)configSize;x++)
-		OutputVarSet(x);
+		OutputVarSet(x, 0);
 
 	headerToWrite += rfCustomReplyBufferPointer;
 	rfCustomReplyBufferPointer = 0; //done with use of this pointer. HID can overwrite the buffer if needed now.
@@ -523,35 +523,53 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 					currFilteredAccData[finishX]  = ( (filteredAccData[finishX] + lastFilteredAccData[finishX]) * 0.5);
 				}
 
-				static float stdDevKp[10] = {0.0f,};
-				static float stdDevKd[10] = {0.0f,};
+				static float stdDevKp[40] = {0.0f,};
+				static float stdDevKd[40] = {0.0f,};
 				static int   stdDevCtr    = 0;
 				static int   stdDevAxis   = 0;
 				static int   axisOverflow = 0;
+				stdDevAxis = 1;
 				
 				stdDevKp[stdDevCtr]   = flightPids[stdDevAxis].kp;
 				stdDevKd[stdDevCtr++] = flightPids[stdDevAxis].kd;
 
 				//std dev of last 10
-				if(stdDevCtr == 10)
+				if(stdDevCtr == 40)
 				{
 					stdDevCtr = 0;
-					axisOverflow++;
+					//axisOverflow++;
+				}
+				float differenceHp = 0.0f;
+				float differenceLp = 0.0f;
+				float differenceHd = 0.0f;
+				float differenceLd = 0.0f;
+				
+				//running std dev
+				for(int z=0; z<40; z++)
+				{
+					if(differenceHp < stdDevKp[z])
+						differenceHp = stdDevKp[z];
+					if(differenceHd < stdDevKd[z])
+						differenceHd = stdDevKd[z];
+
+					if(differenceLp > stdDevKp[z])
+						differenceLp = stdDevKp[z];
+					if(differenceLd > stdDevKd[z])
+						differenceLd = stdDevKd[z];
 				}
 
-				//running std dev
-				currFlightSetPoints[0]  = CalculateSDSize(stdDevKp, 10) * 10.0f;
-				currFlightSetPoints[1]  = CalculateSDSize(stdDevKd, 10) * 10.0f;
-				currFlightSetPoints[2]  = stdDevAxis;
+				currFlightSetPoints[0]  = differenceHp - differenceLp; //CalculateSDSize(stdDevKp, 10) * 10.0f;
+				currFlightSetPoints[1]  = differenceHd - differenceLd; //CalculateSDSize(stdDevKd, 10) * 10.0f;
+				currFlightSetPoints[2]  = currFlightSetPoints[0] / currFlightSetPoints[1];
 
 				//changed  axis every 100 times
-				if(axisOverflow == 10)
-				{
-					axisOverflow = 0;
-					stdDevAxis++;
-					if(stdDevAxis == 3)
-						stdDevAxis = 0;
-				}
+				//if(axisOverflow == 10)
+				//{
+				//	axisOverflow = 0;
+				//	stdDevAxis++;
+				//	if(stdDevAxis == 3)
+				//		stdDevAxis = 0;
+				//}
 				
 				currMotorOutput[0] = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5f) + 1.000f;
 				currMotorOutput[1] = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5f) + 1.000f;

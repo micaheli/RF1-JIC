@@ -10,6 +10,16 @@ typedef enum quopa_state_t
     QUOPA_FAILED   = 3,
 } quopa_state;
 
+enum
+{
+    QUOPA_STYLE_AUTO        = 0,
+    QUOPA_STYLE_SEMIAUTO    = 1,
+    QUOPA_STYLE_MANUAL      = 2,
+    QUOPA_STYLE_AUTO_2      = 3,
+    QUOPA_STYLE_SEMIAUTO_2  = 4,
+    QUOPA_STYLE_MANUAL_2    = 5,
+} quopa_style;
+
 extern volatile quopa_state quopaState;
 extern volatile quopa_state dshotBeepState;
 

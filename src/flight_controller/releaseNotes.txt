@@ -1551,6 +1551,53 @@ Version 0.355.135 BETA:
 Version 0.356.135 BETA:
 	S.port changes
 
+Version 0.357.135 BETA:
+	logging change
+
+Version 0.358.135 BETA:
+	fix learning model build of yaw
+	learning will not happen when craft is landed
+	fix incomplete learn from possibly causing drift or oscillations
+
+Version 0.359.135 BETA:
+	Fix learning bug
+	Change logging
+
+Version 0.360.135 BETA
+	Fixed S.port output
+	Refactored s.port telemetry handling - thanks Apoc!
+
+Version 0.361.135 BETA
+	Fix vtx channel not displaying on lua
+
+Version 0.362.136 BETA
+	Added diff command
+		prints onlt set variables that differ from defaults
+	Addec craft_name string (15 char limit)
+
+Version 0.363.136 BETA
+	remove filter 4, change filter 0 to what filter 4 was
+	allow filter 1 to be modifed using filter variables quick and rap
+	Changed set quopa_style
+		QUOPA_STYLE_AUTO       = 0   (normal opperation)
+		QUOPA_STYLE_SEMIAUTO   = 1   (allows increased speed from right stick input)
+		QUOPA_STYLE_MANUAL     = 2   (Only responds to right stick input)
+		QUOPA_STYLE_AUTO_2     = 3   (normal opperation using two motors at a time)
+		QUOPA_STYLE_SEMIAUTO_2 = 4   (allows increased speed from right stick input using two motors at a time)
+		QUOPA_STYLE_MANUAL_2   = 5   (Only responds to right stick input using two motors at a time)
+
+Version 0.364.136 BETA
+	Update learning
+	Update filters
+
+Version 0.365.136 BETA
+	Update learning
+
+Version 0.366.136 BETA
+	Update learning
+
+Version 0.367.136 BETA
+	Update learning to be smarter
 
 #Features in current development:
 #	MAVlink compatibility
