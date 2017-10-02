@@ -457,3 +457,21 @@ void ADC_IRQHandler(void)
 {
   //HAL_ADC_IRQHandler(&adcHandleT);
 }
+
+
+void SPI1_IRQHandler(void)
+{
+  HAL_SPI_IRQHandler(&spiHandles[ENUM_SPI1]);
+}
+
+void SPI2_IRQHandler(void)
+{
+  HAL_SPI_IRQHandler(&spiHandles[ENUM_SPI2]);
+}
+
+void SPI3_IRQHandler(void)
+{
+	//todo fix hacky with callback function
+	flashInfo.status = DMA_READ_COMPLETE;
+  	HAL_SPI_IRQHandler(&spiHandles[ENUM_SPI3]);
+}

@@ -79,6 +79,7 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 
 void M25p16BlockingWritePagePartial(uint32_t address, uint8_t *txBuffer, uint32_t size)
 {
+	//not used
   	txBuffer[0] = M25P16_PAGE_PROGRAM;
   	txBuffer[1] = ((address >> 16) & 0xFF);
   	txBuffer[2] = ((address >> 8) & 0xFF);
@@ -117,9 +118,10 @@ void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer)
 	flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
 	WriteEnableDataFlash();
 	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
-	HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, FLASH_CHIP_BUFFER_SIZE, 100);
+	//HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, FLASH_CHIP_BUFFER_SIZE, 100);
+	HAL_SPI_Transmit_IT(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, FLASH_CHIP_BUFFER_SIZE);
 	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
-	flashInfo.status = DMA_READ_COMPLETE;
+	//flashInfo.status = DMA_READ_COMPLETE;
 	
 }
 
