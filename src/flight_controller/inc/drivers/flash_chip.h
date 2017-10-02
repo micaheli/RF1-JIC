@@ -15,10 +15,12 @@ enum {
     READ_STATUS_IN_PROGRESS    = (1 << 4),
 	READ_ID_IN_PROGRESS        = (1 << 5),
 	DMA_READ_ID_IN_PROGRESS    = (1 << 6),
-	DMA_READ_COMPLETE          = (1 << 7),
+	READ_ANDOR_WRITE_COMPLETE  = (1 << 7),
 	DMA_DATA_READ_IN_PROGRESS  = (1 << 8),
 	DMA_DATA_WRITE_IN_PROGRESS = (1 << 9),
 	DATA_WRITE_IN_PROGRESS     = (1 << 10),
+	IRQ_DATA_WRITE_IN_PROGRESS = (1 << 11),
+	BLK_DATA_WRITE_IN_PROGRESS = (1 << 12),
 };
 
 //data in read buffer goes from 5 to 260. the first
@@ -132,5 +134,7 @@ extern int  M25p16ReadPage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffe
 extern int  WriteEnableDataFlashDma(void);
 extern void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer);
 extern void M25p16BlockingWritePagePartial(uint32_t address, uint8_t *txBuffer, uint32_t size);
+extern void M25p16IrqWritePage(uint32_t address, uint8_t *txBuffer);
 extern int  SavePersistance(void);
 extern int  ResetPersistance(int preserveGeneration);
+extern int  CheckIfFlashSpiBusy(void);

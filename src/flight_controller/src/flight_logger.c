@@ -499,7 +499,10 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				if(headerWritten < headerToWrite)
 				{
 					//don't try to right the header until the flash is ready
-					if ( ( (InlineMillis() - lastProgramTime) > 6) && (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS) )
+					if (
+						( (InlineMillis() - lastProgramTime) > 6) &&
+						(flashInfo.status == READ_ANDOR_WRITE_COMPLETE)
+					)
 					{
 							toWrite = CONSTRAIN(headerToWrite - headerWritten, (int)0, (int)flashInfo.pageSize);
 							DumbWriteString(rfCustomSendBuffer+headerWritten, toWrite);
@@ -517,12 +520,13 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 					currFlightPids[finishX].kp    = ( (flightPids[finishX].kp + lastFlightPids[finishX].kp) * 0.5);
 					currFlightPids[finishX].ki    = ( (flightPids[finishX].ki + lastFlightPids[finishX].ki) * 0.5);
 					currFlightPids[finishX].kd    = ( (flightPids[finishX].kd + lastFlightPids[finishX].kd) * 0.5);
-					//currFlightSetPoints[finishX]  = ( (flightSetPoints[finishX] + lastFlightSetPoints[finishX]) * 0.5);
+					currFlightSetPoints[finishX]  = ( (flightSetPoints[finishX] + lastFlightSetPoints[finishX]) * 0.5);
 					currFilteredGyroData[finishX] = ( (filteredGyroData[finishX] + lastFilteredGyroData[finishX]) * 0.5);
 					currDpsGyroArray[finishX]     = ( (dpsGyroArray[finishX] + lastDpsGyroArray[finishX]) * 0.5);
 					currFilteredAccData[finishX]  = ( (filteredAccData[finishX] + lastFilteredAccData[finishX]) * 0.5);
 				}
 
+				/*
 				static float stdDevKp[40] = {0.0f,};
 				static float stdDevKd[40] = {0.0f,};
 				static int   stdDevCtr    = 0;
@@ -570,6 +574,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 				//	if(stdDevAxis == 3)
 				//		stdDevAxis = 0;
 				//}
+				*/
 				
 				currMotorOutput[0] = ( (motorOutput[0] + lastMotorOutput[0]) * 0.5f) + 1.000f;
 				currMotorOutput[1] = ( (motorOutput[1] + lastMotorOutput[1]) * 0.5f) + 1.000f;

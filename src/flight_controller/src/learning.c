@@ -30,7 +30,7 @@ int BuildLearnedKiModel(void)
 
 inline float ApplyLearningModelToKi(float throttle, uint32_t axis)
 {
-	if(mainConfig.mixerConfig.foreAftMixerFixer == 0)
+	if( (mainConfig.mixerConfig.foreAftMixerFixer == 0) || (mainConfig.mixerConfig.foreAftMixerFixer > 2) )
 		return(0.0f);
 	else
 		return( ConvertInt8ToFloatForKi( (throttle * learnedKiModel[axis].m) + learnedKiModel[axis].b ) );
@@ -84,7 +84,7 @@ int TrimKi(pid_output flightPids[])
 		if (!ModeSet(M_LEARN))
         	return(0);
     
-    if(mainConfig.mixerConfig.foreAftMixerFixer == 0)
+    if( (mainConfig.mixerConfig.foreAftMixerFixer == 0) || (mainConfig.mixerConfig.foreAftMixerFixer > 2) )
 		return(0);
 
 	if(!boardArmed)
@@ -145,7 +145,7 @@ int TrimMotors(void)
 		if (!ModeSet(M_LEARN))
 			return(0);
 
-	if(mainConfig.mixerConfig.foreAftMixerFixer == 0)
+	if( (mainConfig.mixerConfig.foreAftMixerFixer == 0) || (mainConfig.mixerConfig.foreAftMixerFixer > 2) )
 		return(0);
 
 	if(!boardArmed)

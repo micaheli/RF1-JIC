@@ -206,10 +206,17 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 				//float ag2 = 1.0f;
 				//float ag3 = 1.0f;
 				
-				if(throttleVelocity > 0.33f)
+				if (
+					(ABS(flightSetPoints[YAW]) < 50) &&
+					(ABS(flightSetPoints[ROLL]) < 50) &&
+					(ABS(flightSetPoints[PITCH]) < 50)
+				)
 				{
-					ag1 = 3.0f;
-					//ag1 = InlineChangeRangef(throttleVelocity-0.1, 1, 0, 3, 2);
+					if(throttleVelocity > 0.33f)
+					{
+						ag1 = 3.0f;
+						//ag1 = InlineChangeRangef(throttleVelocity-0.1, 1, 0, 3, 2);
+					}
 				}
 
 				//if (ABS(flightSetPoints[axis]) > 50)

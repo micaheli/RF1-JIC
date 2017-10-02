@@ -559,7 +559,9 @@ inline float InlineApplyMotorMixer3dNeutral(pid_output pids[], float throttleIn)
 inline float ForeAftMixerFixer(float motorOutputFloat, float throttleFloat, uint32_t motorNumber)
 {
 
-	if (mainConfig.mixerConfig.foreAftMixerFixer == 1.0f)
+	float usedFamx = (float)mainConfig.mixerConfig.foreAftMixerFixer * 0.01f;
+
+	if (usedFamx == 1.0f)
 	{
 		//famx not active
 		return(InlineConstrainf(motorOutputFloat+throttleFloat,0.0f,1.0f));
@@ -573,19 +575,19 @@ inline float ForeAftMixerFixer(float motorOutputFloat, float throttleFloat, uint
 			case 0:
 			case 1:
 				//front motors
-				if (mainConfig.mixerConfig.foreAftMixerFixer < 1.0f)
+				if (usedFamx < 1.0f)
 				{
 					//reduce front motors by mixer fixer
-					throttleFloat = InlineChangeRangef(throttleFloat, motorMixer[motorNumber].throttle, 0.0f, (motorMixer[motorNumber].throttle * mainConfig.mixerConfig.foreAftMixerFixer), 0.0f);
+					throttleFloat = InlineChangeRangef(throttleFloat, motorMixer[motorNumber].throttle, 0.0f, (motorMixer[motorNumber].throttle * usedFamx), 0.0f);
 				}
 				break;
 			case 2:
 			case 3:
 				//rear motors
-				if (mainConfig.mixerConfig.foreAftMixerFixer > 1.0f)
+				if (usedFamx > 1.0f)
 				{
 					//reduce rear motors by difference between mixer fixer and normal value (1.05 will reduce rear numbers to 95% at full throttle
-					throttleFloat = InlineChangeRangef(throttleFloat, motorMixer[motorNumber].throttle, 0.0f, (motorMixer[motorNumber].throttle * ( 1.0f - (mainConfig.mixerConfig.foreAftMixerFixer - 1.0f ) ) ), 0.0f);
+					throttleFloat = InlineChangeRangef(throttleFloat, motorMixer[motorNumber].throttle, 0.0f, (motorMixer[motorNumber].throttle * ( 1.0f - (usedFamx - 1.0f ) ) ), 0.0f);
 				}
 				break;
 		}
@@ -683,8 +685,10 @@ inline float InlineApplyMotorMixer(pid_output pids[], float throttleIn)
 
 	for(i=7; i>=0; i--)
 	{
-		//motorOutput[i] = ForeAftMixerFixer( motorOutput[i], throttle, i);
-		motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f);
+		if(mainConfig.mixerConfig.foreAftMixerFixer > 89)
+			motorOutput[i] = ForeAftMixerFixer( motorOutput[i], throttle, i);
+		else
+			motorOutput[i] = InlineConstrainf(motorOutput[i]+throttle,0.0f,1.0f);
 		//if(ModeSet(M_LEARN) && !ModeActive(M_LEARN))
 		//	motorOutput[i] = InlineConstrainf(motorOutput[i] * persistance.data.motorTrim[i], 0.0f, 1.0f);
 			

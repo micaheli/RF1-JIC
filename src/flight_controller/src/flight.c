@@ -1273,6 +1273,7 @@ uint32_t SanityCheckEscProtocolAndFrequency(uint32_t *escProtocol, uint32_t *esc
 	(*escFrequency) = finalEscFrequency;
 
 	usedSkunk = mainConfig.gyroConfig.skunk;
+	usedSkunk =  0;
 	if (!FULL_32)
 	{
 		//16 KHz on F4s if quaternions are needed.

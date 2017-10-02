@@ -205,56 +205,34 @@ void Scheduler(int32_t count)
 
 static void TaskPersistanceAndFlash(void)
 {
-	static uint32_t lastCheck = 0;
-	static uint32_t lastPersistance = 0;
-	
-	//SavePersistance
-	//check every 2 ms for flash write to finish
-	if ( (flashWriteInProgress) && (InlineMillis() - lastCheck > 1) )
-	{
-		lastCheck = InlineMillis();
-		if(CheckIfFlashBusy())
-		{
-			flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
-			flashWriteInProgress = 1;
-			return;
-		}
-		else
-		{
-			//save persistance if it's enabled, due and flash  is imediately availible, board is armed when this happens
-			if ( LoggingEnabled && (persistance.enabled) && (InlineMillis() - lastPersistance > 3000) )
-			{
-				lastPersistance = InlineMillis();
-				SavePersistance();
-				flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
-				flashWriteInProgress = 1;
-			}
-			else
-			{
-				flashInfo.status = DMA_READ_COMPLETE;
-				flashWriteInProgress = 0;
-				flashTxBuffer = NULL;
-				flashRxBuffer = NULL;
-			}
-		}
-	} //make sure persistance still saves when logging is diesabled, but only if board is armed
-	else if ( boardArmed && (armedTime > 4000) && !LoggingEnabled && (persistance.enabled) && (InlineMillis() - lastPersistance > 3000) )
-	{
-		flashWriteInProgress = 1;
-		SavePersistance();
-		lastPersistance = InlineMillis();
-		flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
-	}
 
-	//nothing to write
-	if(flashTxBuffer == NULL)
+	static uint32_t lastPersistance = 0;
+
+	//is SPI busy?, non blocking, doesn't send spi commands
+	if(CheckIfFlashSpiBusy())
+		return;
+
+	//is flash chip busy?, blocking, but only 4 bytes
+	if(CheckIfFlashBusy())
+		return;
+
+	//nothing busy so we fall through to here
+	//save persistance if it's enabled, due and flash is imediately availible, board is armed when this happens
+	if ( (armedTime > 4000) && (persistance.enabled) && (InlineMillis() - lastPersistance > 3000) )
+	{
+		//persistance overrides logging
+		lastPersistance = InlineMillis();
+		SavePersistance(); //uses blocking or irq as needed, both functions will set flashstatus back to free when avalible
+	}
+	else if(flashTxBuffer == NULL) //nothing to write
 	{
 		return;
 	}
-	else if(!flashWriteInProgress)
+	else
 	{ //something to write
-		flashWriteInProgress = 1;
-		M25p16BlockingWritePage(flashWriteAddress, flashTxBuffer);
+		//M25p16BlockingWritePage(flashWriteAddress, flashTxBuffer);
+		M25p16IrqWritePage(flashWriteAddress, flashTxBuffer);
+		flashTxBuffer = NULL;
 	}
 
 }

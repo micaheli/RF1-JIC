@@ -2530,7 +2530,7 @@ void MaxOsdDmaTxCallback(uint32_t callbackNumber)
         // reset chip select line
     	inlineDigitalHi(ports[board.maxOsd[0].csPort], board.maxOsd[0].csPin);
     	//bzero(flashInfo.commandTxBuffer, sizeof(flashInfo.commandTxBuffer));
-		//flashInfo.status = DMA_READ_COMPLETE;
+		//flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
     }
 
 }

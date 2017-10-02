@@ -154,7 +154,7 @@ const config_variables_rec valueTable[] =
 
 		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,					0, MIXER_END, MIXER_X1234, "" },
 
-		{ "famx", 				typeUINT,  "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0, 2, 1, "" },
+		{ "famx", 				typeUINT,  "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0, 110, 0, "" },
 		{ "bounce_guard", 		typeFLOAT, "mixr", &mainConfig.mixerConfig.bounceGuard,					0, 0.2f, 0.1f, "" },
 		{ "mixer_style", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerStyle,					0, 1, 0, "" },
 		{ "esc_protocol", 		typeUINT,  "mixr", &mainConfig.mixerConfig.escProtocol,					0, ESC_PROTOCOL_END, ESC_MULTISHOT, "" },
@@ -2103,6 +2103,11 @@ void ProcessCommand(char *inString)
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me craft found is %i %i\n", (int)(learnedKiModel[1].m * 1000), (int)(learnedKiModel[1].b * 1000));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me craft found is %i %i\n", (int)(learnedKiModel[2].m * 1000), (int)(learnedKiModel[2].b * 1000));
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("32bits", inString)) //test
+		{
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me \n \n \n 32bitsofgil!\n \n  MM\n<@ \\___/|\n   \\____/\n     ><\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("dump", inString) || !strcmp("diff", inString))

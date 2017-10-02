@@ -68,7 +68,10 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
   	txBuffer[2] = ((address >> 8) & 0xFF);
   	txBuffer[3] = (address & 0xFF);
 
-	if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY) {
+	if (
+		HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY &&
+		HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY)
+	{
 		WriteEnableDataFlash();
 		inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
 		flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
@@ -85,20 +88,28 @@ void M25p16BlockingWritePagePartial(uint32_t address, uint8_t *txBuffer, uint32_
   	txBuffer[2] = ((address >> 8) & 0xFF);
   	txBuffer[3] = (address & 0xFF);
 
-	flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
+	flashInfo.status = BLK_DATA_WRITE_IN_PROGRESS;
 	WriteEnableDataFlash();
 	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
 	HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, size, 100);
 	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
-	flashInfo.status = DMA_READ_COMPLETE;
+	flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
 	
 }
 
 void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer)
 {
 
+	if(flashInfo.status != READ_ANDOR_WRITE_COMPLETE)
+		return;
+
 	//write data from txBuffer into flash chip using DMA.
 	//command and dummy bytes are in rxBuffer
+
+	txBuffer[0] = M25P16_PAGE_PROGRAM;
+	txBuffer[1] = ((address >> 16) & 0xFF);
+	txBuffer[2] = ((address >> 8) & 0xFF);
+	txBuffer[3] = (address & 0xFF);
 
 	//once the command is executed (by DMA handler when CS goes high), the chip will take between 0.8 and 5 ms to run
 	//this means 256 bytes can be written every 160 cycles at 32 KHz worst case (5ms)
@@ -108,21 +119,32 @@ void M25p16BlockingWritePage(uint32_t address, uint8_t *txBuffer)
 	//12 floats per cycle at 1 KHz is about 48  KB per second. 48  KB per seconds will last 341 seconds (5.68 minutes of flight time).
 	//72 floats per cycle at 1 KHz is about 288 KB per second. 288 KB per seconds will last 56 seconds (a bit under 1 minute of flight time).
 
-	//rx buffer is just used as a dummy, we can completely ignore it
-
-  	txBuffer[0] = M25P16_PAGE_PROGRAM;
-  	txBuffer[1] = ((address >> 16) & 0xFF);
-  	txBuffer[2] = ((address >> 8) & 0xFF);
-  	txBuffer[3] = (address & 0xFF);
-
-	flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
+	flashInfo.status = BLK_DATA_WRITE_IN_PROGRESS;
 	WriteEnableDataFlash();
 	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
-	//HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, FLASH_CHIP_BUFFER_SIZE, 100);
-	HAL_SPI_Transmit_IT(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, FLASH_CHIP_BUFFER_SIZE);
+	HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, FLASH_CHIP_BUFFER_SIZE, 100);
+	//HAL_SPI_Transmit_IT(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, FLASH_CHIP_BUFFER_SIZE);
 	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
-	//flashInfo.status = DMA_READ_COMPLETE;
-	
+	flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
+}
+
+void M25p16IrqWritePage(uint32_t address, uint8_t *txBuffer)
+{
+
+	if (HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY)
+    {
+		//rx buffer is just used as a dummy, we can completely ignore it
+		txBuffer[0] = M25P16_PAGE_PROGRAM;
+		txBuffer[1] = ((address >> 16) & 0xFF);
+		txBuffer[2] = ((address >> 8) & 0xFF);
+		txBuffer[3] = (address & 0xFF);
+
+		flashInfo.status = IRQ_DATA_WRITE_IN_PROGRESS;
+		WriteEnableDataFlash();
+		inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
+		HAL_SPI_Transmit_IT(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txBuffer, FLASH_CHIP_BUFFER_SIZE);
+		//inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
+	}
 }
 
 /*
@@ -195,7 +217,7 @@ static int M25p16ReadIdSetFlashRecord(void)
 	flashInfo.sectorSize = 0;
 	flashInfo.totalSize = 0;
 	flashInfo.pageSize = 0;
-	flashInfo.status = 0;
+	flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
 
 	bzero(flashInfo.commandRxBuffer,sizeof(flashInfo.commandRxBuffer));
 	bzero(flashInfo.commandTxBuffer,sizeof(flashInfo.commandTxBuffer));
@@ -263,7 +285,7 @@ static unsigned int M25p16ReadIdSetFlashRecordDma(void)
 
   	//give the DMA test 100 ms to complete. If it passes then we return 1.
   	for (x=0;x<100;x++) {
-  		if (flashInfo.status != DMA_READ_COMPLETE)
+  		if (flashInfo.status != READ_ANDOR_WRITE_COMPLETE)
   			DelayMs(1);
   		else
   			break;
@@ -316,6 +338,26 @@ static void SpiInit(uint32_t baudRatePrescaler)
 
 }
 
+int CheckIfFlashSpiBusy(void)
+{
+	if (HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY)
+	{
+		if(
+			(flashInfo.status == DMA_DATA_WRITE_IN_PROGRESS) ||
+			(flashInfo.status == IRQ_DATA_WRITE_IN_PROGRESS) ||
+			(flashInfo.status == BLK_DATA_WRITE_IN_PROGRESS)
+		)
+		{
+			flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
+			inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
+		}
+		return(0);
+	}
+	else
+	{
+		return(1);
+	}
+}
 
 int CheckIfFlashBusy(void)
 {
@@ -586,7 +628,16 @@ int SavePersistance(void)
 	persistance.data.crc = SetPersistanceDataCrc( (uint8_t *)&(persistance.data), sizeof(persistance_data_record) - 1);
 
 	memcpy(persistanceTxBuffer+4, &(persistance.data), sizeof(persistance_data_record));
-	M25p16BlockingWritePage(persistance.currentWriteAddress, persistanceTxBuffer);
+
+	if(boardArmed)
+	{
+		//M25p16BlockingWritePage(persistance.currentWriteAddress, persistanceTxBuffer);
+		M25p16IrqWritePage(persistance.currentWriteAddress, persistanceTxBuffer);
+	}
+	else
+	{
+		M25p16BlockingWritePage(persistance.currentWriteAddress, persistanceTxBuffer);
+	}
 	persistance.currentWriteAddress += flashInfo.pageSize;
 
 	return(1);
@@ -752,7 +803,7 @@ inline void WriteEnableDataFlash(void)
 	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
 	HAL_SPI_Transmit(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], c, 1, 100);
 	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
-	simpleDelay_ASM(3); //give port time to change
+	simpleDelay_ASM(1); //give port time to change
 
 }
 
@@ -955,7 +1006,7 @@ void FlashDmaRxCallback(uint32_t callbackNumber)
         // reset chip select line
     	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
     	bzero(flashInfo.commandTxBuffer, sizeof(flashInfo.commandTxBuffer));
-		flashInfo.status = DMA_READ_COMPLETE;
+		flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
     }
 
 }

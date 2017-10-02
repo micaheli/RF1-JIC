@@ -415,30 +415,15 @@ void ADC_IRQHandler(void)
 
 void SPI1_IRQHandler(void)
 {
-	//todo fix hacky with callback function
-	#ifdef flight_controller
-	if (FLASH_SPI_NUMBER == ENUM_SPI1)
-		flashInfo.status = DMA_READ_COMPLETE;
-	#endif
   	HAL_SPI_IRQHandler(&spiHandles[ENUM_SPI1]);
 }
 
 void SPI2_IRQHandler(void)
 {
-	//todo fix hacky with callback function
-	#ifdef flight_controller
-	if (FLASH_SPI_NUMBER == ENUM_SPI2)
-		flashInfo.status = DMA_READ_COMPLETE;
-	#endif
  	HAL_SPI_IRQHandler(&spiHandles[ENUM_SPI2]);
 }
 
 void SPI3_IRQHandler(void)
 {
-	//todo fix hacky with callback function
-	#ifdef flight_controller
-	if (FLASH_SPI_NUMBER == ENUM_SPI3)
-		flashInfo.status = DMA_READ_COMPLETE;
-	#endif
   	HAL_SPI_IRQHandler(&spiHandles[ENUM_SPI3]);
 }

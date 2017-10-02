@@ -88,7 +88,7 @@ void FindCraftName(void)
     { //scan up to 1mb of flash starting at after rfbl //todo:set per mcu
 		//flash goes like this. RFBL -> FW -> ESCs -> fade43f4 a62fe81a -> RFBL SIZE in 16 bit hex variable -> fade43f4 a62fe81a -> RFBL
 		memcpy( &craftNameFinder, (char *)wordOffset, sizeof(craftNameFinder) );
-        if ( (craftNameFinder[0] == marker1) && (craftNameFinder[1] == marker2) )
+        if ( (craftNameFinder[0] == marker1) && (craftNameFinder[1] == marker2) && (craftNameFinder[6] == marker3) )
         { //RFBLM1 and 2 are different enfian of RFBLMR1 and 2
 			memcpy( &foundCraftName, (char *)wordOffset+8, 16 );
 		}
