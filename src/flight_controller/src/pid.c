@@ -16,6 +16,9 @@ pid_terms pidsUsed[AXIS_NUMBER];
 pid_terms pidsUsedThisTime[AXIS_NUMBER];
 int32_t axis;
 
+volatile float originalKd[3];
+
+
 volatile float kiTrim[AXIS_NUMBER];
 
 uint32_t uhOhRecover = 0;
@@ -57,6 +60,9 @@ void InitPid (void)
 	pidsUsed[ROLL].wc  = mainConfig.tuneProfile[activeProfile].pidConfig[ROLL].wc;
 	pidsUsed[PITCH].wc = mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].wc;
 
+	originalKd[0] = pidsUsed[0].kd;
+	originalKd[1] = pidsUsed[1].kd;
+	originalKd[2] = pidsUsed[2].kd;
 	if (mainConfig.mixerConfig.mixerStyle == 1)
 	{
 		pidsUsed[YAW].kp = pidsUsed[YAW].kp  / 100000;
@@ -215,6 +221,7 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 					if(throttleVelocity > 0.33f)
 					{
 						ag1 = 3.0f;
+						ag1 = 1.0f;
 						//ag1 = InlineChangeRangef(throttleVelocity-0.1, 1, 0, 3, 2);
 					}
 				}
@@ -257,11 +264,11 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 				}
 
 				//disable for now
-				if (ABS(flightSetPoints[axis]) > 3500)
+				if (ABS(flightSetPoints[axis]) > 6500.0f)
 				{
-					if (axis == YAW)
-						shortKi[axis] = InlineConstrainf(shortKi[axis] + pidsUsedThisTime[axis].ki * pidError * ag1, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f); //prevent insane windup
-					else
+					//if (axis == YAW)
+					//	shortKi[axis] = InlineConstrainf(shortKi[axis] + pidsUsedThisTime[axis].ki * pidError * ag1, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f); //prevent insane windup
+					//else
 						shortKi[axis] = InlineConstrainf(shortKi[axis] + pidsUsedThisTime[axis].ki * pidError * ag1, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit); //prevent insane windup
 
 					if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
@@ -275,12 +282,12 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 				}
 				else
 				{
-					if (axis == YAW)
-						longKi[axis] = InlineConstrainf(longKi[axis] + pidsUsedThisTime[axis].ki * pidError * ag1, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f); //prevent insane windup
-					else
-						longKi[axis] = InlineConstrainf(longKi[axis] + pidsUsedThisTime[axis].ki * pidError * ag1, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit); //prevent insane windup
+					//if (axis == YAW)
+					//	longKi[axis] = InlineConstrainf(longKi[axis] + pidsUsedThisTime[axis].ki * pidError * ag1, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit * 2.0f); //prevent insane windup
+					//else
+					longKi[axis] = InlineConstrainf(longKi[axis] + pidsUsedThisTime[axis].ki * pidError * ag1, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit); //prevent insane windup
 
-					if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
+					if ( actuatorRange > .9998f ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
 					{
 						longKi[axis] = InlineConstrainf(longKi[axis], -kiErrorLimit[axis], kiErrorLimit[axis]);
 					}
@@ -320,12 +327,15 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 
 				InlineUpdateWitchcraft(pidsUsedThisTime);
 
-				//KdFilterUpdate(&kdFilter[axis], kdDelta[axis]);
-				//kdDelta[axis] = kdFilter[axis].x;
-				kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
+				//kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
 
-				flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsedThisTime[axis].kd, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kdLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kdLimit);
-			//}
+				flightPids[axis].kd = InlineConstrainf( (originalKd[axis] / 100000000) * kdDelta[axis] / loopSpeed.dT, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kdLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kdLimit);
+				flightPids[axis].kd = BiquadUpdate(flightPids[axis].kd, &kdBqFilterState[axis]);
+
+				//kdDelta[axis] = BiquadUpdate(kdDelta[axis], &kdBqFilterState[axis]);
+				//flightPids[axis].kd = InlineConstrainf(kdDelta[axis] * pidsUsedThisTime[axis].kd, -mainConfig.tuneProfile[activeProfile].pidConfig[0].kdLimit, mainConfig.tuneProfile[activeProfile].pidConfig[0].kdLimit);
+				
+				//}
 			// calculate Kd ////////////////////////// ^
 
 	    }

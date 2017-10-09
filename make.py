@@ -457,7 +457,7 @@ def configure_target(TARGET):
         INCLUDE_DIRS.append("src/flight_controller/inc/input")
         SOURCE_DIRS.append("src/flight_controller/src/telemetry")
         SOURCE_DIRS.append("src/flight_controller/src/input")
-        FEATURES.extend(["adc", "transponder", "softSerial", "maxOsd", "esc_1wire", "leds", "dmaShenanigans", "actuator_output", "buzzer", "flash_chip", "mpu_icm_device/spi", "rx", "serial", "spm_laptimer"])
+        FEATURES.extend(["adc", "transponder", "softSerial", "maxOsd", "esc_1wire", "leds", "softPwm", "dmaShenanigans", "actuator_output", "buzzer", "flash_chip", "mpu_icm_device/spi", "rx", "serial", "spm_laptimer"])
     elif PROJECT == "nesc":
         excluded_files.append("stm32f3xx_spi_msp.c")
         excluded_files.append("stm32f4xx_spi_msp.c")

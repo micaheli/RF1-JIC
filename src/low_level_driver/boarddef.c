@@ -221,6 +221,8 @@ int GetBoardHardwareDefs(void)
 	board.generalTimer[0].timerIRQn = GENERAL_TIMER1_IRQN;
 	board.generalTimer[1].timer     = GENERAL_TIMER2;
 	board.generalTimer[1].timerIRQn = GENERAL_TIMER2_IRQN;
+	board.generalTimer[2].timer     = GENERAL_TIMER3;
+	board.generalTimer[2].timerIRQn = GENERAL_TIMER3_IRQN;
 
 	board.boardADC[0].enabled      = ADC0_TYPE;
 	board.boardADC[0].port         = ADC0_PORT;

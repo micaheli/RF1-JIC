@@ -36,6 +36,7 @@ extern volatile int retValChk;
 #include "watchdog.h"
 #include "learning.h"
 #include "scheduler.h"
+#include "MaxOsdCharmap.h"
 #include "newSoftSerial.h"
 #include "flight_logger.h"
 #include "rfbl_functions.h"
@@ -53,6 +54,7 @@ extern volatile int retValChk;
 #include "telemetry/trampTelemetry.h"
 
 //all drivers
+#include "drivers/softPwm.h"
 #include "drivers/adc.h"
 #include "drivers/esc_1wire.h"
 #include "drivers/softSerial.h"

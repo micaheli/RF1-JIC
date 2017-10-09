@@ -22,7 +22,7 @@ uint32_t Micros(void)
 	volatile uint32_t baseClock;
 
     int is = __get_PRIMASK();
-    __disable_irq();
+    //__disable_irq();
 
     baseMillis = InlineMillis();
     baseClock = millisClock;
@@ -31,7 +31,7 @@ uint32_t Micros(void)
 
     if ((is & 1) == 0)
 	{
-        __enable_irq();
+        //__enable_irq();
     }
 
     return ((baseMillis * 1000) + elapsedSinceMillis);

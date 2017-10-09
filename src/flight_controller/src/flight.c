@@ -462,10 +462,14 @@ void InitFlightCode(uint32_t loopUsed)
 	fullKiLatched       = 0;
 	flightcodeTime      = 0.0f;
 
-	gyroFiltUsed[YAW]   = (100.0f - mainConfig.tuneProfile[activeProfile].filterConfig[YAW].gyro.q);
-	gyroFiltUsed[ROLL]  = (100.0f - mainConfig.tuneProfile[activeProfile].filterConfig[ROLL].gyro.q);
-	gyroFiltUsed[PITCH] = (100.0f - mainConfig.tuneProfile[activeProfile].filterConfig[PITCH].gyro.q);
-	
+	for (uint32_t y=0; y<3; y++)
+	{
+		//if(mainConfig.tuneProfile[activeProfile].filterConfig[y].gyro.q < 100.0f)
+		//	gyroFiltUsed[y] = (100.0f - mainConfig.tuneProfile[activeProfile].filterConfig[y].gyro.q);
+		//else
+		gyroFiltUsed[y] = mainConfig.tuneProfile[activeProfile].filterConfig[y].gyro.q;
+	}
+
 	InlineInitGyroFilters();
 	//InlineInitKdFilters();
 	InlineInitSpectrumNoiseFilter();
@@ -810,6 +814,19 @@ void InlineFlightCode(float dpsGyroArray[])
 				timeSinceSelfLevelActivated = 0;
 		}
 
+		if(fullKiLatched)
+		{
+			kiTrim[YAW]   = ApplyLearningModelToKi(smoothCurvedThrottle0_1, YAW);
+			kiTrim[ROLL]  = ApplyLearningModelToKi(smoothCurvedThrottle0_1, ROLL);
+			kiTrim[PITCH] = ApplyLearningModelToKi(smoothCurvedThrottle0_1, PITCH);
+		}
+		else
+		{
+			kiTrim[YAW]   = 0;
+			kiTrim[ROLL]  = 0;
+			kiTrim[PITCH] = 0;
+		}
+
 		//Run PIDC
 		InlinePidController(filteredGyroData, flightSetPoints, flightPids, actuatorRange);
 
@@ -1094,6 +1111,8 @@ int InitFlight(uint32_t escProtocol, uint32_t escFrequency)
 	InitOrientation();
 	CheckRxToModes(); //check which modes are set whether or not they're enabled
 
+	retValChk = InitSoftPwm(); //initiial init
+
 	loopUsed = SanityCheckEscProtocolAndFrequency(&escProtocol, &escFrequency);
 
 	DeInitAllowedSoftOutputs();
@@ -1107,6 +1126,7 @@ int InitFlight(uint32_t escProtocol, uint32_t escFrequency)
 		InitFlightLogger();
 		retValChk = LearningModelInit(); //needs flash
 	}
+	retValChk = InitMaxOsd();
 	
     InitVbusSensing();
     InitRcData();
@@ -1120,7 +1140,6 @@ int InitFlight(uint32_t escProtocol, uint32_t escFrequency)
     InitModes();              //set flight modes mask to zero.
     InitBoardUsarts();        //most important thing is activated last, the ability to control the craft.
 
-	InitMaxOsd();
 
 #ifdef STM32F446xx
 	if (used1Wire == 0)
@@ -1273,7 +1292,9 @@ uint32_t SanityCheckEscProtocolAndFrequency(uint32_t *escProtocol, uint32_t *esc
 	(*escFrequency) = finalEscFrequency;
 
 	usedSkunk = mainConfig.gyroConfig.skunk;
-	//usedSkunk =  0;
+	#ifdef DEBUG
+		usedSkunk =  0;
+	#endif
 	if (!FULL_32)
 	{
 		//16 KHz on F4s if quaternions are needed.

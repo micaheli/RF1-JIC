@@ -1,9 +1,9 @@
 #pragma once
 
-#define FIRMWARE_VERSION_INT	(uint16_t)(372U)
+#define FIRMWARE_VERSION_INT	(uint16_t)(373U)
 #define CONFIG_VERSION			(uint8_t)(137U)
 #define CONFIG_VERSION_STR		"137"
-#define FIRMWARE_VERSION		"0.372.137 BETA" //RC19 is next
+#define FIRMWARE_VERSION		"0.373.137 BETA" //RC19 is next
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n\0"
 
@@ -11,9 +11,6 @@
 #define FLIGHT_MODE_ARRAY_SIZE 96
 
 #define PROFILE_COUNT 3
-
-//test
-extern char	   foundCraftName[16];
 
 enum
 {

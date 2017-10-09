@@ -38,7 +38,6 @@ void ProcessTelemtry(void)
 	//if unidirectional, check if it's safe to send
 	//if it's time to send figure out what to send and send it.
 
-	HandleMaxOsd();
 	//SoftSerialReceiveBlocking(uint8_t inBuffer[], motor_type actuator, uint32_t timeoutMs, uint32_t baudRate, uint32_t bitLength, uint32_t inverted);
 	if (mainConfig.telemConfig.telemMsp)
 	{

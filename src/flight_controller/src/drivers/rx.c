@@ -606,7 +606,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		{
 			if (mainConfig.telemConfig.telemSmartAudio || mainConfig.telemConfig.telemTramp)
 			{
-				julian = (int)(copiedBufferData[15] & 0x03);
+				//julian = (int)(copiedBufferData[15] & 0x03);
 				vtxRequested.vtxPower  = (uint32_t)(copiedBufferData[15] & 0x03);
 				vtxRequested.vtxRegion = (uint32_t)((copiedBufferData[15] >> 3) & 0x01);
 				vtxRequested.vtxPit    = (uint32_t)((copiedBufferData[15] >> 4) & 0x01);

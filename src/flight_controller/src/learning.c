@@ -120,26 +120,13 @@ int TrimKi(pid_output flightPids[])
 		persistance.data.rememberence[position]++;
 	}
 
-	if(fullKiLatched)
-	{
-        kiTrim[YAW]   = ApplyLearningModelToKi(smoothCurvedThrottle0_1, YAW);
-        kiTrim[ROLL]  = ApplyLearningModelToKi(smoothCurvedThrottle0_1, ROLL);
-        kiTrim[PITCH] = ApplyLearningModelToKi(smoothCurvedThrottle0_1, PITCH);
-	}
-	else
-	{
-		kiTrim[YAW]   = 0;
-		kiTrim[ROLL]  = 0;
-		kiTrim[PITCH] = 0;
-	}
-
 	return(1);
 }
 
 int TrimMotors(void)
 {
 	if(!fullKiLatched)
-	return(0);
+		return(0);
 
 	if ( !(mainConfig.mixerConfig.foreAftMixerFixer == 2) )
 		if (!ModeSet(M_LEARN))

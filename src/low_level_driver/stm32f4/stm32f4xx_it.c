@@ -152,6 +152,13 @@ void TIM1_CC_IRQHandler(void)
 		callbackFunctionArray[FP_TIM1](TIM_CC);
 }
 
+void TIM5_IRQHandler(void)
+{
+	if (callbackFunctionArray[FP_TIM5])
+		callbackFunctionArray[FP_TIM5](FP_TIM5);
+
+}
+
 void TIM6_DAC_IRQHandler(void)
 {
 	if (callbackFunctionArray[FP_TIM6])
@@ -163,6 +170,12 @@ void TIM7_IRQHandler(void)
 {
 	if (callbackFunctionArray[FP_TIM7])
 		callbackFunctionArray[FP_TIM7](FP_TIM7);
+}
+
+void TIM1_BRK_TIM9_IRQHandler(void)
+{
+	if (callbackFunctionArray[FP_TIM9])
+		callbackFunctionArray[FP_TIM9](FP_TIM9);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)

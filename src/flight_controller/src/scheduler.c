@@ -208,9 +208,29 @@ static void TaskPersistanceAndFlash(void)
 
 	static uint32_t lastPersistance = 0;
 
-	//is SPI busy?, non blocking, doesn't send spi commands
+	//is SPI busy?, doesn't send spi commands
 	if(CheckIfFlashSpiBusy())
 		return;
+
+	//telem or flash for now, not both
+	if(mainConfig.telemConfig.telemRfOsd == TELEM_INTERNAL_OSD)
+	{
+		switch(maxOsdRecord.osdUpdateStatus)
+		{
+			case OSD_STATUS_UPDATE_IDLE:
+				break;
+			case OSD_STATUS_REQUEST_UPDATE:
+			maxOsdRecord.osdUpdateStatus = OSD_STATUS_UPDATE_APROVED;
+				return;
+			case OSD_STATUS_UPDATING:
+			case OSD_STATUS_UPDATE_APROVED:
+				return;		
+				break;
+		}
+	}
+
+	//if(InlineMillis() < 20000)
+	//	return;
 
 	//is flash chip busy?, blocking, but only 4 bytes
 	if(CheckIfFlashBusy())
@@ -218,7 +238,8 @@ static void TaskPersistanceAndFlash(void)
 
 	//nothing busy so we fall through to here
 	//save persistance if it's enabled, due and flash is imediately availible, board is armed when this happens
-	if ( (armedTime > 4000) && (persistance.enabled) && (InlineMillis() - lastPersistance > 3000) )
+	//if ( (armedTime > 4000) && (persistance.enabled) && (InlineMillis() - lastPersistance > 3000) )
+	if ( (persistance.enabled) && (InlineMillis() - lastPersistance > 3000) )
 	{
 		//persistance overrides logging
 		lastPersistance = InlineMillis();
@@ -430,6 +451,7 @@ void TaskWizard(void)
 void TaskTelemtry(void)
 {
 	ProcessTelemtry();
+	HandleMaxOsd();
 }
 
 void TaskHandlePcComm(void)

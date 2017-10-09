@@ -661,17 +661,46 @@ int InitFlashChip(void)
 
 	//FlashDeinit();
 
-    SpiInit(board.flash[0].spiFastBaud);
+	//if revolt, check spi 2 and spi 3
+	//flash on spi 2 means new revolts
+	//flash on spi 3 means old revolt
+	board.flash[0].spiNumber  = ENUM_SPI3;
+	board.maxOsd[0].spiNumber = ENUM_SPI3;
+	board.maxOsd[0].csPort    = ENUM_PORTA;
+	board.maxOsd[0].csPin     = GPIO_PIN_15;
+	SpiInit(SPI_BAUDRATEPRESCALER_16);
 
-    //check Read ID in blocking mode
-    if (!M25p16ReadIdSetFlashRecord())
-    {
-    	DelayMs(70);
-    	if (!M25p16ReadIdSetFlashRecord())
-    	{
-    		return 0;
-    	}
-    }
+	//check Read ID in blocking mode
+	if (!M25p16ReadIdSetFlashRecord())
+	{
+		DelayMs(70);
+		if (!M25p16ReadIdSetFlashRecord())
+		{
+			board.flash[0].spiNumber  = ENUM_SPI2;
+			board.maxOsd[0].spiNumber = ENUM_SPI2;
+			board.maxOsd[0].csPort    = ENUM_PORTD;
+			board.maxOsd[0].csPin     = GPIO_PIN_2;
+			//board.flash[0].csPort = ;
+			//board.flash[0].csPin  = ;
+			SpiInit(SPI_BAUDRATEPRESCALER_8);
+
+			//check Read ID in blocking mode
+			if (!M25p16ReadIdSetFlashRecord())
+			{
+				DelayMs(70);
+				if (!M25p16ReadIdSetFlashRecord())
+				{
+					return 0;
+				}
+			}
+			board.maxOsd[0].csPort = ENUM_PORTD;
+			board.maxOsd[0].csPin  = GPIO_PIN_2;
+		}
+	}
+
+
+
+
 
 	flashReturn = FindFirstEmptyPage();
 	if(flashInfo.enabled != FLASH_DISABLED)
@@ -812,7 +841,10 @@ int WriteEnableDataFlashDma(void)
 
 	uint8_t c[1] = {M25P16_WRITE_ENABLE};
 
-    if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY)
+	if (
+		HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY &&
+		HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY
+	)
     {
 
     	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);

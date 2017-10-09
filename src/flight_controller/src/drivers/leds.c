@@ -456,13 +456,10 @@ void CoolLedEffect(uint32_t pwmPeriod, uint32_t dutyNumber, uint32_t ledNumber)
 	pwmOffAt      = currentTime - currentDutyIn + dutyNumber;
 
 	if (currentTime > pwmOffAt)
-	{
 		DoLed(ledNumber, 1);
-	}
 	else
-	{
 		DoLed(ledNumber, 0);
-	}
+
 }
 
 inline void UpdateWs2812Leds(void)

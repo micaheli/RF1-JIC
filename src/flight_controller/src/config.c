@@ -11,9 +11,6 @@ volatile int headerWritten;
 volatile int headerToWrite;
 volatile int julian = -99;
 
-//test
-char	   foundCraftName[16];
-
 #define LARGE_RF_BUFFER_SIZE 9000
 main_config mainConfig;
 uint32_t resetBoard = 0;
@@ -257,9 +254,9 @@ const config_variables_rec valueTable[] =
  		{ "roll_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].ga, 		0, 31, 0, "" },
  		{ "filter_type1",		typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[0].filterType, 	0, 1, 1, "" },
- 		{ "yaw_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.q, 	-100, 100, 50.000, "" },
- 		{ "roll_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.q, 	-100, 100, 10.000, "" },
- 		{ "pitch_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.q, 	-100, 100, 10.000, "" },
+ 		{ "yaw_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.q, 	0, 10000, 50.000, "" },
+ 		{ "roll_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.q, 	0, 10000, 10.000, "" },
+ 		{ "pitch_quick1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.q, 	0, 10000, 10.000, "" },
  		{ "yaw_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].kd.r, 		0, 100, 55.000, "" },
  		{ "roll_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].kd.r, 		0, 100, 55.000, "" },
  		{ "pitch_kd_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].kd.r, 	0, 100, 55.000, "" },
@@ -313,9 +310,9 @@ const config_variables_rec valueTable[] =
  		{ "roll_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].ga, 		0, 31, 0, "" },
  		{ "filter_type2",		typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[0].filterType, 	0, 1, 1, "" },
- 		{ "yaw_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.q, 	-100, 100, 50.000, "" },
- 		{ "roll_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.q, 	-100, 100, 10.000, "" },
- 		{ "pitch_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.q, 	-100, 100, 10.000, "" },
+ 		{ "yaw_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.q, 	0, 10000, 50.000, "" },
+ 		{ "roll_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.q, 	0, 10000, 10.000, "" },
+ 		{ "pitch_quick2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.q, 	0, 10000, 10.000, "" },
  		{ "yaw_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].kd.r, 		0, 100, 55.000, "" },
  		{ "roll_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].kd.r, 		0, 100, 55.000, "" },
  		{ "pitch_kd_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].kd.r, 	0, 100, 55.000, "" },
@@ -370,9 +367,9 @@ const config_variables_rec valueTable[] =
  		{ "roll_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].ga, 		0, 31, 0, "" },
  		{ "filter_type3",		typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[0].filterType, 	0, 1, 1, "" },
- 		{ "yaw_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.q, 	-100, 100, 50.000, "" },
- 		{ "roll_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.q, 	-100, 100, 10.000, "" },
- 		{ "pitch_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.q, 	-100, 100, 10.000, "" },
+ 		{ "yaw_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.q, 	0, 10000, 50.000, "" },
+ 		{ "roll_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.q, 	0, 10000, 10.000, "" },
+ 		{ "pitch_quick3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.q, 	0, 10000, 10.000, "" },
  		{ "yaw_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].kd.r, 		0, 100, 55.000, "" },
  		{ "roll_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].kd.r, 		0, 100, 55.000, "" },
  		{ "pitch_kd_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].kd.r, 	0, 100, 55.000, "" },
@@ -622,16 +619,16 @@ void ValidateConfigSettings(void)
 		switch(valueTable[x].type)
 		{
 			case typeUINT:
-				if ( ( *(uint32_t *)valueTable[x].ptr < (uint32_t)valueTable[x].Min ) || ( *(uint32_t *)valueTable[x].ptr > (uint32_t)valueTable[x].Max ) )
-					*(uint32_t *)valueTable[x].ptr = (uint32_t)valueTable[x].Default;
+				if ( ( *(uint32_t *)valueTable[x].ptr < (uint32_t)valueTable[x].Min ) || ( (*(uint32_t *)valueTable[x].ptr) > (uint32_t)valueTable[x].Max ) )
+					(*(uint32_t *)valueTable[x].ptr) = (uint32_t)valueTable[x].Default;
 				break;
 			case typeINT:
-				if ( ( *(int32_t *)valueTable[x].ptr < (int32_t)valueTable[x].Min ) || ( *(int32_t *)valueTable[x].ptr > (int32_t)valueTable[x].Max ) )
-					*(int32_t *)valueTable[x].ptr = (int32_t)valueTable[x].Default;
+				if ( ( (*(int32_t *)valueTable[x].ptr) < (int32_t)valueTable[x].Min ) || ( (*(int32_t *)valueTable[x].ptr) > (int32_t)valueTable[x].Max ) )
+					(*(int32_t *)valueTable[x].ptr) = (int32_t)valueTable[x].Default;
 				break;
 			case typeFLOAT:
-				if ( ( *(float *)valueTable[x].ptr < (float)valueTable[x].Min ) || ( *(float *)valueTable[x].ptr > (float)valueTable[x].Max ) )
-					*(float *)valueTable[x].ptr = (float)valueTable[x].Default;
+				if ( ( (*(float *)valueTable[x].ptr) < (float)valueTable[x].Min ) || ( (*(float *)valueTable[x].ptr) > (float)valueTable[x].Max ) )
+					(*(float *)valueTable[x].ptr) = (float)valueTable[x].Default;
 				break;
 		}
 	}
@@ -2042,25 +2039,25 @@ void ProcessCommand(char *inString)
 		{
 			char fString[20];
 
-			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_YAW_KP) ), fString); StripSpaces(fString);
+			ftoa6( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_YAW_KP) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me yaw_kp_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
-			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_ROLL_KP) ), fString); StripSpaces(fString);
+			ftoa6( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_ROLL_KP) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me roll_kp_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
-			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_PITCH_KP) ), fString); StripSpaces(fString);
+			ftoa6( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_PITCH_KP) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me pitch_kp_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 
-			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_YAW_KI) ), fString); StripSpaces(fString);
+			ftoa6( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_YAW_KI) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me yaw_ki_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
-			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_ROLL_KI) ), fString); StripSpaces(fString);
+			ftoa6( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_ROLL_KI) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me roll_ki_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
-			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_PITCH_KI) ), fString); StripSpaces(fString);
+			ftoa6( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_PITCH_KI) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me pitch_ki_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 
-			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_YAW_KD) ), fString); StripSpaces(fString);
+			ftoa6( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_YAW_KD) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me yaw_kd_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
-			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_ROLL_KD) ), fString); StripSpaces(fString);
+			ftoa6( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_ROLL_KD) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me roll_kd_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
-			ftoa( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_PITCH_KD) ), fString); StripSpaces(fString);
+			ftoa6( ( (DEFAULT_PID_CONFIG_VALUE / DEFAULT_PITCH_KD) ), fString); StripSpaces(fString);
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE-1, "#me pitch_kd_real=%s \n", fString ); RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("flashstatus", inString))
@@ -2091,12 +2088,7 @@ void ProcessCommand(char *inString)
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Goes Pro!! %i\n", julian);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
-	else if (!strcmp("craftname", inString)) //test
-		{
-			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me craft found is %s\n", foundCraftName);
-			RfCustomReplyBuffer(rf_custom_out_buffer);
-		}
-	else if (!strcmp("cruiser", inString)) //test
+	else if (!strcmp("cruiser", inString))
 		{
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me craft found is %i %i\n", (int)(learnedKiModel[0].m * 1000), (int)(learnedKiModel[0].b * 1000));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
@@ -2105,9 +2097,34 @@ void ProcessCommand(char *inString)
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me craft found is %i %i\n", (int)(learnedKiModel[2].m * 1000), (int)(learnedKiModel[2].b * 1000));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
-	else if (!strcmp("32bits", inString)) //test
+	else if (!strcmp("32bits", inString))
 		{
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me \n \n \n 32bitsofgil!\n \n  MM\n<@ \\___/|\n   \\____/\n     ><\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("forcecharmap", inString))
+		{
+			ForceUpdateCharMap();
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me char map updated\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("forceosdrefresh", inString))
+		{
+			ForceUpdateOsd();
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me osd updated\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("voltout", inString))
+		{
+			if (atoi(args) < 0)
+			{
+				StopSoftPwm();
+			}
+			else if( atoi(args) < (SPT_3_3+1) )
+			{
+				SoftPwmVoltage(USART4_TXPORT, USART4_TXPIN, (software_pwm_voltage_t)atoi(args));
+			}
+			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Voltage to %i\n", atoi(args) * 33);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("dump", inString) || !strcmp("diff", inString))
