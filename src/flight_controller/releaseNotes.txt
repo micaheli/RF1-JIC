@@ -1608,6 +1608,11 @@ Version 0.372.136 BETA
 	set famx=0 is default
 		set famx 90 through 110 will function as the old famx did but without the decimal place
 
+Version 0.373.136 BETA
+	soft pwm, osd changes
+
+Version 0.374.137 BETA
+	Added omega back in
 
 #Features in current development:
 #	MAVlink compatibility

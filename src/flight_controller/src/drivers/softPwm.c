@@ -21,6 +21,7 @@ static const int cameraResistanceValues[] =
 
 static void DeInitSoftPwmTimer(void)
 {
+    /*
     if(softPwmRecord.softwarePwmSatus == SPT_ENABLED)
     {
         inlineDigitalLo(ports[softPwmRecord.port], softPwmRecord.pin);
@@ -29,11 +30,13 @@ static void DeInitSoftPwmTimer(void)
 
     softPwmRecord.softwarePwmSatus = SPT_DISABLED;
 	HAL_TIM_Base_Stop_IT(&softPwmTimer);
-	callbackFunctionArray[GetTimerCallbackFromTimerEnum(board.generalTimer[2].timer)] = 0;
+    callbackFunctionArray[GetTimerCallbackFromTimerEnum(board.generalTimer[2].timer)] = 0;
+    */
 }
 
 static void InitSoftPwmTimer(uint32_t pwmHz, uint32_t timerHz)
 {
+    /*
     GPIO_InitTypeDef GPIO_InitStruct;
 	uint16_t timerPrescaler = 0;
 
@@ -60,10 +63,12 @@ static void InitSoftPwmTimer(uint32_t pwmHz, uint32_t timerHz)
 
     HAL_NVIC_SetPriority(board.generalTimer[2].timerIRQn, 1, 0);
     HAL_NVIC_EnableIRQ(board.generalTimer[2].timerIRQn);
+    */
 }
 
 void SoftPwmTimerCallback(uint32_t callbackNumber)
 {
+    /*
 
 	(void)(callbackNumber);
 
@@ -93,30 +98,35 @@ void SoftPwmTimerCallback(uint32_t callbackNumber)
         }
 
     }
-
+*/
 }
 
 //initial init from scratch
 int InitSoftPwm(void)
 {
+    /*
     DeInitSoftPwmTimer();
     softPwmRecord.softwarePwmVoltage = SPT_0_0;
     softPwmRecord.softwarePwmSatus   = SPT_DISABLED;
     softPwmRecord.bumpCount          = 0;
+    */
     return(0);
 }
 
 int SendCamKey(uint32_t port, uint32_t pin, cam_key_t camKeyToSend)
 {
+    /*
     softPwmRecord.cameraKeyPressed = camKeyToSend;
     softPwmRecord.pwmStopTime = CAM_KEY_PWM_TIM_MS;
     SoftPwmVoltage(uint32_t port, uint32_t pin, software_pwm_voltage_t voltage)
     return(0);
+    */
 }
 
 //program blind of init
 int SoftPwmVoltage(uint32_t port, uint32_t pin, software_pwm_voltage_t voltage)
 {
+    /*
     //set voltage
     softPwmRecord.softwarePwmVoltage = voltage;
     //init if needed
@@ -128,10 +138,12 @@ int SoftPwmVoltage(uint32_t port, uint32_t pin, software_pwm_voltage_t voltage)
         InitSoftPwmTimer(SOFT_PWM_PWM_HZ, SOFT_PWM_TIM_HZ);
     }
     return(0);
+    */
 }
 
 int StopSoftPwm(void)
 {
+    /*
     if(softPwmRecord.softwarePwmSatus == SPT_ENABLED)
     {
         DeInitSoftPwmTimer();
@@ -141,4 +153,5 @@ int StopSoftPwm(void)
     {
         return(1);
     }
+    */
 }

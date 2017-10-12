@@ -465,9 +465,9 @@ void InitFlightCode(uint32_t loopUsed)
 	for (uint32_t y=0; y<3; y++)
 	{
 		//if(mainConfig.tuneProfile[activeProfile].filterConfig[y].gyro.q < 100.0f)
-		//	gyroFiltUsed[y] = (100.0f - mainConfig.tuneProfile[activeProfile].filterConfig[y].gyro.q);
+			gyroFiltUsed[y] = (100.0f - mainConfig.tuneProfile[activeProfile].filterConfig[y].gyro.q);
 		//else
-		gyroFiltUsed[y] = mainConfig.tuneProfile[activeProfile].filterConfig[y].gyro.q;
+		//	gyroFiltUsed[y] = mainConfig.tuneProfile[activeProfile].filterConfig[y].gyro.q;
 	}
 
 	InlineInitGyroFilters();
@@ -493,11 +493,19 @@ void InlineInitGyroFilters(void)
 		{
 			OldInitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r, 0.0f, filteredGyroData[axis]);
 			InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);	
-		}		
+		}
 		else 
 		{
-			InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r / 100.0f, 0.0f, filteredGyroData[axis]);
-			InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
+			if(mainConfig.tuneProfile[0].filterConfig[YAW].omega0 == 678)
+			{
+				InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[0].filterConfig[axis].omega1, mainConfig.tuneProfile[0].filterConfig[axis].omega2, 0.0f, filteredGyroData[axis]);
+				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
+			}
+			else
+			{
+				InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r / 100.0f, 0.0f, filteredGyroData[axis]);
+				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
+			}
 		}
 	}
 

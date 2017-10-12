@@ -453,6 +453,14 @@ const config_variables_rec valueTable[] =
 		{ "bind", 	            typeUINT,  "rccf", &mainConfig.rcControlsConfig.bind, 	                0, 32, 0, "" },
 		{ "short_throw", 	    typeUINT,  "rccf", &mainConfig.rcControlsConfig.shortThrow, 	        0, 1, 1, "" },
 
+		{ "omega0", 	    	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].omega0, 0, 1000, 1, "" },
+		{ "omega1_yaw",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].omega1, 0, 1000, 30.0f, "" },
+		{ "omega1_roll",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].omega1, 0, 1000, 40.0f, "" },
+		{ "omega1_pitch",    	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].omega1, 0, 1000, 40.0f, "" },
+		{ "omega2_yaw",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].omega2, 0, 1000, 0.088f, "" },
+		{ "omega2_roll",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].omega2, 0, 1000, 0.088f, "" },
+		{ "omega2_pitch",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].omega2, 0, 1000, 0.088f, "" },
+
 		/*
 		{ "omega_drive", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaDrive, 	     		    0, 4000000000, 0, "" },
 		{ "omega_route", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaDrive, 	     		    0, 4000000000, 0, "" },
