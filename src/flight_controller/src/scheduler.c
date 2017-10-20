@@ -428,9 +428,11 @@ void TaskProcessSoftSerial(void)
 	if (oneWireActive)
 		FeedTheDog();
 
-	//feed the dog if dshot is active to prevent WD restart
-	if(dShotFeedTheDog)
+	//feed the dog if dshot commanding is active to prevent WD restart
+	if(dshotCommandHandler.dshotCommandState == DSC_MODE_ACTIVE)
 		FeedTheDog();
+
+	HandleDshotCommands();
 }
 
 void TaskWizard(void)

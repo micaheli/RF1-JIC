@@ -1614,6 +1614,9 @@ Version 0.373.136 BETA
 Version 0.374.137 BETA
 	Added omega back in
 
+Version 0.375.137 BETA
+	Added commands for wizard
+
 #Features in current development:
 #	MAVlink compatibility
 

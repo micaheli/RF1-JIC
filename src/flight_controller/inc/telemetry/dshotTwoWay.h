@@ -53,8 +53,6 @@ typedef struct
 
 extern volatile dshot_command_handler dshotCommandHandler;
 
-extern int dShotFeedTheDog;
-
 extern void DshotInit(int offlineMode);
 extern int  InitDshotCommandState(void);
 extern int  HandleDshotCommands(void);

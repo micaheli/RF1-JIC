@@ -1,7 +1,6 @@
 #include "includes.h"
 
 #define DSHOT_OUT_BUFFER_SIZE 48 //16 * 3 bytes
-int dShotFeedTheDog = 0;
 uint32_t dshotOutBuffer[DSHOT_OUT_BUFFER_SIZE];  
 uint32_t dshotInBuffer[DSHOT_OUT_BUFFER_SIZE*8];  
 
@@ -70,10 +69,11 @@ int HandleDshotCommands(void)
     if(dshotCommandHandler.dshotCommandState == DSC_MODE_SEND)
     {
         SKIP_GYRO=1;
+        dshotCommandHandler.dshotCommandState == DSC_MODE_SENDING;
 
         //allow throttle or not?
-        //dshotCommandHandler.commandToSend = CONSTRAIN(dshotCommandHandler.commandToSend, 0, DSHOT_CMD_MAX);
-        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP2);
+        dshotCommandHandler.commandToSend = CONSTRAIN(dshotCommandHandler.commandToSend, 0, DSHOT_CMD_MAX);
+        CommandToDshot(serialOutBuffer, dshotCommandHandler.commandToSend);
         for(uint32_t x=0;x<60;x++)
         {
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
@@ -82,7 +82,7 @@ int HandleDshotCommands(void)
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
             DelayMs(3); //let MCU stabilize 
         }
-        CommandToDshot(serialOutBuffer, DSHOT_CMD_BEEP4);
+        CommandToDshot(serialOutBuffer, dshotCommandHandler.commandToSend);
         for(uint32_t x=0;x<60;x++)
         {
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
@@ -91,6 +91,7 @@ int HandleDshotCommands(void)
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
             DelayMs(3); //let MCU stabilize 
         }
+        dshotCommandHandler.dshotCommandState == DSC_MODE_ACTIVE;
     }
 
     //init

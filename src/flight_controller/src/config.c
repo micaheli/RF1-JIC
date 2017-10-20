@@ -1180,6 +1180,41 @@ void ProcessCommand(char *inString)
 			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Voltage: %lu, Current: %lu, mAh: %lu\n", (uint32_t)(adcVoltage*100) , (uint32_t)(adcCurrent*100), (uint32_t)(adcMAh));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
+	else if (!strcmp("esc_d_beep", inString))
+		{
+			dshotCommandHandler.motorCommMask     = 0x0F;
+			dshotCommandHandler.requestActivation = 1;
+			dshotCommandHandler.dshotCommandState = DSC_MODE_SEND;
+			dshotCommandHandler.commandToSend     = DSHOT_CMD_BEEP4;
+			RfCustomReplyBuffer("#me Sending command\n");
+		}
+	else if (!strcmp("esc_d_exit", inString))
+		{
+			dshotCommandHandler.requestActivation = 0;
+			dshotCommandHandler.motorCommMask     = 0;
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Exiting dshot command mode\n");
+			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if ( !strcmp("esc_d_reverse", inString) || !strcmp("esc_d_normal", inString))
+		{
+			switch (args[0])
+			{
+				case '0':
+				case '1':
+				case '2':
+				case '3':
+				case 'a':
+					dshotCommandHandler.motorCommMask     = (args[0] == 'a' ? 0x0f : (1 << CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER) ) );
+					dshotCommandHandler.requestActivation = 1;
+					dshotCommandHandler.dshotCommandState = DSC_MODE_SEND;
+					dshotCommandHandler.commandToSend     = ( !strcmp("esc_d_normal", inString) ? DSHOT_CMD_SPIN_DIRECTION_1 : DSHOT_CMD_SPIN_DIRECTION_1);
+					RfCustomReplyBuffer("#me Sending command\n");
+					break;
+				default:
+					RfCustomReplyBuffer("#me Invalid ESC number\n");
+					break;
+			}
+		}
 	else if (!strcmp("idle", inString))
 		{
 			if (!strcmp("stop", args))
