@@ -1192,8 +1192,7 @@ void ProcessCommand(char *inString)
 		{
 			dshotCommandHandler.requestActivation = 0;
 			dshotCommandHandler.motorCommMask     = 0;
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Exiting dshot command mode\n");
-			RfCustomReplyBuffer(rf_custom_out_buffer);
+			RfCustomReplyBuffer("#me Exiting dshot command mode\n");
 		}
 	else if ( !strcmp("esc_d_reverse", inString) || !strcmp("esc_d_normal", inString))
 		{
