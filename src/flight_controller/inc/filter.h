@@ -77,10 +77,11 @@ typedef struct
 	int                      ga;
 	int                      wc;
 	float                    gaMultiplier;
+/*
 	float                    omega0;
 	float                    omega1;
 	float                    omega2;
-	float                    omega3;
+	float                    omega3;*/
 	paf_filter_config_record kd;
 	paf_filter_config_record gyro;
 	paf_filter_config_record acc;
