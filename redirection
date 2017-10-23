@@ -24,3 +24,4 @@ xPSR: 0x01000000 pc: 0x08006178 msp: 0x20020000
 Open On-Chip Debugger 0.10.0
 adapter speed: 2000 kHz
 Warn : WARNING! The target is already running. All changes GDB did to registers will be discarded! Waiting for target to halt.
+Warn : keep_alive() was not invoked in the 1000ms timelimit. GDB alive packet not sent! (409223). Workaround: increase "set remotetimeout" in GDB
