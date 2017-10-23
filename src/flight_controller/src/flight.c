@@ -617,21 +617,21 @@ void InlineFlightCode(float dpsGyroArray[])
 
 		/* this is now optimized for speed, preference is always what should be checked first since its most likely outcome */
 		//here
-		filteredGyroData[axis] = BiquadUpdate(filteredGyroData[axis], &lpfFilterState[axis]);
+//		filteredGyroData[axis] = BiquadUpdate(filteredGyroData[axis], &lpfFilterState[axis]);
 		
 		if  (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 1)
 		{
 			PafUpdate(&pafGyroStates[axis], dpsGyroArray[axis] );
 			//here
-			filteredGyroData[axis] = (float)pafGyroStates[axis].x;
-			filteredGyroData[axis] = BiquadUpdate(filteredGyroData[axis], &lpfFilterState[axis]);
+			filteredGyroData[axis] = BiquadUpdate((float)pafGyroStates[axis].x, &lpfFilterState[axis]);
 		}
 	
 		else
 		{
 			averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
 			OldPafUpdate(&pafGyroStates[axis], averagedGyro );
-			filteredGyroData[axis] = (float)pafGyroStates[axis].output;
+			filteredGyroData[axis] = BiquadUpdate((float)pafGyroStates[axis].output, &lpfFilterState[axis]);			
+//			filteredGyroData[axis] = (float)pafGyroStates[axis].output;
 				
 		}
 	
