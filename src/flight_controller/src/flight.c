@@ -492,12 +492,10 @@ void InlineInitGyroFilters(void)
 		if ( mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 0 )
 		{
 			OldInitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r, 0.0f, filteredGyroData[axis]);
-			InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);	
 		}
 		else 
 		{
-
-				InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.q, mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r, 0.0f, filteredGyroData[axis]);
+			InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.q, mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r, 0.0f, filteredGyroData[axis]);
 
 /*
 
@@ -519,6 +517,8 @@ void InlineInitGyroFilters(void)
 */
 
 		}
+		InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);		
+
 	}
 
 }

@@ -23,5 +23,16 @@ target halted due to debug-request, current mode: Thread
 xPSR: 0x01000000 pc: 0x08006178 msp: 0x20020000
 Open On-Chip Debugger 0.10.0
 adapter speed: 2000 kHz
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x08006178 msp: 0x20020000
+adapter speed: 8000 kHz
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x20000046 msp: 0x20020000
+Warn : keep_alive() was not invoked in the 1000ms timelimit. GDB alive packet not sent! (4961). Workaround: increase "set remotetimeout" in GDB
+adapter speed: 2000 kHz
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x08006178 msp: 0x20020000
+adapter speed: 2000 kHz
 Warn : WARNING! The target is already running. All changes GDB did to registers will be discarded! Waiting for target to halt.
-Warn : keep_alive() was not invoked in the 1000ms timelimit. GDB alive packet not sent! (409223). Workaround: increase "set remotetimeout" in GDB
+Info : halted: PC: 0x08032006
+Info : dropped 'gdb' connection

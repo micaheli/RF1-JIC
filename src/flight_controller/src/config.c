@@ -248,7 +248,7 @@ const config_variables_rec valueTable[] =
  
 		{ "res_redux1",			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[0].resRedux,		0, 1, 0, "" },
  		{ "yaw_rap1", 			typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.r, 	0, 1000, 98.0f, "" },
- 		{ "roll_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.r, 	0, 1000, 98.0f, "" },
+ 		{ "roll_rap1", 			typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.r, 	0, 1000, 98.0f, "" },
  		{ "pitch_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.r, 	0, 1000, 98.0f, "" },
  		{ "yaw_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].ga, 		0, 31, 0, "" },
  		{ "roll_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].ga, 		0, 31, 0, "" },
