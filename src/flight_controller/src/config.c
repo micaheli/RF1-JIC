@@ -247,9 +247,9 @@ const config_variables_rec valueTable[] =
  		{ "sld1", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].sld, 		0, 0.90, 0.03, "" },
  
 		{ "res_redux1",			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[0].resRedux,		0, 1, 0, "" },
- 		{ "yaw_rapp1", 			typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.r, 	0, 1000, 98.0f, "" },
- 		{ "roll_rapp1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.r, 	0, 1000, 98.0f, "" },
- 		{ "pitch_rapp1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.r, 	0, 1000, 98.0f, "" },
+ 		{ "yaw_rap1", 			typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].gyro.r, 	0, 1000, 98.0f, "" },
+ 		{ "roll_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].gyro.r, 	0, 1000, 98.0f, "" },
+ 		{ "pitch_rap1", 		typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].gyro.r, 	0, 1000, 98.0f, "" },
  		{ "yaw_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].ga, 		0, 31, 0, "" },
  		{ "roll_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga1", 			typeINT,   "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].ga, 		0, 31, 0, "" },
@@ -303,9 +303,9 @@ const config_variables_rec valueTable[] =
  		{ "sld2", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].sld, 		0, 0.90, 0.03, "" },
  
 		{ "res_redux2",			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[0].resRedux,		0, 1, 0, "" },
- 		{ "yaw_rapp2", 			typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.r, 	0, 1000, 98.0f, "" },
- 		{ "roll_rapp2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.r, 	0, 1000, 98.0f, "" },
- 		{ "pitch_rapp2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.r, 	0, 1000, 98.0f, "" },
+ 		{ "yaw_rap2", 			typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].gyro.r, 	0, 1000, 98.0f, "" },
+ 		{ "roll_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].gyro.r, 	0, 1000, 98.0f, "" },
+ 		{ "pitch_rap2", 		typeFLOAT, "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].gyro.r, 	0, 1000, 98.0f, "" },
  		{ "yaw_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[YAW].ga, 		0, 31, 0, "" },
  		{ "roll_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga2", 			typeINT,   "filt", &mainConfig.tuneProfile[1].filterConfig[PITCH].ga, 		0, 31, 0, "" },
@@ -360,9 +360,9 @@ const config_variables_rec valueTable[] =
  		{ "sld3", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].sld, 		0, 0.90, 0.03, "" },
 
 		{ "res_redux3",			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[0].resRedux,		0, 1, 0, "" },
- 		{ "yaw_rapp3", 			typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.r, 	0, 1000, 98.0f, "" },
- 		{ "roll_rapp3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.r, 	0, 1000, 98.0f, "" },
- 		{ "pitch_rapp3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.r, 	0, 1000, 98.0f, "" },
+ 		{ "yaw_rap3", 			typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].gyro.r, 	0, 1000, 98.0f, "" },
+ 		{ "roll_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].gyro.r, 	0, 1000, 98.0f, "" },
+ 		{ "pitch_rap3", 		typeFLOAT, "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].gyro.r, 	0, 1000, 98.0f, "" },
  		{ "yaw_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[YAW].ga, 		0, 31, 0, "" },
  		{ "roll_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[ROLL].ga, 		0, 31, 0, "" },
  		{ "pitch_ga3", 			typeINT,   "filt", &mainConfig.tuneProfile[2].filterConfig[PITCH].ga, 		0, 31, 0, "" },
@@ -453,14 +453,14 @@ const config_variables_rec valueTable[] =
 		{ "bind", 	            typeUINT,  "rccf", &mainConfig.rcControlsConfig.bind, 	                0, 32, 0, "" },
 		{ "short_throw", 	    typeUINT,  "rccf", &mainConfig.rcControlsConfig.shortThrow, 	        0, 1, 1, "" },
 
-		{ "omega0", 	    	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].omega0, 0, 1000, 1, "" },
+/*		{ "omega0", 	    	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].omega0, 0, 1000, 1, "" },
 		{ "omega1_yaw",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].omega1, 0, 1000, 30.0f, "" },
 		{ "omega1_roll",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].omega1, 0, 1000, 40.0f, "" },
 		{ "omega1_pitch",    	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].omega1, 0, 1000, 40.0f, "" },
 		{ "omega2_yaw",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[YAW].omega2, 0, 1000, 0.088f, "" },
 		{ "omega2_roll",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[ROLL].omega2, 0, 1000, 0.088f, "" },
 		{ "omega2_pitch",     	typeFLOAT, "filt", &mainConfig.tuneProfile[0].filterConfig[PITCH].omega2, 0, 1000, 0.088f, "" },
-
+*/
 		/*
 		{ "omega_drive", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaDrive, 	     		    0, 4000000000, 0, "" },
 		{ "omega_route", 	    typeUINT,  "mixr", &mainConfig.mixerConfig.omegaDrive, 	     		    0, 4000000000, 0, "" },
