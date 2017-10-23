@@ -5,7 +5,7 @@
 #define UPDATE_BB_DATA_SIZE 32 //good for 100 days of logging
 
 #define BB_HEADER1 \
-"H Product:Blackbox flight data recorder by Nicholas Sherlock\n" \
+"H Product:Blackbox flight data\n" \
 "H Data version:2\n" \
 "H I interval:1\n\0"
 
@@ -16,7 +16,7 @@
 "H Field S encoding:1,1,7,7,7\n" \
 "H Firmware type:Raceflight\n" \
 "H Firmware revision:One\n" \
-"H Firmware date:Oct 31 2015 22:44:00\n" \
+"H Firmware date:Oct 31 2017 22:44:00\n" \
 "P interval:1/1\n" \
 "H rcRate:100\n" \
 "H minthrottle:1100\n" \

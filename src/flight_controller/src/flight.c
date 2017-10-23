@@ -676,58 +676,11 @@ void InlineFlightCode(float dpsGyroArray[])
 		//get setpoint for PIDC for self level modes.
 		//TODO: move these to its own function in the IMU
 		//if (ModeActive(M_CATMODE))
-		if ((0))
-		{
-			float angle1 = 65.0f;
-			float angle2 = 45.0f;
 
-			if (throttleIsSafe)
-			{
-				angle1 = 32.5f;
-				angle2 = 22.5f;
-			}
-			//if roll or pitch go over 80 degrees we pull the quad back
-			if ( rollAttitude >= angle1 )
-			{
-				failTimes[0]--;
-				failTimes[0] = CONSTRAIN(failTimes[0], -500, 0);
-				flightSetPoints[ROLL] = InlineConstrainf(flightSetPoints[ROLL], -500.0f, (float)failTimes[0] );
-			}
-			else if ( rollAttitude <= -angle1 )
-			{
-				failTimes[1]++;
-				failTimes[1] = CONSTRAIN(failTimes[1], 0, 500);
-				flightSetPoints[ROLL] = InlineConstrainf(flightSetPoints[ROLL], (float)failTimes[1], 500.0f);
-			}
-			else
-			{
-				failTimes[0] = 0;
-				failTimes[1] = 0;
-			}
 
-			if ( pitchAttitude >= angle2 )
-			{
-				failTimes[2]--;
-				failTimes[2] = CONSTRAIN(failTimes[2], -500, 0);
-				flightSetPoints[PITCH] = InlineConstrainf(flightSetPoints[PITCH], -500.0f, (float)failTimes[2]);
-			}
-			else if ( pitchAttitude <= -angle2 )
-			{
-				failTimes[3]++;
-				failTimes[3] = CONSTRAIN(failTimes[3], 0, 500);
-				flightSetPoints[PITCH] = InlineConstrainf(flightSetPoints[PITCH], (float)failTimes[3], 500.0f);
-			}
-			else
-			{
-				failTimes[2] = 0;
-				failTimes[3] = 0;
-			}
 
-			
-		}
-		else if (
-			ModeActive(M_ATTITUDE) ||
-			ModeActive(M_HORIZON)  ||
+		/* this is terrible, we can't run these modes all at once, so we should have one variable set to define them */
+		if (ModeActive(M_ATTITUDE) || ModeActive(M_HORIZON)  ||
 			(
 				(quopaState == QUOPA_ACTIVE) &&
 				(
