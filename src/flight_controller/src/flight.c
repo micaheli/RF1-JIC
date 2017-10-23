@@ -640,7 +640,7 @@ void InlineFlightCode(float dpsGyroArray[])
 		
 		filteredGyroData[axis] = BiquadUpdate(filteredGyroData[axis], &lpfFilterState[axis]);
 		
-		if ( (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 1)
+		if  (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 1)
 		{
 			PafUpdate(&pafGyroStates[axis], dpsGyroArray[axis] );
 			filteredGyroData[axis] = (float)pafGyroStates[axis].x;
