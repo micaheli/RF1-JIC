@@ -485,6 +485,7 @@ void InlineInitGyroFilters(void)
 
 	geeForceZ = 0.0f;
 	bzero(&geeForceZFilter, sizeof(geeForceZFilter));
+	//here
 	InitBiquad(50, &geeForceZFilter, loopSpeed.accdT, FILTER_TYPE_LOWPASS, &geeForceZFilter, 1.0f);	
 
 	for (axis = 2; axis >= 0; --axis)
@@ -496,27 +497,8 @@ void InlineInitGyroFilters(void)
 		else 
 		{
 			InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.q, mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r, 0.0f, filteredGyroData[axis]);
-
-/*
-
-			if(mainConfig.tuneProfile[0].filterConfig[YAW].omega0 == 678)
-			{
-
-				InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[0].filterConfig[axis].omega1, mainConfig.tuneProfile[0].filterConfig[axis].omega2, 0.0f, filteredGyroData[axis]);
-
-//				InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[0].filterConfig[axis].omega1, mainConfig.tuneProfile[0].filterConfig[axis].omega2, 0.0f, filteredGyroData[axis]);
-				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
-			}
-			else
-			{
-				InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r / 100.0f, 0.0f, filteredGyroData[axis]);
-//				InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r / 100.0f, 0.0f, filteredGyroData[axis]);
-				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
-			}
-
-*/
-
 		}
+
 		InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);		
 
 	}
@@ -637,12 +619,13 @@ void InlineFlightCode(float dpsGyroArray[])
 	{
 
 		/* this is now optimized for speed, preference is always what should be checked first since its most likely outcome */
-		
+		//here
 		filteredGyroData[axis] = BiquadUpdate(filteredGyroData[axis], &lpfFilterState[axis]);
 		
 		if  (mainConfig.tuneProfile[activeProfile].filterConfig[0].filterType == 1)
 		{
 			PafUpdate(&pafGyroStates[axis], dpsGyroArray[axis] );
+			//here
 			filteredGyroData[axis] = (float)pafGyroStates[axis].x;
 			filteredGyroData[axis] = BiquadUpdate(filteredGyroData[axis], &lpfFilterState[axis]);
 		}
@@ -710,53 +693,19 @@ void InlineFlightCode(float dpsGyroArray[])
 				sldUsed = mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sld;
 			}
 
-			//if (!ModeActive(M_GLUE)) //if M_GLUE mode
-			if (1) //if M_GLUE mode
-			{
-				rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sla ) - rollAttitude  );
-				pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sla ) - pitchAttitude );
+			rollAttitudeError        = ( (trueRcCommandF[ROLL]  *  mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sla ) - rollAttitude  );
+			pitchAttitudeError       = ( (trueRcCommandF[PITCH] * -mainConfig.tuneProfile[activeProfile].pidConfig[PITCH].sla ) - pitchAttitude );
 
-				rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.truedT);
-				pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.truedT);
+			rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.truedT);
+			pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.truedT);
 
-				rollAttitudeErrorKdelta  = -(rollAttitudeError  - lastRollAttitudeError);
-				lastRollAttitudeError    = rollAttitudeError;
-				pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
-				lastPitchAttitudeError   = pitchAttitudeError;
-			}
+			rollAttitudeErrorKdelta  = -(rollAttitudeError  - lastRollAttitudeError);
+			lastRollAttitudeError    = rollAttitudeError;
+			pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
+			lastPitchAttitudeError   = pitchAttitudeError;
 
-			//if (ModeActive(M_GLUE)) //if M_GLUE mode
-			if (0) //if M_GLUE mode
-			{
-
-				//current attitude is stored here:
-				//attitudeFrameQuat
-				//requested change to this quat would be:
-				//which fills requestedDegrees
-
-				yawAttitudeError         = requestedDegrees[YAW];
-				rollAttitudeError        = requestedDegrees[ROLL];
-				pitchAttitudeError       = requestedDegrees[PITCH];
-
-				yawAttitudeErrorKi       = (yawAttitudeErrorKi   + yawAttitudeError   * sliUsed * loopSpeed.truedT);
-				rollAttitudeErrorKi      = (rollAttitudeErrorKi  + rollAttitudeError  * sliUsed * loopSpeed.truedT);
-				pitchAttitudeErrorKi     = (pitchAttitudeErrorKi + pitchAttitudeError * sliUsed * loopSpeed.truedT);
-
-				yawAttitudeErrorKdelta   = -(yawAttitudeError  - lastYawAttitudeError);
-				lastYawAttitudeError     = yawAttitudeError;
-				rollAttitudeErrorKdelta  = -(rollAttitudeError  - lastRollAttitudeError);
-				lastRollAttitudeError    = rollAttitudeError;
-				pitchAttitudeErrorKdelta = -(pitchAttitudeError - lastPitchAttitudeError);
-				lastPitchAttitudeError   = pitchAttitudeError;
-
-				//roll and pitch are set directly from self level mode
-				flightSetPoints[YAW]     = ( yawAttitudeError   * 15) + yawAttitudeErrorKi   + (yawAttitudeErrorKdelta   / loopSpeed.truedT * sldUsed);
-				flightSetPoints[ROLL]    = ( rollAttitudeError  * 15) + rollAttitudeErrorKi  + (rollAttitudeErrorKdelta  / loopSpeed.truedT * sldUsed);
-				flightSetPoints[PITCH]   = ( pitchAttitudeError * 15) + pitchAttitudeErrorKi + (pitchAttitudeErrorKdelta / loopSpeed.truedT * sldUsed);
-			}
-			else if (
-				ModeActive(M_ATTITUDE) ||
-				(
+			if (ModeActive(M_ATTITUDE) ||
+			   (
 					quopaState == QUOPA_ACTIVE &&
 					(mainConfig.mixerConfig.quopaStyle == QUOPA_STYLE_AUTO || mainConfig.mixerConfig.quopaStyle == QUOPA_STYLE_AUTO_2 )
 				)
@@ -818,7 +767,7 @@ void InlineFlightCode(float dpsGyroArray[])
 				PreArmFilterCheck = 0;
 				return;
 			}
-
+			/*
 			//todo: move to a single mixer. This is a mess
 			if (threeDeeMode)
 			{
@@ -844,13 +793,17 @@ void InlineFlightCode(float dpsGyroArray[])
 			}
 			else
 			{
+				*/
+
 				//volatile float throttleToUse = BoostModify(smoothCurvedThrottle0_1);
 				if (mainConfig.mixerConfig.mixerStyle == 1) //race mixer
 					actuatorRange = InlineApplyMotorMixer1(flightPids, BoostModify(smoothCurvedThrottle0_1)); //put in PIDs and Throttle or passthru
 				else //freestyle mixer
 					actuatorRange = InlineApplyMotorMixer(flightPids, BoostModify(smoothCurvedThrottle0_1)); //put in PIDs and Throttle or passthru
-			}
-
+	
+	/*
+				}
+*/
 		}
 		else
 		{
@@ -871,51 +824,46 @@ void InlineFlightCode(float dpsGyroArray[])
 		//this code is less important that stabilization, so it happens AFTER stabilization.
 		//Anything changed here can happen after the next iteration without any drawbacks. Stabilization above all else!
 
+		/*
 #ifdef LOG32
 		//update blackbox here
 		UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
 #endif
+*/
 
-		//phase khz stuff
-		if (khzLoopCounterPhase == 6)
+
+		switch (khzLoopPhase++)
 		{
-			khzLoopCounterPhase = 0;
-			#ifndef LOG32
+			case 6: 
+				khzLoopCounterPhase = 0;
+				/*
+				#ifndef LOG32
 				//update blackbox here
-				UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
-			#endif
+					UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
+				#endif
+				*/
+			break;
+			
+			case 5: 
+			break;
+			
+			case 4: 
+				if(armedTime > 3000)
+					TrimKi(flightPids);			
+			break;
+			
+			case 3: 
+			break;
+			
+			case 2: 
+				TrimMotors();						
+			break;
+			
+			case 0: 
+			break;
+			
 		}
 
-		if (khzLoopCounterPhase == 5)
-		{
-			khzLoopCounterPhase = 6;
-			//do nothing phase
-		}
-
-		if (khzLoopCounterPhase == 4)
-		{
-			khzLoopCounterPhase = 5;
-			if(armedTime > 3000)
-				TrimKi(flightPids);			
-		}
-
-		if (khzLoopCounterPhase == 3)
-		{
-			khzLoopCounterPhase = 4;
-			//do nothing phase
-		}
-
-		if (khzLoopCounterPhase == 2)
-		{
-			khzLoopCounterPhase = 3;
-			TrimMotors();			
-		}
-	
-		if (khzLoopCounterPhase == 1)
-		{
-			//do nothing phase
-			khzLoopCounterPhase = 2;
-		}
 
 		if (khzLoopCounter-- == 0)
 		{
