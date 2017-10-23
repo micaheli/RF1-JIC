@@ -302,7 +302,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00003125f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 24000;
-			loopSpeed.gyroDivider = 1;
+			loopSpeed.gyroDivider = 0;
 			loopSpeed.khzDivider  = 32;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
@@ -313,7 +313,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00006250f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 12000;
-			loopSpeed.gyroDivider = 2;
+			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 16;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
@@ -323,7 +323,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00012500f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 6000;
-			loopSpeed.gyroDivider = 4;
+			loopSpeed.gyroDivider = 3;
 			loopSpeed.khzDivider  = 8;
 			loopSpeed.gyroAccDiv  = 8; //gyro and acc still run at full speed
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
@@ -334,7 +334,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00012500f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 6000;
-			loopSpeed.gyroDivider = 1;
+			loopSpeed.gyroDivider = 0;
 			loopSpeed.khzDivider  = 8;
 			loopSpeed.gyroAccDiv  = 2;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
@@ -344,7 +344,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00025000f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 3000;
-			loopSpeed.gyroDivider = 8;
+			loopSpeed.gyroDivider = 7;
 			loopSpeed.khzDivider  = 4;
 			loopSpeed.gyroAccDiv  = 8;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
@@ -355,7 +355,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00025000f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 3000;
-			loopSpeed.gyroDivider = 2;
+			loopSpeed.gyroDivider = 1;
 			loopSpeed.khzDivider  = 4;
 			loopSpeed.gyroAccDiv  = 2;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
@@ -365,7 +365,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00050000f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 1500;
-			loopSpeed.gyroDivider = 16;
+			loopSpeed.gyroDivider = 15;
 			loopSpeed.khzDivider  = 2;
 			loopSpeed.gyroAccDiv  = 8;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
@@ -375,7 +375,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00050000f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 1500;
-			loopSpeed.gyroDivider = 4;
+			loopSpeed.gyroDivider = 3;
 			loopSpeed.khzDivider  = 2;
 			loopSpeed.gyroAccDiv  = 2;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
@@ -385,7 +385,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00100000f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 750;
-			loopSpeed.gyroDivider = 32;
+			loopSpeed.gyroDivider = 31;
 			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 8;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
@@ -395,7 +395,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00200000f;
 			loopSpeed.accdT       = 0.00200000f;
 			loopSpeed.uhohNumber  = 375;
-			loopSpeed.gyroDivider = 64;
+			loopSpeed.gyroDivider = 63;
 			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 8;
 			loopSpeed.fsCount     = 250; //failsafe count for khzdivider
@@ -405,7 +405,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00400000f;
 			loopSpeed.accdT       = 0.00400000f;
 			loopSpeed.uhohNumber  = 187;
-			loopSpeed.gyroDivider = 128;
+			loopSpeed.gyroDivider = 127;
 			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 8;
 			loopSpeed.fsCount     = 125; //failsafe count for khzdivider
@@ -415,7 +415,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.01600000f;
 			loopSpeed.accdT       = 0.01600000f;
 			loopSpeed.uhohNumber  = 94;
-			loopSpeed.gyroDivider = 512;
+			loopSpeed.gyroDivider = 511;
 			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 8;
 			loopSpeed.fsCount     = 62; //failsafe count for khzdivider
@@ -426,7 +426,7 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00100000f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 750;
-			loopSpeed.gyroDivider = 8;
+			loopSpeed.gyroDivider = 7;
 			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 2;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
@@ -437,15 +437,12 @@ void InitFlightCode(uint32_t loopUsed)
 			loopSpeed.dT          = 0.00100000f;
 			loopSpeed.accdT       = 0.00100000f;
 			loopSpeed.uhohNumber  = 750;
-			loopSpeed.gyroDivider = 1;
+			loopSpeed.gyroDivider = 0;
 			loopSpeed.khzDivider  = 1;
 			loopSpeed.gyroAccDiv  = 1;
 			loopSpeed.fsCount     = 500; //failsafe count for khzdivider
 			break;
 	}
-
-	//gyro divider needs to be 1/2 what it's set at to opperate correctly
-	loopSpeed.gyroDivider /= 2;
 
 	//TODO: gyroConfig.accDenom is not set until after gyro is running.
 	//loopSpeed.accdT     = loopSpeed.gyrodT * gyroConfig.accDenom;

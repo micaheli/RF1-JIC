@@ -36,6 +36,7 @@ int main(void)
 
     retValChk = InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
 
+    //what happens if you do "save" when these modes are active?
     retValChk = InitQuopaMode();
     retValChk = InitDshotBeep();
     retValChk = InitDshotCommandState(); // send dshot commands and listen back if needed
