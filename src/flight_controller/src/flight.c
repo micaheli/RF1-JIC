@@ -38,7 +38,7 @@ volatile uint32_t armedTimeSincePower = 0;
 
 uint32_t khzLoopCounter                 = 0;
 uint32_t khzLoopCounterPhase            = 0;
-uint32_t gyroLoopCounter                = 0;
+int32_t gyroFlightLoopCounter                = 0;
 volatile uint32_t SKIP_GYRO             = 0;
 volatile float yawAttitudeError         = 0.0f;
 volatile float rollAttitudeError        = 0.0f;
@@ -641,12 +641,12 @@ void InlineFlightCode(float dpsGyroArray[])
 
 	}
 
-	if (gyroLoopCounter-- == 0)
+	if (gyroFlightLoopCounter-- <= 0) // code triggers every time, or every 4 time etc, depending on esc output
 	{
 
 		static int failTimes[4] = {0,};
 
-		gyroLoopCounter = loopSpeed.gyroDivider;
+		gyroFlightLoopCounter = loopSpeed.gyroDivider; // when sync'd its 0, otherwise, its how often you run this
 
 		//smooth the rx data between rx signals
 		InlineRcSmoothing(curvedRcCommandF, smoothedRcCommandF);
