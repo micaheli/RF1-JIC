@@ -496,16 +496,28 @@ void InlineInitGyroFilters(void)
 		}
 		else 
 		{
+
+				InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.q, mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r, 0.0f, filteredGyroData[axis]);
+
+/*
+
 			if(mainConfig.tuneProfile[0].filterConfig[YAW].omega0 == 678)
 			{
+
 				InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[0].filterConfig[axis].omega1, mainConfig.tuneProfile[0].filterConfig[axis].omega2, 0.0f, filteredGyroData[axis]);
+
+//				InitPaf( &pafGyroStates[axis], mainConfig.tuneProfile[0].filterConfig[axis].omega1, mainConfig.tuneProfile[0].filterConfig[axis].omega2, 0.0f, filteredGyroData[axis]);
 				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
 			}
 			else
 			{
 				InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r / 100.0f, 0.0f, filteredGyroData[axis]);
+//				InitPaf( &pafGyroStates[axis], gyroFiltUsed[axis], mainConfig.tuneProfile[activeProfile].filterConfig[axis].gyro.r / 100.0f, 0.0f, filteredGyroData[axis]);
 				InitBiquad(240, &lpfFilterState[axis], loopSpeed.gyrodT, FILTER_TYPE_LOWPASS, &lpfFilterState[axis], 1.98f);
 			}
+
+*/
+
 		}
 	}
 

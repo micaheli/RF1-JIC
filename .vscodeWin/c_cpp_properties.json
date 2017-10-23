@@ -24,9 +24,12 @@
                     "C:\\dev\\raceflightone\\lib\\STM32_USB_Device_Library\\Class\\HID\\Inc",
                     "C:\\dev\\raceflightone\\src\\low_level_driver\\stm32f4",
                     "C:\\dev\\raceflightone\\lib\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
-                    "C:\\dev\\raceflightone\\lib\\STM32F4xx_HAL_Driver\\Inc"
+                    "C:\\dev\\raceflightone\\lib\\STM32F4xx_HAL_Driver\\Inc",
+                    "${workspaceRoot}"
                 ]
-            }
+            },
+            "intelliSenseMode": "msvc-x64"
         }
-    ]
+    ],
+    "version": 3
 }
