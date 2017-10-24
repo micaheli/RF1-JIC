@@ -69,7 +69,7 @@ int HandleDshotCommands(void)
     if(dshotCommandHandler.dshotCommandState == DSC_MODE_SEND)
     {
         SKIP_GYRO=1;
-        dshotCommandHandler.dshotCommandState == DSC_MODE_SENDING;
+        dshotCommandHandler.dshotCommandState = DSC_MODE_SENDING;
 
         //allow throttle or not?
         dshotCommandHandler.commandToSend = CONSTRAIN(dshotCommandHandler.commandToSend, 0, DSHOT_CMD_MAX);
@@ -91,7 +91,7 @@ int HandleDshotCommands(void)
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[3], 1, 0, 1);
             DelayMs(3); //let MCU stabilize 
         }
-        dshotCommandHandler.dshotCommandState == DSC_MODE_ACTIVE;
+        dshotCommandHandler.dshotCommandState = DSC_MODE_ACTIVE;
     }
 
     //init
