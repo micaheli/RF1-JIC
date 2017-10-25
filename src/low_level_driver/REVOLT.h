@@ -114,7 +114,7 @@
 #define SPI1_SCK_PULL					GPIO_PULLDOWN
 
 #define SPI2_ENABLE						1
-#define SPI2_DMA_ENABLED                0
+#define SPI2_DMA_ENABLED                1
 #define SPI2_NSS_PIN					GPIO_PIN_12
 #define SPI2_SCK_PIN					GPIO_PIN_13
 #define SPI2_MISO_PIN					GPIO_PIN_14
@@ -139,7 +139,7 @@
 #define SPI2_SCK_PULL					GPIO_PULLUP
 
 #define SPI3_ENABLE						1
-#define SPI3_DMA_ENABLED                0
+#define SPI3_DMA_ENABLED                1
 #define SPI3_NSS_PIN					GPIO_PIN_15
 #define SPI3_SCK_PIN					GPIO_PIN_10
 #define SPI3_MISO_PIN					GPIO_PIN_11

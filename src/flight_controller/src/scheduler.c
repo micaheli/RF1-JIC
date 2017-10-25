@@ -232,9 +232,9 @@ static void TaskPersistanceAndFlash(void)
 	//if(InlineMillis() < 20000)
 	//	return;
 
-	//is flash chip busy?, blocking, but only 4 bytes
-	if(CheckIfFlashBusy())
-		return;
+	////is flash chip busy?, blocking, but only 4 bytes
+	//if(CheckIfFlashBusy())
+	//	return;
 
 	//nothing busy so we fall through to here
 	//save persistance if it's enabled, due and flash is imediately availible, board is armed when this happens
@@ -252,8 +252,16 @@ static void TaskPersistanceAndFlash(void)
 	else
 	{ //something to write
 		//M25p16BlockingWritePage(flashWriteAddress, flashTxBuffer);
-		M25p16IrqWritePage(flashWriteAddress, flashTxBuffer);
+		if ( IsDshotEnabled() || (quopaState == QUOPA_ACTIVE) )
+		{
+			M25p16IrqWritePage(flashWriteAddress, flashTxBuffer);
+		}
+		else
+		{
+			M25p16DmaWritePage(flashWriteAddress, flashTxBuffer, flashRxBuffer);
+		}
 		flashTxBuffer = NULL;
+		
 	}
 
 }
@@ -270,7 +278,7 @@ static void TaskeSafeLoopCounter(void)
 
 	if (failiureLatch)
 	{
-		ledStatus.status = LEDS_FAST_BLINK;
+		//ledStatus.status = LEDS_FAST_BLINK;
 		if (!boardArmed)
 		{
 			//SKIP_GYRO = 1;

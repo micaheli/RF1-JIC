@@ -24,7 +24,7 @@
 "H gyro.scale:0x41600000\n" \
 "H acc_1G:1\n\0"
 
-
+volatile int logMe;
 volatile uint32_t lastProgramTime;
 uint32_t LoggingEnabled;
 uint32_t firstLogging;
@@ -246,6 +246,7 @@ static int SetupLog(void)
 int InitFlightLogger(void)
 {
 
+	logMe              = 0;
 	flashCountdownFake = 0;
 	logItterationCounter = 1;
 	LoggingEnabled = 0;
@@ -397,16 +398,11 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	(void)(filteredAccData);
 #endif
 
-	if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (ModeActive(M_LOGGING)) && (flashInfo.enabled == STAT_FLASH_ENABLED) )
-	//if ( 1 )
-	{
-		ledStatus.status    = LEDS_FASTER_BLINK;
-		LoggingEnabled      = 1;
-		loggingStartedLatch = 1;
-		disarmLast          = 25;
-		recordJunkData      = 0;
-	}
-	else if ( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (!ModeSet(M_LOGGING)) && (flashInfo.enabled == STAT_FLASH_ENABLED) )
+	if (
+		(logMe) ||
+		( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (ModeActive(M_LOGGING)) && (flashInfo.enabled == STAT_FLASH_ENABLED) ) ||
+		( (mainConfig.rcControlsConfig.rcCalibrated) && (boardArmed) && (!ModeSet(M_LOGGING)) && (flashInfo.enabled == STAT_FLASH_ENABLED) )
+	)
 	{
 		ledStatus.status    = LEDS_FASTER_BLINK;
 		LoggingEnabled      = 1;

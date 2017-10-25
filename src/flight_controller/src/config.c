@@ -3,6 +3,7 @@
 
 // use variable record but instead of storing address of variable, store offset based on address of field, that way it works with the record loaded from file
 
+extern volatile int logMe;
 volatile uint32_t rfCustomReplyBufferPointer = 0;
 volatile uint32_t rfCustomReplyBufferPointerSent = 0;
 volatile uint32_t configSize = 0;
@@ -2168,6 +2169,19 @@ void ProcessCommand(char *inString)
 			}
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Voltage to %i\n", atoi(args) * 33);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
+		}
+	else if (!strcmp("logme", inString))
+		{
+			if ( !strcmp("1", args) )
+			{
+				logMe = 1;
+				RfCustomReplyBuffer("#me LOGGING!\n");
+			}
+			else
+			{
+				logMe = 0;
+				RfCustomReplyBuffer("#me NOT LOGGING!\n");
+			}
 		}
 	else if (!strcmp("dump", inString) || !strcmp("diff", inString))
 		{

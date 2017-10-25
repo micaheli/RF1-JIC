@@ -63,15 +63,23 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 
 	//rx buffer is just used as a dummy, we can completely ignore it
 
-  	txBuffer[0] = M25P16_PAGE_PROGRAM;
-  	txBuffer[1] = ((address >> 16) & 0xFF);
-  	txBuffer[2] = ((address >> 8) & 0xFF);
-  	txBuffer[3] = (address & 0xFF);
+	///if(HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) != HAL_DMA_STATE_READY)
+	//	julian++;
+
+	//if(HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) != HAL_SPI_STATE_READY)
+	//	julian += 10;
 
 	if (
 		HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY &&
-		HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY)
+		HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY
+	)
 	{
+		julian += 100;
+		txBuffer[0] = M25P16_PAGE_PROGRAM;
+		txBuffer[1] = ((address >> 16) & 0xFF);
+		txBuffer[2] = ((address >> 8) & 0xFF);
+		txBuffer[3] = (address & 0xFF);
+
 		WriteEnableDataFlash();
 		inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
 		flashInfo.status = DMA_DATA_WRITE_IN_PROGRESS;
@@ -650,14 +658,14 @@ int InitFlashChip(void)
 	//TODO: Allow working with multiple flash chips
 
 	//TODO: Check for DMA conflicts
-	//if (board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma].enabled)
-	//{
-	//	memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma], sizeof(board_dma) );
-	//}
-	//if (board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma].enabled)
-	//{
-	//	memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma], sizeof(board_dma) );
-	//}
+	if (board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma].enabled)
+	{
+		memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].RXDma], sizeof(board_dma) );
+	}
+	if (board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma].enabled)
+	{
+		memcpy( &board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma], &board.dmasSpi[board.spis[board.flash[0].spiNumber].TXDma], sizeof(board_dma) );
+	}
 
 	//FlashDeinit();
 
@@ -1015,17 +1023,11 @@ static int FlashChipReadWriteDataSpiDma(uint8_t *txData, uint8_t *rxData, uint16
 {
     // ensure that both SPI and DMA resources are available, but don't block if they are not
 
-    if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY && HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY) {
+	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
+	//flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
+	HAL_SPI_TransmitReceive_DMA(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txData, rxData, length);
 
-    	inlineDigitalLo(ports[board.flash[0].csPort], board.flash[0].csPin);
-        //flashInfo.status = DMA_DATA_READ_IN_PROGRESS;
-        HAL_SPI_TransmitReceive_DMA(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle], txData, rxData, length);
-
-        return (1);
-
-    } else {
-        return (0);
-    }
+	return (1);
 
 }
 
@@ -1035,10 +1037,11 @@ void FlashDmaRxCallback(uint32_t callbackNumber)
 	(void)(callbackNumber);
 	if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY)
 	{
+		CheckIfFlashSpiBusy();
         // reset chip select line
-    	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
-    	bzero(flashInfo.commandTxBuffer, sizeof(flashInfo.commandTxBuffer));
-		flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
+    	//inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
+    	//bzero(flashInfo.commandTxBuffer, sizeof(flashInfo.commandTxBuffer));
+		//flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
     }
 
 }

@@ -38,7 +38,7 @@ volatile uint32_t armedTimeSincePower = 0;
 
 uint32_t khzLoopCounter                 = 0;
 uint32_t khzLoopCounterPhase            = 0;
-int32_t gyroFlightLoopCounter                = 0;
+int32_t gyroFlightLoopCounter           = 0;
 volatile uint32_t SKIP_GYRO             = 0;
 volatile float yawAttitudeError         = 0.0f;
 volatile float rollAttitudeError        = 0.0f;
@@ -832,6 +832,7 @@ void InlineFlightCode(float dpsGyroArray[])
 		switch (khzLoopCounterPhase++)
 		{
 			case 6: 
+				UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
 				khzLoopCounterPhase = 0;
 				/*
 				#ifndef LOG32
@@ -855,7 +856,10 @@ void InlineFlightCode(float dpsGyroArray[])
 			case 2: 
 				TrimMotors();						
 			break;
-			
+
+			case 1: 
+			break;
+
 			case 0: 
 			break;
 			
@@ -867,7 +871,7 @@ void InlineFlightCode(float dpsGyroArray[])
 
 			static int everyTenth = 0;
 			
-			khzLoopCounterPhase = 1;
+			khzLoopCounterPhase = 0;
 
 			everyTenth++;
 			if(everyTenth == 10)
@@ -875,7 +879,7 @@ void InlineFlightCode(float dpsGyroArray[])
 				CalculateThrottleVelocity();
 				everyTenth=0;
 			}
-			
+
 			//runs at 1KHz or loopspeed, whatever is slower
 			khzLoopCounter=loopSpeed.khzDivider;
 
