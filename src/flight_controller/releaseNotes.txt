@@ -1617,6 +1617,9 @@ Version 0.374.137 BETA
 Version 0.375.137 BETA
 	Added commands for wizard
 
+Version 0.376.137 BETA
+	flight log changes
+
 #Features in current development:
 #	MAVlink compatibility
 

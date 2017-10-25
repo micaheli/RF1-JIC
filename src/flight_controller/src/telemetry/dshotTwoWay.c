@@ -37,7 +37,7 @@ int HandleDshotCommands(void)
     //request to use the commands is off, and mode is active. Let's disable the mode
     if(
         (!dshotCommandHandler.requestActivation) &&
-        (dshotCommandHandler.dshotCommandState == DSC_MODE_ACTIVE)
+        (dshotCommandHandler.dshotCommandState != DSC_MODE_INACTIVE)
     )
     {
         //if not using dshot, go back to other protocol
