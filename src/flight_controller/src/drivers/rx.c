@@ -622,7 +622,8 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 			}
 		}
 
-		if (!spekPhase && mainConfig.telemConfig.telemSpek)
+		//here
+		if (0 && !spekPhase && mainConfig.telemConfig.telemSpek)
 		{
 			sendSpektrumTelemtryAt = InlineMillis() + 2;
 		}

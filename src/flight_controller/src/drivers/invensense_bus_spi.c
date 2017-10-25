@@ -115,7 +115,8 @@ void GyroExtiCallback(uint32_t callbackNumber)
 	gyroInterrupting = 1;
     if (!skipGyro)
     {
-    	//update ACC after the rest of the flight code upon the proper denom
+        //update ACC after the rest of the flight code upon the proper denom
+        
     	if (gyroLoopCounter--==0) {
     		gyroLoopCounter = gyroConfig.accDenom;
         	accgyroDeviceReadAccGyro();

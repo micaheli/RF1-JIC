@@ -628,8 +628,8 @@ void InlineFlightCode(float dpsGyroArray[])
 	
 		else
 		{
-			averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
-			OldPafUpdate(&pafGyroStates[axis], averagedGyro );
+//			averagedGyro = AverageGyroADCbuffer(axis, dpsGyroArray[axis]);
+			OldPafUpdate(&pafGyroStates[axis], AverageGyroADCbuffer(axis, dpsGyroArray[axis]));
 			filteredGyroData[axis] = BiquadUpdate((float)pafGyroStates[axis].output, &lpfFilterState[axis]);			
 //			filteredGyroData[axis] = (float)pafGyroStates[axis].output;
 				
@@ -829,7 +829,7 @@ void InlineFlightCode(float dpsGyroArray[])
 */
 
 
-		switch (khzLoopPhase++)
+		switch (khzLoopCounterPhase++)
 		{
 			case 6: 
 				khzLoopCounterPhase = 0;
