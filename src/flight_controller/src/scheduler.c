@@ -208,7 +208,9 @@ static void TaskPersistanceAndFlash(void)
 
 	static uint32_t lastPersistance = 0;
 
+	#ifdef OLD_LOG
 	return;
+	#endif
 	//is SPI busy?, doesn't send spi commands
 	if(CheckIfFlashSpiBusy())
 		return;

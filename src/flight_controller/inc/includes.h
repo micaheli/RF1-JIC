@@ -2,6 +2,9 @@
 
 extern volatile int retValChk;
 
+//enable or disable new or old logging method
+#define OLD_LOG
+
 //#define LOG32
 #include <stdbool.h>
 #include <stdint.h>

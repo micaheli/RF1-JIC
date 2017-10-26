@@ -1031,11 +1031,14 @@ void FlashDmaRxCallback(uint32_t callbackNumber)
 	(void)(callbackNumber);
 	if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY)
 	{
-		//CheckIfFlashSpiBusy();
+		#ifdef OLD_LOG
         // reset chip select line
     	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
     	bzero(flashInfo.commandTxBuffer, sizeof(flashInfo.commandTxBuffer));
 		flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
+		#else
+		CheckIfFlashSpiBusy();
+		#endif
     }
 
 }

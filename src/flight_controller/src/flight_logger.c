@@ -5,7 +5,7 @@
 #define UPDATE_BB_DATA_SIZE 32 //good for 100 days of logging
 
 #define BB_HEADER1 \
-"H Product:Blackbox flight data\n" \
+"H Product:Blackbox flight data recorder by Nicholas Sherlock\n" \
 "H Data version:2\n" \
 "H I interval:1\n\0"
 
@@ -150,8 +150,9 @@ static int PrintLogHeaderToBuffer(void)
 	headerToWrite=0;
 
 	snprintf(rfCustomSendBuffer+rfCustomReplyBufferPointer, strlen(BB_HEADER1)+1, "%s", BB_HEADER1);
-	headerToWrite += strlen(BB_HEADER1)+rfCustomReplyBufferPointer;
-
+	headerToWrite += strlen(BB_HEADER1);
+	//headerToWrite += strlen(BB_HEADER1)+rfCustomReplyBufferPointer;
+	
 	for(x=0;x<bbValues.bbValuesTotal;x++)
 	{
 		snprintf(rfCustomSendBuffer+headerToWrite, strlen(bbValues.bbPtr[x]->iName)+1, "%s", bbValues.bbPtr[x]->iName);
@@ -324,6 +325,7 @@ void WriteByteToFlash (uint8_t data)
 		}
 		flashInfo.buffer[flashInfo.bufferNum].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 
+		#ifdef OLD_LOG
 		if (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS)
 		{
 			//only write and increment write address is flash chip s not busy to prevent blocks of FFFFFFF
@@ -331,14 +333,16 @@ void WriteByteToFlash (uint8_t data)
 			M25p16DmaWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer); //write buffer to flash using DMA
 			flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
 		}
+		#else
 		//if flash not being written to we set the variables the scheduler uses to write to flash
-		//if(flashTxBuffer == NULL)
-		//{
-		//	flashWriteAddress = flashInfo.currentWriteAddress;
-		//	flashTxBuffer     = (uint8_t *)buffer->txBuffer;
-		//	flashRxBuffer     = (uint8_t *)buffer->rxBuffer;
-		//	flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
-		//}
+		if(flashTxBuffer == NULL)
+		{
+			flashWriteAddress = flashInfo.currentWriteAddress;
+			flashTxBuffer     = (uint8_t *)buffer->txBuffer;
+			flashRxBuffer     = (uint8_t *)buffer->rxBuffer;
+			flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
+		}
+		#endif
 
 		//if (flashInfo.currentWriteAddress >= flashInfo.totalSize)
 		if (flashInfo.currentWriteAddress >= persistance.start1) //last two sectors are for persistance
@@ -390,8 +394,10 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	volatile int toWrite;
 	int x;
 
+	#ifdef OLD_LOG
 	if (IsDshotEnabled())
 		return;
+	#endif
 #ifndef LOG32
 
 #else
