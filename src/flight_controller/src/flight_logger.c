@@ -324,21 +324,21 @@ void WriteByteToFlash (uint8_t data)
 		}
 		flashInfo.buffer[flashInfo.bufferNum].txBufferPtr = FLASH_CHIP_BUFFER_WRITE_DATA_START;
 
-		//if (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS)
-		//{
-		//	//only write and increment write address is flash chip s not busy to prevent blocks of FFFFFFF
-		//	//M25p16BlockingWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer);
-		//	M25p16DmaWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer); //write buffer to flash using DMA
-		//	flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
-		//}
-		//if flash not being written to we set the variables the scheduler uses to write to flash
-		if(flashTxBuffer == NULL)
+		if (flashInfo.status != DMA_DATA_WRITE_IN_PROGRESS)
 		{
-			flashWriteAddress = flashInfo.currentWriteAddress;
-			flashTxBuffer     = (uint8_t *)buffer->txBuffer;
-			flashRxBuffer     = (uint8_t *)buffer->rxBuffer;
+			//only write and increment write address is flash chip s not busy to prevent blocks of FFFFFFF
+			//M25p16BlockingWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer);
+			M25p16DmaWritePage(flashInfo.currentWriteAddress, buffer->txBuffer, buffer->rxBuffer); //write buffer to flash using DMA
 			flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
 		}
+		//if flash not being written to we set the variables the scheduler uses to write to flash
+		//if(flashTxBuffer == NULL)
+		//{
+		//	flashWriteAddress = flashInfo.currentWriteAddress;
+		//	flashTxBuffer     = (uint8_t *)buffer->txBuffer;
+		//	flashRxBuffer     = (uint8_t *)buffer->rxBuffer;
+		//	flashInfo.currentWriteAddress += FLASH_CHIP_BUFFER_WRITE_DATA_SIZE; //add pointer to address
+		//}
 
 		//if (flashInfo.currentWriteAddress >= flashInfo.totalSize)
 		if (flashInfo.currentWriteAddress >= persistance.start1) //last two sectors are for persistance
@@ -390,6 +390,8 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 	volatile int toWrite;
 	int x;
 
+	if (IsDshotEnabled())
+		return;
 #ifndef LOG32
 
 #else

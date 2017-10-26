@@ -63,12 +63,6 @@ void M25p16DmaWritePage(uint32_t address, uint8_t *txBuffer, uint8_t *rxBuffer)
 
 	//rx buffer is just used as a dummy, we can completely ignore it
 
-	///if(HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) != HAL_DMA_STATE_READY)
-	//	julian++;
-
-	//if(HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) != HAL_SPI_STATE_READY)
-	//	julian += 10;
-
 	if (
 		HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].TXDma].dmaHandle]) == HAL_DMA_STATE_READY &&
 		HAL_SPI_GetState(&spiHandles[board.spis[board.flash[0].spiNumber].spiHandle]) == HAL_SPI_STATE_READY
@@ -1037,11 +1031,11 @@ void FlashDmaRxCallback(uint32_t callbackNumber)
 	(void)(callbackNumber);
 	if (HAL_DMA_GetState(&dmaHandles[board.dmasActive[board.spis[board.flash[0].spiNumber].RXDma].dmaHandle]) == HAL_DMA_STATE_READY)
 	{
-		CheckIfFlashSpiBusy();
+		//CheckIfFlashSpiBusy();
         // reset chip select line
-    	//inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
-    	//bzero(flashInfo.commandTxBuffer, sizeof(flashInfo.commandTxBuffer));
-		//flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
+    	inlineDigitalHi(ports[board.flash[0].csPort], board.flash[0].csPin);
+    	bzero(flashInfo.commandTxBuffer, sizeof(flashInfo.commandTxBuffer));
+		flashInfo.status = READ_ANDOR_WRITE_COMPLETE;
     }
 
 }
