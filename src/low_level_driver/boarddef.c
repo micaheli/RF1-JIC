@@ -553,7 +553,8 @@ int GetBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaMode            = DMA_NORMAL;
-	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaPriority        = DMA_PRIORITY_VERY_HIGH;
+//here2	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaPriority        = DMA_PRIORITY_VERY_HIGH;
+	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaPriority        = DMA_PRIORITY_HIGH;
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaIRQn            = SPI1_TX_DMA_IRQn;
 	board.dmasSpi[board.spis[ENUM_SPI1].TXDma].dmaHandle          = SPI1_TX_DMA_STREAM;
@@ -568,7 +569,8 @@ int GetBoardHardwareDefs(void)
 	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaPeriphAlignment = DMA_PDATAALIGN_BYTE;
 	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaMemAlignment    = DMA_MDATAALIGN_BYTE;
 	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaMode            = DMA_NORMAL;
-	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaPriority        = DMA_PRIORITY_VERY_HIGH;
+	//here2 board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaPriority        = DMA_PRIORITY_VERY_HIGH;
+	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaPriority        = DMA_PRIORITY_HIGH;
 	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].fifoMode           = DMA_FIFOMODE_DISABLE;
 	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaIRQn            = SPI1_RX_DMA_IRQn;
 	board.dmasSpi[board.spis[ENUM_SPI1].RXDma].dmaHandle          = SPI1_RX_DMA_STREAM;
