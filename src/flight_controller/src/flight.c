@@ -832,7 +832,8 @@ void InlineFlightCode(float dpsGyroArray[])
 		switch (khzLoopCounterPhase++)
 		{
 			case 6: 
-				//here2 UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
+				//here2 
+				UpdateBlackbox(flightPids, flightSetPoints, dpsGyroArray, filteredGyroData, geeForceAccArray);
 				khzLoopCounterPhase = 0;
 				/*
 				#ifndef LOG32
