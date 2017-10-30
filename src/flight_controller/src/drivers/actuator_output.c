@@ -287,6 +287,8 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 
 	if (mainConfig.tuneProfile[activeProfile].filterConfig[0].resRedux)
 	{
+
+		/* crap
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
 		{
 			difference = abs(motorOutput[motorNum] - previousMotorOutput[motorNum]);
@@ -300,16 +302,52 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 				{
 					if (motorOutput[motorNum] > previousMotorOutput[motorNum])
 					{
-						previousMotorOutput[motorNum] = motorOutput[motorNum] = motorOutput[motorNum] + .025; /* increase by max 25 */
+						previousMotorOutput[motorNum] = motorOutput[motorNum] = motorOutput[motorNum] + .025; 
 					}
 					else
 					{
-						previousMotorOutput[motorNum] = motorOutput[motorNum] = motorOutput[motorNum] - .025; /* increase by max 25 */
+						previousMotorOutput[motorNum] = motorOutput[motorNum] = motorOutput[motorNum] - .025; 
 					}
 
+				} 
+				else
+				{
+					previousMotorOutput[motorNum] = MotorOutput[motorNum];
 				}
 			}
 
+		}*/
+
+
+		for (int motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+		{
+			difference = fabsf(motorOutput[motorNum] - previousMotorOutput[motorNum]);
+			if (difference <= .0025)
+			{
+				motorOutput[motorNum] = previousMotorOutput[motorNum];
+			}
+			else
+			{
+				if (difference > .0050)
+				{
+					if (motorOutput[motorNum] > previousMotorOutput[motorNum])
+					{
+						motorOutput[motorNum] = previousMotorOutput[motorNum] + .0050; /* increase by max 25 */
+						previousMotorOutput[motorNum] = motorOutput[motorNum];
+					}
+					else
+					{
+						motorOutput[motorNum] = previousMotorOutput[motorNum] - .0050; /* increase by max 25 */
+						previousMotorOutput[motorNum] = motorOutput[motorNum];
+					}
+	
+				} 
+				else
+				{
+					previousMotorOutput[motorNum] = motorOutput[motorNum];
+				}
+			}
+	
 		}
 		
 
