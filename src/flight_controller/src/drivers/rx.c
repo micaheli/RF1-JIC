@@ -623,7 +623,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		}
 
 		static int everyOtherSpekTelem = 0;
-		if (0 && !spekPhase && mainConfig.telemConfig.telemSpek)
+		if (!spekPhase && mainConfig.telemConfig.telemSpek)
 		{
 			if (everyOtherSpekTelem++ == 1)
 			{

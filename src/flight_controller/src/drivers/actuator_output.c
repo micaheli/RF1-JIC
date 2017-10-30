@@ -13,6 +13,8 @@ volatile uint32_t usedEscProtocol; //currently active ESC protocol
 static void InitActuatorTimer(motor_type actuator, uint32_t pwmHz, uint32_t timerHz);
 static uint32_t ThrottleToDDshot(float throttle, float idle);
 static int IsDshotCurrentlyActive(void);
+volatile float previousMotorOutput[MAX_MOTOR_NUMBER];
+
 
 //motor_output_array motorOutputArray[MAX_MOTOR_NUMBER];
 
@@ -67,6 +69,12 @@ void InitActuators(uint32_t escProtocol, uint32_t escFrequency)
 	uint32_t timerHz; // frequency of the timer
 	uint32_t pwmHz;   // max update frequency for protocol
 	uint32_t walledPulseValue;
+
+
+	for (uint32_t x=0;x<MAX_MOTOR_NUMBER;x++)
+		previousMotorOutput[x] = 0;
+	
+
 
 	switch (escProtocol)
 	{
@@ -274,9 +282,38 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 	uint32_t motorNum;
 	uint8_t  serialOutBuffer[2];
 	float    tempOutputF;
+	float difference;
+
 
 	if (mainConfig.tuneProfile[activeProfile].filterConfig[0].resRedux)
 	{
+		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
+		{
+			difference = abs(motorOutput[motorNum] - previousMotorOutput[motorNum]);
+			if (difference <= 5)
+			{
+				motorOutput[motorNum] = previousMotorOutput[motorNum];
+			}
+			else
+			{
+				if (difference > 25)
+				{
+					if (motorOutput[motorNum] > previousMotorOutput[motorNum])
+					{
+						previousMotorOutput[motorNum] = motorOutput[motorNum] = motorOutput[motorNum] + 25; /* increase by max 25 */
+					}
+					else
+					{
+						previousMotorOutput[motorNum] = motorOutput[motorNum] = motorOutput[motorNum] - 25; /* increase by max 25 */
+					}
+
+				}
+			}
+
+		}
+		
+
+/*
 		for (motorNum = 0; motorNum < MAX_MOTOR_NUMBER; motorNum++)
 		{
 			//range 0 - 1 to 0 - 255 and round it to provide 256 bits of resolution
@@ -284,6 +321,9 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 			//change range back to 0 - 1
 			motorOutput[motorNum] = InlineChangeRangef(tempOutputF, 255.0f, 0.0f, 1.0f, 0.0f);
 		}
+
+
+		*/
 	}
 	if (boardArmed)
 	{
