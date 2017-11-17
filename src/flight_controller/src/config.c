@@ -1178,7 +1178,7 @@ void ProcessCommand(char *inString)
 		}
 	else if (!strcmp("polladc", inString))
 		{
-			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Voltage: %lu, Current: %lu, mAh: %lu\n", (uint32_t)(adcVoltage*100) , (uint32_t)(adcCurrent*100), (uint32_t)(adcMAh));
+			snprintf( rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Voltage: %lu, Current: %lu, mAh: %lu\n", (uint32_t)(averageVoltage*100) , (uint32_t)(adcCurrent*100), (uint32_t)(adcMAh));
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
 	else if (!strcmp("esc_d_beep", inString))

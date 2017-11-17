@@ -141,7 +141,15 @@ static void ConvertAdcCurrent(uint32_t rawAdcVoltage, float adcCurrFactor)
 	//calculate maH every 50 ms
 	if (now - lastMahCalc >= 50)
 	{
-		adcMAh += ( (float)( now - lastMahCalc ) * ( (float)(averageMahCalc / (float)averageAdcIndex) / 3600.0f ));
+		if(boardArmed)
+		{
+			adcMAh += ( (float)( now - lastMahCalc ) * ( (float)(averageMahCalc / (float)averageAdcIndex) / 3600.0f ));
+		}
+		else
+		{
+			adcMAh += .005;
+		}
+
 		averageMahCalc = 0.0f;
 		averageAdcIndex = 0;
 		lastMahCalc = InlineMillis();

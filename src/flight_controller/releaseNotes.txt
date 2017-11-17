@@ -1619,6 +1619,14 @@ Version 0.375.137 BETA
 
 Version 0.376.137 BETA
 	flight log changes
+Verison 0.380.0 BETA
+	Flight code optimizations
+Verison 0.381.0
+	changed how the arm switch wizard works 
+	polladc uses filtered voltage now 
+	adjusted mah drawn algo
+	
+
 
 #Features in current development:
 #	MAVlink compatibility
