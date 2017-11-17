@@ -458,10 +458,10 @@ void HandleWizRc(void)
 				SaveAndSend();
 				telemEnabled = 1;
 			//}
-			else
-			{
+		//	else
+		//	{
 				RfCustomReplyBuffer("#wiz Wiz RC Failed\n");
-			}
+		//	}
 
 			break;
 		default:
