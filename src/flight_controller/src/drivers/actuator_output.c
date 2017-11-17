@@ -328,16 +328,16 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 			}
 			else
 			{
-				if (difference > .00050)
+				if (difference > .0050)
 				{
 					if (motorOutput[motorNum] > previousMotorOutput[motorNum])
 					{
-						motorOutput[motorNum] = previousMotorOutput[motorNum] + .00050; /* increase by max 25 */
+						motorOutput[motorNum] = previousMotorOutput[motorNum] + .0050; /* increase by max 25 */
 						previousMotorOutput[motorNum] = motorOutput[motorNum];
 					}
 					else
 					{
-						motorOutput[motorNum] = previousMotorOutput[motorNum] - .00050; /* increase by max 25 */
+					//	motorOutput[motorNum] = previousMotorOutput[motorNum] - .0050; /* increase by max 25 */
 						previousMotorOutput[motorNum] = motorOutput[motorNum];
 					}
 	

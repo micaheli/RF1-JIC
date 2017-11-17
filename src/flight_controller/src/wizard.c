@@ -446,18 +446,18 @@ void HandleWizRc(void)
 			break;
 		case 4:
 			//min max values are set, let's save them and now check centers
-			WizRcCheckArmSwitchDisarmed();
+			//WizRcCheckArmSwitchDisarmed();
 			RfCustomReplyBuffer("#wiz Disarm Set. Please run wiz rc5\n");
 			break;
 		case 5:
-			if (WizRcCheckArmSwitchArmed())
-			{
+/*			if (WizRcCheckArmSwitchArmed())
+			{*/
 				RfCustomReplyBuffer("#wiz Wiz RC Successful\n");
 				mainConfig.rcControlsConfig.rcCalibrated = 1;
 				bzero(&wizardStatus, sizeof(wizardStatus)); //all done
 				SaveAndSend();
 				telemEnabled = 1;
-			}
+			//}
 			else
 			{
 				RfCustomReplyBuffer("#wiz Wiz RC Failed\n");
