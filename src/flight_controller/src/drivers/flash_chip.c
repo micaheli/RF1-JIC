@@ -708,7 +708,7 @@ int InitFlashChip(void)
 	if(flashInfo.enabled != FLASH_DISABLED)
 	{
 		//skip for now
-		//return(flashReturn);
+		return(flashReturn); //here
 
 		int persistanceResult = FindLatestPersistance();
 
