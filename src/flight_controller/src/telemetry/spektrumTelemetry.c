@@ -113,6 +113,8 @@ void sendSpektrumTelem(void)
 
 	case TELEM_XBUS:
 		{
+
+
 			xbus.sensorCount = 3; //The more of these there are, the longer it will take to send each TELEM_XBUS packet over telemetry
 			if (xbus.sensorCount > 0)
 			{
@@ -140,6 +142,9 @@ void sendSpektrumTelem(void)
 					}
 				case 2:
 					{
+						if (boardArmed)
+							break;
+							
 						textMenuUpdate();
 						//sensorData.user_text.text = tempString;
 						/*
