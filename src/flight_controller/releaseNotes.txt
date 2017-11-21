@@ -1625,7 +1625,7 @@ Verison 0.381.0
 	changed how the arm switch wizard works 
 	polladc uses filtered voltage now 
 	adjusted mah drawn algo
-Verison 0.400.140
+Verison 0.400.141
     fixed quopa mode
 	fixed pid multiplier 
 	disabled bounce_guard
@@ -1655,6 +1655,8 @@ Verison 0.400.140
 		UI updates, small bug fixes
 		Set min firmware version to 0.400.0
 		added rc12 tune option to quick select
+Verison 0.403.140
+	fixed knight rider mode
 		
 	
 
