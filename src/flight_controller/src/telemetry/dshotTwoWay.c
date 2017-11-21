@@ -153,7 +153,7 @@ void ThrottleToDshot(uint8_t *serialOutBuffer, float throttle, float idle, int r
     //limit motor spinning
 	if( (quopaState == QUOPA_ACTIVE) && mainConfig.mixerConfig.quopaStyle > 2)
         if(throttle < 0.15f)
-            throttle = 0.0f;
+            idle = 0.0f;  //here don't do this
 
 	if (idle > 0.0f)
 	{

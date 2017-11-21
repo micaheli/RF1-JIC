@@ -1,6 +1,37 @@
-General Notes:
+Mac IDE Install:
+
+Create ~/Documents/source directories
+
+2. Install Homebrew and components, setup environment:
+    Go to https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
+        And download gcc-arm-none-eabi-6-2017-q1-update
+    Untar gcc-arm-none-eabi-6-2017-q1-update and then copy contents using cp -a * /usr/local/
+
+install homebrew
+
+    brew install open-ocd
+    brew install node
+    sudo npm install -g grunt-cli
+
+4. Clone Repo
+In terminal:
+        cd ~/source
+        git clone ssh://git@git.postingstats.com:8022/rs2k/radioactive_pandas.git
+        git clone ssh://git@git.postingstats.com:8022/Arti3DPlayer/rf_configurator.git
+        cd rf_configurator
+        npm install
+
+5. Download VSCode from http://code.visualstudio.com/docs/?dv=osx 
+
+6. Open VSCode
+
+7. Click explorer icon on left and click “Open Folder”
+
+8. Navigate to the ~/source/Documents/radioactive_pandas directory and hit okay
 
 
-Setup Dev Envioronment for Mac:
-    https://docs.google.com/document/d/1KYF1iB8HmNWQZcC2VyyTSA0pOa4GzfAuPFU5Zdz6PK0/edit?usp=sharing
+9. Click the extensions icon on the left and install and reload the following extensions:
+    C/C++
+    C++ Intellisense
+    Native Debug
 
