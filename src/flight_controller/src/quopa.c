@@ -117,7 +117,7 @@ int HandleQuopaMode(void)
         SKIP_GYRO=1;
         DelayMs(20);
         CommandToDshot(serialOutBuffer, DSHOT_CMD_SPIN_DIRECTION_REVERSED);
-        for(uint32_t x=0;x<1000;x++)
+        for(uint32_t x=0;x<300;x++)
         {
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[0], 1, 0, 1);
             OutputSerialDmaByte(serialOutBuffer, 2, board.motors[1], 1, 0, 1);

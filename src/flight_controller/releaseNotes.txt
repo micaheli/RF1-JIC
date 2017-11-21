@@ -1625,6 +1625,16 @@ Verison 0.381.0
 	changed how the arm switch wizard works 
 	polladc uses filtered voltage now 
 	adjusted mah drawn algo
+Verison 0.387.140
+    fixed quopa mode
+	fixed pid multiplier 
+	disabled bounce_guard
+	led color mode fixed
+	lowered interval inbetween led modes 
+	Known issues: 
+		Knight rider led mode broken 
+		spektrum telemtry broken
+
 	
 
 
