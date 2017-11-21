@@ -1657,6 +1657,9 @@ Verison 0.400.141
 		added rc12 tune option to quick select
 Verison 0.403.140
 	fixed knight rider mode
+	fixed logging 
+	fixed quopa modes
+
 		
 	
 
