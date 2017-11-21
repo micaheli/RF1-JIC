@@ -9,8 +9,7 @@ static uint8_t colorPulse = 0;
 static uint32_t currentColorChart = 0;
 uint32_t ledArraySize = 0;
 int32_t adding = 1;
-int32_t pixel = 0;
-
+volatile int32_t globalPixel = 1;
 
 ledStatus_t ledStatus;
 
@@ -255,55 +254,62 @@ static inline void LedModeKnightRider(uint8_t speed, uint8_t red, uint8_t green,
 	updateInterval=speed;
 
 	if (adding) {
-		pixel = pixel + 1;
-		if (pixel == ((int32_t)mainConfig.ledConfig.ledCount+1))
+		globalPixel = globalPixel + 1;
+		if (globalPixel >= ((int32_t)mainConfig.ledConfig.ledCount+1))
 		{
 			adding=0;
-			pixel -= 2;
+			globalPixel = (((int32_t)mainConfig.ledConfig.ledCount) - 1);
 		}
 	}
 	else
 	{
-		pixel = pixel - 1;
-		if (pixel == 0)
+		globalPixel = globalPixel - 1;
+		if (globalPixel <= 0)
 		{
 			adding=1;
-			pixel+=2;
+			globalPixel+=2;
 		}
 	}
 
 
-	SetPixel(pixel, red, green, blue);
+	SetPixel(globalPixel, red, green, blue);
 
 	if (adding)
 	{
-		if ((pixel - 1) >= 0 )
+		if ((globalPixel - 1) >= 0 )
 		{
-			SetPixel(pixel - 1, LowerLed(red, 200), LowerLed(green, 200), LowerLed(blue, 200));
+			SetPixel(globalPixel - 1, LowerLed(red, 200), LowerLed(green, 200), LowerLed(blue, 200));
+			//SetPixel(globalPixel - 1, 255, 0, 0);
+			
 		}
-		if ((pixel - 2) >= 0 )
+		if ((globalPixel - 2) >= 0 )
 		{
-			SetPixel(pixel - 2, LowerLed(red, 250), LowerLed(green, 250), LowerLed(blue, 250));
+			SetPixel(globalPixel - 2, LowerLed(red, 250), LowerLed(green, 250), LowerLed(blue, 250));
+			//SetPixel(globalPixel - 1, 150, 0, 0);
 		}
-		if ((pixel - 3) >= 0 )
+		if ((globalPixel - 3) >= 0 )
 		{
-			SetPixel(pixel - 3, LowerLed(red, 255), LowerLed(green, 255), LowerLed(blue, 255));
+			SetPixel(globalPixel - 3, LowerLed(red, 255), LowerLed(green, 255), LowerLed(blue, 255));
+			//SetPixel(globalPixel - 1, 50, 0, 0);
 		}
 	}
 
 	else
 	{
-		if ((pixel + 1) <= 7 )
+		if ((globalPixel + 1) <= (int32_t)mainConfig.ledConfig.ledCount )
 		{
-			SetPixel(pixel + 1, LowerLed(red, 200), LowerLed(green, 200), LowerLed(blue, 200));
+			SetPixel(globalPixel + 1, LowerLed(red, 200), LowerLed(green, 200), LowerLed(blue, 200));
+			//SetPixel(globalPixel - 1, 255, 0, 0);
 		}
-		if ((pixel + 2) <= 7 )
+		if ((globalPixel + 2) <= (int32_t)mainConfig.ledConfig.ledCount )
 		{
-			SetPixel(pixel + 2, LowerLed(red, 250), LowerLed(green, 250), LowerLed(blue, 250));
+			SetPixel(globalPixel + 2, LowerLed(red, 250), LowerLed(green, 250), LowerLed(blue, 250));
+			//SetPixel(globalPixel - 1, 150, 0, 0);
 		}
-		if ((pixel + 3) <= 7 )
+		if ((globalPixel + 3) <= (int32_t)mainConfig.ledConfig.ledCount )
 		{
-			SetPixel(pixel + 3, LowerLed(red, 255), LowerLed(green, 255), LowerLed(blue, 255));
+			SetPixel(globalPixel + 3, LowerLed(red, 255), LowerLed(green, 255), LowerLed(blue, 255));
+			//SetPixel(globalPixel - 1, 50, 0, 0);
 		}
 	}
 
@@ -569,7 +575,7 @@ inline void UpdateWs2812Leds(void)
 				case LED_MODE_MULTI_PARTY_SLOW:
 					//Party Slow
 					LedModeMultiParty(100);
-					break;
+					break; 
 
 				case LED_MODE_KNIGHT_RIDER:
 					//Change color based on battery level
