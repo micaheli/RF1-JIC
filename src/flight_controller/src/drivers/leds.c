@@ -81,9 +81,10 @@ static inline void LedModeColor()
 	{
 		currentColorChart = 0;
 	}
-	greenTemp = colorChart[currentColorChart++][1];
-	redTemp = colorChart[currentColorChart++][0];
+	greenTemp = colorChart[currentColorChart][1];
+	redTemp = colorChart[currentColorChart][0];
 	blueTemp = colorChart[currentColorChart++][2];
+
 
 	for (x=0;x < mainConfig.ledConfig.ledCount+1;x++)
 	{
@@ -515,68 +516,71 @@ inline void UpdateWs2812Leds(void)
 		lastUpdate = InlineMillis();
 
 		mainConfig.ledConfig.ledCount = CONSTRAIN(mainConfig.ledConfig.ledCount, 1, WS2812_MAX_LEDS);
-		ledArraySize = mainConfig.ledConfig.ledCount*3;
+		ledArraySize = mainConfig.ledConfig.ledCount*3;  //here why aren't we doing this in intiailization
 
-		switch (mainConfig.ledConfig.ledMode)
-		{
-			case LED_MODE_OFF:
-				//leds off
-				LedModeOff(5000);
-				break;
-			case LED_MODE_ON:
-				//leds on
-				LedModeOn(5000);
-				break;
-			case LED_MODE_DISCO_FAST:
-				//Disco Fast
-				LedModeDisco(20);
-				break;
-			case LED_MODE_DISCO_SLOW:
-				//Disco Slow
-				LedModeDisco(100);
-				break;
-			case LED_MODE_PARTY_FAST:
-				//Party Fast
-				LedModeParty(20);
-				break;
-			case LED_MODE_PARTY_SLOW:
-				//Party Slow
-				LedModeParty(100);
-				break;
-			case LED_MODE_GYRO_MOTION:
-				//Gyro motion Slow
-				LedModeGyroMotion(5);
-				break;
-			case LED_MODE_COLOR_PULSE:
-				//Color Pulse
-				LedModeColorPulse(20);
-				break;
-			case LED_MODE_MULTI_DISCO_FAST:
-				//Disco Fast
-				LedModeMultiDisco(20);
-				break;
-			case LED_MODE_MULTI_DISCO_SLOW:
-				//Disco Slow
-				LedModeMultiDisco(100);
-				break;
-			case LED_MODE_MULTI_PARTY_FAST:
-				//Party Fast
-				LedModeMultiParty(20);
-				break;
-			case LED_MODE_MULTI_PARTY_SLOW:
-				//Party Slow
-				LedModeMultiParty(100);
-				break;
+		if (!ModeActive(M_LEDCOLOR))
+		{			
+			switch (mainConfig.ledConfig.ledMode)
+			{
+				case LED_MODE_OFF:
+					//leds off
+					LedModeOff(1000);
+					break;
+				case LED_MODE_ON:
+					//leds on
+					LedModeOn(1000);
+					break;
+				case LED_MODE_DISCO_FAST:
+					//Disco Fast
+					LedModeDisco(20);
+					break;
+				case LED_MODE_DISCO_SLOW:
+					//Disco Slow
+					LedModeDisco(100);
+					break;
+				case LED_MODE_PARTY_FAST:
+					//Party Fast
+					LedModeParty(20);
+					break;
+				case LED_MODE_PARTY_SLOW:
+					//Party Slow
+					LedModeParty(100);
+					break;
+				case LED_MODE_GYRO_MOTION:
+					//Gyro motion Slow
+					LedModeGyroMotion(5);
+					break;
+				case LED_MODE_COLOR_PULSE:
+					//Color Pulse
+					LedModeColorPulse(20);
+					break;
+				case LED_MODE_MULTI_DISCO_FAST:
+					//Disco Fast
+					LedModeMultiDisco(20);
+					break;
+				case LED_MODE_MULTI_DISCO_SLOW:
+					//Disco Slow
+					LedModeMultiDisco(100);
+					break;
+				case LED_MODE_MULTI_PARTY_FAST:
+					//Party Fast
+					LedModeMultiParty(20);
+					break;
+				case LED_MODE_MULTI_PARTY_SLOW:
+					//Party Slow
+					LedModeMultiParty(100);
+					break;
 
-			case LED_MODE_KNIGHT_RIDER:
-				//Change color based on battery level
-				LedModeKnightRider(120, 255, 0, 0);
-				break;
-			case LED_MODE_BATTERY_LEVEL:
-				LedModeBatteryLevel();
-				break;
+				case LED_MODE_KNIGHT_RIDER:
+					//Change color based on battery level
+					LedModeKnightRider(120, 255, 0, 0);
+					break;
+				case LED_MODE_BATTERY_LEVEL:
+					LedModeBatteryLevel();
+					break;
+			}
+			//updates the led
 		}
-		//updates the led
 	OutputSerialDmaByte(rgbArray,ledArraySize, ws2812LedRecord.ws2812Actuator, 1, 0, 0);
 	}
 }

@@ -622,6 +622,9 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 			}
 		}
 
+		sendSpektrumTelemtryAt = InlineMillis() + 2;
+
+/*
 		static int everyOtherSpekTelem = 0;
 		if (!spekPhase && mainConfig.telemConfig.telemSpek)
 		{
@@ -635,7 +638,7 @@ void ProcessSpektrumPacket(uint32_t serialNumber)
 		{
 			sendSpektrumTelemtryAt = 0;
 		}
-
+*/
 		packetTime = 11;
 		packetTimeInv = ((float)packetTime / 1000.0f);
 	}

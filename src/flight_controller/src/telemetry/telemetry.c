@@ -110,8 +110,9 @@ void ProcessTelemtry(void)
 	{
 		if ( (sendSpektrumTelemtryAt) && ( sendSpektrumTelemtryAt >= InlineMillis() ) )
 		{
-			sendSpektrumTelemtryAt = 0; //reset send time to 0 which disables it
 			sendSpektrumTelem();     //send the data. Blind of soft or hard s.port
+			sendSpektrumTelemtryAt = 0; //reset send time to 0 which disables it
+
 		}
 	}
 	else if (mainConfig.telemConfig.telemCrsf)
