@@ -895,7 +895,7 @@ void InlineFlightCode(float dpsGyroArray[])
 				armedTime = 0;
 			}
 
-			if( (quopaState == QUOPA_ACTIVE) && armedTime > QUOPA_FLIGHT_LIMIT )
+			if( (quopaState == QUOPA_ACTIVE) && (armedTime > QUOPA_FLIGHT_LIMIT) && (mainConfig.mixerConfig.quopaStyle != QUOPA_STYLE_MANUAL_2) )
 			{
 				DisarmBoard();
 			}
