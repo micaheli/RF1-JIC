@@ -149,7 +149,8 @@ const string_comp_rec stringCompTable[] =
 
 const config_variables_rec valueTable[] =
 {
-
+//        Name                  Type       Group   Config Name                                        Min Max         Default
+//--------------------------------------------------------------------------------------------------------------------------------------
 		{ "mixer_type", 		typeUINT,  "mixr", &mainConfig.mixerConfig.mixerType,					0, MIXER_END, MIXER_X1234, "" },
 
 		{ "famx", 				typeUINT,  "mixr", &mainConfig.mixerConfig.foreAftMixerFixer,			0, 110, 0, "" },
