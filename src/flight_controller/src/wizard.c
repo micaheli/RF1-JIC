@@ -17,8 +17,8 @@ static int32_t  WizRcSetChannelMapAndDirection(uint32_t inChannel, uint32_t outC
 static void     WizRcSetRestOfMap(void);
 static void     HandleWizRx(void);
 static uint32_t WizRxCheckRxDataLooksValid(void);
-static void     WizRcCheckArmSwitchDisarmed(void);
-static uint32_t WizRcCheckArmSwitchArmed(void);
+//static void     WizRcCheckArmSwitchDisarmed(void);
+//static uint32_t WizRcCheckArmSwitchArmed(void);
 
 static void ResetChannelCheck(void)
 {
@@ -396,7 +396,7 @@ void WizRcCheckAndSendDirection(void)
 
 	}
 }
-
+/*
 static void WizRcCheckArmSwitchDisarmed(void)
 {
 	memcpy(checkRxData, rxData, sizeof(checkRxData));
@@ -417,6 +417,7 @@ static uint32_t WizRcCheckArmSwitchArmed(void)
 	}
 	return(0);
 }
+*/
 
 void HandleWizRc(void)
 {

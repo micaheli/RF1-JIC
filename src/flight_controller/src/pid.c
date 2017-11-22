@@ -145,11 +145,11 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 	float boostIdle;
 	int32_t axis;
 	//static int bounceStopper[3] = {0,};
-	static int bounceStopperIdleBoost[3] = {0,};
+	//static int bounceStopperIdleBoost[3] = {0,};
 	//uint32_t everyOther;
 	float   pidError;
-	static float   longKi[3] = {0,};
-	static float   shortKi[3] = {0,};
+	//static float   longKi[3] = {0,};
+	//static float   shortKi[3] = {0,};
 	static float lastfilteredGyroData[AXIS_NUMBER] = {0,};
 	//float kiToUse[3];
 	//static float setPointSmoother[AXIS_NUMBER] = {0,};

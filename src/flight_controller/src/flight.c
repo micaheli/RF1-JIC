@@ -576,7 +576,7 @@ void InlineFlightCode(float dpsGyroArray[])
 
 	static uint32_t gyroStdDeviationLatch = 0;
 	int32_t axis;
-	volatile float averagedGyro;
+	//volatile float averagedGyro;
 
 //	inlineDigitalHi(ports[ENUM_PORTB], GPIO_PIN_0);
 
@@ -641,7 +641,7 @@ void InlineFlightCode(float dpsGyroArray[])
 	if (gyroFlightLoopCounter-- <= 0) // code triggers every time, or every 4 time etc, depending on esc output
 	{
 
-		static int failTimes[4] = {0,};
+		//static int failTimes[4] = {0,};
 
 		gyroFlightLoopCounter = loopSpeed.gyroDivider; // when sync'd its 0, otherwise, its how often you run this
 
@@ -847,8 +847,8 @@ void InlineFlightCode(float dpsGyroArray[])
 			break;
 			
 			case 4: 
-				if(armedTime > 3000)
-					TrimKi(flightPids);			
+				//if(armedTime > 3000)
+				//	TrimKi(flightPids);			
 			break;
 			
 			case 3: 
@@ -1037,7 +1037,7 @@ int InitFlight(uint32_t escProtocol, uint32_t escFrequency)
 	InitOrientation();
 	CheckRxToModes(); //check which modes are set whether or not they're enabled
 
-	retValChk = InitSoftPwm(); //initiial init
+	//retValChk = InitSoftPwm(); //initiial init
 
 	loopUsed = SanityCheckEscProtocolAndFrequency(&escProtocol, &escFrequency);
 

@@ -74,6 +74,7 @@ inline float ConvertInt8ToFloatForKi(int8_t kiNumber)
 	return((float)((float)kiNumber * KI_LEARN_MULTIPLIER));
 }
 
+/*
 int TrimKi(pid_output flightPids[])
 {
 
@@ -105,9 +106,9 @@ int TrimKi(pid_output flightPids[])
         kiTrimCounter = 0;
     }
 
-	uint32_t position = lrintf(smoothCurvedThrottle0_1*19);
+//	uint32_t position = lrintf(smoothCurvedThrottle0_1*19);
 
-/*	if (
+	if (
 		( (mainConfig.mixerConfig.foreAftMixerFixer == 2) ||
 		ModeActive(M_LEARN) ) &&
 		(kiTrimCounter > 19)
@@ -119,10 +120,10 @@ int TrimKi(pid_output flightPids[])
 		persistance.data.geeForce[position] = lrintf( (float)(persistance.data.geeForce[position] * 0.95f) + (float)((geeForceZ * 10.0f) * 0.05f));
 		persistance.data.rememberence[position]++;
 	}
-	*/
+	
 
 	return(1);
-}
+} */
 
 int TrimMotors(void)
 {

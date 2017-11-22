@@ -2158,19 +2158,21 @@ void ProcessCommand(char *inString)
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me osd updated\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
+	/*
 	else if (!strcmp("voltout", inString))
 		{
 			if (atoi(args) < 0)
 			{
-				StopSoftPwm();
+				//StopSoftPwm();
 			}
 			else if( atoi(args) < (SPT_3_3+1) )
 			{
-				SoftPwmVoltage(USART4_TXPORT, USART4_TXPIN, (software_pwm_voltage_t)atoi(args));
+			//	SoftPwmVoltage(USART4_TXPORT, USART4_TXPIN, (software_pwm_voltage_t)atoi(args));
 			}
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Voltage to %i\n", atoi(args) * 33);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
+	*/
 	else if (!strcmp("logme", inString))
 		{
 			if ( !strcmp("1", args) )

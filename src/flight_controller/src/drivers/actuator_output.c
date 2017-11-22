@@ -281,7 +281,7 @@ void OutputActuators(volatile float motorOutput[], volatile float servoOutput[])
 	uint32_t outputNumber;
 	uint32_t motorNum;
 	uint8_t  serialOutBuffer[2];
-	float    tempOutputF;
+//	float    tempOutputF;
 	float difference;
 
 

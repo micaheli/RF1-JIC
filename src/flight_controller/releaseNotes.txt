@@ -1664,7 +1664,8 @@ Version 0.404.140
 	Added preload mode 
 	removed learn mode 
 	renamed beep mode to dshotBeep
-	
+	Ki limit made adjustable again
+	Code cleanup
 
 		
 	
