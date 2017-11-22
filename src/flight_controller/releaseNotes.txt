@@ -1665,6 +1665,7 @@ Verison 0.403.141
 		fixed knight rider mode
 Version 0.404.141 
 		fixed error message in wizards that was error
+		changed variables name to make more sense
 
 
 	

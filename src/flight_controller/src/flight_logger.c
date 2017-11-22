@@ -491,7 +491,7 @@ void UpdateBlackbox(pid_output flightPids[], float flightSetPoints[], float dpsG
 
 			if(--logItterationCounter == 0)
 			{
-				if(usedSkunk == 2)
+				if(allow32)
 					logItterationCounter = 4;	//TODO make this configurable value. Capture rate = 1khz/value
 				else
 					logItterationCounter = 2;	//TODO make this configurable value. Capture rate = 1khz/value

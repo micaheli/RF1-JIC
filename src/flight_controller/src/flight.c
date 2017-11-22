@@ -32,7 +32,7 @@ uint32_t timeSinceSelfLevelActivated;
 float slpUsed;
 float sliUsed;
 float sldUsed;
-int   usedSkunk;
+uint32_t   allow32;
 volatile uint32_t armedTime;
 volatile uint32_t armedTimeSincePower = 0;
 
@@ -919,7 +919,7 @@ void InlineFlightCode(float dpsGyroArray[])
 
 	}
 
-	if(usedSkunk == 2)
+	if(allow32)
 		return;
 
 	gyroAdder[ROLL]  += filteredGyroData[ROLL];
@@ -1217,9 +1217,9 @@ uint32_t SanityCheckEscProtocolAndFrequency(uint32_t *escProtocol, uint32_t *esc
 
 	(*escFrequency) = finalEscFrequency;
 
-	usedSkunk = mainConfig.gyroConfig.skunk;
+	//usedSkunk = mainConfig.gyroConfig.skunk;
 	#ifdef DEBUG
-		usedSkunk =  0;
+		allow32 =  0;
 	#endif
 	if (!FULL_32)
 	{
@@ -1235,12 +1235,12 @@ uint32_t SanityCheckEscProtocolAndFrequency(uint32_t *escProtocol, uint32_t *esc
 		)
 		{
 			//set skunk to 0 which is 16 KHz w/ACC if ACC mode is needed
-			usedSkunk = 0; 
+			allow32 = 0; 
 		}
 	}
 
 	//skunk below 0.5f will set 32 KHz to 16 KHz operation
-	if(usedSkunk == 0)
+	if(!allow32)
 	{
 		//true 32Khz
 		if (loopUsed == LOOP_UH32)

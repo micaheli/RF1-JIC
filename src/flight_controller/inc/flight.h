@@ -26,7 +26,7 @@ extern float    accNoise[];
 extern float    filteredAccData[];
 extern volatile uint32_t armedTime;
 extern volatile uint32_t armedTimeSincePower;
-extern int   usedSkunk;
+extern uint32_t  allow32;
 extern volatile float geeForceZ;
 
 enum { CALIBRATE_BOARD_FAILED = 0, CALIBRATE_BOARD_UPRIGHT = 1, CALIBRATE_BOARD_INVERTED = 2, };
