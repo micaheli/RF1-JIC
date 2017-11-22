@@ -22,7 +22,7 @@ string_modes_rec stringModes[] =
 	{"QUOPA",       13, M_QUOPA },
 	{"PRELOAD",       14, M_PRELOAD },
 	{"DSHOTBEEP",        15, M_BEEP },
-	{"SHARP",      16, M_SHARP },
+	{"AUTOKI",      16, M_AUTOKI },
 	//		{"CATMODE",    11,  M_CATMODE },
 };
 

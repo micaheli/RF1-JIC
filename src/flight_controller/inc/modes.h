@@ -27,7 +27,7 @@ enum {
 	M_QUOPA      = (1 << 13),
 	M_PRELOAD      = (1 << 14),
 	M_BEEP       = (1 << 15),
-	M_SHARP     = (1 << 16),
+	M_AUTOKI     = (1 << 16),
 	//M_CATMODE    = (1 << 11),
 };
 

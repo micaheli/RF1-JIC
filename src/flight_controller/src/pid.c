@@ -160,7 +160,7 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 	for (axis = 2; axis >= 0; --axis)
 	{
 
-		if( ModeActive(M_SHARP) && ABS(smoothedRcCommandF[axis]) > 0.3f)
+		if( ModeActive(M_AUTOKI) && ABS(smoothedRcCommandF[axis]) > 0.3f)
 		{
 			float thisMultiplier = (ABS(smoothedRcCommandF[axis]) - 0.3f);// * 1.0f;
 			//pidsUsedThisTime[axis].kp = pidsUsed[axis].kp + (pidsUsed[axis].kp * thisMultiplier);
@@ -205,7 +205,7 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 
 
 			// calculate Ki ////////////////////////// V
-			if ( fullKiLatched )
+			if ( fullKiLatched || ModeActive(M_PRELOAD) )
 			{
 
 
