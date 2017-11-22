@@ -1640,6 +1640,7 @@ Verison 0.400.141
 	Known issues: 
 		Knight rider led mode broken 
 		Configurator switch assign to sensitive to channel jitter
+
 	Configurator Changes
 		Changed setup page layout
 		"Setup radio" wizard improvements
@@ -1655,9 +1656,17 @@ Verison 0.400.141
 		UI updates, small bug fixes
 		Set min firmware version to 0.400.0
 		added rc12 tune option to quick select
-Verison 0.403.140
-	fixed knight rider mode
-		
+
+Verison 0.401.141
+		fixed all other quopa modes
+Verison 0.402.141
+		fixed logging bugs
+Verison 0.403.141
+		fixed knight rider mode
+Version 0.404.141 
+		fixed error message in wizards that was error
+
+
 	
 
 

@@ -460,7 +460,7 @@ void HandleWizRc(void)
 			//}
 		//	else
 		//	{
-				RfCustomReplyBuffer("#wiz Wiz RC Failed\n");
+		//		RfCustomReplyBuffer("#wiz Wiz RC Failed\n");
 		//	}
 
 			break;
