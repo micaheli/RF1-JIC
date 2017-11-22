@@ -1,6 +1,6 @@
 #pragma once
 
-#define FIRMWARE_VERSION_INT	(uint16_t)(402U)
+#define FIRMWARE_VERSION_INT	(uint16_t)(404U)
 #define CONFIG_VERSION			(uint8_t)(141U)
 #define CONFIG_VERSION_STR		"141"
 #define FIRMWARE_VERSION		"0.404.141 BETA" //RC19 is next
