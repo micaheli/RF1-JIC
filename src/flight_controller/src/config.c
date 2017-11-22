@@ -241,8 +241,8 @@ const config_variables_rec valueTable[] =
  		{ "yaw_kd1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[YAW].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "roll_kd1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[ROLL].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "pitch_kd1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].kd, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
- 		{ "kd_limit1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[0].kdLimit, 		0.1, 1.0, 0.35, "" },
- 		{ "ki_limit1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[0].kiLimit, 		0.1, 1.0, 0.15, "" },
+ 		{ "kd_limit1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[0].kdLimit, 		0.1, 1.0, 0.30, "" },
+ 		{ "ki_limit1", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[0].kiLimit, 		0.1, 1.0, 0.25, "" },
  		{ "slp1", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].slp, 		0, 25.0, 05.0, "" },
  		{ "sli1", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].sli, 		0, 25.0, 00.1, "" },
  		{ "sla1", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[0].pidConfig[PITCH].sla, 		0, 75.0, 35.0, "" },
@@ -297,8 +297,8 @@ const config_variables_rec valueTable[] =
  		{ "yaw_kd2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[YAW].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "roll_kd2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[ROLL].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "pitch_kd2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].kd, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
- 		{ "kd_limit2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[0].kdLimit, 		0.1, 1.0, 0.35, "" },
- 		{ "ki_limit2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[0].kiLimit, 		0.1, 1.0, 0.15, "" },
+ 		{ "kd_limit2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[0].kdLimit, 		0.1, 1.0, 0.30, "" },
+ 		{ "ki_limit2", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[0].kiLimit, 		0.1, 1.0, 0.25, "" },
  		{ "slp2", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].slp, 		0, 25.0, 05.0, "" },
  		{ "sli2", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].sli, 		0, 25.0, 00.1, "" },
  		{ "sla2", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[1].pidConfig[PITCH].sla, 		0, 75.0, 35.0, "" },
@@ -354,8 +354,8 @@ const config_variables_rec valueTable[] =
  		{ "yaw_kd3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[YAW].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "roll_kd3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[ROLL].kd, 			0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
  		{ "pitch_kd3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].kd, 		0, 200, DEFAULT_PID_CONFIG_VALUE, "" },
- 		{ "kd_limit3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[0].kdLimit, 		0.1, 1.0, 0.35, "" },
- 		{ "ki_limit3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[0].kiLimit, 		0.1, 1.0, 0.15, "" },
+ 		{ "kd_limit3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[0].kdLimit, 		0.1, 1.0, 0.30, "" },
+ 		{ "ki_limit3", 			typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[0].kiLimit, 		0.1, 1.0, 0.25, "" },
  		{ "slp3", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].slp, 		0, 25.0, 05.0, "" },
  		{ "sli3", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].sli, 		0, 25.0, 00.1, "" },
  		{ "sla3", 				typeFLOAT,  "pids", &mainConfig.tuneProfile[2].pidConfig[PITCH].sla, 		0, 75.0, 35.0, "" },
@@ -2158,19 +2158,21 @@ void ProcessCommand(char *inString)
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me osd updated\n");
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
+	/*
 	else if (!strcmp("voltout", inString))
 		{
 			if (atoi(args) < 0)
 			{
-				StopSoftPwm();
+				//StopSoftPwm();
 			}
 			else if( atoi(args) < (SPT_3_3+1) )
 			{
-				SoftPwmVoltage(USART4_TXPORT, USART4_TXPIN, (software_pwm_voltage_t)atoi(args));
+			//	SoftPwmVoltage(USART4_TXPORT, USART4_TXPIN, (software_pwm_voltage_t)atoi(args));
 			}
 			snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "#me Voltage to %i\n", atoi(args) * 33);
 			RfCustomReplyBuffer(rf_custom_out_buffer);
 		}
+	*/
 	else if (!strcmp("logme", inString))
 		{
 			if ( !strcmp("1", args) )

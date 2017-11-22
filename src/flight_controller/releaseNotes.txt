@@ -1656,18 +1656,20 @@ Verison 0.400.141
 		UI updates, small bug fixes
 		Set min firmware version to 0.400.0
 		added rc12 tune option to quick select
-
-Verison 0.401.141
-		fixed all other quopa modes
-Verison 0.402.141
-		fixed logging bugs
-Verison 0.403.141
-		fixed knight rider mode
-Version 0.404.141 
-		fixed error message in wizards that was error
-		changed variables name to make more sense
-
-
+Verison 0.403.140
+	fixed knight rider mode
+	fixed logging 
+	fixed quopa modes
+Version 0.404.140
+	Renamed turkey mode to AutoKi
+	Added preload mode 
+	removed learn mode 
+	renamed beep mode to dshotBeep
+	Ki limit made adjustable again
+	Code cleanup
+	fixed error message in wizards that was error
+	changed variables name to make more sense
+		
 	
 
 

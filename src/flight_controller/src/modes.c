@@ -20,9 +20,9 @@ string_modes_rec stringModes[] =
 	{"PROFILE2",    11, M_PROFILE2 },
 	{"PROFILE3",    12, M_PROFILE3 },
 	{"QUOPA",       13, M_QUOPA },
-	{"LEARN",       14, M_LEARN },
-	{"BEEP",        15, M_BEEP },
-	{"TURKEY",      16, M_TURKEY },
+	{"PRELOAD",       14, M_PRELOAD },
+	{"DSHOTBEEP",        15, M_BEEP },
+	{"AUTOKI",      16, M_AUTOKI },
 	//		{"CATMODE",    11,  M_CATMODE },
 };
 

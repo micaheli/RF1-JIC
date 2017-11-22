@@ -25,9 +25,9 @@ enum {
 	M_PROFILE2   = (1 << 11),
 	M_PROFILE3   = (1 << 12),
 	M_QUOPA      = (1 << 13),
-	M_LEARN      = (1 << 14),
+	M_PRELOAD      = (1 << 14),
 	M_BEEP       = (1 << 15),
-	M_TURKEY     = (1 << 16),
+	M_AUTOKI     = (1 << 16),
 	//M_CATMODE    = (1 << 11),
 };
 
