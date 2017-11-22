@@ -1227,8 +1227,8 @@ uint32_t SanityCheckEscProtocolAndFrequency(uint32_t *escProtocol, uint32_t *esc
 		if ( 
 			//(mainConfig.mixerConfig.foreAftMixerFixer == 2) ||
 			ModeSet(M_ATTITUDE) ||
-			ModeSet(M_HORIZON)  ||
-			ModeSet(M_QUOPA)
+			ModeSet(M_HORIZON)  
+			//|| ModeSet(M_QUOPA)
 			//ModeSet(M_HORIZON)  || 
 			//ModeSet(M_GLUE)     ||
 			//ModeSet(M_CATMODE)

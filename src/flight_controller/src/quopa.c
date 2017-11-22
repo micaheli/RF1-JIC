@@ -23,6 +23,8 @@ int HandleQuopaMode(void)
 {
     static int quopaModeLatch = 0;
     uint8_t serialOutBuffer[3];
+    static uint32_t save32State;
+
 
     if(boardArmed)
         return(0);
@@ -69,6 +71,7 @@ int HandleQuopaMode(void)
             SKIP_GYRO=1;
             DeinitFlight();
             DelayMs(5); //let MCU stabilize 
+            allow32=save32State;
             InitFlight(mainConfig.mixerConfig.escProtocol, mainConfig.mixerConfig.escUpdateFrequency);
             DelayMs(5); //let MCU stabilize 
             SKIP_GYRO=0;
@@ -98,7 +101,9 @@ int HandleQuopaMode(void)
             //dshot not used, let's put fc into dshot mode
             //SKIP_GYRO=1;
             DeinitFlight();
-            DelayMs(100); //let MCU stabilize 
+            DelayMs(100); //let MCU stabilize
+            save32State=allow32;
+            allow32=0; 
             InitFlight(ESC_DSHOT600, 16000);
             DelayMs(500); //let MCU stabilize 
             SKIP_GYRO=1;
