@@ -80,9 +80,9 @@ int TrimKi(pid_output flightPids[])
 	if(!fullKiLatched)
 		return(0);
 
-	if ( !(mainConfig.mixerConfig.foreAftMixerFixer == 2) )
-		if (!ModeSet(M_LEARN))
-        	return(0);
+//	if ( !(mainConfig.mixerConfig.foreAftMixerFixer == 2) )
+//		if (!ModeSet(M_LEARN))
+//        	return(0);
     
     if( (mainConfig.mixerConfig.foreAftMixerFixer == 0) || (mainConfig.mixerConfig.foreAftMixerFixer > 2) )
 		return(0);
@@ -107,7 +107,7 @@ int TrimKi(pid_output flightPids[])
 
 	uint32_t position = lrintf(smoothCurvedThrottle0_1*19);
 
-	if (
+/*	if (
 		( (mainConfig.mixerConfig.foreAftMixerFixer == 2) ||
 		ModeActive(M_LEARN) ) &&
 		(kiTrimCounter > 19)
@@ -119,6 +119,7 @@ int TrimKi(pid_output flightPids[])
 		persistance.data.geeForce[position] = lrintf( (float)(persistance.data.geeForce[position] * 0.95f) + (float)((geeForceZ * 10.0f) * 0.05f));
 		persistance.data.rememberence[position]++;
 	}
+	*/
 
 	return(1);
 }
@@ -127,11 +128,11 @@ int TrimMotors(void)
 {
 	if(!fullKiLatched)
 		return(0);
-
+/*
 	if ( !(mainConfig.mixerConfig.foreAftMixerFixer == 2) )
 		if (!ModeSet(M_LEARN))
 			return(0);
-
+*/
 	if( (mainConfig.mixerConfig.foreAftMixerFixer == 0) || (mainConfig.mixerConfig.foreAftMixerFixer > 2) )
 		return(0);
 
@@ -144,9 +145,10 @@ int TrimMotors(void)
 	}
 
 	//throttle is 100% and constrols in deadband range
+	/*       
 	if(
 		( (mainConfig.mixerConfig.foreAftMixerFixer == 2) || ModeActive(M_LEARN) ) &&
-		//(motorTrimHasHappened == 0) &&
+		(motorTrimHasHappened == 0) &&
 		(smoothCurvedThrottle0_1 > 0.99f) &&
 		(smoothedRcCommandF[PITCH] == 0.0f) &&
 		(smoothedRcCommandF[ROLL] == 0.0f) &&
@@ -162,7 +164,7 @@ int TrimMotors(void)
 		if(motorTrimHasHappened == 1)
 			motorTrimHasHappened = 2;
 	}
-
+*/
 	if(motorTrimCounter>49)
 	{
 		if(motorTrimCounter>=99)

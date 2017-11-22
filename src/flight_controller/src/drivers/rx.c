@@ -987,8 +987,8 @@ inline void InlineCollectRcCommand (void)
 	{
 		deadBandToUse = mainConfig.rcControlsConfig.deadBand[axis];
 		
-		if(	ModeActive(M_LEARN) )
-			deadBandToUse = 0.05f;
+		//if(	ModeActive(M_LEARN) )
+		//	deadBandToUse = 0.05f;
 
 		if (rxData[axis] < mainConfig.rcControlsConfig.midRc[axis])  //negative  range
 			rangedRx = InlineChangeRangef(rxData[axis], mainConfig.rcControlsConfig.midRc[(axis)], mainConfig.rcControlsConfig.minRc[(axis)], 0.00f, -1.0f); //-1 to 0
@@ -1228,8 +1228,8 @@ inline void InlineRcSmoothing(float curvedRcCommandF[], float smoothedRcCommandF
 		smoothToUse = 0.0f;
 
 	//smoothing always 1 when learning
-	if(	ModeActive(M_LEARN) )
-		smoothToUse = 1.0f;
+//	if(	ModeActive(M_LEARN) )
+//		smoothToUse = 1.0f;
 	
 	if ( ( smoothToUse < 0.1f) || (mainConfig.tuneProfile[activeProfile].rcRates.useCurve == BETAFLOP_EXPO) || (mainConfig.tuneProfile[activeProfile].rcRates.useCurve == KISS_EXPO) )
 	{

@@ -20,7 +20,7 @@ string_modes_rec stringModes[] =
 	{"PROFILE2",    11, M_PROFILE2 },
 	{"PROFILE3",    12, M_PROFILE3 },
 	{"QUOPA",       13, M_QUOPA },
-	{"LEARN",       14, M_LEARN },
+	{"PRELOAD",       14, M_PRELOAD },
 	{"DSHOTBEEP",        15, M_BEEP },
 	{"SHARP",      16, M_SHARP },
 	//		{"CATMODE",    11,  M_CATMODE },
