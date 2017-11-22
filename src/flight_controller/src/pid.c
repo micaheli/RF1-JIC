@@ -209,7 +209,8 @@ inline uint32_t InlinePidController(float filteredGyroData[], float flightSetPoi
 			{
 
 
-				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
+				//flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -MAX_KI, MAX_KI); //prevent insane windup
+				flightPids[axis].ki = InlineConstrainf(flightPids[axis].ki + pidsUsed[axis].ki * pidError, -(mainConfig.tuneProfile[activeProfile].pidConfig[0].kiLimit),(mainConfig.tuneProfile[0].pidConfig[0].kiLimit) ); //prevent insane windup
 
 				if ( actuatorRange > .9999 ) //actuator maxed out, don't allow Ki to increase to prevent windup from maxed actuators
 				{

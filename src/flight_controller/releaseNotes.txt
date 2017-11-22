@@ -1659,6 +1659,12 @@ Verison 0.403.140
 	fixed knight rider mode
 	fixed logging 
 	fixed quopa modes
+Version 0.404.140
+	Renamed turkey mode to AutoKi
+	Added preload mode 
+	removed learn mode 
+	renamed beep mode to dshotBeep
+	
 
 		
 	
