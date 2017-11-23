@@ -708,11 +708,11 @@ static uint32_t ProcessEEprom(motor_type actuator, uint8_t eepromBuffer[], uint3
 			if (!FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16))
 			{
 				for (x=0;x<16;x++) { //find string length
-					if (escOneWireStatus[actuator.actuatorArrayNum].nameStr[x] == 0)
+					if ((const char *)escOneWireStatus[actuator.actuatorArrayNum].nameStr[x] == '0')
 						break;
 				}
 					
-				escOneWireStatus[actuator.actuatorArrayNum].nameStr[x-2] = '3';
+				(const char *)escOneWireStatus[actuator.actuatorArrayNum].nameStr[x-1] = '3';
 
 				FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16);				
 			}
