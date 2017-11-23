@@ -189,7 +189,7 @@ extern int16_t     OneWireParameterNameToValue(const oneWireParameterValue_t *va
 extern int16_t     OneWireParameterValueToNumber(const oneWireParameterNumerical_t *numerical, uint8_t value);
 extern uint8_t     OneWireParameterNumberToValue(const oneWireParameterNumerical_t *numerical, int16_t value);
 extern uint32_t    BuiltInUpgradeSiLabsBLHeli(motor_type actuator, esc_hex_location escHexLocation);
-extern void        FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize);
+extern uint8_t        FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize);
 
 //int16_t esc1WireGetParameter(uint8_t escIndex, const oneWireParameter_t *layout);
 //uint8_t esc1WireSetParameter(uint8_t escIndex, const oneWireParameter_t *layout, uint8_t value);

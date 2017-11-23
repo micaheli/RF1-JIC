@@ -1208,7 +1208,7 @@ void ProcessCommand(char *inString)
 					dshotCommandHandler.motorCommMask     = (args[0] == 'a' ? 0x0f : (1 << CONSTRAIN( atoi(args),0, MAX_MOTOR_NUMBER) ) );
 					dshotCommandHandler.requestActivation = 1;
 					dshotCommandHandler.dshotCommandState = DSC_MODE_SEND;
-					dshotCommandHandler.commandToSend     = ( !strcmp("esc_d_normal", inString) ? DSHOT_CMD_SPIN_DIRECTION_1 : DSHOT_CMD_SPIN_DIRECTION_1);
+					dshotCommandHandler.commandToSend     = ( !strcmp("esc_d_normal", inString) ? DSHOT_CMD_SPIN_DIRECTION_1 : DSHOT_CMD_SPIN_DIRECTION_2);
 					RfCustomReplyBuffer("#me Sending command\n");
 					break;
 				default:

@@ -1672,14 +1672,13 @@ Version 0.404.141
 		
 Version 0.405.141
 	Quopa mode now works at 32khz
-	
+ 
+Version 0.406.141
+	Fixed ESC so there is always a firmware for every bhelis esc
+ 
 
 
-#Features in current development:
-#	MAVlink compatibility
 
 #Features for future development:
-#	transponder output
-#	Sonar input
-#	GPS input
-#	Unobtanium detector
+#dshot telemetry
+#dshot change motor direction

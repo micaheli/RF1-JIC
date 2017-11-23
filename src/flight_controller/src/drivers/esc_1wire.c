@@ -223,7 +223,7 @@ uint32_t ListAllEscHexesInFlash(void) {
 	return (found);
 }
 
-void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize) {
+uint8_t FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLocation, uint32_t escNameStringSize) {
 
 	uint32_t addressFlashStart = ADDRESS_ESC_START;
 	uint32_t addressFlashEnd   = ADDRESS_FLASH_END;
@@ -268,10 +268,13 @@ void FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHexLo
 				memcpy( &firmwareFinderData, (char *) wordOffset+0x1A00, sizeof(firmwareFinderData) ); //get versionnumber
 				//firmwareFinderData[0] = BigToLittleEndian32(firmwareFinderData[0]);
 				escHexLocation->version = (uint16_t)( ((firmwareFinderData[0]<<8) & 0xff00) | ((firmwareFinderData[0]>>8) & 0x00ff) );
-				return;
+				return(1);
 			}
 		}
 	}
+
+
+	return(0);
 }
 
 #ifdef STM32F446xx
@@ -674,6 +677,7 @@ static uint32_t ProcessEEprom(motor_type actuator, uint8_t eepromBuffer[], uint3
 	uint16_t checkCrc1;
 	uint16_t checkCrc2;
 	const BLHeli_EEprom_t *layout;
+	uint32_t x;
 
 	if ((hasDataSize > 121) && (eepromBuffer[122] == RET_SUCCESS))
 	{
@@ -701,7 +705,17 @@ static uint32_t ProcessEEprom(motor_type actuator, uint8_t eepromBuffer[], uint3
 
 			escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout = GetBLHeliEEpromLayout(eepromBuffer);
 
-			FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16);
+			if (!FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16))
+			{
+				for (x=0;x<16;x++) { //find string length
+					if (escOneWireStatus[actuator.actuatorArrayNum].nameStr[x] == 0)
+						break;
+				}
+					
+				escOneWireStatus[actuator.actuatorArrayNum].nameStr[x-2] = '3';
+
+				FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16);				
+			}
 
 			layout = escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout;
 			escOneWireStatus[actuator.actuatorArrayNum].oneWireCurrentValues.processed      = 1;
