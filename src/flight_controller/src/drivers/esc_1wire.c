@@ -678,6 +678,7 @@ static uint32_t ProcessEEprom(motor_type actuator, uint8_t eepromBuffer[], uint3
 	uint16_t checkCrc2;
 	const BLHeli_EEprom_t *layout;
 	uint32_t x;
+	volatile char *c;
 
 	if ((hasDataSize > 121) && (eepromBuffer[122] == RET_SUCCESS))
 	{
@@ -704,15 +705,12 @@ static uint32_t ProcessEEprom(motor_type actuator, uint8_t eepromBuffer[], uint3
 			memcpy(escOneWireStatus[actuator.actuatorArrayNum].config, eepromBuffer, (BLHELI_END_DATA - 1));
 
 			escOneWireStatus[actuator.actuatorArrayNum].BLHeliEEpromLayout = GetBLHeliEEpromLayout(eepromBuffer);
+ 
 
 			if (!FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16))
-			{
-				for (x=0;x<16;x++) { //find string length
-					if (escOneWireStatus[actuator.actuatorArrayNum].nameStr[x] == '0')
-						break;
-				}
-					
-				escOneWireStatus[actuator.actuatorArrayNum].nameStr[x-1] = '3';
+			{					
+				escOneWireStatus[actuator.actuatorArrayNum].nameStr[5] = '3';
+				escOneWireStatus[actuator.actuatorArrayNum].nameStr[6] = '0';
 
 				FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16);				
 			}

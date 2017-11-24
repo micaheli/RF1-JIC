@@ -1673,7 +1673,7 @@ Version 0.404.141
 Version 0.405.141
 	Quopa mode now works at 32khz
  
-Version 0.406.141
+Version 0.407.141
 	Fixed ESC so there is always a firmware for every bhelis esc
  
 
