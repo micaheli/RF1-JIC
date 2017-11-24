@@ -261,7 +261,7 @@ uint8_t FindEscHexInFlashByName(uint8_t escStringName[], esc_hex_location *escHe
 				firmwareFinderByteData[(x * 4)+2] = ((firmwareFinderData[x]>>8)&0xff);
 				firmwareFinderByteData[(x * 4)+3] = ((firmwareFinderData[x]>>0)&0xff);
 			}
-			if (!strncmp((const char *)firmwareFinderByteData, (const char *)escStringName, escNameStringSize))
+			if (!strncmp((char *)firmwareFinderByteData, (char *)escStringName, escNameStringSize))
 			{
 				escHexLocation->startAddress = wordOffset;
 				escHexLocation->endAddress = wordOffset + 0x1A6F;
@@ -708,11 +708,11 @@ static uint32_t ProcessEEprom(motor_type actuator, uint8_t eepromBuffer[], uint3
 			if (!FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16))
 			{
 				for (x=0;x<16;x++) { //find string length
-					if ((const char *)escOneWireStatus[actuator.actuatorArrayNum].nameStr[x] == '0')
+					if (escOneWireStatus[actuator.actuatorArrayNum].nameStr[x] == '0')
 						break;
 				}
 					
-				(const char *)escOneWireStatus[actuator.actuatorArrayNum].nameStr[x-1] = '3';
+				escOneWireStatus[actuator.actuatorArrayNum].nameStr[x-1] = '3';
 
 				FindEscHexInFlashByName( escOneWireStatus[actuator.actuatorArrayNum].nameStr, &escOneWireStatus[actuator.actuatorArrayNum].escHexLocation, 16);				
 			}

@@ -1203,8 +1203,8 @@ void OneWire(char *inString) {
 						snprintf(rf_custom_out_buffer, RF_BUFFER_SIZE, "Upgrading %lu...\n", motorNumber);
 						RfCustomReplyBuffer(rf_custom_out_buffer);
 						somethingHappened=1;
-
-						if ( forceUpgrade || (escHexLocation.version > escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version) )
+						if (1) 
+//here						if ( forceUpgrade || (escHexLocation.version > escOneWireStatus[board.motors[outputNumber].actuatorArrayNum].version) )
 						{
 							if ( BuiltInUpgradeSiLabsBLHeli(board.motors[outputNumber], escHexLocation) )
 							{

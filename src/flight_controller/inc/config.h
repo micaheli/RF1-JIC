@@ -1,9 +1,9 @@
 #pragma once
 
-#define FIRMWARE_VERSION_INT	(uint16_t)(406U)
+#define FIRMWARE_VERSION_INT	(uint16_t)(407U)
 #define CONFIG_VERSION			(uint8_t)(141U)
 #define CONFIG_VERSION_STR		"141"
-#define FIRMWARE_VERSION		"0.406.141 BETA" //RC19 is next
+#define FIRMWARE_VERSION		"0.407.141 BETA" //RC19 is next
 #define FIRMWARE_NAME			"RaceFlight One"
 #define FULL_VERSION_STRING		"#vr NAME:" FIRMWARE_NAME ";VERSION:" FIRMWARE_VERSION ";CONFIG:" CONFIG_VERSION_STR "\n\0"
 
