@@ -171,40 +171,19 @@ int AccGyroDeviceDetect(void)
         switch (data)
         {
         	case MPU6000_WHO_AM_I:
-        		//deviceWhoAmI = data;
-				//return data;
-				//break;
-            case MPU6555_WHO_AM_I:
-			case MPU9250_WHO_AM_I:
-            case ICM20689_WHO_AM_I:
-            //case ICM20608G_WHO_AM_I:
-#if defined(RVTF7)
-            	deviceWhoAmI = data;
-                return data;
-				break;
-#endif
-				return -1;
-				break;
-			case MPU6500_WHO_AM_I:
-#ifdef SPMFC400
-            	deviceWhoAmI = data;
-                return data;
-				break;
-#else
-				return -2;
-				break;
-#endif
-            case ICM20602_WHO_AM_I:
-            case ICM20601_WHO_AM_I:
-            case ICM20608G_WHO_AM_I:
-#if defined(REVOLT) || defined(REVOLTF7) || defined(MICROVOLT)
-            	deviceWhoAmI = data;
-                return data;
-                break;
-#else
-				return -3;
-				break;
-#endif
+            	case MPU6555_WHO_AM_I:
+		case MPU9250_WHO_AM_I:
+            	case ICM20689_WHO_AM_I:
+            	case ICM20608G_WHO_AM_I:
+		case ICM20602_WHO_AM_I:
+            	case ICM20601_WHO_AM_I:
+            	case ICM20608G_WHO_AM_I:
+		case MPU6500_WHO_AM_I:
+            		deviceWhoAmI = data;
+                	return data;
+			break;
+		default:
+			return(-1);
         }
 
     }
@@ -215,30 +194,6 @@ int AccGyroDeviceDetect(void)
     }
 
     return (0);
-    /* No need to do this
-    // read the product id
-    AccGyroReadData(INVENS_RM_PRODUCT_ID, &data, 1);
-
-    // if who am i and id match, return true
-    switch (data) {
-        case MPU6000ES_REV_C4:
-        case MPU6000ES_REV_C5:
-        case MPU6000_REV_C4:
-        case MPU6000_REV_C5:
-        case MPU6000ES_REV_D6:
-        case MPU6000ES_REV_D7:
-        case MPU6000ES_REV_D8:
-        case MPU6000_REV_D6:
-        case MPU6000_REV_D7:
-        case MPU6000_REV_D8:
-        case MPU6000_REV_D9:
-        case MPU6000_REV_D10:
-            return true;
-    }
-
-    return 0;
-    */
-
 }
 
 void accgyroDeviceReadAccGyro(void)
